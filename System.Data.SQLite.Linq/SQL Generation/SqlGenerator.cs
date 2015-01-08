@@ -3971,22 +3971,22 @@ namespace System.Data.SQLite.Linq
 
     /// <summary>
     /// Appends the literal BLOB string representation of the specified
-    /// byte array to the <see cref="StringBuilder" />, creating it if
-    /// necessary.
+    /// byte array to the <see cref="SqlBuilder" />.
     /// </summary>
     /// <param name="bytes">
     /// The byte array to be formatted as a literal BLOB string.
     /// </param>
     /// <param name="builder">
-    /// The <see cref="StringBuilder" /> object to use.  If null, a new
-    /// instance will be created.
+    /// The <see cref="SqlBuilder" /> object to use.  If null, an exception
+    /// will be thrown.
     /// </param>
     private static void ToBlobLiteral(
         byte[] bytes,
         SqlBuilder builder
         )
     {
-        int capacity = (bytes != null) ? (bytes.Length * 2) + 3 : 4;
+        if (builder == null)
+            throw new ArgumentNullException("builder");
 
         if (bytes == null)
         {

@@ -6,14 +6,18 @@
  ********************************************************/
 
 using System;
+using System.Data.Common;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Transactions;
 
 #if USE_ENTITY_FRAMEWORK_6
+using System.Data.Entity.Core.EntityClient;
 using System.Data.Entity.Core.Objects;
 #else
+using System.Data.EntityClient;
 using System.Data.Objects;
 #endif
 
@@ -140,6 +144,47 @@ namespace testlinq
                       return 1;
                   }
           }
+      }
+
+      /// <summary>
+      /// Attempts to obtain the underlying store connection
+      /// (a <see cref="DbConnection" />) from the specified
+      /// <see cref="EntityConnection" />.
+      /// </summary>
+      /// <param name="entityConnection">
+      /// The <see cref="EntityConnection" /> to use.
+      /// </param>
+      /// <returns>
+      /// The <see cref="DbConnection" /> -OR- null if it
+      /// cannot be determined.
+      /// </returns>
+      private static DbConnection GetStoreConnection(
+          EntityConnection entityConnection
+          )
+      {
+          //
+          // NOTE: No entity connection, no store connection.
+          //
+          if (entityConnection == null)
+              return null;
+
+          //
+          // HACK: We need the underlying store connection and
+          //       the legacy versions of the .NET Framework do
+          //       not expose it; therefore, attempt to grab it
+          //       by force.
+          //
+          FieldInfo fieldInfo = typeof(EntityConnection).GetField(
+              "_storeConnection", BindingFlags.Instance |
+              BindingFlags.NonPublic);
+
+          //
+          // NOTE: If the field is not found, just return null.
+          //
+          if (fieldInfo == null)
+              return null;
+
+          return fieldInfo.GetValue(entityConnection) as DbConnection;
       }
 
       //
@@ -493,13 +538,30 @@ namespace testlinq
       {
           using (northwindEFEntities db = new northwindEFEntities())
           {
-              string sql = "SELECT VALUE GUID '25334ef0-bd18-43e6-863f-ae5d376ac75e' FROM Orders AS o WHERE o.OrderID = 10248;";
+              DbConnection connection = GetStoreConnection(
+                  db.Connection as EntityConnection);
+
+              string connectionString = connection.ConnectionString;
+
+              connection.ConnectionString = connectionString +
+                  ";BinaryGUID=false;";
+
+              string sql = "SELECT VALUE GUID " +
+                  "'2d3d2d3d-2d3d-2d3d-2d3d-2d3d2d3d2d3d' " +
+                  "FROM Orders AS o WHERE o.OrderID = 10248;";
+
               ObjectQuery<string> query = db.CreateQuery<string>(sql);
 
               foreach (string s in query)
                   Console.WriteLine(s);
 
-              sql = "SELECT VALUE GUID '25334ef0-bd18-43e6-863f-ae5d376ac75e' FROM Orders AS o WHERE o.OrderID = 10248;";
+              connection.ConnectionString = connectionString +
+                  ";BinaryGUID=true;";
+
+              sql = "SELECT VALUE GUID " +
+                  "'3d2d3d2d-3d2d-3d2d-3d2d-3d2d3d2d3d2d' " +
+                  "FROM Orders AS o WHERE o.OrderID = 10248;";
+
               query = db.CreateQuery<string>(sql);
 
               foreach (string s in query)
