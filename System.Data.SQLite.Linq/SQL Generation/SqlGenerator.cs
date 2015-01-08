@@ -875,9 +875,7 @@ namespace System.Data.SQLite.Linq
             break;
 
           case PrimitiveTypeKind.Binary:
-            result.Append(" X'");
-            result.Append(ByteArrayToBinaryString((Byte[])e.Value));
-            result.Append("' ");
+            ToBlobLiteral((byte[])e.Value, result);
             break;
 
           case PrimitiveTypeKind.Boolean:
@@ -889,7 +887,11 @@ namespace System.Data.SQLite.Linq
             break;
 
           case PrimitiveTypeKind.DateTime:
-            result.Append(EscapeSingleQuote(SQLiteConvert.ToString((System.DateTime)e.Value, SQLiteDateFormats.ISO8601, DateTimeKind.Unspecified, null), false /* IsUnicode */));
+            result.Append(EscapeSingleQuote(SQLiteConvert.ToString(
+                (System.DateTime)e.Value, _manifest._dateTimeFormat,
+                _manifest._dateTimeKind, _manifest._dateTimeFormatString),
+                false /* IsUnicode */));
+
             break;
 
           case PrimitiveTypeKind.Decimal:
@@ -923,7 +925,14 @@ namespace System.Data.SQLite.Linq
             break;
 
           case PrimitiveTypeKind.Guid:
-            result.Append(EscapeSingleQuote(e.Value.ToString(), false /* IsUnicode */));
+            {
+                object value = e.Value;
+
+                if (_manifest._binaryGuid && (value is Guid))
+                    ToBlobLiteral(((Guid)value).ToByteArray(), result);
+                else
+                    result.Append(EscapeSingleQuote(e.Value.ToString(), false /* IsUnicode */));
+            }
             break;
 
           case PrimitiveTypeKind.Int16:
@@ -2691,7 +2700,7 @@ namespace System.Data.SQLite.Linq
       SqlBuilder result = new SqlBuilder();
       Debug.Assert(e.Arguments.Count == 0, "Canonical getdate function should have no arguments");
 
-      switch (sqlgen._manifest._dateFormat)
+      switch (sqlgen._manifest._dateTimeFormat)
       {
         case SQLiteDateFormats.Ticks:
           result.Append("(STRFTIME('%s', 'now') * 10000000 + 621355968000000000)");
@@ -2712,7 +2721,7 @@ namespace System.Data.SQLite.Linq
       SqlBuilder result = new SqlBuilder();
       Debug.Assert(e.Arguments.Count == 0, "Canonical getutcdate function should have no arguments");
 
-      switch (sqlgen._manifest._dateFormat)
+      switch (sqlgen._manifest._dateTimeFormat)
       {
         case SQLiteDateFormats.Ticks:
           result.Append("(STRFTIME('%s', 'now', 'utc') * 10000000 + 621355968000000000)");
@@ -2771,7 +2780,7 @@ namespace System.Data.SQLite.Linq
         result.Append(trans);
         result.Append("', ");
 
-        switch (sqlgen._manifest._dateFormat)
+        switch (sqlgen._manifest._dateTimeFormat)
         {
           case SQLiteDateFormats.Ticks:
             result.Append(String.Format("(({0} - 621355968000000000) / 10000000.0)", e.Arguments[1].Accept(sqlgen)));
@@ -2787,7 +2796,7 @@ namespace System.Data.SQLite.Linq
       {
         result.Append("CAST(SUBSTR(STRFTIME('%f', ");
 
-        switch (sqlgen._manifest._dateFormat)
+        switch (sqlgen._manifest._dateTimeFormat)
         {
           case SQLiteDateFormats.Ticks:
             result.Append(String.Format("(({0} - 621355968000000000) / 10000000.0)", e.Arguments[1].Accept(sqlgen)));
@@ -2814,7 +2823,7 @@ namespace System.Data.SQLite.Linq
       SqlBuilder result = new SqlBuilder();
       Debug.Assert(e.Arguments.Count == 2, "Canonical datepart functions should have exactly two arguments");
 
-      switch (sqlgen._manifest._dateFormat)
+      switch (sqlgen._manifest._dateTimeFormat)
       {
         case SQLiteDateFormats.Ticks:
           result.Append(String.Format("(STRFTIME('%s', JULIANDAY({1}) + ({0} / 86400.0)) * 10000000 + 621355968000000000)", e.Arguments[0].Accept(sqlgen), e.Arguments[1].Accept(sqlgen)));
@@ -2841,7 +2850,7 @@ namespace System.Data.SQLite.Linq
       SqlBuilder result = new SqlBuilder();
       Debug.Assert(e.Arguments.Count == 2, "Canonical datepart functions should have exactly two arguments");
 
-      switch (sqlgen._manifest._dateFormat)
+      switch (sqlgen._manifest._dateTimeFormat)
       {
         case SQLiteDateFormats.Ticks:
           result.Append(String.Format("CAST((({0} - 621355968000000000) / 10000000.0)  - (({1} - 621355968000000000) / 10000000.0) * 86400.0 AS integer)", e.Arguments[0].Accept(sqlgen), e.Arguments[1].Accept(sqlgen)));
@@ -2877,7 +2886,7 @@ namespace System.Data.SQLite.Linq
 
       Debug.Assert(e.Arguments.Count == 1, "Canonical datepart functions should have exactly one argument");
 
-      switch (sqlgen._manifest._dateFormat)
+      switch (sqlgen._manifest._dateTimeFormat)
       {
         case SQLiteDateFormats.Ticks:
           result.Append(String.Format("(({0} - 621355968000000000) / 10000000.0)", e.Arguments[0].Accept(sqlgen)));
@@ -3425,7 +3434,6 @@ namespace System.Data.SQLite.Linq
       return selectStatement;
     }
 
-
     /// <summary>
     /// Before we embed a string literal in a SQL string, we should
     /// convert all ' to '', and enclose the whole string in single quotes.
@@ -3961,14 +3969,40 @@ namespace System.Data.SQLite.Linq
       }
     }
 
-    static string ByteArrayToBinaryString(Byte[] binaryArray)
+    /// <summary>
+    /// Appends the literal BLOB string representation of the specified
+    /// byte array to the <see cref="StringBuilder" />, creating it if
+    /// necessary.
+    /// </summary>
+    /// <param name="bytes">
+    /// The byte array to be formatted as a literal BLOB string.
+    /// </param>
+    /// <param name="builder">
+    /// The <see cref="StringBuilder" /> object to use.  If null, a new
+    /// instance will be created.
+    /// </param>
+    private static void ToBlobLiteral(
+        byte[] bytes,
+        SqlBuilder builder
+        )
     {
-      StringBuilder sb = new StringBuilder(binaryArray.Length * 2);
-      for (int i = 0; i < binaryArray.Length; i++)
-      {
-        sb.Append(hexDigits[(binaryArray[i] & 0xF0) >> 4]).Append(hexDigits[binaryArray[i] & 0x0F]);
-      }
-      return sb.ToString();
+        int capacity = (bytes != null) ? (bytes.Length * 2) + 3 : 4;
+
+        if (bytes == null)
+        {
+            builder.Append("NULL"); /* TODO: Reasonable? */
+            return;
+        }
+
+        builder.Append(" X'");
+
+        for (int index = 0; index < bytes.Length; index++)
+        {
+            builder.Append(hexDigits[(bytes[index] & 0xF0) >> 4]);
+            builder.Append(hexDigits[bytes[index] & 0x0F]);
+        }
+
+        builder.Append("' ");
     }
 
     /// <summary>

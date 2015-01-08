@@ -130,6 +130,10 @@ namespace testlinq
                   {
                       return UpdateTest();
                   }
+              case "binaryguid":
+                  {
+                      return BinaryGuidTest();
+                  }
               default:
                   {
                       Console.WriteLine("unknown test \"{0}\"", arg);
@@ -475,6 +479,31 @@ namespace testlinq
 
               Console.WriteLine(
                   "inserted {0} updated {1}", counts[0], counts[1]);
+          }
+
+          return 0;
+      }
+
+      //
+      // NOTE: Used to test the BinaryGUID fix (i.e. BLOB literal formatting
+      //       of GUID values when the BinaryGUID connection property has been
+      //       enabled).
+      //
+      private static int BinaryGuidTest()
+      {
+          using (northwindEFEntities db = new northwindEFEntities())
+          {
+              string sql = "SELECT VALUE GUID '25334ef0-bd18-43e6-863f-ae5d376ac75e' FROM Orders AS o WHERE o.OrderID = 10248;";
+              ObjectQuery<string> query = db.CreateQuery<string>(sql);
+
+              foreach (string s in query)
+                  Console.WriteLine(s);
+
+              sql = "SELECT VALUE GUID '25334ef0-bd18-43e6-863f-ae5d376ac75e' FROM Orders AS o WHERE o.OrderID = 10248;";
+              query = db.CreateQuery<string>(sql);
+
+              foreach (string s in query)
+                  Console.WriteLine(s);
           }
 
           return 0;

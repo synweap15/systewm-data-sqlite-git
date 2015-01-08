@@ -12,6 +12,7 @@ namespace System.Data.SQLite.Linq
 #endif
 {
   using System;
+  using System.Collections.Generic;
   using System.Data;
   using System.Reflection;
   using System.IO;
@@ -31,25 +32,131 @@ namespace System.Data.SQLite.Linq
   /// </summary>
   internal sealed class SQLiteProviderManifest : DbXmlEnabledProviderManifest
   {
-    internal SQLiteDateFormats _dateFormat;
+    internal SQLiteDateFormats _dateTimeFormat;
+    internal DateTimeKind _dateTimeKind;
+    internal string _dateTimeFormatString;
+    internal bool _binaryGuid;
 
     /// <summary>
     /// Constructs the provider manifest.
     /// </summary>
     /// <remarks>
-    /// We pass the token as a DateTimeFormat enum text, because all the datetime functions
-    /// are vastly different depending on how the user is opening the connection
+    /// Previously, the manifest token was interpreted as a <see cref="SQLiteDateFormats" />,
+    /// because the <see cref="DateTime" /> functions are vastly different depending on the
+    /// connection was opened.  However, the manifest token may specify a connection string
+    /// instead.  WARNING: Only the "DateTimeFormat", "DateTimeKind", "DateTimeFormatString",
+    /// and "BinaryGUID" connection parameters are extracted from it.  All other connection
+    /// parameters, if any are present, are silently ignored.
     /// </remarks>
-    /// <param name="manifestToken">A token used to infer the capabilities of the store</param>
+    /// <param name="manifestToken">
+    /// A token used to infer the capabilities of the store.
+    /// </param>
     public SQLiteProviderManifest(string manifestToken)
-      : base(SQLiteProviderManifest.GetProviderManifest())
+      : base(GetProviderManifest())
     {
-      _dateFormat = (SQLiteDateFormats)Enum.Parse(typeof(SQLiteDateFormats), manifestToken, true);
+        SetFromOptions(ParseProviderManifestToken(manifestToken));
     }
 
-    internal static XmlReader GetProviderManifest()
+    private static XmlReader GetProviderManifest()
     {
       return GetXmlResource("System.Data.SQLite.SQLiteProviderServices.ProviderManifest.xml");
+    }
+
+    /// <summary>
+    /// Attempts to parse a provider manifest token.  It must contain either a
+    /// legacy string that specifies the <see cref="SQLiteDateFormats" /> value
+    /// -OR- string that uses the standard connection string syntax; otherwise,
+    /// the results are undefined.
+    /// </summary>
+    /// <param name="manifestToken">
+    /// The manifest token to parse.
+    /// </param>
+    /// <returns>
+    /// The dictionary containing the connection string parameters.
+    /// </returns>
+    internal static SortedList<string, string> ParseProviderManifestToken(
+        string manifestToken
+        )
+    {
+        return SQLiteConnection.ParseConnectionString(manifestToken, false, true);
+    }
+
+    /// <summary>
+    /// Attempts to set the provider manifest options from the specified
+    /// connection string parameters.  An exception may be thrown if one
+    /// or more of the connection string parameter values do not conform
+    /// to the expected type.
+    /// </summary>
+    /// <param name="opts">
+    /// The dictionary containing the connection string parameters.
+    /// </param>
+    internal void SetFromOptions(
+        SortedList<string, string> opts
+        )
+    {
+        _dateTimeFormat = SQLiteConnection.DefaultDateTimeFormat;
+        _dateTimeKind = SQLiteConnection.DefaultDateTimeKind;
+        _dateTimeFormatString = SQLiteConnection.DefaultDateTimeFormatString;
+        _binaryGuid = /* SQLiteConnection.DefaultBinaryGUID; */ false; /* COMPAT: Legacy. */
+
+        if (opts == null)
+            return;
+
+#if !PLATFORM_COMPACTFRAMEWORK
+        string[] names = Enum.GetNames(typeof(SQLiteDateFormats));
+#else
+        string[] names = {
+            SQLiteDateFormats.Ticks.ToString(),
+            SQLiteDateFormats.ISO8601.ToString(),
+            SQLiteDateFormats.JulianDay.ToString(),
+            SQLiteDateFormats.UnixEpoch.ToString(),
+            SQLiteDateFormats.InvariantCulture.ToString(),
+            SQLiteDateFormats.CurrentCulture.ToString(),
+            "Default"
+        };
+#endif
+
+        foreach (string name in names)
+        {
+            if (String.IsNullOrEmpty(name))
+                continue;
+
+            object value = SQLiteConnection.FindKey(opts, name, null);
+
+            if (value == null)
+                continue;
+
+            _dateTimeFormat = (SQLiteDateFormats)Enum.Parse(
+                typeof(SQLiteDateFormats), name, true);
+        }
+
+        object enumValue;
+
+        enumValue = SQLiteConnection.TryParseEnum(
+            typeof(SQLiteDateFormats), SQLiteConnection.FindKey(
+            opts, "DateTimeFormat", null), true);
+
+        if (enumValue is SQLiteDateFormats)
+            _dateTimeFormat = (SQLiteDateFormats)enumValue;
+
+        enumValue = SQLiteConnection.TryParseEnum(
+            typeof(DateTimeKind), SQLiteConnection.FindKey(
+            opts, "DateTimeKind", null), true);
+
+        if (enumValue is DateTimeKind)
+            _dateTimeKind = (DateTimeKind)enumValue;
+
+        string stringValue = SQLiteConnection.FindKey(
+            opts, "DateTimeFormatString", null);
+
+        if (stringValue != null)
+            _dateTimeFormatString = stringValue;
+
+        stringValue = SQLiteConnection.FindKey(
+            opts, "BinaryGUID", null);
+
+        if (stringValue != null)
+            _binaryGuid = SQLiteConvert.ToBoolean(stringValue);
     }
 
     /// <summary>

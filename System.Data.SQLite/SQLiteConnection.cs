@@ -352,9 +352,9 @@ namespace System.Data.SQLite
     private const SQLiteSynchronousEnum DefaultSynchronous = SQLiteSynchronousEnum.Default;
     private const SQLiteJournalModeEnum DefaultJournalMode = SQLiteJournalModeEnum.Default;
     private const IsolationLevel DefaultIsolationLevel = IsolationLevel.Serializable;
-    private const SQLiteDateFormats DefaultDateTimeFormat = SQLiteDateFormats.ISO8601;
-    private const DateTimeKind DefaultDateTimeKind = DateTimeKind.Unspecified;
-    private const string DefaultDateTimeFormatString = null;
+    internal const SQLiteDateFormats DefaultDateTimeFormat = SQLiteDateFormats.Default;
+    internal const DateTimeKind DefaultDateTimeKind = DateTimeKind.Unspecified;
+    internal const string DefaultDateTimeFormatString = null;
     private const string DefaultDataSource = null;
     private const string DefaultUri = null;
     private const string DefaultFullUri = null;
@@ -369,7 +369,7 @@ namespace System.Data.SQLite
     private const bool DefaultNoSharedFlags = false;
     private const bool DefaultFailIfMissing = false;
     private const bool DefaultReadOnly = false;
-    private const bool DefaultBinaryGUID = true;
+    internal const bool DefaultBinaryGUID = true;
     private const bool DefaultUseUTF16Encoding = false;
     private const bool DefaultToFullPath = true;
     private const bool DefaultPooling = false; // TODO: Maybe promote this to static property?
@@ -1199,14 +1199,35 @@ namespace System.Data.SQLite
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
 
-    private static SortedList<string, string> ParseConnectionString(
+    /// <summary>
+    /// Parses a connection string into component parts using the custom
+    /// connection string parser.  An exception may be thrown if the syntax
+    /// of the connection string is incorrect.
+    /// </summary>
+    /// <param name="connectionString">
+    /// The connection string to parse.
+    /// </param>
+    /// <param name="parseViaFramework">
+    /// Non-zero to parse the connection string using the algorithm provided
+    /// by the framework itself.  This is not applicable when running on the
+    /// .NET Compact Framework.
+    /// </param>
+    /// <param name="allowNameOnly">
+    /// Non-zero if names are allowed without values.
+    /// </param>
+    /// <returns>
+    /// The list of key/value pairs corresponding to the parameters specified
+    /// within the connection string.
+    /// </returns>
+    internal static SortedList<string, string> ParseConnectionString(
         string connectionString,
-        bool parseViaFramework
+        bool parseViaFramework,
+        bool allowNameOnly
         )
     {
         return parseViaFramework ?
             ParseConnectionStringViaFramework(connectionString, false) :
-            ParseConnectionString(connectionString);
+            ParseConnectionString(connectionString, allowNameOnly);
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -1890,12 +1911,24 @@ namespace System.Data.SQLite
     }
 
     /// <summary>
-    /// Parses the connection string into component parts using the custom
-    /// connection string parser.
+    /// Parses a connection string into component parts using the custom
+    /// connection string parser.  An exception may be thrown if the syntax
+    /// of the connection string is incorrect.
     /// </summary>
-    /// <param name="connectionString">The connection string to parse</param>
-    /// <returns>An array of key-value pairs representing each parameter of the connection string</returns>
-    internal static SortedList<string, string> ParseConnectionString(string connectionString)
+    /// <param name="connectionString">
+    /// The connection string to parse.
+    /// </param>
+    /// <param name="allowNameOnly">
+    /// Non-zero if names are allowed without values.
+    /// </param>
+    /// <returns>
+    /// The list of key/value pairs corresponding to the parameters specified
+    /// within the connection string.
+    /// </returns>
+    private static SortedList<string, string> ParseConnectionString(
+        string connectionString,
+        bool allowNameOnly
+        )
     {
       string s = connectionString;
       int n;
@@ -1933,6 +1966,8 @@ namespace System.Data.SQLite
 
         if (indexOf != -1)
           ls.Add(UnwrapString(arParts[n].Substring(0, indexOf).Trim()), UnwrapString(arParts[n].Substring(indexOf + 1).Trim()));
+        else if (allowNameOnly)
+          ls.Add(UnwrapString(arParts[n].Trim()), String.Empty);
         else
           throw new ArgumentException(String.Format(CultureInfo.CurrentCulture, "Invalid ConnectionString format for part \"{0}\", no equal sign found", arParts[n]));
       }
@@ -1952,10 +1987,11 @@ namespace System.Data.SQLite
     /// </param>
     /// <param name="strict">
     /// Non-zero to throw an exception if any connection string values are not of
-    /// the <see cref="String" /> type.
+    /// the <see cref="String" /> type.  This is not applicable when running on
+    /// the .NET Compact Framework.
     /// </param>
     /// <returns>The list of key/value pairs.</returns>
-    internal static SortedList<string, string> ParseConnectionStringViaFramework(
+    private static SortedList<string, string> ParseConnectionStringViaFramework(
         string connectionString,
         bool strict
         )
@@ -1999,7 +2035,7 @@ namespace System.Data.SQLite
         //       string parser as the built-in (i.e. framework provided) one is
         //       unavailable.
         //
-        return ParseConnectionString(connectionString);
+        return ParseConnectionString(connectionString, false);
 #endif
     }
 
@@ -2406,7 +2442,7 @@ namespace System.Data.SQLite
       Close();
 
       SortedList<string, string> opts = ParseConnectionString(
-          _connectionString, _parseViaFramework);
+          _connectionString, _parseViaFramework, false);
 
       OnChanged(this, new ConnectionEventArgs(
           SQLiteConnectionEventType.ConnectionString, null, null, null, null,
