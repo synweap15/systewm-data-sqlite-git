@@ -136,7 +136,21 @@ namespace testlinq
                   }
               case "binaryguid":
                   {
-                      return BinaryGuidTest();
+                      bool value = false;
+
+                      if (args.Length > 1)
+                      {
+                          if (!bool.TryParse(args[1], out value))
+                          {
+                              Console.WriteLine(
+                                  "cannot parse \"{0}\" as boolean",
+                                  args[1]);
+
+                              return 1;
+                          }
+                      }
+
+                      return BinaryGuidTest(value);
                   }
               default:
                   {
@@ -534,35 +548,19 @@ namespace testlinq
       //       of GUID values when the BinaryGUID connection property has been
       //       enabled).
       //
-      private static int BinaryGuidTest()
+      private static int BinaryGuidTest(bool binaryGuid)
       {
+          Environment.SetEnvironmentVariable(
+              "AppendManifestToken_SQLiteProviderManifest",
+              String.Format(";BinaryGUID={0};", binaryGuid));
+
           using (northwindEFEntities db = new northwindEFEntities())
           {
-              DbConnection connection = GetStoreConnection(
-                  db.Connection as EntityConnection);
-
-              string connectionString = connection.ConnectionString;
-
-              connection.ConnectionString = connectionString +
-                  ";BinaryGUID=false;";
-
               string sql = "SELECT VALUE GUID " +
                   "'2d3d2d3d-2d3d-2d3d-2d3d-2d3d2d3d2d3d' " +
                   "FROM Orders AS o WHERE o.OrderID = 10248;";
 
               ObjectQuery<string> query = db.CreateQuery<string>(sql);
-
-              foreach (string s in query)
-                  Console.WriteLine(s);
-
-              connection.ConnectionString = connectionString +
-                  ";BinaryGUID=true;";
-
-              sql = "SELECT VALUE GUID " +
-                  "'3d2d3d2d-3d2d-3d2d-3d2d-3d2d3d2d3d2d' " +
-                  "FROM Orders AS o WHERE o.OrderID = 10248;";
-
-              query = db.CreateQuery<string>(sql);
 
               foreach (string s in query)
                   Console.WriteLine(s);

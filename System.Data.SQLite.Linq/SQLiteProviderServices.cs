@@ -12,11 +12,11 @@ namespace System.Data.SQLite.Linq
 #endif
 {
   using System;
+  using System.Collections.Generic;
   using System.Data.Common;
   using System.Diagnostics;
-  using System.Collections.Generic;
-  using System.Text;
   using System.Globalization;
+  using System.Text;
 
 #if USE_ENTITY_FRAMEWORK_6
   using System.Data.Entity.Core.Common;

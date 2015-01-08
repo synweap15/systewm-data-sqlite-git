@@ -13,17 +13,21 @@ namespace System.Data.SQLite.Linq
 {
   using System;
   using System.Collections.Generic;
-  using System.Data;
-  using System.Reflection;
   using System.IO;
+  using System.Reflection;
+
+#if !PLATFORM_COMPACTFRAMEWORK
+  using System.Text;
+#endif
+
   using System.Xml;
-  using System.Data.Common;
 
 #if USE_ENTITY_FRAMEWORK_6
   using System.Data.Entity.Core;
   using System.Data.Entity.Core.Common;
   using System.Data.Entity.Core.Metadata.Edm;
 #else
+  using System.Data.Common;
   using System.Data.Metadata.Edm;
 #endif
 
@@ -54,12 +58,48 @@ namespace System.Data.SQLite.Linq
     public SQLiteProviderManifest(string manifestToken)
       : base(GetProviderManifest())
     {
-        SetFromOptions(ParseProviderManifestToken(manifestToken));
+        SetFromOptions(ParseProviderManifestToken(GetProviderManifestToken(manifestToken)));
     }
 
     private static XmlReader GetProviderManifest()
     {
       return GetXmlResource("System.Data.SQLite.SQLiteProviderServices.ProviderManifest.xml");
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="manifestToken">
+    /// 
+    /// </param>
+    /// <returns>
+    /// 
+    /// </returns>
+    private static string GetProviderManifestToken(
+        string manifestToken
+        )
+    {
+#if !PLATFORM_COMPACTFRAMEWORK
+        string value = Environment.GetEnvironmentVariable(
+            "AppendManifestToken_SQLiteProviderManifest");
+
+        if (String.IsNullOrEmpty(value))
+            return manifestToken;
+
+        int capacity = value.Length;
+
+        if (manifestToken != null)
+            capacity += manifestToken.Length;
+
+        StringBuilder builder = new StringBuilder(capacity);
+
+        builder.Append(manifestToken);
+        builder.Append(value);
+
+        return builder.ToString();
+#else
+        return manifestToken;
+#endif
     }
 
     /// <summary>
@@ -74,7 +114,7 @@ namespace System.Data.SQLite.Linq
     /// <returns>
     /// The dictionary containing the connection string parameters.
     /// </returns>
-    internal static SortedList<string, string> ParseProviderManifestToken(
+    private static SortedList<string, string> ParseProviderManifestToken(
         string manifestToken
         )
     {

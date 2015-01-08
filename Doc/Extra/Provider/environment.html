@@ -81,6 +81,17 @@
           <th>Description</th>
         </tr>
         <tr valign="top">
+          <td>AppendManifestToken_SQLiteProviderManifest</td>
+          <td>If this environment variable is set [to anything], it will be
+          used by the System.Data.SQLite.Linq.SQLiteProviderManifest class
+          (and the System.Data.SQLite.EF6.SQLiteProviderManifest class) to
+          modify future provider manifest tokens by appending the value of
+          the environment variable to the existing provider manifest token,
+          if any.  Typically, in order for the constructed provider manifest
+          token to be syntactically correct, the environment variable value
+          [to be appended] must begin with a semicolon.</td>
+        </tr>
+        <tr valign="top">
           <td>Force_SQLiteLog</td>
           <td>If this environment variable is set [to anything], the SQLite
           logging subsystem may be initialized in a non-default application
