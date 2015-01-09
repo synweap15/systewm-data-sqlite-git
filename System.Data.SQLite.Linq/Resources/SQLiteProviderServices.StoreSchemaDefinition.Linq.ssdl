@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Schema Namespace="EFSQLite" Provider="System.Data.SQLite" ProviderManifestToken="ISO8601" Alias="Self" xmlns="http://schemas.microsoft.com/ado/2006/04/edm/ssdl">
+<Schema Namespace="EFSQLite" Provider="System.Data.SQLite.Linq" ProviderManifestToken="ISO8601" Alias="Self" xmlns="http://schemas.microsoft.com/ado/2006/04/edm/ssdl">
   <EntityContainer Name="Schema">
     <EntitySet Name="STables" EntityType="Self.Table">
       <DefiningQuery>
@@ -277,7 +277,7 @@
     <AssociationSet Name="SConstraintConstraintColumns" Association="Self.ConstraintConstraintColumn" >
       <End Role="ConstraintColumn" EntitySet="SConstraintColumns"/>
       <End Role="Constraint" EntitySet="SConstraints"/>
-    </AssociationSet>    
+    </AssociationSet>
     <AssociationSet Name="SConstraintForeignKeys" Association="Self.ConstraintForeignKey" >
       <End Role="ForeignKey" EntitySet="SForeignKeys"/>
       <End Role="Constraint" EntitySet="SForeignKeyConstraints"/>
@@ -479,7 +479,7 @@
     <Property Name="Id" Nullable="false" Type="nvarchar" />
     <Property Name="Expression" Nullable="true" Type="nvarchar" />
   </EntityType>
-  
+
   <EntityType Name="ConstraintColumn">
     <Key>
       <PropertyRef Name="ConstraintId" />

@@ -277,7 +277,7 @@
     <AssociationSet Name="SConstraintConstraintColumns" Association="Self.ConstraintConstraintColumn" >
       <End Role="ConstraintColumn" EntitySet="SConstraintColumns"/>
       <End Role="Constraint" EntitySet="SConstraints"/>
-    </AssociationSet>    
+    </AssociationSet>
     <AssociationSet Name="SConstraintForeignKeys" Association="Self.ConstraintForeignKey" >
       <End Role="ForeignKey" EntitySet="SForeignKeys"/>
       <End Role="Constraint" EntitySet="SForeignKeyConstraints"/>
@@ -479,7 +479,7 @@
     <Property Name="Id" Nullable="false" Type="nvarchar" />
     <Property Name="Expression" Nullable="true" Type="nvarchar" />
   </EntityType>
-  
+
   <EntityType Name="ConstraintColumn">
     <Key>
       <PropertyRef Name="ConstraintId" />
