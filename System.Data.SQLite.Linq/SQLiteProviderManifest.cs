@@ -67,13 +67,16 @@ namespace System.Data.SQLite.Linq
     }
 
     /// <summary>
-    /// 
+    /// Determines and returns the effective provider manifest token to use,
+    /// based on the specified provider manifest token and the environment,
+    /// if applicable.
     /// </summary>
     /// <param name="manifestToken">
-    /// 
+    /// The original provider manifest token passed to the constructor for this
+    /// class.
     /// </param>
     /// <returns>
-    /// 
+    /// The effective provider manifest token.
     /// </returns>
     private static string GetProviderManifestToken(
         string manifestToken
@@ -98,6 +101,11 @@ namespace System.Data.SQLite.Linq
 
         return builder.ToString();
 #else
+        //
+        // NOTE: The .NET Compact Framework lacks environment variable support.
+        //       Therefore, just return the original provider manifest token
+        //       verbatim in this case.
+        //
         return manifestToken;
 #endif
     }
