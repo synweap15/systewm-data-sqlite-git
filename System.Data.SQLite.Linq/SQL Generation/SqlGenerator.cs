@@ -887,10 +887,17 @@ namespace System.Data.SQLite.Linq
             break;
 
           case PrimitiveTypeKind.DateTime:
-            result.Append(EscapeSingleQuote(SQLiteConvert.ToString(
+            bool needQuotes = NeedSingleQuotes(_manifest._dateTimeFormat);
+
+            if (needQuotes)
+                result.Append("\'");
+
+            result.Append(SQLiteConvert.ToString(
                 (System.DateTime)e.Value, _manifest._dateTimeFormat,
-                _manifest._dateTimeKind, _manifest._dateTimeFormatString),
-                false /* IsUnicode */));
+                _manifest._dateTimeKind, _manifest._dateTimeFormatString));
+
+            if (needQuotes)
+                result.Append("\'");
 
             break;
 
@@ -3432,6 +3439,26 @@ namespace System.Data.SQLite.Linq
 
 
       return selectStatement;
+    }
+
+    /// <summary>
+    /// Determines if values of the specified <see cref="SQLiteDateFormats" />
+    /// require wrapping in single quotes.
+    /// </summary>
+    /// <param name="format">
+    /// The <see cref="SQLiteDateFormats" /> format.
+    /// </param>
+    /// <returns>
+    /// Non-zero if single quotes are required for a value in the specified
+    /// <see cref="SQLiteDateFormats" />.
+    /// </returns>
+    private static bool NeedSingleQuotes(
+        SQLiteDateFormats format
+        )
+    {
+        return format != SQLiteDateFormats.Ticks &&
+            format != SQLiteDateFormats.JulianDay &&
+            format != SQLiteDateFormats.UnixEpoch;
     }
 
     /// <summary>
