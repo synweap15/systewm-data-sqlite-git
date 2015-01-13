@@ -614,11 +614,6 @@ namespace testlinq
           {
               db.Orders.Where(i => i.OrderDate <
                   new DateTime(1997, 1, 1, 0, 0, 0, DateTimeKind.Local)).Count();
-
-              DateTime dateTime = new DateTime(
-                  1997, 1, 1, 0, 0, 0, DateTimeKind.Local);
-
-              db.Orders.Where(i => i.OrderDate < dateTime).Count();
           }
 
           if (dateTimeFormat != null)
