@@ -889,16 +889,20 @@ namespace System.Data.SQLite.Linq
           case PrimitiveTypeKind.DateTime:
             bool needQuotes = NeedSingleQuotes(_manifest._dateTimeFormat);
 
-            if (needQuotes)
-                result.Append("\'");
-
-            result.Append(SQLiteConvert.ToString(
+            string dateString = SQLiteConvert.ToString(
                 (System.DateTime)e.Value, _manifest._dateTimeFormat,
-                _manifest._dateTimeKind, _manifest._dateTimeFormatString));
+                _manifest._dateTimeKind, _manifest._dateTimeFormatString);
 
             if (needQuotes)
+            {
                 result.Append("\'");
-
+                result.Append(EscapeSingleQuote(dateString, false /* IsUnicode */));
+                result.Append("\'");
+            }
+            else
+            {
+                result.Append(dateString);
+            }
             break;
 
           case PrimitiveTypeKind.Decimal:
