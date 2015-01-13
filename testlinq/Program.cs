@@ -576,6 +576,10 @@ namespace testlinq
                   Console.WriteLine(s);
           }
 
+          Environment.SetEnvironmentVariable(
+              "AppendManifestToken_SQLiteProviderManifest",
+              null);
+
           return 0;
       }
 
@@ -594,7 +598,9 @@ namespace testlinq
           string dateTimeFormat
           )
       {
-          Trace.Listeners.Add(new ConsoleTraceListener());
+          TraceListener listener = new ConsoleTraceListener();
+
+          Trace.Listeners.Add(listener);
           Environment.SetEnvironmentVariable("SQLite_ForceLogPrepare", "1");
 
           if (dateTimeFormat != null)
@@ -615,7 +621,15 @@ namespace testlinq
               db.Orders.Where(i => i.OrderDate < dateTime).Count();
           }
 
+          if (dateTimeFormat != null)
+          {
+              Environment.SetEnvironmentVariable(
+                  "AppendManifestToken_SQLiteProviderManifest",
+                  null);
+          }
+
           Environment.SetEnvironmentVariable("SQLite_ForceLogPrepare", null);
+          Trace.Listeners.Remove(listener);
       }
 
     private static int OldTests()
