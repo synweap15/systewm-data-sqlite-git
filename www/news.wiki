@@ -16,6 +16,9 @@
     <li>Make sure the interop files are copied when publishing a project that refers to a NuGet package containing them. Fix for [e796ac82c1].&nbsp;<b>** Potentially Incompatible Change **</b></li>
     <li>Make sure the interop files are copied before the PostBuildEvent. Fix for [f16c93a932].&nbsp;<b>** Potentially Incompatible Change **</b></li>
     <li>Modify GetSchemaTable method to avoid setting SchemaTableColumn.IsKey column to true when more than one table is referenced. Fix for [47c6fa04d3].&nbsp;<b>** Potentially Incompatible Change **</b></li>
+    <li>Add AppendManifestToken_SQLiteProviderManifest environment variable to enable better integration between LINQ and the underlying store connection.</li>
+    <li>Add SQLite_ForceLogPrepare environment variable to force logging of all prepared SQL regardless of the flags for the associated connection.</li>
+    <li>Honor the DateTimeFormat, DateTimeKind, DateTimeFormatString, BinaryGUID connection string and/or provider manifest token properties from within the LINQ assembly. Fix for [8d928c3e88].&nbsp;<b>** Potentially Incompatible Change **</b></li>
 </ul>
 <p>
     <b>1.0.94.0 - September 9, 2014</b>

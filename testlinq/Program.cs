@@ -66,6 +66,16 @@ namespace testlinq
                   {
                       return DateTimeTest();
                   }
+              case "datetime2":
+                  {
+                      string dateTimeFormat = null;
+
+                      if (args.Length > 1)
+                          dateTimeFormat = args[1];
+
+                      DateTimeTest2(dateTimeFormat);
+                      return 0;
+                  }
               case "skip":
                   {
                       int pageSize = 0;
@@ -578,6 +588,34 @@ namespace testlinq
               int c2 = db.Orders.Where(i => i.OrderDate == dateTime).Count();
               return c1 == c2 ? 0 : 1;
           }
+      }
+
+      private static void DateTimeTest2(
+          string dateTimeFormat
+          )
+      {
+          Trace.Listeners.Add(new ConsoleTraceListener());
+          Environment.SetEnvironmentVariable("SQLite_ForceLogPrepare", "1");
+
+          if (dateTimeFormat != null)
+          {
+              Environment.SetEnvironmentVariable(
+                  "AppendManifestToken_SQLiteProviderManifest",
+                  String.Format(";DateTimeFormat={0};", dateTimeFormat));
+          }
+
+          using (northwindEFEntities db = new northwindEFEntities())
+          {
+              db.Orders.Where(i => i.OrderDate <
+                  new DateTime(1997, 1, 1, 0, 0, 0, DateTimeKind.Local)).Count();
+
+              DateTime dateTime = new DateTime(
+                  1997, 1, 1, 0, 0, 0, DateTimeKind.Local);
+
+              db.Orders.Where(i => i.OrderDate < dateTime).Count();
+          }
+
+          Environment.SetEnvironmentVariable("SQLite_ForceLogPrepare", null);
       }
 
     private static int OldTests()

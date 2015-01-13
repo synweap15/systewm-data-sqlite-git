@@ -888,6 +888,51 @@ namespace System.Data.SQLite
         return result;
     }
 
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+
+    #region Query Diagnostics Support
+#if !PLATFORM_COMPACTFRAMEWORK
+    /// <summary>
+    /// This field is used to keep track of whether or not the
+    /// "SQLite_ForceLogPrepare" environment variable has been queried.  If so,
+    /// it will only be non-zero if the environment variable was present.
+    /// </summary>
+    private static bool? forceLogPrepare = null;
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+
+    /// <summary>
+    /// Determines if all calls to prepare a SQL query will be logged,
+    /// regardless of the flags for the associated connection.
+    /// </summary>
+    /// <returns>
+    /// Non-zero to log all calls to prepare a SQL query.
+    /// </returns>
+    private static bool ForceLogPrepare()
+    {
+        lock (syncRoot)
+        {
+            if (forceLogPrepare == null)
+            {
+                if (Environment.GetEnvironmentVariable(
+                        "SQLite_ForceLogPrepare") != null)
+                {
+                    forceLogPrepare = true;
+                }
+                else
+                {
+                    forceLogPrepare = false;
+                }
+            }
+
+            return (bool)forceLogPrepare;
+        }
+    }
+#endif
+    #endregion
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+
     internal override SQLiteStatement Prepare(SQLiteConnection cnn, string strSql, SQLiteStatement previous, uint timeoutMS, ref string strRemain)
     {
       if (!String.IsNullOrEmpty(strSql))
@@ -915,7 +960,11 @@ namespace System.Data.SQLite
       SQLiteConnectionFlags flags =
           (cnn != null) ? cnn.Flags : SQLiteConnectionFlags.Default;
 
-      if ((flags & SQLiteConnectionFlags.LogPrepare) == SQLiteConnectionFlags.LogPrepare)
+      if (
+#if !PLATFORM_COMPACTFRAMEWORK
+          ForceLogPrepare() ||
+#endif
+          ((flags & SQLiteConnectionFlags.LogPrepare) == SQLiteConnectionFlags.LogPrepare))
       {
           if ((strSql == null) || (strSql.Length == 0) || (strSql.Trim().Length == 0))
               SQLiteLog.LogMessage("Preparing {<nothing>}...");
