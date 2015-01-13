@@ -914,8 +914,8 @@ namespace System.Data.SQLite
         {
             if (forceLogPrepare == null)
             {
-                if (Environment.GetEnvironmentVariable(
-                        "SQLite_ForceLogPrepare") != null)
+                if (UnsafeNativeMethods.GetSettingValue(
+                        "SQLite_ForceLogPrepare", null) != null)
                 {
                     forceLogPrepare = true;
                 }

@@ -83,8 +83,8 @@ namespace System.Data.SQLite.Linq
         )
     {
 #if !PLATFORM_COMPACTFRAMEWORK
-        string value = Environment.GetEnvironmentVariable(
-            "AppendManifestToken_SQLiteProviderManifest");
+        string value = UnsafeNativeMethods.GetSettingValue(
+            "AppendManifestToken_SQLiteProviderManifest", null);
 
         if (String.IsNullOrEmpty(value))
             return manifestToken;
