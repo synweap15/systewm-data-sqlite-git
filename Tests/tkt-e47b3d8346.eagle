@@ -27,7 +27,7 @@ runTest {test tkt-e47b3d8346-1.1 {parse semi-colon in data source} -setup {
 
   set list [object invoke -flags +NonPublic \
       System.Data.SQLite.SQLiteConnection ParseConnectionString \
-      {Data Source="C:\full\path\to\file.db;more.data.here";}]
+      {Data Source="C:\full\path\to\file.db;more.data.here";} false]
 
   object foreach -alias pair $list {
     lappend result [list [$pair Key] [$pair Value]]

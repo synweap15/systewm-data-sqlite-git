@@ -12,11 +12,11 @@ namespace System.Data.SQLite.Linq
 #endif
 {
   using System;
+  using System.Collections.Generic;
   using System.Data.Common;
   using System.Diagnostics;
-  using System.Collections.Generic;
-  using System.Text;
   using System.Globalization;
+  using System.Text;
 
 #if USE_ENTITY_FRAMEWORK_6
   using System.Data.Entity.Core.Common;
@@ -110,19 +110,13 @@ namespace System.Data.SQLite.Linq
 
     protected override string GetDbProviderManifestToken(DbConnection connection)
     {
-      if (String.IsNullOrEmpty(connection.ConnectionString))
-        throw new ArgumentNullException("ConnectionString");
+        if (connection == null)
+            throw new ArgumentNullException("connection");
 
-      bool parseViaFramework = false;
+        if (String.IsNullOrEmpty(connection.ConnectionString))
+            throw new ArgumentNullException("ConnectionString");
 
-      if (connection is SQLiteConnection)
-          parseViaFramework = ((SQLiteConnection)connection).ParseViaFramework;
-
-      SortedList<string, string> opts = parseViaFramework ?
-          SQLiteConnection.ParseConnectionStringViaFramework(connection.ConnectionString, false) :
-          SQLiteConnection.ParseConnectionString(connection.ConnectionString);
-
-      return SQLiteConnection.FindKey(opts, "DateTimeFormat", "ISO8601");
+        return connection.ConnectionString;
     }
 
     protected override DbProviderManifest GetDbProviderManifest(string versionHint)

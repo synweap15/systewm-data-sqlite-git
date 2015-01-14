@@ -2261,7 +2261,8 @@ runTest {test data-1.47 {quoted connection string properties} -setup {
 
   foreach string $strings {
     set list [object invoke -flags +NonPublic \
-        System.Data.SQLite.SQLiteConnection ParseConnectionString $string]
+        System.Data.SQLite.SQLiteConnection ParseConnectionString \
+        $string false]
 
     object foreach -alias pair $list {
       lappend result [list [$pair Key] [$pair Value]]

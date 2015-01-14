@@ -120,7 +120,7 @@ namespace System.Data.SQLite.Linq
   /// CustomerId2 etc.
   ///
   /// Since the names generated are globally unique, they will not conflict when the
-  /// columns of a JOIN SELECT statement are joined with another JOIN. 
+  /// columns of a JOIN SELECT statement are joined with another JOIN.
   ///
   /// </para>
   ///
@@ -438,7 +438,7 @@ namespace System.Data.SQLite.Linq
 
     #region Constructor
     /// <summary>
-    /// Basic constructor. 
+    /// Basic constructor.
     /// </summary>
     private SqlGenerator(SQLiteProviderManifest manifest)
     {
@@ -466,7 +466,7 @@ namespace System.Data.SQLite.Linq
       {
         SqlGenerator sqlGen = new SqlGenerator(manifest);
         parameters = null;
-        
+
         string sql = sqlGen.GenerateSql((DbQueryCommandTree)tree);
 
         return sql;
@@ -875,9 +875,7 @@ namespace System.Data.SQLite.Linq
             break;
 
           case PrimitiveTypeKind.Binary:
-            result.Append(" X'");
-            result.Append(ByteArrayToBinaryString((Byte[])e.Value));
-            result.Append("' ");
+            ToBlobLiteral((byte[])e.Value, result);
             break;
 
           case PrimitiveTypeKind.Boolean:
@@ -889,7 +887,21 @@ namespace System.Data.SQLite.Linq
             break;
 
           case PrimitiveTypeKind.DateTime:
-            result.Append(EscapeSingleQuote(SQLiteConvert.ToString((System.DateTime)e.Value, SQLiteDateFormats.ISO8601, DateTimeKind.Unspecified, null), false /* IsUnicode */));
+            bool needQuotes = NeedSingleQuotes(_manifest._dateTimeFormat);
+
+            string dateString = SQLiteConvert.ToString(
+                (System.DateTime)e.Value, _manifest._dateTimeFormat,
+                _manifest._dateTimeKind, _manifest._dateTimeFormatString);
+
+            if (needQuotes)
+            {
+                result.Append(EscapeSingleQuote(
+                    dateString, false /* IsUnicode */));
+            }
+            else
+            {
+                result.Append(dateString);
+            }
             break;
 
           case PrimitiveTypeKind.Decimal:
@@ -923,7 +935,14 @@ namespace System.Data.SQLite.Linq
             break;
 
           case PrimitiveTypeKind.Guid:
-            result.Append(EscapeSingleQuote(e.Value.ToString(), false /* IsUnicode */));
+            {
+                object value = e.Value;
+
+                if (_manifest._binaryGuid && (value is Guid))
+                    ToBlobLiteral(((Guid)value).ToByteArray(), result);
+                else
+                    result.Append(EscapeSingleQuote(e.Value.ToString(), false /* IsUnicode */));
+            }
             break;
 
           case PrimitiveTypeKind.Int16:
@@ -1127,7 +1146,7 @@ namespace System.Data.SQLite.Linq
     /// <item>Store Functions - We recognize these by the BuiltInAttribute and not being Canonical</item>
     /// <item>User-defined Functions - All the rest except for Lambda functions</item>
     /// </list>
-    /// We handle Canonical and Store functions the same way: If they are in the list of functions 
+    /// We handle Canonical and Store functions the same way: If they are in the list of functions
     /// that need special handling, we invoke the appropriate handler, otherwise we translate them to
     /// FunctionName(arg1, arg2, ..., argn).
     /// We translate user-defined functions to NamespaceName.FunctionName(arg1, arg2, ..., argn).
@@ -1178,39 +1197,39 @@ namespace System.Data.SQLite.Linq
     /// We modify both the GroupBy and the Select fields of the SqlSelectStatement.
     /// GroupBy gets just the keys without aliases,
     /// and Select gets the keys and the aggregates with aliases.
-    /// 
+    ///
     /// Whenever there exists at least one aggregate with an argument that is not is not a simple
-    /// <see cref="DbPropertyExpression"/>  over <see cref="DbVariableReferenceExpression"/>, 
-    /// we create a nested query in which we alias the arguments to the aggregates. 
+    /// <see cref="DbPropertyExpression"/>  over <see cref="DbVariableReferenceExpression"/>,
+    /// we create a nested query in which we alias the arguments to the aggregates.
     /// That is due to the following two limitations of Sql Server:
     /// <list type="number">
-    /// <item>If an expression being aggregated contains an outer reference, then that outer 
+    /// <item>If an expression being aggregated contains an outer reference, then that outer
     /// reference must be the only column referenced in the expression </item>
-    /// <item>Sql Server cannot perform an aggregate function on an expression containing 
+    /// <item>Sql Server cannot perform an aggregate function on an expression containing
     /// an aggregate or a subquery. </item>
     /// </list>
-    /// 
-    /// The default translation, without inner query is: 
-    /// 
-    ///     SELECT 
-    ///         kexp1 AS key1, kexp2 AS key2,... kexpn AS keyn, 
+    ///
+    /// The default translation, without inner query is:
+    ///
+    ///     SELECT
+    ///         kexp1 AS key1, kexp2 AS key2,... kexpn AS keyn,
     ///         aggf1(aexpr1) AS agg1, .. aggfn(aexprn) AS aggn
     ///     FROM input AS a
     ///     GROUP BY kexp1, kexp2, .. kexpn
-    /// 
+    ///
     /// When we inject an innner query, the equivalent translation is:
-    /// 
-    ///     SELECT 
-    ///         key1 AS key1, key2 AS key2, .. keyn AS keys,  
+    ///
+    ///     SELECT
+    ///         key1 AS key1, key2 AS key2, .. keyn AS keys,
     ///         aggf1(agg1) AS agg1, aggfn(aggn) AS aggn
     ///     FROM (
-    ///             SELECT 
-    ///                 kexp1 AS key1, kexp2 AS key2,... kexpn AS keyn, 
+    ///             SELECT
+    ///                 kexp1 AS key1, kexp2 AS key2,... kexpn AS keyn,
     ///                 aexpr1 AS agg1, .. aexprn AS aggn
     ///             FROM input AS a
     ///         ) as a
     ///     GROUP BY key1, key2, keyn
-    /// 
+    ///
     /// </summary>
     /// <param name="e"></param>
     /// <returns>A <see cref="SqlSelectStatement"/></returns>
@@ -1240,7 +1259,7 @@ namespace System.Data.SQLite.Linq
       // so, we do not close it in between.
       RowType groupByType = MetadataHelpers.GetEdmType<RowType>(MetadataHelpers.GetEdmType<CollectionType>(e.ResultType).TypeUsage);
 
-      //Whenever there exists at least one aggregate with an argument that is not simply a PropertyExpression 
+      //Whenever there exists at least one aggregate with an argument that is not simply a PropertyExpression
       // over a VarRefExpression, we need a nested query in which we alias the arguments to the aggregates.
       bool needsInnerQuery = NeedsInnerQuery(e.Aggregates);
 
@@ -1292,7 +1311,7 @@ namespace System.Data.SQLite.Linq
             innerQuery.Select.Append(" AS ");
             innerQuery.Select.Append(alias);
 
-            //The outer resulting query projects over the key aliased in the inner query: 
+            //The outer resulting query projects over the key aliased in the inner query:
             //  fromSymbol.Alias AS Alias
             result.Select.Append(separator);
             result.Select.AppendLine();
@@ -1466,7 +1485,7 @@ namespace System.Data.SQLite.Linq
       result.Append(" LIKE ");
       result.Append(e.Pattern.Accept(this));
 
-      // if the ESCAPE expression is a DbNullExpression, then that's tantamount to 
+      // if the ESCAPE expression is a DbNullExpression, then that's tantamount to
       // not having an ESCAPE at all
       if (e.Escape.ExpressionKind != DbExpressionKind.Null)
       {
@@ -1816,10 +1835,10 @@ namespace System.Data.SQLite.Linq
     /// For Sql9 it translates to:
     /// SELECT Y.x1, Y.x2, ..., Y.xn
     /// FROM (
-    ///     SELECT X.x1, X.x2, ..., X.xn, row_number() OVER (ORDER BY sk1, sk2, ...) AS [row_number] 
-    ///     FROM input as X 
+    ///     SELECT X.x1, X.x2, ..., X.xn, row_number() OVER (ORDER BY sk1, sk2, ...) AS [row_number]
+    ///     FROM input as X
     ///     ) as Y
-    /// WHERE Y.[row_number] > count 
+    /// WHERE Y.[row_number] > count
     /// ORDER BY sk1, sk2, ...
     /// </summary>
     /// <param name="e"></param>
@@ -2619,8 +2638,8 @@ namespace System.Data.SQLite.Linq
 
     /// <summary>
     /// Handles functions that are translated into TSQL operators.
-    /// The given function should have one or two arguments. 
-    /// Functions with one arguemnt are translated into 
+    /// The given function should have one or two arguments.
+    /// Functions with one arguemnt are translated into
     ///     op arg
     /// Functions with two arguments are translated into
     ///     arg0 op arg1
@@ -2691,7 +2710,7 @@ namespace System.Data.SQLite.Linq
       SqlBuilder result = new SqlBuilder();
       Debug.Assert(e.Arguments.Count == 0, "Canonical getdate function should have no arguments");
 
-      switch (sqlgen._manifest._dateFormat)
+      switch (sqlgen._manifest._dateTimeFormat)
       {
         case SQLiteDateFormats.Ticks:
           result.Append("(STRFTIME('%s', 'now') * 10000000 + 621355968000000000)");
@@ -2712,7 +2731,7 @@ namespace System.Data.SQLite.Linq
       SqlBuilder result = new SqlBuilder();
       Debug.Assert(e.Arguments.Count == 0, "Canonical getutcdate function should have no arguments");
 
-      switch (sqlgen._manifest._dateFormat)
+      switch (sqlgen._manifest._dateTimeFormat)
       {
         case SQLiteDateFormats.Ticks:
           result.Append("(STRFTIME('%s', 'now', 'utc') * 10000000 + 621355968000000000)");
@@ -2771,7 +2790,7 @@ namespace System.Data.SQLite.Linq
         result.Append(trans);
         result.Append("', ");
 
-        switch (sqlgen._manifest._dateFormat)
+        switch (sqlgen._manifest._dateTimeFormat)
         {
           case SQLiteDateFormats.Ticks:
             result.Append(String.Format("(({0} - 621355968000000000) / 10000000.0)", e.Arguments[1].Accept(sqlgen)));
@@ -2787,7 +2806,7 @@ namespace System.Data.SQLite.Linq
       {
         result.Append("CAST(SUBSTR(STRFTIME('%f', ");
 
-        switch (sqlgen._manifest._dateFormat)
+        switch (sqlgen._manifest._dateTimeFormat)
         {
           case SQLiteDateFormats.Ticks:
             result.Append(String.Format("(({0} - 621355968000000000) / 10000000.0)", e.Arguments[1].Accept(sqlgen)));
@@ -2814,7 +2833,7 @@ namespace System.Data.SQLite.Linq
       SqlBuilder result = new SqlBuilder();
       Debug.Assert(e.Arguments.Count == 2, "Canonical datepart functions should have exactly two arguments");
 
-      switch (sqlgen._manifest._dateFormat)
+      switch (sqlgen._manifest._dateTimeFormat)
       {
         case SQLiteDateFormats.Ticks:
           result.Append(String.Format("(STRFTIME('%s', JULIANDAY({1}) + ({0} / 86400.0)) * 10000000 + 621355968000000000)", e.Arguments[0].Accept(sqlgen), e.Arguments[1].Accept(sqlgen)));
@@ -2831,7 +2850,7 @@ namespace System.Data.SQLite.Linq
     }
 
     /// <summary>
-    /// DateSubtract(datetime1, datetime2) -> DATEDIFF ( seconds , startdate , enddate ) 
+    /// DateSubtract(datetime1, datetime2) -> DATEDIFF ( seconds , startdate , enddate )
     /// </summary>
     /// <param name="sqlgen"></param>
     /// <param name="e"></param>
@@ -2841,7 +2860,7 @@ namespace System.Data.SQLite.Linq
       SqlBuilder result = new SqlBuilder();
       Debug.Assert(e.Arguments.Count == 2, "Canonical datepart functions should have exactly two arguments");
 
-      switch (sqlgen._manifest._dateFormat)
+      switch (sqlgen._manifest._dateTimeFormat)
       {
         case SQLiteDateFormats.Ticks:
           result.Append(String.Format("CAST((({0} - 621355968000000000) / 10000000.0)  - (({1} - 621355968000000000) / 10000000.0) * 86400.0 AS integer)", e.Arguments[0].Accept(sqlgen), e.Arguments[1].Accept(sqlgen)));
@@ -2855,7 +2874,7 @@ namespace System.Data.SQLite.Linq
     }
 
     /// <summary>
-    /// Handler for canonical functions for extracting date parts. 
+    /// Handler for canonical functions for extracting date parts.
     /// For example:
     ///     Year(date) -> DATEPART( year, date)
     /// </summary>
@@ -2877,7 +2896,7 @@ namespace System.Data.SQLite.Linq
 
       Debug.Assert(e.Arguments.Count == 1, "Canonical datepart functions should have exactly one argument");
 
-      switch (sqlgen._manifest._dateFormat)
+      switch (sqlgen._manifest._dateTimeFormat)
       {
         case SQLiteDateFormats.Ticks:
           result.Append(String.Format("(({0} - 621355968000000000) / 10000000.0)", e.Arguments[0].Accept(sqlgen)));
@@ -3314,7 +3333,7 @@ namespace System.Data.SQLite.Linq
 
     /// <summary>
     /// Translates a list of SortClauses.
-    /// Used in the translation of OrderBy 
+    /// Used in the translation of OrderBy
     /// </summary>
     /// <param name="orderByClause">The SqlBuilder to which the sort keys should be appended</param>
     /// <param name="sortKeys"></param>
@@ -3425,6 +3444,25 @@ namespace System.Data.SQLite.Linq
       return selectStatement;
     }
 
+    /// <summary>
+    /// Determines if values of the specified <see cref="SQLiteDateFormats" />
+    /// require wrapping in single quotes.
+    /// </summary>
+    /// <param name="format">
+    /// The <see cref="SQLiteDateFormats" /> format.
+    /// </param>
+    /// <returns>
+    /// Non-zero if single quotes are required for a value in the specified
+    /// <see cref="SQLiteDateFormats" />.
+    /// </returns>
+    private static bool NeedSingleQuotes(
+        SQLiteDateFormats format
+        )
+    {
+        return format != SQLiteDateFormats.Ticks &&
+            format != SQLiteDateFormats.JulianDay &&
+            format != SQLiteDateFormats.UnixEpoch;
+    }
 
     /// <summary>
     /// Before we embed a string literal in a SQL string, we should
@@ -3439,8 +3477,8 @@ namespace System.Data.SQLite.Linq
     }
 
     /// <summary>
-    /// Returns the sql primitive/native type name. 
-    /// It will include size, precision or scale depending on type information present in the 
+    /// Returns the sql primitive/native type name.
+    /// It will include size, precision or scale depending on type information present in the
     /// type facets
     /// </summary>
     /// <param name="type"></param>
@@ -3567,7 +3605,7 @@ namespace System.Data.SQLite.Linq
 
       if (e.ExpressionKind == DbExpressionKind.Constant)
       {
-        //For constant expression we should not cast the value, 
+        //For constant expression we should not cast the value,
         // thus we don't go throught the default DbConstantExpression handling
         SqlBuilder sqlBuilder = new SqlBuilder();
         sqlBuilder.Append(((DbConstantExpression)e).Value.ToString());
@@ -3652,7 +3690,7 @@ namespace System.Data.SQLite.Linq
       {
         case DbExpressionKind.Distinct:
           return result.Top == null
-            // The projection after distinct may not project all 
+            // The projection after distinct may not project all
             // columns used in the Order By
               && result.OrderBy.IsEmpty;
 
@@ -3775,7 +3813,7 @@ namespace System.Data.SQLite.Linq
     /// SELECT *
     /// FROM {expression} as c
     /// </code>
-    /// 
+    ///
     /// DbLimitExpression needs to start the statement but not add the default columns
     /// </summary>
     /// <param name="e"></param>
@@ -3961,20 +3999,46 @@ namespace System.Data.SQLite.Linq
       }
     }
 
-    static string ByteArrayToBinaryString(Byte[] binaryArray)
+    /// <summary>
+    /// Appends the literal BLOB string representation of the specified
+    /// byte array to the <see cref="SqlBuilder" />.
+    /// </summary>
+    /// <param name="bytes">
+    /// The byte array to be formatted as a literal BLOB string.
+    /// </param>
+    /// <param name="builder">
+    /// The <see cref="SqlBuilder" /> object to use.  If null, an exception
+    /// will be thrown.
+    /// </param>
+    private static void ToBlobLiteral(
+        byte[] bytes,
+        SqlBuilder builder
+        )
     {
-      StringBuilder sb = new StringBuilder(binaryArray.Length * 2);
-      for (int i = 0; i < binaryArray.Length; i++)
-      {
-        sb.Append(hexDigits[(binaryArray[i] & 0xF0) >> 4]).Append(hexDigits[binaryArray[i] & 0x0F]);
-      }
-      return sb.ToString();
+        if (builder == null)
+            throw new ArgumentNullException("builder");
+
+        if (bytes == null)
+        {
+            builder.Append("NULL"); /* TODO: Reasonable? */
+            return;
+        }
+
+        builder.Append(" X'");
+
+        for (int index = 0; index < bytes.Length; index++)
+        {
+            builder.Append(hexDigits[(bytes[index] & 0xF0) >> 4]);
+            builder.Append(hexDigits[bytes[index] & 0x0F]);
+        }
+
+        builder.Append("' ");
     }
 
     /// <summary>
     /// Helper method for the Group By visitor
     /// Returns true if at least one of the aggregates in the given list
-    /// has an argument that is not a <see cref="DbPropertyExpression"/> 
+    /// has an argument that is not a <see cref="DbPropertyExpression"/>
     /// over <see cref="DbVariableReferenceExpression"/>
     /// </summary>
     /// <param name="aggregates"></param>
@@ -3993,7 +4057,7 @@ namespace System.Data.SQLite.Linq
     }
 
     /// <summary>
-    /// Determines whether the given expression is a <see cref="DbPropertyExpression"/> 
+    /// Determines whether the given expression is a <see cref="DbPropertyExpression"/>
     /// over <see cref="DbVariableReferenceExpression"/>
     /// </summary>
     /// <param name="expression"></param>
@@ -4014,7 +4078,7 @@ namespace System.Data.SQLite.Linq
     }
 
     #endregion
-    
+
     private class KeyFieldExpressionComparer : IEqualityComparer<DbExpression>
     {
       // Fields

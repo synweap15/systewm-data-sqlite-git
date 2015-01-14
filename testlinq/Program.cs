@@ -6,14 +6,18 @@
  ********************************************************/
 
 using System;
+using System.Data.Common;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Transactions;
 
 #if USE_ENTITY_FRAMEWORK_6
+using System.Data.Entity.Core.EntityClient;
 using System.Data.Entity.Core.Objects;
 #else
+using System.Data.EntityClient;
 using System.Data.Objects;
 #endif
 
@@ -61,6 +65,16 @@ namespace testlinq
               case "datetime":
                   {
                       return DateTimeTest();
+                  }
+              case "datetime2":
+                  {
+                      string dateTimeFormat = null;
+
+                      if (args.Length > 1)
+                          dateTimeFormat = args[1];
+
+                      DateTimeTest2(dateTimeFormat);
+                      return 0;
                   }
               case "skip":
                   {
@@ -130,12 +144,71 @@ namespace testlinq
                   {
                       return UpdateTest();
                   }
+              case "binaryguid":
+                  {
+                      bool value = false;
+
+                      if (args.Length > 1)
+                      {
+                          if (!bool.TryParse(args[1], out value))
+                          {
+                              Console.WriteLine(
+                                  "cannot parse \"{0}\" as boolean",
+                                  args[1]);
+
+                              return 1;
+                          }
+                      }
+
+                      return BinaryGuidTest(value);
+                  }
               default:
                   {
                       Console.WriteLine("unknown test \"{0}\"", arg);
                       return 1;
                   }
           }
+      }
+
+      /// <summary>
+      /// Attempts to obtain the underlying store connection
+      /// (a <see cref="DbConnection" />) from the specified
+      /// <see cref="EntityConnection" />.
+      /// </summary>
+      /// <param name="entityConnection">
+      /// The <see cref="EntityConnection" /> to use.
+      /// </param>
+      /// <returns>
+      /// The <see cref="DbConnection" /> -OR- null if it
+      /// cannot be determined.
+      /// </returns>
+      private static DbConnection GetStoreConnection(
+          EntityConnection entityConnection
+          )
+      {
+          //
+          // NOTE: No entity connection, no store connection.
+          //
+          if (entityConnection == null)
+              return null;
+
+          //
+          // HACK: We need the underlying store connection and
+          //       the legacy versions of the .NET Framework do
+          //       not expose it; therefore, attempt to grab it
+          //       by force.
+          //
+          FieldInfo fieldInfo = typeof(EntityConnection).GetField(
+              "_storeConnection", BindingFlags.Instance |
+              BindingFlags.NonPublic);
+
+          //
+          // NOTE: If the field is not found, just return null.
+          //
+          if (fieldInfo == null)
+              return null;
+
+          return fieldInfo.GetValue(entityConnection) as DbConnection;
       }
 
       //
@@ -480,6 +553,36 @@ namespace testlinq
           return 0;
       }
 
+      //
+      // NOTE: Used to test the BinaryGUID fix (i.e. BLOB literal formatting
+      //       of GUID values when the BinaryGUID connection property has been
+      //       enabled).
+      //
+      private static int BinaryGuidTest(bool binaryGuid)
+      {
+          Environment.SetEnvironmentVariable(
+              "AppendManifestToken_SQLiteProviderManifest",
+              String.Format(";BinaryGUID={0};", binaryGuid));
+
+          using (northwindEFEntities db = new northwindEFEntities())
+          {
+              string sql = "SELECT VALUE GUID " +
+                  "'2d3d2d3d-2d3d-2d3d-2d3d-2d3d2d3d2d3d' " +
+                  "FROM Orders AS o WHERE o.OrderID = 10248;";
+
+              ObjectQuery<string> query = db.CreateQuery<string>(sql);
+
+              foreach (string s in query)
+                  Console.WriteLine(s);
+          }
+
+          Environment.SetEnvironmentVariable(
+              "AppendManifestToken_SQLiteProviderManifest",
+              null);
+
+          return 0;
+      }
+
       private static int DateTimeTest()
       {
           using (northwindEFEntities db = new northwindEFEntities())
@@ -489,6 +592,39 @@ namespace testlinq
               int c2 = db.Orders.Where(i => i.OrderDate == dateTime).Count();
               return c1 == c2 ? 0 : 1;
           }
+      }
+
+      private static void DateTimeTest2(
+          string dateTimeFormat
+          )
+      {
+          TraceListener listener = new ConsoleTraceListener();
+
+          Trace.Listeners.Add(listener);
+          Environment.SetEnvironmentVariable("SQLite_ForceLogPrepare", "1");
+
+          if (dateTimeFormat != null)
+          {
+              Environment.SetEnvironmentVariable(
+                  "AppendManifestToken_SQLiteProviderManifest",
+                  String.Format(";DateTimeFormat={0};", dateTimeFormat));
+          }
+
+          using (northwindEFEntities db = new northwindEFEntities())
+          {
+              db.Orders.Where(i => i.OrderDate <
+                  new DateTime(1997, 1, 1, 0, 0, 0, DateTimeKind.Local)).Count();
+          }
+
+          if (dateTimeFormat != null)
+          {
+              Environment.SetEnvironmentVariable(
+                  "AppendManifestToken_SQLiteProviderManifest",
+                  null);
+          }
+
+          Environment.SetEnvironmentVariable("SQLite_ForceLogPrepare", null);
+          Trace.Listeners.Remove(listener);
       }
 
     private static int OldTests()

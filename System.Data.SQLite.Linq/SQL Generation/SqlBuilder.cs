@@ -101,6 +101,10 @@ namespace System.Data.SQLite.Linq
             {
               sqlFragment.WriteSql(writer, sqlGenerator);
             }
+            else if (o is char)
+            {
+              writer.Write((char)o);
+            }
             else
             {
               throw new InvalidOperationException();
