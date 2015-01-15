@@ -1204,7 +1204,7 @@ namespace test
         }
     }
 
-    internal long SimpleRTree(DbConnection cnn)
+    internal void SimpleRTree(DbConnection cnn)
     {
         using (DbCommand cmd = cnn.CreateCommand())
         {
@@ -1218,15 +1218,21 @@ namespace test
             cmd.ExecuteNonQuery();
         }
 
-        long count;
-
         using (DbCommand cmd = cnn.CreateCommand())
         {
             cmd.CommandText = "SELECT COUNT(*) FROM TestRTree;";
-            count = (long)cmd.ExecuteScalar();
+
+            if ((long)cmd.ExecuteScalar() != 1)
+                throw new Exception("COUNT(*) without WHERE should return one row");
         }
 
-        return count;
+        using (DbCommand cmd = cnn.CreateCommand())
+        {
+            cmd.CommandText = "SELECT COUNT(*) FROM TestRTree WHERE minx > 1 AND maxx < 9 AND miny < 3 AND maxy > 7;";
+
+            if ((long)cmd.ExecuteScalar() != 1)
+                throw new Exception("COUNT(*) with WHERE should return one row");
+        }
     }
   }
 }
