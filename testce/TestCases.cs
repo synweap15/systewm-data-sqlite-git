@@ -301,6 +301,10 @@ namespace test
       catch (Exception) { frm.WriteLine("FAIL - MultipleThreadStress"); failed++; }
 
       total++;
+      try { SimpleRTree(cnn); frm.WriteLine("SUCCESS - SimpleRTree"); passed++; }
+      catch (Exception) { frm.WriteLine("FAIL - SimpleRTree"); failed++; }
+
+      total++;
       try { DropTable(cnn); frm.WriteLine("SUCCESS - DropTable"); passed++; }
       catch (Exception) { frm.WriteLine("FAIL - DropTable"); failed++; }
 
@@ -534,7 +538,7 @@ namespace test
     internal void DropTable(DbConnection cnn)
     {
       string[] tables = {
-        "TestCase", "keyinfotest", "datatypetest", "TestThreads"
+        "TestCase", "keyinfotest", "datatypetest", "TestThreads", "TestRTree"
       };
       foreach (string table in tables)
       {
@@ -1198,6 +1202,31 @@ namespace test
                 }
             }
         }
+    }
+
+    internal long SimpleRTree(DbConnection cnn)
+    {
+        using (DbCommand cmd = cnn.CreateCommand())
+        {
+            cmd.CommandText = "CREATE VIRTUAL TABLE TestRTree USING RTREE(id, minx, maxx, miny, maxy);";
+            cmd.ExecuteNonQuery();
+        }
+
+        using (DbCommand cmd = cnn.CreateCommand())
+        {
+            cmd.CommandText = "INSERT INTO TestRTree VALUES(1, 2, 8, 2, 8);";
+            cmd.ExecuteNonQuery();
+        }
+
+        long count;
+
+        using (DbCommand cmd = cnn.CreateCommand())
+        {
+            cmd.CommandText = "SELECT COUNT(*) FROM TestRTree;";
+            count = (long)cmd.ExecuteScalar();
+        }
+
+        return count;
     }
   }
 }
