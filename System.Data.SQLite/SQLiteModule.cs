@@ -535,7 +535,21 @@ namespace System.Data.SQLite
         public string GetString()
         {
             if (pValue == IntPtr.Zero) return null;
-            return SQLiteString.StringFromUtf8IntPtr(pValue, GetBytes());
+
+            int length;
+            IntPtr pString;
+
+#if SQLITE_STANDARD
+            length = UnsafeNativeMethods.sqlite3_value_bytes(pValue);
+            pString = UnsafeNativeMethods.sqlite3_value_text(pValue);
+#else
+            length = 0;
+
+            pString = UnsafeNativeMethods.sqlite3_value_text_interop(
+                pValue, ref length);
+#endif
+
+            return SQLiteString.StringFromUtf8IntPtr(pString, length);
         }
 
         ///////////////////////////////////////////////////////////////////////
@@ -550,7 +564,9 @@ namespace System.Data.SQLite
         public byte[] GetBlob()
         {
             if (pValue == IntPtr.Zero) return null;
-            return SQLiteBytes.FromIntPtr(pValue, GetBytes());
+
+            return SQLiteBytes.FromIntPtr(
+                UnsafeNativeMethods.sqlite3_value_blob(pValue), GetBytes());
         }
 
         ///////////////////////////////////////////////////////////////////////

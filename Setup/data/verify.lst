@@ -742,8 +742,10 @@ set sds_manifests(source) {
   Tests/tkt-7e3fa93744.eagle
   Tests/tkt-84718e79fa.eagle
   Tests/tkt-8554170e09.eagle
+  Tests/tkt-85b824b736.eagle
   Tests/tkt-8b7d179c3c.eagle
   Tests/tkt-8c3bee31c8.eagle
+  Tests/tkt-8d928c3e88.eagle
   Tests/tkt-996d13cd87.eagle
   Tests/tkt-9ba9346f75.eagle
   Tests/tkt-aba4549801.eagle
