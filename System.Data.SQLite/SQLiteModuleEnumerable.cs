@@ -296,20 +296,8 @@ namespace System.Data.SQLite
     ///   }
     /// </code>
     /// </summary>
-    public class SQLiteModuleEnumerable : SQLiteModuleNoop /* NOT SEALED */
+    public class SQLiteModuleEnumerable : SQLiteModuleCommon /* NOT SEALED */
     {
-        #region Private Constants
-        /// <summary>
-        /// The CREATE TABLE statement used to declare the schema for the
-        /// virtual table.
-        /// </summary>
-        private static readonly string declareSql = String.Format(
-            CultureInfo.CurrentCulture, "CREATE TABLE {0}(x);",
-            typeof(SQLiteModuleEnumerable).Name);
-        #endregion
-
-        ///////////////////////////////////////////////////////////////////////
-
         #region Private Data
         /// <summary>
         /// The <see cref="IEnumerable" /> instance containing the backing data
@@ -385,42 +373,6 @@ namespace System.Data.SQLite
 
         #region Protected Methods
         /// <summary>
-        /// Determines the SQL statement used to declare the virtual table.
-        /// This method should be overridden in derived classes if they require
-        /// a custom virtual table schema.
-        /// </summary>
-        /// <returns>
-        /// The SQL statement used to declare the virtual table -OR- null if it
-        /// cannot be determined.
-        /// </returns>
-        protected virtual string GetSqlForDeclareTable()
-        {
-            return declareSql;
-        }
-
-        ///////////////////////////////////////////////////////////////////////
-
-        /// <summary>
-        /// Sets the table error message to one that indicates the virtual
-        /// table cursor is of the wrong type.
-        /// </summary>
-        /// <param name="cursor">
-        /// The <see cref="SQLiteVirtualTableCursor" /> object instance.
-        /// </param>
-        /// <returns>
-        /// The value of <see cref="SQLiteErrorCode.Error" />.
-        /// </returns>
-        protected virtual SQLiteErrorCode CursorTypeMismatchError(
-            SQLiteVirtualTableCursor cursor
-            )
-        {
-            SetCursorError(cursor, "not an \"enumerator\" cursor");
-            return SQLiteErrorCode.Error;
-        }
-
-        ///////////////////////////////////////////////////////////////////////
-
-        /// <summary>
         /// Sets the table error message to one that indicates the virtual
         /// table cursor has no current row.
         /// </summary>
@@ -436,96 +388,6 @@ namespace System.Data.SQLite
         {
             SetCursorError(cursor, "already hit end of enumerator");
             return SQLiteErrorCode.Error;
-        }
-
-        ///////////////////////////////////////////////////////////////////////
-
-        /// <summary>
-        /// Determines the string to return as the column value for the object
-        /// instance value.
-        /// </summary>
-        /// <param name="cursor">
-        /// The <see cref="SQLiteVirtualTableCursor" /> object instance
-        /// associated with the previously opened virtual table cursor to be
-        /// used.
-        /// </param>
-        /// <param name="value">
-        /// The object instance to return a string representation for.
-        /// </param>
-        /// <returns>
-        /// The string representation of the specified object instance or null
-        /// upon failure.
-        /// </returns>
-        protected virtual string GetStringFromObject(
-            SQLiteVirtualTableCursor cursor,
-            object value
-            )
-        {
-            if (value == null)
-                return null;
-
-            if (value is string)
-                return (string)value;
-
-            return value.ToString();
-        }
-
-        ///////////////////////////////////////////////////////////////////////
-
-        /// <summary>
-        /// Constructs an <see cref="Int64" /> unique row identifier from two
-        /// <see cref="Int32" /> values.  The first <see cref="Int32" /> value
-        /// must contain the row sequence number for the current row and the
-        /// second value must contain the hash code of the enumerator value
-        /// for the current row.
-        /// </summary>
-        /// <param name="rowIndex">
-        /// The integer row sequence number for the current row.
-        /// </param>
-        /// <param name="hashCode">
-        /// The hash code of the enumerator value for the current row.
-        /// </param>
-        /// <returns>
-        /// The unique row identifier or zero upon failure.
-        /// </returns>
-        protected virtual long MakeRowId(
-            int rowIndex,
-            int hashCode
-            )
-        {
-            long result = rowIndex;
-
-            result <<= 32; /* typeof(int) bits */
-            result |= (long)(uint)hashCode;
-
-            return result;
-        }
-
-        ///////////////////////////////////////////////////////////////////////
-
-        /// <summary>
-        /// Determines the unique row identifier for the current row.
-        /// </summary>
-        /// <param name="cursor">
-        /// The <see cref="SQLiteVirtualTableCursor" /> object instance
-        /// associated with the previously opened virtual table cursor to be
-        /// used.
-        /// </param>
-        /// <param name="value">
-        /// The object instance to return a unique row identifier for.
-        /// </param>
-        /// <returns>
-        /// The unique row identifier or zero upon failure.
-        /// </returns>
-        protected virtual long GetRowIdFromObject(
-            SQLiteVirtualTableCursor cursor,
-            object value
-            )
-        {
-            int rowIndex = (cursor != null) ? cursor.GetRowIndex() : 0;
-            int hashCode = SQLiteMarshal.GetHashCode(value, objectIdentity);
-
-            return MakeRowId(rowIndex, hashCode);
         }
         #endregion
 
@@ -741,7 +603,10 @@ namespace System.Data.SQLite
                 cursor as SQLiteVirtualTableCursorEnumerator;
 
             if (enumeratorCursor == null)
-                return CursorTypeMismatchError(cursor);
+            {
+                return CursorTypeMismatchError(cursor,
+                    typeof(SQLiteVirtualTableCursorEnumerator));
+            }
 
             enumeratorCursor.Close();
             return SQLiteErrorCode.Ok;
@@ -780,7 +645,10 @@ namespace System.Data.SQLite
                 cursor as SQLiteVirtualTableCursorEnumerator;
 
             if (enumeratorCursor == null)
-                return CursorTypeMismatchError(cursor);
+            {
+                return CursorTypeMismatchError(cursor,
+                    typeof(SQLiteVirtualTableCursorEnumerator));
+            }
 
             enumeratorCursor.Filter(indexNumber, indexString, values);
             enumeratorCursor.Reset(); /* NO RESULT */
@@ -810,7 +678,10 @@ namespace System.Data.SQLite
                 cursor as SQLiteVirtualTableCursorEnumerator;
 
             if (enumeratorCursor == null)
-                return CursorTypeMismatchError(cursor);
+            {
+                return CursorTypeMismatchError(cursor,
+                    typeof(SQLiteVirtualTableCursorEnumerator));
+            }
 
             if (enumeratorCursor.EndOfEnumerator)
                 return CursorEndOfEnumeratorError(cursor);
@@ -840,7 +711,10 @@ namespace System.Data.SQLite
                 cursor as SQLiteVirtualTableCursorEnumerator;
 
             if (enumeratorCursor == null)
-                return ResultCodeToEofResult(CursorTypeMismatchError(cursor));
+            {
+                return ResultCodeToEofResult(CursorTypeMismatchError(
+                    cursor, typeof(SQLiteVirtualTableCursorEnumerator)));
+            }
 
             return enumeratorCursor.EndOfEnumerator;
         }
@@ -874,7 +748,10 @@ namespace System.Data.SQLite
                 cursor as SQLiteVirtualTableCursorEnumerator;
 
             if (enumeratorCursor == null)
-                return CursorTypeMismatchError(cursor);
+            {
+                return CursorTypeMismatchError(cursor,
+                    typeof(SQLiteVirtualTableCursorEnumerator));
+            }
 
             if (enumeratorCursor.EndOfEnumerator)
                 return CursorEndOfEnumeratorError(cursor);
@@ -914,7 +791,10 @@ namespace System.Data.SQLite
                 cursor as SQLiteVirtualTableCursorEnumerator;
 
             if (enumeratorCursor == null)
-                return CursorTypeMismatchError(cursor);
+            {
+                return CursorTypeMismatchError(cursor,
+                    typeof(SQLiteVirtualTableCursorEnumerator));
+            }
 
             if (enumeratorCursor.EndOfEnumerator)
                 return CursorEndOfEnumeratorError(cursor);
@@ -1304,7 +1184,10 @@ namespace System.Data.SQLite.Generic
                 cursor as SQLiteVirtualTableCursorEnumerator<T>;
 
             if (enumeratorCursor == null)
-                return CursorTypeMismatchError(cursor);
+            {
+                return CursorTypeMismatchError(cursor,
+                    typeof(SQLiteVirtualTableCursorEnumerator));
+            }
 
             if (enumeratorCursor.EndOfEnumerator)
                 return CursorEndOfEnumeratorError(cursor);

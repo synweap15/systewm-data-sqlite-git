@@ -1257,11 +1257,51 @@ runTest {test vtab-1.7 {virtual table xBestIndex marshalling (1)} -setup {
 
   set code [compileCSharpWith [subst {
     using System;
+    using System.Collections;
     using System.Data.SQLite;
     using Eagle._Containers.Public;
 
     namespace _Dynamic${id}
     {
+      public sealed class SQLiteModuleTest${id} : SQLiteModuleEnumerable
+      {
+        public string Result;
+
+        ///////////////////////////////////////////////////////////////////////
+
+        public SQLiteModuleTest${id}(
+          string name,
+          IEnumerable enumerable
+          )
+          : base(name, enumerable)
+        {
+          // do nothing.
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+
+        //
+        // BUGFIX: This method helps verify ticket [56f511d268] is fixed.
+        //
+        public override SQLiteErrorCode BestIndex(
+          SQLiteVirtualTable table,
+          SQLiteIndex index
+          )
+        {
+          if (index.Outputs.ConstraintUsages.Length > 0)
+          {
+            if (index.Outputs.ConstraintUsages\[0\] == null)
+              throw new ArgumentException("ConstraintUsages\[0\] is null");
+            else
+              Result = "ConstraintUsages is OK";
+          }
+
+          return base.BestIndex(table, index);
+        }
+      }
+
+      /////////////////////////////////////////////////////////////////////////
+
       public static class Test${id}
       {
         public static StringList GetList(params string\[\] strings)
@@ -1273,8 +1313,10 @@ runTest {test vtab-1.7 {virtual table xBestIndex marshalling (1)} -setup {
           {
             connection.Open();
 
-            connection.CreateModule(new SQLiteModuleEnumerable(
-              "mod${id}", strings));
+            SQLiteModuleTest${id} module = new SQLiteModuleTest${id}(
+                "mod${id}", strings);
+
+            connection.CreateModule(module);
 
             using (SQLiteCommand command = connection.CreateCommand())
             {
@@ -1299,6 +1341,7 @@ runTest {test vtab-1.7 {virtual table xBestIndex marshalling (1)} -setup {
               }
             }
 
+            result.Add(module.Result);
             connection.Close();
           }
 
@@ -1329,7 +1372,7 @@ runTest {test vtab-1.7 {virtual table xBestIndex marshalling (1)} -setup {
 defineConstant.System.Data.SQLite.INTEROP_VIRTUAL_TABLE compileCSharp} -match \
 regexp -result [string map [list \n \r\n] {^Ok\
 System#CodeDom#Compiler#CompilerResults#\d+ \{\} 0 \{0 5 two three one 5\.0\
-4\}$}]}
+4 \{ConstraintUsages is OK\}\}$}]}
 
 ###############################################################################
 
@@ -1359,11 +1402,51 @@ runTest {test vtab-1.8 {virtual table xBestIndex marshalling (2)} -setup {
 
   set code [compileCSharpWith [subst {
     using System;
+    using System.Collections;
     using System.Data.SQLite;
     using Eagle._Containers.Public;
 
     namespace _Dynamic${id}
     {
+      public sealed class SQLiteModuleTest${id} : SQLiteModuleEnumerable
+      {
+        public string Result;
+
+        ///////////////////////////////////////////////////////////////////////
+
+        public SQLiteModuleTest${id}(
+          string name,
+          IEnumerable enumerable
+          )
+          : base(name, enumerable)
+        {
+          // do nothing.
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+
+        //
+        // BUGFIX: This method helps verify ticket [56f511d268] is fixed.
+        //
+        public override SQLiteErrorCode BestIndex(
+          SQLiteVirtualTable table,
+          SQLiteIndex index
+          )
+        {
+          if (index.Outputs.ConstraintUsages.Length > 0)
+          {
+            if (index.Outputs.ConstraintUsages\[0\] == null)
+              throw new ArgumentException("ConstraintUsages\[0\] is null");
+            else
+              Result = "ConstraintUsages is OK";
+          }
+
+          return base.BestIndex(table, index);
+        }
+      }
+
+      /////////////////////////////////////////////////////////////////////////
+
       public static class Test${id}
       {
         public static StringList GetList(params string\[\] strings)
@@ -1375,8 +1458,10 @@ runTest {test vtab-1.8 {virtual table xBestIndex marshalling (2)} -setup {
           {
             connection.Open();
 
-            connection.CreateModule(new SQLiteModuleEnumerable(
-              "mod${id}", strings));
+            SQLiteModuleTest${id} module = new SQLiteModuleTest${id}(
+                "mod${id}", strings);
+
+            connection.CreateModule(module);
 
             using (SQLiteCommand command = connection.CreateCommand())
             {
@@ -1401,6 +1486,7 @@ runTest {test vtab-1.8 {virtual table xBestIndex marshalling (2)} -setup {
               }
             }
 
+            result.Add(module.Result);
             connection.Close();
           }
 
@@ -1430,7 +1516,8 @@ runTest {test vtab-1.8 {virtual table xBestIndex marshalling (2)} -setup {
 {eagle monoBug28 command.sql compile.DATA SQLite System.Data.SQLite\
 defineConstant.System.Data.SQLite.INTEROP_VIRTUAL_TABLE compileCSharp} -match \
 regexp -result [string map [list \n \r\n] {^Ok\
-System#CodeDom#Compiler#CompilerResults#\d+ \{\} 0 \{0 5 one three\}$}]}
+System#CodeDom#Compiler#CompilerResults#\d+ \{\} 0 \{0 5 one three\
+\{ConstraintUsages is OK\}\}$}]}
 
 ###############################################################################
 

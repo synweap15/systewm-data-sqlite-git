@@ -47,6 +47,7 @@
     <ul>
       <li>Updated to <a href="http://www.sqlite.org/releaselog/3_8_8_1.html">SQLite 3.8.8.1</a>.</li>
       <li>Make sure SQL statements generated for DbUpdateCommandTree objects are properly delimited.</li>
+      <li>Make sure SQLiteIndexOutputs.ConstraintUsages instances are created prior to calling ISQLiteManagedModule.BestIndex. Fix for <a href="http://system.data.sqlite.org/index.html/info/56f511d268">[56f511d268]</a>.</li>
       <li>Various minor performance enhancements to the SQLiteDataReader class. Pursuant to <a href="http://system.data.sqlite.org/index.html/info/e122d26e70">[e122d26e70]</a>.</li>
       <li>Defer disposing of connections created by the static SQLiteCommand.Execute method when a data reader is returned. Fix for <a href="http://system.data.sqlite.org/index.html/info/daeaf3150a">[daeaf3150a]</a>.</li>
       <li>Wrap SELECT statements in parenthesis if they have an ORDER BY, LIMIT, or OFFSET clause and a compound operator is involved. Fix for <a href="http://system.data.sqlite.org/index.html/info/0a32885109">[0a32885109]</a>.</li>

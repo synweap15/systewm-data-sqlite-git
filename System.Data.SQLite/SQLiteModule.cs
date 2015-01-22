@@ -829,6 +829,16 @@ namespace System.Data.SQLite
     {
         #region Internal Constructors
         /// <summary>
+        /// Constructs a default instance of this class.
+        /// </summary>
+        internal SQLiteIndexConstraintUsage()
+        {
+            // do nothing.
+        }
+
+        //////////////////////////////////////////////////////////////////////
+
+        /// <summary>
         /// Constructs an instance of this class using the specified native
         /// sqlite3_index_constraint_usage structure.
         /// </summary>
@@ -961,6 +971,13 @@ namespace System.Data.SQLite
         internal SQLiteIndexOutputs(int nConstraint)
         {
             constraintUsages = new SQLiteIndexConstraintUsage[nConstraint];
+
+            //
+            // BUGFIX: Create the [empty] constraint usages now so they can be
+            //         used by the xBestIndex callback.
+            //
+            for (int iConstraint = 0; iConstraint < nConstraint; iConstraint++)
+                constraintUsages[iConstraint] = new SQLiteIndexConstraintUsage();
         }
         #endregion
 

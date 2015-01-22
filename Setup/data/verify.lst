@@ -531,6 +531,7 @@ set sds_manifests(source) {
   System.Data.SQLite/SQLiteLog.cs
   System.Data.SQLite/SQLiteMetaDataCollectionNames.cs
   System.Data.SQLite/SQLiteModule.cs
+  System.Data.SQLite/SQLiteModuleCommon.cs
   System.Data.SQLite/SQLiteModuleEnumerable.cs
   System.Data.SQLite/SQLiteModuleNoop.cs
   System.Data.SQLite/SQLiteParameter.cs
