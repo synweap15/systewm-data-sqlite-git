@@ -36,6 +36,10 @@ namespace System.Data.SQLite
             "INTEROP_EXTENSION_FUNCTIONS",
 #endif
 
+#if INTEROP_INCLUDE_SEE
+            "INTEROP_INCLUDE_SEE",
+#endif
+
 #if INTEROP_LEGACY_CLOSE
             "INTEROP_LEGACY_CLOSE",
 #endif

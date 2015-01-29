@@ -30,9 +30,11 @@
 extern int RegisterExtensionFunctions(sqlite3 *db);
 #endif
 
-#ifdef SQLITE_OS_WIN
+#if defined(SQLITE_OS_WIN)
 #if defined(INTEROP_CODEC)
 #include "crypt.c"
+#elif defined(INTEROP_INCLUDE_SEE)
+#include "../ext/see.c"
 #endif
 
 #include "interop.h"
@@ -87,6 +89,9 @@ static const char * const azInteropCompileOpt[] = {
 #endif
 #ifdef INTEROP_EXTENSION_FUNCTIONS
   "EXTENSION_FUNCTIONS",
+#endif
+#ifdef INTEROP_INCLUDE_SEE
+  "INCLUDE_SEE",
 #endif
 #ifdef INTEROP_LEGACY_CLOSE
   "LEGACY_CLOSE",
@@ -1054,4 +1059,4 @@ SQLITE_API int interop_test_extension_init(
   }
   return rc;
 }
-#endif
+#endif /* defined(SQLITE_OS_WIN) */

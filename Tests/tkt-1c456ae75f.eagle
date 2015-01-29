@@ -51,8 +51,8 @@ runTest {test tkt-1c456ae75f-1.1 {unencrypted database, hex password} -setup {
   cleanupDb $fileName
 
   unset -nocomplain error result db fileName
-} -constraints {eagle defineConstant.System.Data.SQLite.INTEROP_CODEC monoBug28\
-command.sql compile.DATA SQLite System.Data.SQLite} -match regexp -result {^1\
+} -constraints {eagle System.Data.SQLite.Encryption monoBug28 command.sql\
+compile.DATA SQLite System.Data.SQLite} -match regexp -result {^1\
 \{System\.Data\.SQLite\.SQLiteException \(0x80004005\): file is encrypted or is\
 not a database.*?\} 1 \{System\.Data\.SQLite\.SQLiteException \(0x80004005\):\
 file is encrypted or is not a database.*?\} 0 1 0 2$}}
@@ -91,8 +91,8 @@ runTest {test tkt-1c456ae75f-1.2 {database, hex password} -setup {
   cleanupDb $fileName
 
   unset -nocomplain error result db fileName
-} -constraints {eagle defineConstant.System.Data.SQLite.INTEROP_CODEC monoBug28\
-command.sql compile.DATA SQLite System.Data.SQLite} -result {0 1 0 1 0 1 0 3}}
+} -constraints {eagle System.Data.SQLite.Encryption monoBug28 command.sql\
+compile.DATA SQLite System.Data.SQLite} -result {0 1 0 1 0 1 0 3}}
 
 ###############################################################################
 
@@ -128,8 +128,8 @@ runTest {test tkt-1c456ae75f-1.3 {database, wrong hex password} -setup {
   cleanupDb $fileName
 
   unset -nocomplain error result db fileName
-} -constraints {eagle defineConstant.System.Data.SQLite.INTEROP_CODEC monoBug28\
-command.sql compile.DATA SQLite System.Data.SQLite} -match regexp -result {^1\
+} -constraints {eagle System.Data.SQLite.Encryption monoBug28 command.sql\
+compile.DATA SQLite System.Data.SQLite} -match regexp -result {^1\
 \{System\.Data\.SQLite\.SQLiteException \(0x80004005\): file is encrypted or is\
 not a database.*?\} 1 \{System\.Data\.SQLite\.SQLiteException \(0x80004005\):\
 file is encrypted or is not a database.*?\} 0 1 0 2$}}
@@ -183,8 +183,8 @@ runTest {test tkt-1c456ae75f-1.4 {database, hex password via builder} -setup {
   cleanupDb $fileName; # NOTE: After object disposal.
 
   unset -nocomplain connectionStringBuilder error result db fileName
-} -constraints {eagle defineConstant.System.Data.SQLite.INTEROP_CODEC monoBug28\
-command.sql compile.DATA SQLite System.Data.SQLite} -result {0 1 0 1 0 1 0 3}}
+} -constraints {eagle System.Data.SQLite.Encryption monoBug28 command.sql\
+compile.DATA SQLite System.Data.SQLite} -result {0 1 0 1 0 1 0 3}}
 
 ###############################################################################
 

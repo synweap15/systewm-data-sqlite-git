@@ -473,7 +473,7 @@ namespace System.Data.SQLite
     /// </summary>
     private string _dataSource;
 
-#if INTEROP_CODEC
+#if INTEROP_CODEC || INTEROP_INCLUDE_SEE
     /// <summary>
     /// Temporary password storage, emptied after the database has been opened
     /// </summary>
@@ -2579,7 +2579,7 @@ namespace System.Data.SQLite
 
         _binaryGuid = SQLiteConvert.ToBoolean(FindKey(opts, "BinaryGUID", DefaultBinaryGUID.ToString()));
 
-#if INTEROP_CODEC
+#if INTEROP_CODEC || INTEROP_INCLUDE_SEE
         string hexPassword = FindKey(opts, "HexPassword", DefaultHexPassword);
 
         if (!String.IsNullOrEmpty(hexPassword))
@@ -3313,7 +3313,7 @@ namespace System.Data.SQLite
       _sql.LogMessage((SQLiteErrorCode)iErrCode, zMessage);
     }
 
-#if INTEROP_CODEC
+#if INTEROP_CODEC || INTEROP_INCLUDE_SEE
     /// <summary>
     /// Change the password (or assign a password) to an open database.
     /// </summary>

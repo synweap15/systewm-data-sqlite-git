@@ -81,7 +81,12 @@ namespace test
         throw new InconclusiveException("Not a SQLite database");
     }
 
-#if INTEROP_CODEC
+/*
+ * NOTE: Using SEE for this particular test case is unsupported because we have
+ *       no easy way of executing the necessary SQL beforehand.
+ */
+
+#if INTEROP_CODEC // || INTEROP_INCLUDE_SEE
     /// <summary>
     /// Tests changing password on an encrypted database.
     /// </summary>

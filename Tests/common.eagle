@@ -781,6 +781,23 @@ namespace eval ::Eagle {
       }
     }
 
+    proc getExecuteOnSetup {} {
+      if {[info exists ::execute_on_setup] && \
+          [string length $::execute_on_setup] > 0} then {
+        #
+        # NOTE: Return the configured SQL to execute during the connection
+        #       setup procedure (i.e. for every test database connection).
+        #
+        return $::execute_on_setup
+      } else {
+        #
+        # NOTE: By default, there is no SQL to execute during the connection
+        #       setup procedure (i.e. for every test database connection).
+        #
+        return ""
+      }
+    }
+
     proc getTestOverridesPreamble { {extraVarNames ""} } {
       set varNames [list]
 
@@ -1817,6 +1834,23 @@ namespace eval ::Eagle {
       if {$temporary && ![info exists ::no(setTemporaryDirectory)]} then {
         sql execute $db [appendArgs \
             "PRAGMA temp_store_directory = \"" [getTemporaryDirectory] \"\;]
+      }
+
+      #
+      # NOTE: Perform any extra per-connection setup for the newly opened
+      #       database now unless our caller forbids it.
+      #
+      set executeOnSetup [getExecuteOnSetup]
+
+      if {[string length $executeOnSetup] > 0 && \
+          ![info exists ::no(executeOnSetup)]} then {
+        #
+        # NOTE: This command may raise an error; if so, that is fine, as
+        #       the enclosing test will then fail.  The [subst] command is
+        #       used on the SQL in case it needs to refer to state in our
+        #       context.
+        #
+        sql execute $db [subst $executeOnSetup]
       }
 
       #
@@ -3122,19 +3156,33 @@ namespace eval ::Eagle {
         #
         foreach defineConstant [list \
             CHECK_STATE COUNT_HANDLE DEBUG INTEROP_CODEC INTEROP_DEBUG \
-            INTEROP_EXTENSION_FUNCTIONS INTEROP_LEGACY_CLOSE INTEROP_LOG \
-            INTEROP_TEST_EXTENSION INTEROP_VIRTUAL_TABLE NET_20 NET_35 \
-            NET_40 NET_45 NET_451 NET_COMPACT_20 PLATFORM_COMPACTFRAMEWORK \
-            PRELOAD_NATIVE_LIBRARY RETARGETABLE SQLITE_STANDARD \
-            THROW_ON_DISPOSED TRACE TRACE_CONNECTION TRACE_DETECTION \
-            TRACE_HANDLE TRACE_PRELOAD TRACE_SHARED TRACE_STATEMENT \
-            TRACE_WARNING TRACK_MEMORY_BYTES USE_ENTITY_FRAMEWORK_6 \
-            USE_INTEROP_DLL USE_PREPARE_V2 WINDOWS] {
+            INTEROP_EXTENSION_FUNCTIONS INTEROP_INCLUDE_SEE \
+            INTEROP_LEGACY_CLOSE INTEROP_LOG INTEROP_TEST_EXTENSION \
+            INTEROP_VIRTUAL_TABLE NET_20 NET_35 NET_40 NET_45 NET_451 \
+            NET_COMPACT_20 PLATFORM_COMPACTFRAMEWORK PRELOAD_NATIVE_LIBRARY \
+            RETARGETABLE SQLITE_STANDARD THROW_ON_DISPOSED TRACE \
+            TRACE_CONNECTION TRACE_DETECTION TRACE_HANDLE TRACE_PRELOAD \
+            TRACE_SHARED TRACE_STATEMENT TRACE_WARNING TRACK_MEMORY_BYTES \
+            USE_ENTITY_FRAMEWORK_6 USE_INTEROP_DLL USE_PREPARE_V2 WINDOWS] {
           #
           # NOTE: Check if the compile-time option is listed in the list of
           #       "define constants" kept track of by the managed assembly.
           #
           checkForSQLiteDefineConstant $::test_channel $defineConstant
+        }
+
+        #
+        # NOTE: Check if the System.Data.SQLite provider was compiled with
+        #       support for any encrypted databases.
+        #
+        if {[haveConstraint \
+                defineConstant.System.Data.SQLite.INTEROP_CODEC] || \
+            [haveConstraint \
+                defineConstant.System.Data.SQLite.INTEROP_INCLUDE_SEE]} then {
+          #
+          # NOTE: Yes, add generic constraint for use by the test suite.
+          #
+          addConstraint System.Data.SQLite.Encryption
         }
 
         #

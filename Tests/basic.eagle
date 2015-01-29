@@ -1961,8 +1961,8 @@ runTest {test data-1.39 {unencrypted database, with password} -setup {
   cleanupDb $fileName
 
   unset -nocomplain error result db fileName
-} -constraints {eagle defineConstant.System.Data.SQLite.INTEROP_CODEC monoBug28\
-command.sql compile.DATA SQLite System.Data.SQLite} -match regexp -result {^1\
+} -constraints {eagle System.Data.SQLite.Encryption monoBug28 command.sql\
+compile.DATA SQLite System.Data.SQLite} -match regexp -result {^1\
 \{System\.Data\.SQLite\.SQLiteException \(0x80004005\): file is encrypted or is\
 not a database.*?\} 1 \{System\.Data\.SQLite\.SQLiteException \(0x80004005\):\
 file is encrypted or is not a database.*?\} 0 1 0 2$}}
@@ -2000,8 +2000,8 @@ runTest {test data-1.40 {encrypted database, wrong password} -setup {
   cleanupDb $fileName
 
   unset -nocomplain error result db fileName
-} -constraints {eagle defineConstant.System.Data.SQLite.INTEROP_CODEC monoBug28\
-command.sql compile.DATA SQLite System.Data.SQLite} -match regexp -result {^1\
+} -constraints {eagle System.Data.SQLite.Encryption monoBug28 command.sql\
+compile.DATA SQLite System.Data.SQLite} -match regexp -result {^1\
 \{System\.Data\.SQLite\.SQLiteException \(0x80004005\): file is encrypted or is\
 not a database.*?\} 1 \{System\.Data\.SQLite\.SQLiteException \(0x80004005\):\
 file is encrypted or is not a database.*?\} 0 1 0 2$}}
@@ -2039,8 +2039,8 @@ runTest {test data-1.41 {encrypted database, password w/start-space} -setup {
   cleanupDb $fileName
 
   unset -nocomplain error result db fileName
-} -constraints {eagle defineConstant.System.Data.SQLite.INTEROP_CODEC monoBug28\
-command.sql compile.DATA SQLite System.Data.SQLite} -result {0 1 0 1 0 1 0 3}}
+} -constraints {eagle System.Data.SQLite.Encryption monoBug28 command.sql\
+compile.DATA SQLite System.Data.SQLite} -result {0 1 0 1 0 1 0 3}}
 
 ###############################################################################
 
@@ -2075,8 +2075,8 @@ runTest {test data-1.42 {encrypted database, w/quoted-start-space} -setup {
   cleanupDb $fileName
 
   unset -nocomplain error result db fileName
-} -constraints {eagle defineConstant.System.Data.SQLite.INTEROP_CODEC monoBug28\
-command.sql compile.DATA SQLite System.Data.SQLite} -match regexp -result {^1\
+} -constraints {eagle System.Data.SQLite.Encryption monoBug28 command.sql\
+compile.DATA SQLite System.Data.SQLite} -match regexp -result {^1\
 \{System\.Data\.SQLite\.SQLiteException \(0x80004005\): file is encrypted or is\
 not a database.*?\} 1 \{System\.Data\.SQLite\.SQLiteException \(0x80004005\):\
 file is encrypted or is not a database.*?\} 0 1 0 2$}}
@@ -2114,8 +2114,8 @@ runTest {test data-1.43 {encrypted database, password w/mid-space} -setup {
   cleanupDb $fileName
 
   unset -nocomplain error result db fileName
-} -constraints {eagle defineConstant.System.Data.SQLite.INTEROP_CODEC monoBug28\
-command.sql compile.DATA SQLite System.Data.SQLite} -match regexp -result {^1\
+} -constraints {eagle System.Data.SQLite.Encryption monoBug28 command.sql\
+compile.DATA SQLite System.Data.SQLite} -match regexp -result {^1\
 \{System\.Data\.SQLite\.SQLiteException \(0x80004005\): file is encrypted or is\
 not a database.*?\} 1 \{System\.Data\.SQLite\.SQLiteException \(0x80004005\):\
 file is encrypted or is not a database.*?\} 0 1 0 2$}}
@@ -2153,8 +2153,8 @@ runTest {test data-1.44 {encrypted database, password w/end-space} -setup {
   cleanupDb $fileName
 
   unset -nocomplain error result db fileName
-} -constraints {eagle defineConstant.System.Data.SQLite.INTEROP_CODEC monoBug28\
-command.sql compile.DATA SQLite System.Data.SQLite} -result {0 1 0 1 0 1 0 3}}
+} -constraints {eagle System.Data.SQLite.Encryption monoBug28 command.sql\
+compile.DATA SQLite System.Data.SQLite} -result {0 1 0 1 0 1 0 3}}
 
 ###############################################################################
 
@@ -2189,8 +2189,8 @@ runTest {test data-1.45 {encrypted database, w/quoted-end-space} -setup {
   cleanupDb $fileName
 
   unset -nocomplain error result db fileName
-} -constraints {eagle defineConstant.System.Data.SQLite.INTEROP_CODEC monoBug28\
-command.sql compile.DATA SQLite System.Data.SQLite} -match regexp -result {^1\
+} -constraints {eagle System.Data.SQLite.Encryption monoBug28 command.sql\
+compile.DATA SQLite System.Data.SQLite} -match regexp -result {^1\
 \{System\.Data\.SQLite\.SQLiteException \(0x80004005\): file is encrypted or is\
 not a database.*?\} 1 \{System\.Data\.SQLite\.SQLiteException \(0x80004005\):\
 file is encrypted or is not a database.*?\} 0 1 0 2$}}
@@ -2243,8 +2243,8 @@ runTest {test data-1.46 {encrypted database, password via builder} -setup {
   cleanupDb $fileName; # NOTE: After object disposal.
 
   unset -nocomplain connectionStringBuilder error result db fileName
-} -constraints {eagle defineConstant.System.Data.SQLite.INTEROP_CODEC monoBug28\
-command.sql compile.DATA SQLite System.Data.SQLite} -result {0 1 0 1 0 1 0 3}}
+} -constraints {eagle System.Data.SQLite.Encryption monoBug28 command.sql\
+compile.DATA SQLite System.Data.SQLite} -result {0 1 0 1 0 1 0 3}}
 
 ###############################################################################
 

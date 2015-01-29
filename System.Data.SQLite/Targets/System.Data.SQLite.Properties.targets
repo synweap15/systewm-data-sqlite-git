@@ -157,6 +157,14 @@
   </PropertyGroup>
 
   <!--
+      NOTE: Enable support (in the managed assemblies) for encrypted databases
+            using SEE?
+  -->
+  <PropertyGroup Condition="'$(InteropIncludeSee)' != 'false'">
+    <DefineConstants>$(DefineConstants);INTEROP_INCLUDE_SEE</DefineConstants>
+  </PropertyGroup>
+
+  <!--
       NOTE: Enable extra diagnostics from the custom built interop DLL (see the
             "SQLite.NET.Settings.targets" file for more information)?
   -->
