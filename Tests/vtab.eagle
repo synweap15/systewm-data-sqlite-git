@@ -1281,7 +1281,7 @@ runTest {test vtab-1.7 {virtual table xBestIndex marshalling (1)} -setup {
         ///////////////////////////////////////////////////////////////////////
 
         //
-        // BUGFIX: This method helps verify ticket [56f511d268] is fixed.
+        // BUGFIX: This method helps verify ticket \[56f511d268\] is fixed.
         //
         public override SQLiteErrorCode BestIndex(
           SQLiteVirtualTable table,
@@ -1426,7 +1426,7 @@ runTest {test vtab-1.8 {virtual table xBestIndex marshalling (2)} -setup {
         ///////////////////////////////////////////////////////////////////////
 
         //
-        // BUGFIX: This method helps verify ticket [56f511d268] is fixed.
+        // BUGFIX: This method helps verify ticket \[56f511d268\] is fixed.
         //
         public override SQLiteErrorCode BestIndex(
           SQLiteVirtualTable table,
