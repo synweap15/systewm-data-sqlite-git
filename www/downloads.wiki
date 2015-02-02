@@ -469,7 +469,11 @@
         required.
         <br />
         <big><b>This is the only setup package that is capable of installing the
-        design-time components for Visual Studio 2005.</b></big>
+        design-time components for Visual Studio 2005.  However, if you do not
+        require the design-time components, please consider downloading the
+        associated
+        <a href="/downloads/1.0.94.0/sqlite-netFx20-binary-bundle-Win32-2005-1.0.94.0.zip">Precompiled Binaries</a>
+        instead.</b></big>
         <br />
         (sha1: 89e8ff720473f51b96a8f550e17f6a01eae62584)
       </td>
@@ -562,7 +566,11 @@
         required.
         <br />
         <big><b>This is the only setup package that is capable of installing the
-        design-time components for Visual Studio 2008.</b></big>
+        design-time components for Visual Studio 2008.  However, if you do not
+        require the design-time components, please consider downloading the
+        associated
+        <a href="/downloads/1.0.94.0/sqlite-netFx35-binary-bundle-Win32-2008-1.0.94.0.zip">Precompiled Binaries</a>
+        instead.</b></big>
         <br />
         (sha1: 5b2d64b941587589aa09d642bcd871ee3a2bc521)
       </td>
@@ -654,7 +662,11 @@
         SP1 runtime for x86 is included.  The .NET Framework 4.0 is required.
         <br />
         <big><b>This is the only setup package that is capable of installing the
-        design-time components for Visual Studio 2010.</b></big>
+        design-time components for Visual Studio 2010.  However, if you do not
+        require the design-time components, please consider downloading the
+        associated
+        <a href="/downloads/1.0.94.0/sqlite-netFx40-binary-bundle-Win32-2010-1.0.94.0.zip">Precompiled Binaries</a>
+        instead.</b></big></b></big>
         <br />
         (sha1: 1601fa560359ab7ac0a64fa9fb1a7fbd1d15288b)
       </td>
@@ -746,7 +758,11 @@
         required.
         <br />
         <big><b>This is the only setup package that is capable of installing the
-        design-time components for Visual Studio 2012.</b></big>
+        design-time components for Visual Studio 2012.  However, if you do not
+        require the design-time components, please consider downloading the
+        associated
+        <a href="/downloads/1.0.94.0/sqlite-netFx45-binary-bundle-Win32-2012-1.0.94.0.zip">Precompiled Binaries</a>
+        instead.</b></big>
         <br />
         (sha1: 65958357110ff8388debbc1dea6acc9551d57a54)
       </td>
@@ -839,7 +855,11 @@
         required.
         <br />
         <big><b>This is the only setup package that is capable of installing the
-        design-time components for Visual Studio 2013.</b></big>
+        design-time components for Visual Studio 2013.  However, if you do not
+        require the design-time components, please consider downloading the
+        associated
+        <a href="/downloads/1.0.94.0/sqlite-netFx451-binary-bundle-Win32-2013-1.0.94.0.zip">Precompiled Binaries</a>
+        instead.</b></big></b></big>
         <br />
         (sha1: cb16ee04221cfc6675b2f38af6093966f2d737d6)
       </td>
