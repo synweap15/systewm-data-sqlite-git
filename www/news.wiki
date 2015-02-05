@@ -7,6 +7,7 @@
 </p>
 <ul>
     <li>Updated to [http://www.sqlite.org/releaselog/3_8_8_2.html|SQLite 3.8.8.2].</li>
+    <li>Updated to [http://www.nuget.org/packages/EntityFramework/6.1.2|Entity Framework 6.1.2].</li>
     <li>Make sure SQL statements generated for DbUpdateCommandTree objects are properly delimited.</li>
     <li>Make sure SQLiteIndexOutputs.ConstraintUsages instances are created prior to calling ISQLiteManagedModule.BestIndex. Fix for [56f511d268].</li>
     <li>Correct marshalling of strings and blobs in the SQLiteValue class. Fix for [85b824b736].</li>

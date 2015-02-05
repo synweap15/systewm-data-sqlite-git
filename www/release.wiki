@@ -347,112 +347,18 @@
 <ol>
   <li>Open a normal command prompt window with &quot;cmd.exe&quot;.</li>
 
-  <li>Change the current directory to &quot;&lt;root&gt;&quot;.</li>
+  <li>Change the current directory to &quot;&lt;root&gt;\Setup&quot;.</li>
 
   <li>
-    Enter the following command to build the &quot;default&quot; NuGet package:
+    Enter the following command to build all the NuGet packages:
     <br />
     <br />
-    <b>nuget.exe&nbsp;pack&nbsp;NuGet\SQLite.nuspec</b>
+    <b>build_nuget.bat</b>
     <br />
     <br />
     <i>This assumes that the NuGet binary is available somewhere along the
     [http://en.wikipedia.org/wiki/PATH_%28variable%29 | PATH].<br />Please refer
     to [http://docs.nuget.org/ | NuGet Documentation] for further details.</i>
-  </li>
-
-  <li>
-    Enter the following command to build the &quot;core&quot; NuGet package:
-    <br />
-    <br />
-    <b>nuget.exe&nbsp;pack&nbsp;NuGet\SQLite.Core.nuspec</b>
-    <br />
-    <br />
-    <i>This assumes that the NuGet binary is available somewhere along the
-    [http://en.wikipedia.org/wiki/PATH_%28variable%29 | PATH].<br />Please refer
-    to [http://docs.nuget.org/ | NuGet Documentation] for further details.</i>
-  </li>
-
-  <li>
-    Enter the following command to build the &quot;core managed-only&quot;
-    NuGet package:
-    <br />
-    <br />
-    <b>nuget.exe&nbsp;pack&nbsp;NuGet\SQLite.Core.MSIL.nuspec</b>
-    <br />
-    <br />
-    <i>This assumes that the NuGet binary is available somewhere along the
-    [http://en.wikipedia.org/wiki/PATH_%28variable%29 | PATH].<br />Please refer
-    to [http://docs.nuget.org/ | NuGet Documentation] for further details.</i>
-  </li>
-
-  <li>
-    Enter the following command to build the &quot;EF6&quot; NuGet package:
-    <br />
-    <br />
-    <b>nuget.exe&nbsp;pack&nbsp;NuGet\SQLite.EF6.nuspec</b>
-    <br />
-    <br />
-    <i>This assumes that the NuGet binary is available somewhere along the
-    [http://en.wikipedia.org/wiki/PATH_%28variable%29 | PATH].<br />Please refer
-    to [http://docs.nuget.org/ | NuGet Documentation] for further details.</i>
-  </li>
-
-  <li>
-    Enter the following command to build the &quot;LINQ&quot; NuGet package:
-    <br />
-    <br />
-    <b>nuget.exe&nbsp;pack&nbsp;NuGet\SQLite.Linq.nuspec</b>
-    <br />
-    <br />
-    <i>This assumes that the NuGet binary is available somewhere along the
-    [http://en.wikipedia.org/wiki/PATH_%28variable%29 | PATH].<br />Please refer
-    to [http://docs.nuget.org/ | NuGet Documentation] for further details.</i>
-  </li>
-
-  <li>
-    Enter the following command to build the &quot;managed-only&quot; NuGet
-    package:
-    <br />
-    <br />
-    <b>nuget.exe&nbsp;pack&nbsp;NuGet\SQLite.MSIL.nuspec</b>
-    <br />
-    <br />
-    <i>This assumes that the NuGet binary is available somewhere along the
-    [http://en.wikipedia.org/wiki/PATH_%28variable%29 | PATH].<br />Please refer
-    to [http://docs.nuget.org/ | NuGet Documentation] for further details.</i>
-  </li>
-
-  <li>
-    Enter the following command to build the NuGet package for x86:
-    <br />
-    <br />
-    <b>nuget.exe&nbsp;pack&nbsp;NuGet\SQLite.x86.nuspec</b>
-    <br />
-    <br />
-    <i>This assumes that the NuGet binary is available somewhere along the
-    [http://en.wikipedia.org/wiki/PATH_%28variable%29 | PATH].<br />Please refer
-    to [http://docs.nuget.org/ | NuGet Documentation] for further details.</i>
-  </li>
-
-  <li>
-    Enter the following command to build the NuGet package for x64:
-    <br />
-    <br />
-    <b>nuget.exe&nbsp;pack&nbsp;NuGet\SQLite.x64.nuspec</b>
-    <br />
-    <br />
-    <i>This assumes that the NuGet binary is available somewhere along the
-    [http://en.wikipedia.org/wiki/PATH_%28variable%29 | PATH].<br />Please refer
-    to [http://docs.nuget.org/ | NuGet Documentation] for further details.</i>
-  </li>
-
-  <li>
-    Enter the following command to move the NuGet packages to the release output
-    directory:
-    <br />
-    <br />
-    <b>move *.nupkg Setup\Output</b>
   </li>
 </ol>
 

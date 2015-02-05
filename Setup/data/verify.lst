@@ -252,6 +252,7 @@ set sds_manifests(source) {
   Setup/build_all.bat
   Setup/build_ce_200x.bat
   Setup/build_ce_2013.bat
+  Setup/build_nuget.bat
   Setup/clean.bat
   Setup/data/
   Setup/data/CheckForNetFx.pas
