@@ -1871,7 +1871,7 @@
     <tr>
       <td width="10">&nbsp;</td>
       <td width="30%" valign="top" align="right">
-        <a href="http://nuget.org/api/v2/package/System.Data.SQLite/1.0.95.0">System.Data.SQLite.1.0.95.0.nupkg</a>
+        <a href="/downloads/1.0.95.0/System.Data.SQLite.1.0.95.0.nupkg">System.Data.SQLite.1.0.95.0.nupkg</a>
         <br />
         (0.00 MiB)
       </td>
@@ -1902,7 +1902,7 @@
     <tr>
       <td width="10">&nbsp;</td>
       <td width="30%" valign="top" align="right">
-        <a href="http://nuget.org/api/v2/package/System.Data.SQLite.Core/1.0.95.0">System.Data.SQLite.Core.1.0.95.0.nupkg</a>
+        <a href="/downloads/1.0.95.0/System.Data.SQLite.Core.1.0.95.0.nupkg">System.Data.SQLite.Core.1.0.95.0.nupkg</a>
         <br />
         (4.97 MiB)
       </td>
@@ -1925,7 +1925,7 @@
     <tr>
       <td width="10">&nbsp;</td>
       <td width="30%" valign="top" align="right">
-        <a href="http://nuget.org/api/v2/package/System.Data.SQLite.Core.MSIL/1.0.95.0">System.Data.SQLite.Core.MSIL.1.0.95.0.nupkg</a>
+        <a href="/downloads/1.0.95.0/System.Data.SQLite.Core.MSIL.1.0.95.0.nupkg">System.Data.SQLite.Core.MSIL.1.0.95.0.nupkg</a>
         <br />
         (0.70 MiB)
       </td>
@@ -1951,7 +1951,7 @@
     <tr>
       <td width="10">&nbsp;</td>
       <td width="30%" valign="top" align="right">
-        <a href="http://nuget.org/api/v2/package/System.Data.SQLite.EF6/1.0.95.0">System.Data.SQLite.EF6.1.0.95.0.nupkg</a>
+        <a href="/downloads/1.0.95.0/System.Data.SQLite.EF6.1.0.95.0.nupkg">System.Data.SQLite.EF6.1.0.95.0.nupkg</a>
         <br />
         (0.13 MiB)
       </td>
@@ -1972,7 +1972,7 @@
     <tr>
       <td width="10">&nbsp;</td>
       <td width="30%" valign="top" align="right">
-        <a href="http://nuget.org/api/v2/package/System.Data.SQLite.Linq/1.0.95.0">System.Data.SQLite.Linq.1.0.95.0.nupkg</a>
+        <a href="/downloads/1.0.95.0/System.Data.SQLite.Linq.1.0.95.0.nupkg">System.Data.SQLite.Linq.1.0.95.0.nupkg</a>
         <br />
         (0.18 MiB)
       </td>
@@ -1992,7 +1992,7 @@
     <tr>
       <td width="10">&nbsp;</td>
       <td width="30%" valign="top" align="right">
-        <a href="http://nuget.org/api/v2/package/System.Data.SQLite.MSIL/1.0.95.0">System.Data.SQLite.MSIL.1.0.95.0.nupkg</a>
+        <a href="/downloads/1.0.95.0/System.Data.SQLite.MSIL.1.0.95.0.nupkg">System.Data.SQLite.MSIL.1.0.95.0.nupkg</a>
         <br />
         (1.00 MiB)
       </td>
@@ -2021,7 +2021,7 @@
     <tr>
       <td width="10">&nbsp;</td>
       <td width="30%" valign="top" align="right">
-        <a href="http://nuget.org/api/v2/package/System.Data.SQLite.x86/1.0.95.0">System.Data.SQLite.x86.1.0.95.0.nupkg</a>
+        <a href="/downloads/1.0.95.0/System.Data.SQLite.x86.1.0.95.0.nupkg">System.Data.SQLite.x86.1.0.95.0.nupkg</a>
         <br />
         (2.88 MiB)
       </td>
@@ -2045,7 +2045,7 @@
     <tr>
       <td width="10">&nbsp;</td>
       <td width="30%" valign="top" align="right">
-        <a href="http://nuget.org/api/v2/package/System.Data.SQLite.x64/1.0.95.0">System.Data.SQLite.x64.1.0.95.0.nupkg</a>
+        <a href="/downloads/1.0.95.0/System.Data.SQLite.x64.1.0.95.0.nupkg">System.Data.SQLite.x64.1.0.95.0.nupkg</a>
         <br />
         (3.16 MiB)
       </td>
