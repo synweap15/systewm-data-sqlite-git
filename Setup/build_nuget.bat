@@ -42,6 +42,17 @@ IF NOT DEFINED NUGET (
 
 %_VECHO% NuGet = '%NUGET%'
 
+CALL :fn_ResetErrorLevel
+
+IF NOT EXIST "%ROOT%\Setup\Output" (
+  %__ECHO% MKDIR "%ROOT%\Setup\Output"
+
+  IF ERRORLEVEL 1 (
+    ECHO Could not create directory "%ROOT%\Setup\Output".
+    GOTO errors
+  )
+)
+
 %__ECHO% "%NUGET%" pack "%ROOT%\NuGet\SQLite.nuspec"
 
 IF ERRORLEVEL 1 (
