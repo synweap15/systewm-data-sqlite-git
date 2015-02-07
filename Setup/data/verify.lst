@@ -216,6 +216,7 @@ set sds_manifests(source) {
   NuGet/shared/Core/build/
   NuGet/shared/Core/build/System.Data.SQLite.Core.targets
   NuGet/shared/Core/content/
+  NuGet/shared/Core/content/config.install.xdt
   NuGet/shared/Core/content/config.transform
   NuGet/net40/
   NuGet/net40/EF6/
@@ -1043,7 +1044,7 @@ set sds_manifests(setupX64Vs2010) {
 #       supporting the .NET Framework 4.5 for x86.
 #
 set sds_manifests(setupX86Vs2012) {
-  {{tmp}\vcredist_x86_2012_VSU3.exe}
+  {{tmp}\vcredist_x86_2012_VSU4.exe}
 }
 
 ###############################################################################
@@ -1052,7 +1053,7 @@ set sds_manifests(setupX86Vs2012) {
 #       supporting the .NET Framework 4.5 for x64.
 #
 set sds_manifests(setupX64Vs2012) {
-  {{tmp}\vcredist_x64_2012_VSU3.exe}
+  {{tmp}\vcredist_x64_2012_VSU4.exe}
 }
 
 ###############################################################################

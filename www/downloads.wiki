@@ -754,7 +754,7 @@
         This setup package features the mixed-mode assembly and will install all
         the necessary runtime components and dependencies for the x86 version of
         the System.Data.SQLite 1.0.95.0 (3.8.8.2) package.  The Visual C++ 2012
-        Update 3 runtime for x86 is included.  The .NET Framework 4.5 is
+        Update 4 runtime for x86 is included.  The .NET Framework 4.5 is
         required.
         <br />
         <big><b>This is the only setup package that is capable of installing the
@@ -780,7 +780,7 @@
       <td valign="top">
         This setup package will install all the necessary runtime components and
         dependencies for the x86 version of the System.Data.SQLite 1.0.95.0
-        (3.8.8.2) package.  The Visual C++ 2012 Update 3 runtime for x86 is
+        (3.8.8.2) package.  The Visual C++ 2012 Update 4 runtime for x86 is
         included.  The .NET Framework 4.5 is required.
         <br />
         (sha1: fe2e5bef2750933c9836625019dec4ac692f7b1f)
@@ -806,7 +806,7 @@
         This setup package features the mixed-mode assembly and will install all
         the necessary runtime components and dependencies for the x64 version of
         the System.Data.SQLite 1.0.95.0 (3.8.8.2) package.  The Visual C++ 2012
-        Update 3 runtime for x64 is included.  The .NET Framework 4.5 is
+        Update 4 runtime for x64 is included.  The .NET Framework 4.5 is
         required.
         <br />
         (sha1: 103542354baf3f544a94af123c8a548bb37ceb3c)
@@ -825,7 +825,7 @@
       <td valign="top">
         This setup package will install all the necessary runtime components and
         dependencies for the x64 version of the System.Data.SQLite 1.0.95.0
-        (3.8.8.2) package.  The Visual C++ 2012 Update 3 runtime for x64 is
+        (3.8.8.2) package.  The Visual C++ 2012 Update 4 runtime for x64 is
         included.  The .NET Framework 4.5 is required.
         <br />
         (sha1: b324dc54d510ca77bf26350c7b3bc601f7df61fe)
@@ -1205,7 +1205,7 @@
       <td valign="top">
         This binary package features the mixed-mode assembly and contains all
         the binaries for the x86 version of the System.Data.SQLite 1.0.95.0
-        (3.8.8.2) package.  The Visual C++ 2012 Update 3 runtime for x86 and
+        (3.8.8.2) package.  The Visual C++ 2012 Update 4 runtime for x86 and
         the .NET Framework 4.5 are required.
         <br />
         (sha1: df9afb6e8b776d9d726369c65f40600f0378c694)
@@ -1224,7 +1224,7 @@
       <td valign="top">
         This binary package contains all the binaries for the x86 version of the
         System.Data.SQLite 1.0.95.0 (3.8.8.2) package.  The Visual C++ 2012
-        Update 3 runtime for x86 and the .NET Framework 4.5 are required.
+        Update 4 runtime for x86 and the .NET Framework 4.5 are required.
         <br />
         (sha1: acea2653653cd437a008b33031e007e42248e216)
       </td>
@@ -1248,7 +1248,7 @@
       <td valign="top">
         This binary package features the mixed-mode assembly and contains all
         the binaries for the x64 version of the System.Data.SQLite 1.0.95.0
-        (3.8.8.2) package.  The Visual C++ 2012 Update 3 runtime for x64 and
+        (3.8.8.2) package.  The Visual C++ 2012 Update 4 runtime for x64 and
         the .NET Framework 4.5 are required.
         <br />
         (sha1: da78ed7645a1b16b1f9250b9ae0a550696308671)
@@ -1267,7 +1267,7 @@
       <td valign="top">
         This binary package contains all the binaries for the x64 version of the
         System.Data.SQLite 1.0.95.0 (3.8.8.2) package.  The Visual C++ 2012
-        Update 3 runtime for x64 and the .NET Framework 4.5 are required.
+        Update 4 runtime for x64 and the .NET Framework 4.5 are required.
         <br />
         (sha1: b4066de9ff013b5489c390d0a4bace125a81eac9)
       </td>
@@ -1641,7 +1641,7 @@
       <td valign="top">
         This binary package features the mixed-mode assembly and contains all
         the binaries for the x86 version of the System.Data.SQLite 1.0.95.0
-        (3.8.8.2) package.  The Visual C++ 2012 Update 3 runtime for x86 is
+        (3.8.8.2) package.  The Visual C++ 2012 Update 4 runtime for x86 is
         statically linked.  The .NET Framework 4.5 is required.
         <br />
         (sha1: b885f1f7d0da4422885997f8fba643324c8ca9f1)
@@ -1660,7 +1660,7 @@
       <td valign="top">
         This binary package contains all the binaries for the x86 version of the
         System.Data.SQLite 1.0.95.0 (3.8.8.2) package.  The Visual C++ 2012
-        Update 3 runtime for x86 is statically linked.  The .NET Framework 4.5
+        Update 4 runtime for x86 is statically linked.  The .NET Framework 4.5
         is required.
         <br />
         (sha1: fdbaa95859680205f5b4717bc0fb890cc025ca0e)
@@ -1685,7 +1685,7 @@
       <td valign="top">
         This binary package features the mixed-mode assembly and contains all
         the binaries for the x64 version of the System.Data.SQLite 1.0.95.0
-        (3.8.8.2) package.  The Visual C++ 2012 Update 3 runtime for x64 is
+        (3.8.8.2) package.  The Visual C++ 2012 Update 4 runtime for x64 is
         statically linked.  The .NET Framework 4.5 is required.
         <br />
         (sha1: b35c0ebdcb09a3ed5ac579feab827f657e5d4738)
@@ -1704,7 +1704,7 @@
       <td valign="top">
         This binary package contains all the binaries for the x64 version of the
         System.Data.SQLite 1.0.95.0 (3.8.8.2) package.  The Visual C++ 2012
-        Update 3 runtime for x64 is statically linked.  The .NET Framework 4.5
+        Update 4 runtime for x64 is statically linked.  The .NET Framework 4.5
         is required.
         <br />
         (sha1: c8c8034c1319f8e96e153f6ab40ac0ff8d833c80)
