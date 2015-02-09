@@ -469,9 +469,11 @@
         required.
         <br />
         <big><b>This is the only setup package that is capable of installing the
-        design-time components for Visual Studio 2005.  However, if you do not
-        require the design-time components, please consider downloading the
-        associated
+        design-time components for Visual Studio 2005.
+        <br />
+        <br />
+        However, if you do not require the design-time components, please
+        consider downloading the associated
         <a href="/downloads/1.0.94.0/sqlite-netFx20-binary-bundle-Win32-2005-1.0.94.0.zip">Precompiled Binaries</a>
         instead.</b></big>
         <br />
@@ -566,9 +568,11 @@
         required.
         <br />
         <big><b>This is the only setup package that is capable of installing the
-        design-time components for Visual Studio 2008.  However, if you do not
-        require the design-time components, please consider downloading the
-        associated
+        design-time components for Visual Studio 2008.
+        <br />
+        <br />
+        However, if you do not require the design-time components, please
+        consider downloading the associated
         <a href="/downloads/1.0.94.0/sqlite-netFx35-binary-bundle-Win32-2008-1.0.94.0.zip">Precompiled Binaries</a>
         instead.</b></big>
         <br />
@@ -662,9 +666,11 @@
         SP1 runtime for x86 is included.  The .NET Framework 4.0 is required.
         <br />
         <big><b>This is the only setup package that is capable of installing the
-        design-time components for Visual Studio 2010.  However, if you do not
-        require the design-time components, please consider downloading the
-        associated
+        design-time components for Visual Studio 2010.
+        <br />
+        <br />
+        However, if you do not require the design-time components, please
+        consider downloading the associated
         <a href="/downloads/1.0.94.0/sqlite-netFx40-binary-bundle-Win32-2010-1.0.94.0.zip">Precompiled Binaries</a>
         instead.</b></big></b></big>
         <br />
@@ -758,12 +764,17 @@
         required.
         <br />
         <big><b>This is the only setup package that is capable of installing the
-        design-time components for Visual Studio 2012.  However, if you do not
-        require the design-time components, please consider downloading the
-        associated
+        design-time components for Visual Studio 2012.
+        <br />
+        <br />
+        However, if you do not require the design-time components, please
+        consider downloading the associated
         <a href="/downloads/1.0.94.0/sqlite-netFx45-binary-bundle-Win32-2012-1.0.94.0.zip">Precompiled Binaries</a>
-        instead.  Using Entity Framework 6 design-time support may require
-        installing the Visual Studio 2012 &quot;flavor&quot; of the
+        instead.
+        <br />
+        <br />
+        Using Entity Framework 6 design-time support may require installing the
+        Visual Studio 2012 &quot;flavor&quot; of the
         <a href="https://www.microsoft.com/en-us/download/details.aspx?id=40762">
         Entity Framework 6 Tools for Visual Studio 2012 &amp; 2013</a>.</b></big>
         <br />
@@ -858,12 +869,17 @@
         required.
         <br />
         <big><b>This is the only setup package that is capable of installing the
-        design-time components for Visual Studio 2013.  However, if you do not
-        require the design-time components, please consider downloading the
-        associated
+        design-time components for Visual Studio 2013.
+        <br />
+        <br />
+        However, if you do not require the design-time components, please
+        consider downloading the associated
         <a href="/downloads/1.0.94.0/sqlite-netFx451-binary-bundle-Win32-2013-1.0.94.0.zip">Precompiled Binaries</a>
-        instead.  Using Entity Framework 6 design-time support may require
-        installing the Visual Studio 2013 &quot;flavor&quot; of the
+        instead.
+        <br />
+        <br />
+        Using Entity Framework 6 design-time support may require installing the
+        Visual Studio 2013 &quot;flavor&quot; of the
         <a href="https://www.microsoft.com/en-us/download/details.aspx?id=40762">
         Entity Framework 6 Tools for Visual Studio 2012 &amp; 2013</a>.</b></big>
         <br />
