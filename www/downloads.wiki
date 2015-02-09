@@ -477,6 +477,7 @@
         <a href="/downloads/1.0.94.0/sqlite-netFx20-binary-bundle-Win32-2005-1.0.94.0.zip">Precompiled Binaries</a>
         instead.</b></big>
         <br />
+        <br />
         (sha1: 89e8ff720473f51b96a8f550e17f6a01eae62584)
       </td>
     </tr>
@@ -576,6 +577,7 @@
         <a href="/downloads/1.0.94.0/sqlite-netFx35-binary-bundle-Win32-2008-1.0.94.0.zip">Precompiled Binaries</a>
         instead.</b></big>
         <br />
+        <br />
         (sha1: 5b2d64b941587589aa09d642bcd871ee3a2bc521)
       </td>
     </tr>
@@ -673,6 +675,7 @@
         consider downloading the associated
         <a href="/downloads/1.0.94.0/sqlite-netFx40-binary-bundle-Win32-2010-1.0.94.0.zip">Precompiled Binaries</a>
         instead.</b></big></b></big>
+        <br />
         <br />
         (sha1: 1601fa560359ab7ac0a64fa9fb1a7fbd1d15288b)
       </td>
@@ -778,6 +781,7 @@
         <a href="https://www.microsoft.com/en-us/download/details.aspx?id=40762">
         Entity Framework 6 Tools for Visual Studio 2012 &amp; 2013</a>.</b></big>
         <br />
+        <br />
         (sha1: 65958357110ff8388debbc1dea6acc9551d57a54)
       </td>
     </tr>
@@ -882,6 +886,7 @@
         Visual Studio 2013 &quot;flavor&quot; of the
         <a href="https://www.microsoft.com/en-us/download/details.aspx?id=40762">
         Entity Framework 6 Tools for Visual Studio 2012 &amp; 2013</a>.</b></big>
+        <br />
         <br />
         (sha1: cb16ee04221cfc6675b2f38af6093966f2d737d6)
       </td>
