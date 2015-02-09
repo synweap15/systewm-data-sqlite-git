@@ -63,11 +63,11 @@
 <p>
   The new unit tests have been setup using <a href="http://eagle.to/">Eagle</a>
   and its associated unit testing framework, named &quot;Eagle.Test&quot;.
-  Eagle itself is an implementation of the <a href="http://www.tcl.tk/">Tcl</a>
+  Eagle itself is an implementation of the <a href="https://www.tcl.tk/">Tcl</a>
   scripting language for the Common Language Runtime (CLR).
   &quot;Eagle.Test&quot; is the unit testing framework for Eagle, packaged as a
   collection of Eagle scripts, based loosely on the implementation of
-  <a href="http://www.tcl.tk/man/tcl8.4/TclCmd/tcltest.htm">tcltest</a>.
+  <a href="https://www.tcl.tk/man/tcl8.4/TclCmd/tcltest.htm">tcltest</a>.
 </p>
 
 <a name="automated"></a>

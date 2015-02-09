@@ -45,79 +45,79 @@
     <h1 class="heading">Version History</h1>
     <p><b>1.0.95.0 - February XX, 2015 <font color="red">(release scheduled)</font></b></p>
     <ul>
-      <li>Updated to <a href="http://www.sqlite.org/releaselog/3_8_8_2.html">SQLite 3.8.8.2</a>.</li>
-      <li>Updated to <a href="http://www.nuget.org/packages/EntityFramework/6.1.2">Entity Framework 6.1.2</a>.</li>
+      <li>Updated to <a href="https://www.sqlite.org/releaselog/3_8_8_2.html">SQLite 3.8.8.2</a>.</li>
+      <li>Updated to <a href="https://www.nuget.org/packages/EntityFramework/6.1.2">Entity Framework 6.1.2</a>.</li>
       <li>Make sure SQL statements generated for DbUpdateCommandTree objects are properly delimited.</li>
-      <li>Make sure SQLiteIndexOutputs.ConstraintUsages instances are created prior to calling ISQLiteManagedModule.BestIndex. Fix for <a href="http://system.data.sqlite.org/index.html/info/56f511d268">[56f511d268]</a>.</li>
-      <li>Correct marshalling of strings and blobs in the SQLiteValue class. Fix for <a href="http://system.data.sqlite.org/index.html/info/85b824b736">[85b824b736]</a>.</li>
-      <li>Various minor performance enhancements to the SQLiteDataReader class. Pursuant to <a href="http://system.data.sqlite.org/index.html/info/e122d26e70">[e122d26e70]</a>.</li>
-      <li>Defer disposing of connections created by the static SQLiteCommand.Execute method when a data reader is returned. Fix for <a href="http://system.data.sqlite.org/index.html/info/daeaf3150a">[daeaf3150a]</a>.</li>
-      <li>Wrap SELECT statements in parenthesis if they have an ORDER BY, LIMIT, or OFFSET clause and a compound operator is involved. Fix for <a href="http://system.data.sqlite.org/index.html/info/0a32885109">[0a32885109]</a>.</li>
-      <li>In the SQLiteDataReader.VerifyType method, remove duplicate &quot;if&quot; statement for the DbType.SByte value and move the remaining &quot;if&quot; to the Int64 affinity. Fix for <a href="http://system.data.sqlite.org/index.html/info/c5cc2fb334">[c5cc2fb334]</a>.&nbsp;<b>** Potentially Incompatible Change **</b></li>
-      <li>Handle Julian Day values that fall outside of the supported range for OLE Automation dates. Fix for <a href="http://system.data.sqlite.org/index.html/info/3e783eecbe">[3e783eecbe]</a>.&nbsp;<b>** Potentially Incompatible Change **</b></li>
-      <li>Make sure the interop files are copied when publishing a project that refers to a NuGet package containing them. Fix for <a href="http://system.data.sqlite.org/index.html/info/e796ac82c1">[e796ac82c1]</a>.&nbsp;<b>** Potentially Incompatible Change **</b></li>
-      <li>Make sure the interop files are copied before the PostBuildEvent. Fix for <a href="http://system.data.sqlite.org/index.html/info/f16c93a932">[f16c93a932]</a>.&nbsp;<b>** Potentially Incompatible Change **</b></li>
-      <li>Modify GetSchemaTable method to avoid setting SchemaTableColumn.IsKey column to true when more than one table is referenced. Fix for <a href="http://system.data.sqlite.org/index.html/info/47c6fa04d3">[47c6fa04d3]</a>.&nbsp;<b>** Potentially Incompatible Change **</b></li>
+      <li>Make sure SQLiteIndexOutputs.ConstraintUsages instances are created prior to calling ISQLiteManagedModule.BestIndex. Fix for <a href="https://system.data.sqlite.org/index.html/info/56f511d268">[56f511d268]</a>.</li>
+      <li>Correct marshalling of strings and blobs in the SQLiteValue class. Fix for <a href="https://system.data.sqlite.org/index.html/info/85b824b736">[85b824b736]</a>.</li>
+      <li>Various minor performance enhancements to the SQLiteDataReader class. Pursuant to <a href="https://system.data.sqlite.org/index.html/info/e122d26e70">[e122d26e70]</a>.</li>
+      <li>Defer disposing of connections created by the static SQLiteCommand.Execute method when a data reader is returned. Fix for <a href="https://system.data.sqlite.org/index.html/info/daeaf3150a">[daeaf3150a]</a>.</li>
+      <li>Wrap SELECT statements in parenthesis if they have an ORDER BY, LIMIT, or OFFSET clause and a compound operator is involved. Fix for <a href="https://system.data.sqlite.org/index.html/info/0a32885109">[0a32885109]</a>.</li>
+      <li>In the SQLiteDataReader.VerifyType method, remove duplicate &quot;if&quot; statement for the DbType.SByte value and move the remaining &quot;if&quot; to the Int64 affinity. Fix for <a href="https://system.data.sqlite.org/index.html/info/c5cc2fb334">[c5cc2fb334]</a>.&nbsp;<b>** Potentially Incompatible Change **</b></li>
+      <li>Handle Julian Day values that fall outside of the supported range for OLE Automation dates. Fix for <a href="https://system.data.sqlite.org/index.html/info/3e783eecbe">[3e783eecbe]</a>.&nbsp;<b>** Potentially Incompatible Change **</b></li>
+      <li>Make sure the interop files are copied when publishing a project that refers to a NuGet package containing them. Fix for <a href="https://system.data.sqlite.org/index.html/info/e796ac82c1">[e796ac82c1]</a>.&nbsp;<b>** Potentially Incompatible Change **</b></li>
+      <li>Make sure the interop files are copied before the PostBuildEvent. Fix for <a href="https://system.data.sqlite.org/index.html/info/f16c93a932">[f16c93a932]</a>.&nbsp;<b>** Potentially Incompatible Change **</b></li>
+      <li>Modify GetSchemaTable method to avoid setting SchemaTableColumn.IsKey column to true when more than one table is referenced. Fix for <a href="https://system.data.sqlite.org/index.html/info/47c6fa04d3">[47c6fa04d3]</a>.&nbsp;<b>** Potentially Incompatible Change **</b></li>
       <li>Add AppendManifestToken_SQLiteProviderManifest environment variable to enable better integration between LINQ and the underlying store connection.</li>
       <li>Add SQLite_ForceLogPrepare environment variable to force logging of all prepared SQL regardless of the flags for the associated connection.</li>
-      <li>Honor the DateTimeFormat, DateTimeKind, DateTimeFormatString, BinaryGUID connection string and/or provider manifest token properties from within the LINQ assembly. Fix for <a href="http://system.data.sqlite.org/index.html/info/8d928c3e88">[8d928c3e88]</a>.&nbsp;<b>** Potentially Incompatible Change **</b></li>
+      <li>Honor the DateTimeFormat, DateTimeKind, DateTimeFormatString, BinaryGUID connection string and/or provider manifest token properties from within the LINQ assembly. Fix for <a href="https://system.data.sqlite.org/index.html/info/8d928c3e88">[8d928c3e88]</a>.&nbsp;<b>** Potentially Incompatible Change **</b></li>
     </ul>
     <p><b>1.0.94.0 - September 9, 2014</b></p>
     <ul>
-      <li>Updated to <a href="http://www.sqlite.org/releaselog/3_8_6.html">SQLite 3.8.6</a>.</li>
-      <li>Updated to <a href="http://www.nuget.org/packages/EntityFramework/6.1.1">Entity Framework 6.1.1</a>.</li>
+      <li>Updated to <a href="https://www.sqlite.org/releaselog/3_8_6.html">SQLite 3.8.6</a>.</li>
+      <li>Updated to <a href="https://www.nuget.org/packages/EntityFramework/6.1.1">Entity Framework 6.1.1</a>.</li>
       <li>Refactor and simplify NuGet packages in order to support per-solution SQLite interop assembly files.&nbsp;<b>** Potentially Incompatible Change **</b></li>
       <li>Add RefreshFlags method to the SQLiteDataReader class to forcibly refresh its connection flags.</li>
-      <li>Improve automatic detection and handling of the Entity Framework 6 assembly by the design-time components installer. Pursuant to <a href="http://system.data.sqlite.org/index.html/info/e634e330a6">[e634e330a6]</a>.&nbsp;<b>** Potentially Incompatible Change **</b></li>
+      <li>Improve automatic detection and handling of the Entity Framework 6 assembly by the design-time components installer. Pursuant to <a href="https://system.data.sqlite.org/index.html/info/e634e330a6">[e634e330a6]</a>.&nbsp;<b>** Potentially Incompatible Change **</b></li>
       <li>Improve SQLiteDataReader performance slightly by caching the connection flags.&nbsp;<b>** Potentially Incompatible Change **</b></li>
       <li>Add ClearCachedSettings method to the SQLiteConnection class.</li>
-      <li>Add NoConvertSettings connection flag to disable querying of runtime configuration settings from within the SQLiteConvert class. Pursuant to <a href="http://system.data.sqlite.org/index.html/info/58ed318f2f">[58ed318f2f]</a>.</li>
-      <li>Minimize usage of the &quot;Use_SQLiteConvert_DefaultDbType&quot; and &quot;Use_SQLiteConvert_DefaultTypeName&quot; settings. Fix for <a href="http://system.data.sqlite.org/index.html/info/58ed318f2f">[58ed318f2f]</a>.&nbsp;<b>** Potentially Incompatible Change **</b></li>
+      <li>Add NoConvertSettings connection flag to disable querying of runtime configuration settings from within the SQLiteConvert class. Pursuant to <a href="https://system.data.sqlite.org/index.html/info/58ed318f2f">[58ed318f2f]</a>.</li>
+      <li>Minimize usage of the &quot;Use_SQLiteConvert_DefaultDbType&quot; and &quot;Use_SQLiteConvert_DefaultTypeName&quot; settings. Fix for <a href="https://system.data.sqlite.org/index.html/info/58ed318f2f">[58ed318f2f]</a>.&nbsp;<b>** Potentially Incompatible Change **</b></li>
     </ul>
     <p><b>1.0.93.0 - June 23, 2014</b></p>
     <ul>
-      <li>Updated to <a href="http://www.sqlite.org/releaselog/3_8_5.html">SQLite 3.8.5</a>.</li>
-      <li>Updated to <a href="http://www.nuget.org/packages/EntityFramework/6.1">Entity Framework 6.1</a>.</li>
-      <li>Add support for mapping transaction isolation levels to their legacy default values. Pursuant to <a href="http://system.data.sqlite.org/index.html/info/56b42d99c1">[56b42d99c1]</a>.</li>
-      <li>Add support for setting the default DbType and type name used for mappings on a per-connection basis. Pursuant to <a href="http://system.data.sqlite.org/index.html/info/3c00ec5b52">[3c00ec5b52]</a>.</li>
-      <li>Add DetectTextAffinity and DetectStringType connection flags to enable automatic detection of column types, when necessary. Pursuant to <a href="http://system.data.sqlite.org/index.html/info/3c00ec5b52">[3c00ec5b52]</a>.</li>
+      <li>Updated to <a href="https://www.sqlite.org/releaselog/3_8_5.html">SQLite 3.8.5</a>.</li>
+      <li>Updated to <a href="https://www.nuget.org/packages/EntityFramework/6.1">Entity Framework 6.1</a>.</li>
+      <li>Add support for mapping transaction isolation levels to their legacy default values. Pursuant to <a href="https://system.data.sqlite.org/index.html/info/56b42d99c1">[56b42d99c1]</a>.</li>
+      <li>Add support for setting the default DbType and type name used for mappings on a per-connection basis. Pursuant to <a href="https://system.data.sqlite.org/index.html/info/3c00ec5b52">[3c00ec5b52]</a>.</li>
+      <li>Add DetectTextAffinity and DetectStringType connection flags to enable automatic detection of column types, when necessary. Pursuant to <a href="https://system.data.sqlite.org/index.html/info/3c00ec5b52">[3c00ec5b52]</a>.</li>
       <li>Add SetChunkSize method to the SQLiteConnection class. Pursuant to [d1c008fa0a].</li>
       <li>Add SharedFlags static property to the SQLiteConnection class.</li>
       <li>Make the ISQLiteSchemaExtensions interface public.&nbsp;<b>** Potentially Incompatible Change **</b></li>
       <li>Have the SQLiteProviderFactory class (in the System.Data.SQLite.Linq assembly) implement the IServiceProvider interface.</li>
       <li>Fix bug in documentation generator automation that prevented some internal documentation links from working.</li>
-      <li>Fix DateTime constant handling in the LINQ assembly. Fix for <a href="http://system.data.sqlite.org/index.html/info/da9f18d039">[da9f18d039]</a>.&nbsp;<b>** Potentially Incompatible Change **</b></li>
+      <li>Fix DateTime constant handling in the LINQ assembly. Fix for <a href="https://system.data.sqlite.org/index.html/info/da9f18d039">[da9f18d039]</a>.&nbsp;<b>** Potentially Incompatible Change **</b></li>
     </ul>
     <p><b>1.0.92.0 - March 19, 2014</p>
     <ul>
-      <li>Updated to <a href="http://www.sqlite.org/releaselog/3_8_4_1.html">SQLite 3.8.4.1</a>.</li>
+      <li>Updated to <a href="https://www.sqlite.org/releaselog/3_8_4_1.html">SQLite 3.8.4.1</a>.</li>
       <li>Update the list of keywords returned by SQLiteConnection.GetSchema(&quot;ReservedWords&quot;).&nbsp;<b>** Potentially Incompatible Change **</b></li>
       <li>Raise the static SQLiteConnection.Changed event when any SQLiteCommand or SQLiteDataReader object is closed or disposed.</li>
       <li>Add the SQLiteDataReader.StepCount property to return the number of rows seen so far.</li>
       <li>Add StickyHasRows connection flag to cause the SQLiteDataReader.HasRows property to return non-zero if there were ever any rows in the associated result sets.</li>
-      <li>When the TraceWarning connection flag is set, issue warnings about possibly malformed UNC paths. Pursuant to <a href="http://system.data.sqlite.org/index.html/info/283344397b">[283344397b]</a>.</li>
+      <li>When the TraceWarning connection flag is set, issue warnings about possibly malformed UNC paths. Pursuant to <a href="https://system.data.sqlite.org/index.html/info/283344397b">[283344397b]</a>.</li>
       <li>Convert the primary NuGet package, &quot;System.Data.SQLite&quot;, into a meta-package.</li>
       <li>Enhancements to the NuGet packages, including the new &quot;modular&quot; packages.</li>
     </ul>
     <p><b>1.0.91.0 - February 12, 2014</b></p>
     <ul>
-      <li>Updated to <a href="http://www.sqlite.org/releaselog/3_8_3_1.html">SQLite 3.8.3.1</a>.</li>
+      <li>Updated to <a href="https://www.sqlite.org/releaselog/3_8_3_1.html">SQLite 3.8.3.1</a>.</li>
       <li>Refresh all included SQLite core library documentation (e.g. SQL syntax).</li>
-      <li>Add support for <a href="http://entityframework.codeplex.com/">Entity Framework 6</a>.</li>
-      <li>Add support for per-connection mappings between type names and DbType values. Pursuant to <a href="http://system.data.sqlite.org/index.html/info/e87af1d06a">[e87af1d06a]</a>.</li>
+      <li>Add support for <a href="https://entityframework.codeplex.com/">Entity Framework 6</a>.</li>
+      <li>Add support for per-connection mappings between type names and DbType values. Pursuant to <a href="https://system.data.sqlite.org/index.html/info/e87af1d06a">[e87af1d06a]</a>.</li>
       <li>Modify the namespace used for all internal classes in the System.Data.SQLite.Linq assembly.&nbsp;<b>** Potentially Incompatible Change **</b></li>
       <li>Add SQLiteCompileOptions and InteropCompileOptions properties to the SQLiteConnection class to return the compile-time options for the SQLite core library and interop assembly, respectively.</li>
       <li>Add BindInvariantText and ConvertInvariantText connection flags to force the invariant culture to be used when converting parameter values to/from strings.</li>
       <li>Add NoConnectionPool and UseConnectionPool connection flags to disable or enable connection pooling by default.</li>
-      <li>Modify handling of the design-time components installer to run Visual Studio <b>devenv.exe /setup</b> after installing the package. This appears to be necessary in some circumstances for Visual Studio 2013. Pursuant to <a href="http://system.data.sqlite.org/index.html/info/a47eff2c71">[a47eff2c71]</a>.</li>
-      <li>Modify the native library pre-loader to support reading settings from an XML configuration file and to be capable of checking more than one directory. Persuant to <a href="http://system.data.sqlite.org/index.html/info/f0246d1817">[f0246d1817]</a>.</li>
+      <li>Modify handling of the design-time components installer to run Visual Studio <b>devenv.exe /setup</b> after installing the package. This appears to be necessary in some circumstances for Visual Studio 2013. Pursuant to <a href="https://system.data.sqlite.org/index.html/info/a47eff2c71">[a47eff2c71]</a>.</li>
+      <li>Modify the native library pre-loader to support reading settings from an XML configuration file and to be capable of checking more than one directory. Persuant to <a href="https://system.data.sqlite.org/index.html/info/f0246d1817">[f0246d1817]</a>.</li>
       <li>Support detecting when the native library pre-loader should use the CodeBase property instead of the Location property as the basis for locating the interop assembly.</li>
-      <li>Change the default behavior for the native library pre-loader so it first searches the executing (i.e. System.Data.SQLite) assembly directory and then the application domain directory. Pursuant to <a href="http://system.data.sqlite.org/index.html/info/f0246d1817">[f0246d1817]</a>.&nbsp;<b>** Potentially Incompatible Change **</b></li>
-      <li>Include DbType.AnsiString in the list of types that need special ColumnSize handling. Fix for <a href="http://system.data.sqlite.org/index.html/info/0550f0326e">[0550f0326e]</a>.</li>
+      <li>Change the default behavior for the native library pre-loader so it first searches the executing (i.e. System.Data.SQLite) assembly directory and then the application domain directory. Pursuant to <a href="https://system.data.sqlite.org/index.html/info/f0246d1817">[f0246d1817]</a>.&nbsp;<b>** Potentially Incompatible Change **</b></li>
+      <li>Include DbType.AnsiString in the list of types that need special ColumnSize handling. Fix for <a href="https://system.data.sqlite.org/index.html/info/0550f0326e">[0550f0326e]</a>.</li>
     </ul>
     <p><b>1.0.90.0 - December 23, 2013</b></p>
     <ul>
-      <li>Updated to <a href="http://www.sqlite.org/releaselog/3_8_2.html">SQLite 3.8.2</a>.</li>
+      <li>Updated to <a href="https://www.sqlite.org/releaselog/3_8_2.html">SQLite 3.8.2</a>.</li>
       <li>Add Visual Studio 2013 support to all the applicable solution/project files, their associated supporting files, and the test suite.</li>
       <li>Add Visual Studio 2013 support to the redesigned designer support installer.</li>
       <li>Add support for Windows Embedded Compact 2013.</li>
@@ -126,24 +126,24 @@
       <li>Add experimental GetMemoryStatistics, ReleaseMemory, and Shutdown methods to the SQLiteConnection class.</li>
       <li>Add memory leak detection to the test project for the .NET Compact Framework.</li>
       <li>Add SQLITE_ENABLE_MEMORY_MANAGEMENT compile-time option to the interop assembly.</li>
-      <li>Use current isolation level when enlisting into an existing transaction. Fix for <a href="http://system.data.sqlite.org/index.html/info/56b42d99c1">[56b42d99c1]</a>.</li>
-      <li>Better handling of non-error log messages from the SQLite core library. Pursuant to <a href="http://system.data.sqlite.org/index.html/info/44df10ea90">[44df10ea90]</a>.</li>
-      <li>Add TraceWarning connection flag to enable tracing of type mapping failures and disable tracing of them by default. Pursuant to <a href="http://system.data.sqlite.org/index.html/info/6d45c782e4">[6d45c782e4]</a>.</li>
-      <li>Use 32-bit values to keep track of numeric precision and scale when building the schema table for a query. Fix for <a href="http://system.data.sqlite.org/index.html/info/ef2216192d">[ef2216192d]</a>.</li>
+      <li>Use current isolation level when enlisting into an existing transaction. Fix for <a href="https://system.data.sqlite.org/index.html/info/56b42d99c1">[56b42d99c1]</a>.</li>
+      <li>Better handling of non-error log messages from the SQLite core library. Pursuant to <a href="https://system.data.sqlite.org/index.html/info/44df10ea90">[44df10ea90]</a>.</li>
+      <li>Add TraceWarning connection flag to enable tracing of type mapping failures and disable tracing of them by default. Pursuant to <a href="https://system.data.sqlite.org/index.html/info/6d45c782e4">[6d45c782e4]</a>.</li>
+      <li>Use 32-bit values to keep track of numeric precision and scale when building the schema table for a query. Fix for <a href="https://system.data.sqlite.org/index.html/info/ef2216192d">[ef2216192d]</a>.</li>
     </ul>
     <p><b>1.0.89.0 - October 28, 2013</b></p>
     <ul>
-      <li>Updated to <a href="http://www.sqlite.org/releaselog/3_8_1.html">SQLite 3.8.1</a>.</li>
-      <li>Add AutoCommit property to the SQLiteConnection class. Fix for <a href="http://system.data.sqlite.org/index.html/info/9ba9346f75">[9ba9346f75]</a>.</li>
-      <li>Use declared column sizes for the AnsiStringFixedLength and StringFixedLength mapped database types. Fix for <a href="http://system.data.sqlite.org/index.html/info/3113734605">[3113734605]</a>.</li>
+      <li>Updated to <a href="https://www.sqlite.org/releaselog/3_8_1.html">SQLite 3.8.1</a>.</li>
+      <li>Add AutoCommit property to the SQLiteConnection class. Fix for <a href="https://system.data.sqlite.org/index.html/info/9ba9346f75">[9ba9346f75]</a>.</li>
+      <li>Use declared column sizes for the AnsiStringFixedLength and StringFixedLength mapped database types. Fix for <a href="https://system.data.sqlite.org/index.html/info/3113734605">[3113734605]</a>.</li>
       <li>Check the result of sqlite3_column_name function against NULL.</li>
       <li>Return false for the SQLiteParameterCollection.IsSynchronized property because it is not thread-safe.</li>
-      <li>Raise the static SQLiteConnection.Changed event when any SQLiteCommand, SQLiteDataReader, or CriticalHandle derived object instance is created. Fix for <a href="http://system.data.sqlite.org/index.html/info/aba4549801">[aba4549801]</a>.</li>
+      <li>Raise the static SQLiteConnection.Changed event when any SQLiteCommand, SQLiteDataReader, or CriticalHandle derived object instance is created. Fix for <a href="https://system.data.sqlite.org/index.html/info/aba4549801">[aba4549801]</a>.</li>
       <li>Add SQLiteCommand.Execute, SQLiteCommand.ExecuteNonQuery, and SQLiteCommand.ExecuteScalar method overloads that take a CommandBehavior parameter.</li>
       <li>Revise how the extra object data is passed to the static SQLiteConnection.Changed event.&nbsp;<b>** Potentially Incompatible Change **</b></li>
-      <li>Make sure the database cannot be changed by a query when the CommandBehavior.SchemaOnly flag is used. Fix for <a href="http://system.data.sqlite.org/index.html/info/f8dbab8baf">[f8dbab8baf]</a>.&nbsp;<b>** Potentially Incompatible Change **</b></li>
+      <li>Make sure the database cannot be changed by a query when the CommandBehavior.SchemaOnly flag is used. Fix for <a href="https://system.data.sqlite.org/index.html/info/f8dbab8baf">[f8dbab8baf]</a>.&nbsp;<b>** Potentially Incompatible Change **</b></li>
       <li>Fix bug in <a href="http://sourceforge.net/projects/ndoc3/">NDoc3</a> that was preventing some of the MSDN documentation links from working.</li>
-      <li>Include the XML documentation files in the NuGet packages. Fix for <a href="http://system.data.sqlite.org/index.html/info/5970d5b0a6">[5970d5b0a6]</a>.</li>
+      <li>Include the XML documentation files in the NuGet packages. Fix for <a href="https://system.data.sqlite.org/index.html/info/5970d5b0a6">[5970d5b0a6]</a>.</li>
       <li>Add InteropVersion, InteropSourceId, ProviderVersion, and ProviderSourceId properties to the SQLiteConnection class.</li>
       <li>Add experimental support for interfacing with the authorizer callback in the SQLite core library.</li>
       <li>Add experimental support for the native totype extension.</li>
@@ -151,70 +151,70 @@
     <p><b>1.0.88.0 - August 7, 2013</b></p>
     <ul>
       <li>Various fixes to managed virtual table integration infrastructure.</li>
-      <li>Implement workaround for an incorrect PROCESSOR_ARCHITECTURE being reported. Fix for <a href="http://system.data.sqlite.org/index.html/info/9ac9862611">[9ac9862611]</a>.</li>
+      <li>Implement workaround for an incorrect PROCESSOR_ARCHITECTURE being reported. Fix for <a href="https://system.data.sqlite.org/index.html/info/9ac9862611">[9ac9862611]</a>.</li>
       <li>Modify classes that implement the IDisposable pattern to set the disposed flag after their base classes have been disposed.</li>
-      <li>When automatically registering custom functions, use the executing assembly (i.e. System.Data.SQLite) for reference detection. Fix for <a href="http://system.data.sqlite.org/index.html/info/4e49a58c4c">[4e49a58c4c]</a>.</li>
+      <li>When automatically registering custom functions, use the executing assembly (i.e. System.Data.SQLite) for reference detection. Fix for <a href="https://system.data.sqlite.org/index.html/info/4e49a58c4c">[4e49a58c4c]</a>.</li>
     </ul>
     <p><b>1.0.87.0 - July 8, 2013</b></p>
     <ul>
-      <li>Add all the necessary infrastructure to allow virtual tables to be implemented in managed code. Fix for <a href="http://system.data.sqlite.org/index.html/info/9a544991be">[9a544991be]</a>.</li>
-      <li>The DbType to type name translation needs to prioritize the Entity Framework type names. Fix for <a href="http://system.data.sqlite.org/index.html/info/47f4bac575">[47f4bac575]</a>.</li>
+      <li>Add all the necessary infrastructure to allow virtual tables to be implemented in managed code. Fix for <a href="https://system.data.sqlite.org/index.html/info/9a544991be">[9a544991be]</a>.</li>
+      <li>The DbType to type name translation needs to prioritize the Entity Framework type names. Fix for <a href="https://system.data.sqlite.org/index.html/info/47f4bac575">[47f4bac575]</a>.</li>
       <li>Add DateTimeFormatString connection string property to allow the DateTime format string used for all parsing and formatting to be overridden.</li>
       <li>Add NoFunctions connection flag to skip binding functions registered in the application domain.</li>
-      <li>Add several data-types for compatibility purposes. Fix for <a href="http://system.data.sqlite.org/index.html/info/fe50b8c2e8">[fe50b8c2e8]</a>.</li>
+      <li>Add several data-types for compatibility purposes. Fix for <a href="https://system.data.sqlite.org/index.html/info/fe50b8c2e8">[fe50b8c2e8]</a>.</li>
       <li>Add SQLiteConnection.BindFunction method to facilitate adding custom functions on a per-connection basis.</li>
-      <li>When reading a DateTime value, avoid unnecessary string conversions. Fix for <a href="http://system.data.sqlite.org/index.html/info/4d87fbc742">[4d87fbc742]</a>.</li>
-      <li>Modify the index introspection code so that it does not treat PRAGMA table_info &quot;pk&quot; column values as boolean. Fix for <a href="http://system.data.sqlite.org/index.html/info/f2c47a01eb">[f2c47a01eb]</a>.</li>
-      <li>Disable use of the new connection string parsing algorithm when the No_SQLiteConnectionNewParser environment variable is set. Pursuant to <a href="http://system.data.sqlite.org/index.html/info/bbdda6eae2">[bbdda6eae2]</a>.</li>
+      <li>When reading a DateTime value, avoid unnecessary string conversions. Fix for <a href="https://system.data.sqlite.org/index.html/info/4d87fbc742">[4d87fbc742]</a>.</li>
+      <li>Modify the index introspection code so that it does not treat PRAGMA table_info &quot;pk&quot; column values as boolean. Fix for <a href="https://system.data.sqlite.org/index.html/info/f2c47a01eb">[f2c47a01eb]</a>.</li>
+      <li>Disable use of the new connection string parsing algorithm when the No_SQLiteConnectionNewParser environment variable is set. Pursuant to <a href="https://system.data.sqlite.org/index.html/info/bbdda6eae2">[bbdda6eae2]</a>.</li>
       <li>Rename the ReturnCode property of the SQLiteException class to ResultCode.&nbsp;<b>** Potentially Incompatible Change **</b></li>
     </ul>
     <p><b>1.0.86.0 - May 23, 2013</b></p>
     <ul>
-      <li>Updated to <a href="http://www.sqlite.org/releaselog/3_7_17.html">SQLite 3.7.17</a>.</li>
+      <li>Updated to <a href="https://www.sqlite.org/releaselog/3_7_17.html">SQLite 3.7.17</a>.</li>
       <li>Disable use of the AllowPartiallyTrustedCallers attribute when compiled for the .NET Framework 4.0/4.5.&nbsp;<b>** Potentially Incompatible Change **</b></li>
-      <li>Allow semi-colons in the data source file name. Fix for <a href="http://system.data.sqlite.org/index.html/info/48a6b8e4ca">[e47b3d8346]</a>.&nbsp;<b>** Potentially Incompatible Change **</b></li>
-      <li>NULL values should be reported as type &quot;object&quot;, not &quot;DBNull&quot;. Fix for <a href="http://system.data.sqlite.org/index.html/info/48a6b8e4ca">[48a6b8e4ca]</a>.</li>
+      <li>Allow semi-colons in the data source file name. Fix for <a href="https://system.data.sqlite.org/index.html/info/48a6b8e4ca">[e47b3d8346]</a>.&nbsp;<b>** Potentially Incompatible Change **</b></li>
+      <li>NULL values should be reported as type &quot;object&quot;, not &quot;DBNull&quot;. Fix for <a href="https://system.data.sqlite.org/index.html/info/48a6b8e4ca">[48a6b8e4ca]</a>.</li>
     </ul>
     <p><b>1.0.85.0 - April 18, 2013</b></p>
     <ul>
-      <li>Updated to <a href="http://www.sqlite.org/releaselog/3_7_16_2.html">SQLite 3.7.16.2</a>.</li>
-      <li>Properly handle embedded NUL characters in parameter and column values. Fix for <a href="http://system.data.sqlite.org/index.html/info/3567020edf">[3567020edf]</a>.</li>
+      <li>Updated to <a href="https://www.sqlite.org/releaselog/3_7_16_2.html">SQLite 3.7.16.2</a>.</li>
+      <li>Properly handle embedded NUL characters in parameter and column values. Fix for <a href="https://system.data.sqlite.org/index.html/info/3567020edf">[3567020edf]</a>.</li>
       <li>Make use of the sqlite3_prepare_v2 function when applicable.</li>
       <li>Check for a valid row in the SQLiteDataReader.GetValue method.</li>
       <li>Implement processor architecture detection when running on the .NET Compact Framework (via P/Invoke).</li>
       <li>Support automated testing when running on the .NET Compact Framework 2.0.</li>
-      <li>Skip checking loaded assemblies for types tagged with the SQLiteFunction attribute when the No_SQLiteFunctions environment variable is set. Pursuant to <a href="http://system.data.sqlite.org/index.html/info/e4c8121f7b">[e4c8121f7b]</a>.</li>
-      <li>Add HexPassword connection string property to work around the inability to include a literal semicolon in a connection string property value. Pursuant to <a href="http://system.data.sqlite.org/index.html/info/1c456ae75f">[1c456ae75f]</a>.</li>
+      <li>Skip checking loaded assemblies for types tagged with the SQLiteFunction attribute when the No_SQLiteFunctions environment variable is set. Pursuant to <a href="https://system.data.sqlite.org/index.html/info/e4c8121f7b">[e4c8121f7b]</a>.</li>
+      <li>Add HexPassword connection string property to work around the inability to include a literal semicolon in a connection string property value. Pursuant to <a href="https://system.data.sqlite.org/index.html/info/1c456ae75f">[1c456ae75f]</a>.</li>
       <li>Add static Execute method to the SQLiteCommand class.</li>
-      <li>Support custom connection pool implementations by adding the ISQLiteConnectionPool interface, the static SQLiteConnection.ConnectionPool property, and the static CreateHandle method in addition to modifying the SQLiteConnectionPool class. Pursuant to <a href="http://system.data.sqlite.org/index.html/info/393d954be0">[393d954be0]</a>.</li>
+      <li>Support custom connection pool implementations by adding the ISQLiteConnectionPool interface, the static SQLiteConnection.ConnectionPool property, and the static CreateHandle method in addition to modifying the SQLiteConnectionPool class. Pursuant to <a href="https://system.data.sqlite.org/index.html/info/393d954be0">[393d954be0]</a>.</li>
       <li>Add public constructor to the SQLiteDataAdapter class that allows passing the parseViaFramework parameter to the SQLiteConnection constructor.</li>
       <li>When built with the CHECK_STATE compile-time option, skip throwing exceptions from the SQLiteDataReader class when the object is being disposed.</li>
       <li>Support automatic value conversions for columns with a declared type of BIGUINT, INTEGER8, INTEGER16, INTEGER32, INTEGER64, SMALLUINT, TINYSINT, UNSIGNEDINTEGER, UNSIGNEDINTEGER8, UNSIGNEDINTEGER16, UNSIGNEDINTEGER32, UNSIGNEDINTEGER64, INT8, INT16, INT32, INT64, UINT, UINT8, UINT16, UINT32, UINT64, or ULONG.</li>
-      <li>Add BindUInt32AsInt64 connection flag to force binding of UInt32 values as Int64 instead. Pursuant to <a href="http://system.data.sqlite.org/index.html/info/c010fa6584">[c010fa6584]</a>.</li>
+      <li>Add BindUInt32AsInt64 connection flag to force binding of UInt32 values as Int64 instead. Pursuant to <a href="https://system.data.sqlite.org/index.html/info/c010fa6584">[c010fa6584]</a>.</li>
       <li>Add BindAllAsText and GetAllAsText connection flags to force binding and returning of all values as text.</li>
       <li>Remove AUTOINCREMENT from the column type name map.&nbsp;<b>** Potentially Incompatible Change **</b></li>
-      <li>Avoid throwing overflow exceptions from the SQLite3.GetValue method for integral column types. Partial fix for <a href="http://system.data.sqlite.org/index.html/info/c010fa6584">[c010fa6584]</a>.&nbsp;<b>** Potentially Incompatible Change **</b></li>
+      <li>Avoid throwing overflow exceptions from the SQLite3.GetValue method for integral column types. Partial fix for <a href="https://system.data.sqlite.org/index.html/info/c010fa6584">[c010fa6584]</a>.&nbsp;<b>** Potentially Incompatible Change **</b></li>
       <li>Use the legacy connection closing algorithm when built with the INTEROP_LEGACY_CLOSE compile-time option.</li>
       <li>Support using the directory containing the primary managed-only assembly as the basis for native library pre-loading.</li>
       <li>Still further enhancements to the build and test automation.</li>
     </ul>
     <p><b>1.0.84.0 - January 9, 2013</b></p>
     <ul>
-      <li>Updated to <a href="http://www.sqlite.org/releaselog/3_7_15_2.html">SQLite 3.7.15.2</a>.</li>
-      <li>Explicitly dispose of all SQLiteCommand objects managed by the DbDataAdapter class. Fix for <a href="http://system.data.sqlite.org/index.html/info/6434e23a0f">[6434e23a0f]</a>.</li>
+      <li>Updated to <a href="https://www.sqlite.org/releaselog/3_7_15_2.html">SQLite 3.7.15.2</a>.</li>
+      <li>Explicitly dispose of all SQLiteCommand objects managed by the DbDataAdapter class. Fix for <a href="https://system.data.sqlite.org/index.html/info/6434e23a0f">[6434e23a0f]</a>.</li>
       <li>Add Cancel method to the SQLiteConnection class to interrupt a long running query.</li>
       <li>Improve thread safety of the SQLiteLog.LogMessage method.</li>
     </ul>
     <p><b>1.0.83.0 - December 29, 2012</b></p>
     <ul>
-      <li>Updated to <a href="http://www.sqlite.org/releaselog/3_7_15_1.html">SQLite 3.7.15.1</a>.</li>
+      <li>Updated to <a href="https://www.sqlite.org/releaselog/3_7_15_1.html">SQLite 3.7.15.1</a>.</li>
       <li>Add Visual Studio 2012 support to all the applicable solution/project files, their associated supporting files, and the test suite.</li>
       <li>Add Visual Studio 2012 support to the redesigned designer support installer.</li>
       <li>Allow opened connections to skip adding the extension functions included in the interop assembly via the new NoExtensionFunctions connection flag.</li>
-      <li>Support loading of SQLite extensions via the new EnableExtensions and LoadExtension methods of the SQLiteConnection class. Pursuant to <a href="http://system.data.sqlite.org/index.html/info/17045010df">[17045010df]</a>.</li>
-      <li>Remove one set of surrounding single or double quotes from property names and values parsed from the connection string. Fix for <a href="http://system.data.sqlite.org/index.html/info/b4cc611998">[b4cc611998]</a>.</li>
+      <li>Support loading of SQLite extensions via the new EnableExtensions and LoadExtension methods of the SQLiteConnection class. Pursuant to <a href="https://system.data.sqlite.org/index.html/info/17045010df">[17045010df]</a>.</li>
+      <li>Remove one set of surrounding single or double quotes from property names and values parsed from the connection string. Fix for <a href="https://system.data.sqlite.org/index.html/info/b4cc611998">[b4cc611998]</a>.</li>
       <li>Modify parsing of connection strings to allow property names and values to be quoted.&nbsp;<b>** Potentially Incompatible Change **</b></li>
-      <li>Add ParseViaFramework property to the SQLiteConnection class to allow the built-in (i.e. framework provided) connection string parser to be used when opening a connection. Pursuant to <a href="http://system.data.sqlite.org/index.html/info/b4cc611998">[b4cc611998]</a>.</li>
+      <li>Add ParseViaFramework property to the SQLiteConnection class to allow the built-in (i.e. framework provided) connection string parser to be used when opening a connection. Pursuant to <a href="https://system.data.sqlite.org/index.html/info/b4cc611998">[b4cc611998]</a>.</li>
       <li>Add notifications before and after any connection is opened and closed, as well as other related notifications, via the new static Changed event.</li>
       <li>Add an overload of the SQLiteLog.LogMessage method that takes a single string parameter.</li>
       <li>Add an overload of the SQLiteConnection.LogMessage method that takes a SQLiteErrorCode parameter.</li>
@@ -231,7 +231,7 @@
       <li>Cache column indexes as they are looked up when using the SQLiteDataReader to improve performance.</li>
       <li>Prevent the SQLiteConnection.Close method from throwing non-fatal exceptions during its disposal.</li>
       <li>Rename the interop assembly functions sqlite3_cursor_rowid, sqlite3_context_collcompare, sqlite3_context_collseq, sqlite3_cursor_rowid, and sqlite3_table_cursor to include an &quot;_interop&quot; suffix.&nbsp;<b>** Potentially Incompatible Change **</b></li>
-      <li>Prevent the LastInsertRowId, MemoryUsed, and MemoryHighwater connection properties from throwing NotSupportedException when running on the .NET Compact Framework. Fix for <a href="http://system.data.sqlite.org/index.html/info/dd45aba387">[dd45aba387]</a>.</li>
+      <li>Prevent the LastInsertRowId, MemoryUsed, and MemoryHighwater connection properties from throwing NotSupportedException when running on the .NET Compact Framework. Fix for <a href="https://system.data.sqlite.org/index.html/info/dd45aba387">[dd45aba387]</a>.</li>
       <li>Improve automatic detection of the sqlite3_close_v2 function when compiled to use the standard SQLite library.</li>
       <li>Add protection against ThreadAbortException asynchronously interrupting native resource initialization and finalization.</li>
       <li>Add native logging callback for use with the sqlite3_log function to the interop assembly, enabled via the INTEROP_LOG preprocessor definition.</li>
@@ -241,15 +241,15 @@
     </ul>
     <p><b>1.0.82.0 - September 3, 2012</b></p>
     <ul>
-      <li>Updated to <a href="http://www.sqlite.org/releaselog/3_7_14.html">SQLite 3.7.14</a>.</li>
-      <li>Properly handle quoted data source values in the connection string. Fix for <a href="http://system.data.sqlite.org/index.html/info/8c3bee31c8">[8c3bee31c8]</a>.</li>
-      <li>The <a href="http://nuget.org/packages/System.Data.SQLite">primary NuGet package</a> now supports x86 / x64 and the .NET Framework 2.0 / 4.0 (i.e. in a single package).</li>
+      <li>Updated to <a href="https://www.sqlite.org/releaselog/3_7_14.html">SQLite 3.7.14</a>.</li>
+      <li>Properly handle quoted data source values in the connection string. Fix for <a href="https://system.data.sqlite.org/index.html/info/8c3bee31c8">[8c3bee31c8]</a>.</li>
+      <li>The <a href="https://www.nuget.org/packages/System.Data.SQLite">primary NuGet package</a> now supports x86 / x64 and the .NET Framework 2.0 / 4.0 (i.e. in a single package).</li>
       <li>Change the default value for the Synchronous connection string property to Full to match the default used by the SQLite core library itself.&nbsp;<b>** Potentially Incompatible Change **</b></li>
       <li>Add the ability to skip applying default connection settings to opened databases via the new SetDefaults connection string property.</li>
       <li>Add the ability to skip expanding data source file names to their fully qualified paths via the new ToFullPath connection string property.</li>
-      <li>Fix the database cleanup ordering in the tests for ticket <a href="http://system.data.sqlite.org/index.html/info/343d392b51">[343d392b51]</a>.</li>
+      <li>Fix the database cleanup ordering in the tests for ticket <a href="https://system.data.sqlite.org/index.html/info/343d392b51">[343d392b51]</a>.</li>
       <li>Add support for the sqlite3_close_v2 function from the SQLite core library.</li>
-      <li>Add support for <a href="http://www.sqlite.org/uri.html">URI file names</a> via the new FullUri connection string property.</li>
+      <li>Add support for <a href="https://www.sqlite.org/uri.html">URI file names</a> via the new FullUri connection string property.</li>
       <li>Improve support for the standard SQLite core library in the LINQ assembly and the test suite.</li>
       <li>Add SetMemoryStatus static method to the SQLiteConnection class.</li>
       <li>Improve threaded handling of the delegate used by the SQLiteLog class.</li>
@@ -257,12 +257,12 @@
     </ul>
     <p><b>1.0.81.0 - May 27, 2012</b></p>
     <ul>
-      <li>Updated to <a href="http://www.sqlite.org/releaselog/3_7_12_1.html">SQLite 3.7.12.1</a>.</li>
+      <li>Updated to <a href="https://www.sqlite.org/releaselog/3_7_12_1.html">SQLite 3.7.12.1</a>.</li>
       <li>Support compiling the interop assembly without support for the custom extension functions and the CryptoAPI based codec.</li>
       <li>Add DefineConstants property to the SQLiteConnection class to return the list of define constants used when compiling the core managed assembly.</li>
       <li>Add release archive verification tool to the release automation.</li>
-      <li>Fix NullReferenceException when calling the SQLiteDataAdapter.FillSchema method on a query that returns multiple result sets. Fix for <a href="http://system.data.sqlite.org/index.html/info/3aa50d8413">[3aa50d8413]</a>.</li>
-      <li>Fix subtle race condition between threads fetching connection handles from the connection pool and any garbage collection (GC) threads that may be running. Fix for <a href="http://system.data.sqlite.org/index.html/info/996d13cd87">[996d13cd87]</a>.</li>
+      <li>Fix NullReferenceException when calling the SQLiteDataAdapter.FillSchema method on a query that returns multiple result sets. Fix for <a href="https://system.data.sqlite.org/index.html/info/3aa50d8413">[3aa50d8413]</a>.</li>
+      <li>Fix subtle race condition between threads fetching connection handles from the connection pool and any garbage collection (GC) threads that may be running. Fix for <a href="https://system.data.sqlite.org/index.html/info/996d13cd87">[996d13cd87]</a>.</li>
       <li>Add missing call to SetTimeout in the SQLite3_UTF16.Open method.</li>
       <li>Add checks to prevent the SQLiteConnectionPool.Remove method from returning any connection handles that are closed or invalid.</li>
       <li>Modify static SQLiteBase helper methods to prevent them from passing IntPtr.Zero to the SQLite native library.</li>
@@ -275,19 +275,19 @@
     </ul>
     <p><b>1.0.80.0 - April 1, 2012</b></p>
     <ul>
-      <li>Updated to <a href="http://www.sqlite.org/releaselog/3_7_11.html">SQLite 3.7.11</a>.</li>
-      <li>In the SQLiteFunction class, when calling user-provided methods from a delegate called by native code, avoid throwing exceptions, optionally tracing the caught exceptions. Fix for <a href="http://system.data.sqlite.org/index.html/info/8a426d12eb">[8a426d12eb]</a>.</li>
+      <li>Updated to <a href="https://www.sqlite.org/releaselog/3_7_11.html">SQLite 3.7.11</a>.</li>
+      <li>In the SQLiteFunction class, when calling user-provided methods from a delegate called by native code, avoid throwing exceptions, optionally tracing the caught exceptions. Fix for <a href="https://system.data.sqlite.org/index.html/info/8a426d12eb">[8a426d12eb]</a>.</li>
       <li>Add Visual Studio 2005 support to all the applicable solution/project files, their associated supporting files, and the test suite.</li>
       <li>Add Visual Studio 2005 support to the redesigned designer support installer.</li>
       <li>Add experimental support for &quot;pre-loading&quot; the native SQLite library based on the processor architecture of the current process. This feature is now enabled by default at compile-time.</li>
-      <li>Add support for the native <a href="http://www.sqlite.org/backup.html">SQLite Online Backup API</a>. Fix for <a href="http://system.data.sqlite.org/index.html/info/c71846ed57">[c71846ed57]</a>.</li>
-      <li>Acquire and hold a static data lock while checking if the native SQLite library has been initialized to prevent a subtle race condition that can result in superfluous error messages. Fix for <a href="http://system.data.sqlite.org/index.html/info/72905c9a77">[72905c9a77]</a>.</li>
+      <li>Add support for the native <a href="https://www.sqlite.org/backup.html">SQLite Online Backup API</a>. Fix for <a href="https://system.data.sqlite.org/index.html/info/c71846ed57">[c71846ed57]</a>.</li>
+      <li>Acquire and hold a static data lock while checking if the native SQLite library has been initialized to prevent a subtle race condition that can result in superfluous error messages. Fix for <a href="https://system.data.sqlite.org/index.html/info/72905c9a77">[72905c9a77]</a>.</li>
       <li>Support tracing of all parameter binding activity and use the connection flags to control what is traced.</li>
       <li>When converting a DateTime instance of an &quot;Unspecified&quot; kind to a string, use the same kind as the connection, if available.</li>
       <li>Add overload of the SQLiteDataReader.GetValues method that returns a NameValueCollection.</li>
       <li>Add static ToUnixEpoch method to the SQLiteConvert class to convert a DateTime value to the number of whole seconds since the Unix epoch.</li>
       <li>In the implicit conversion operators (to IntPtr) for both the SQLiteConnectionHandle and SQLiteStatementHandle classes, return IntPtr.Zero if the instance being converted is null.</li>
-      <li>Write warning message to the active trace listeners (for the Debug build configuration only) if a column type or type name cannot be mapped properly. See <a href="http://system.data.sqlite.org/index.html/info/4bbf851fa5">[4bbf851fa5]</a>.</li>
+      <li>Write warning message to the active trace listeners (for the Debug build configuration only) if a column type or type name cannot be mapped properly. See <a href="https://system.data.sqlite.org/index.html/info/4bbf851fa5">[4bbf851fa5]</a>.</li>
       <li>When tracing SQL statements to be prepared, bypass the internal length limit of the sqlite3_log function by using the SQLiteLog class directly instead. Also, detect null and/or empty strings and emit a special message in that case.</li>
       <li>For the setup, the Visual Studio task should only be initially checked if the GAC task is available and vice-versa.</li>
       <li>Improve compatibility with custom command processors by using __ECHO instead of _ECHO in batch tools.</li>
@@ -300,79 +300,79 @@
     </ul>
     <p><b>1.0.79.0 - January 28, 2012</b></p>
     <ul>
-      <li>Use the WoW64 registry keys when installing the VS designer components on 64-bit Windows. Fix for <a href="http://system.data.sqlite.org/index.html/info/d8491abd0b">[d8491abd0b]</a>.</li>
-      <li>Correct resource name used by the LINQ assembly to locate several key string resources. Fix for <a href="http://system.data.sqlite.org/index.html/info/fbebb30da9">[fbebb30da9]</a>.</li>
+      <li>Use the WoW64 registry keys when installing the VS designer components on 64-bit Windows. Fix for <a href="https://system.data.sqlite.org/index.html/info/d8491abd0b">[d8491abd0b]</a>.</li>
+      <li>Correct resource name used by the LINQ assembly to locate several key string resources. Fix for <a href="https://system.data.sqlite.org/index.html/info/fbebb30da9">[fbebb30da9]</a>.</li>
     </ul>
     <p><b>1.0.78.0 - January 27, 2012</b></p>
     <ul>
-      <li>Updated to <a href="http://www.sqlite.org/releaselog/3_7_10.html">SQLite 3.7.10</a>.</li>
+      <li>Updated to <a href="https://www.sqlite.org/releaselog/3_7_10.html">SQLite 3.7.10</a>.</li>
       <li>Redesign the VS designer support installer and integrate it into the setup packages.</li>
-      <li>When emitting SQL for foreign keys in the VS designer, be sure to take all returned schema rows into account. Remainder of fix for <a href="http://system.data.sqlite.org/index.html/info/b226147b37">[b226147b37]</a>.</li>
+      <li>When emitting SQL for foreign keys in the VS designer, be sure to take all returned schema rows into account. Remainder of fix for <a href="https://system.data.sqlite.org/index.html/info/b226147b37">[b226147b37]</a>.</li>
       <li>Add Flags connection string property to control extra behavioral flags for the connection.</li>
       <li>Refactor all IDisposable implementations to conform to best practices, potentially eliminating leaks in certain circumstances.</li>
       <li>Even more enhancements to the build and test automation.</li>
       <li>Support parameter binding to more primitive types, including unsigned integer types.</li>
-      <li>Recognize the TIMESTAMP column data type as the DateTime type. Fix for <a href="http://system.data.sqlite.org/index.html/info/bb4b04d457">[bb4b04d457]</a>.</li>
-      <li>Prevent logging superfluous messages having to do with library initialization checking. Fix for <a href="http://system.data.sqlite.org/index.html/info/3fc172d1be">[3fc172d1be]</a>.</li>
-      <li>Support the DateTimeKind and BaseSchemaName connection string properties in the SQLiteConnectionStringBuilder class. Fix for <a href="http://system.data.sqlite.org/index.html/info/f3ec1e0066">[f3ec1e0066]</a>.</li>
-      <li>Overloads of the SQLiteConvert.ToDateTime and SQLiteConvert.ToJulianDay methods that do not require an instance should be static. Partial fix for <a href="http://system.data.sqlite.org/index.html/info/4bbf851fa5">[4bbf851fa5]</a>.&nbsp;<b>** Potentially Incompatible Change **</b></li>
+      <li>Recognize the TIMESTAMP column data type as the DateTime type. Fix for <a href="https://system.data.sqlite.org/index.html/info/bb4b04d457">[bb4b04d457]</a>.</li>
+      <li>Prevent logging superfluous messages having to do with library initialization checking. Fix for <a href="https://system.data.sqlite.org/index.html/info/3fc172d1be">[3fc172d1be]</a>.</li>
+      <li>Support the DateTimeKind and BaseSchemaName connection string properties in the SQLiteConnectionStringBuilder class. Fix for <a href="https://system.data.sqlite.org/index.html/info/f3ec1e0066">[f3ec1e0066]</a>.</li>
+      <li>Overloads of the SQLiteConvert.ToDateTime and SQLiteConvert.ToJulianDay methods that do not require an instance should be static. Partial fix for <a href="https://system.data.sqlite.org/index.html/info/4bbf851fa5">[4bbf851fa5]</a>.&nbsp;<b>** Potentially Incompatible Change **</b></li>
     </ul>
     <p><b>1.0.77.0 - November 28, 2011</b></p>
     <ul>
-      <li>Updated to <a href="http://www.sqlite.org/releaselog/3_7_9.html">SQLite 3.7.9</a>.</li>
+      <li>Updated to <a href="https://www.sqlite.org/releaselog/3_7_9.html">SQLite 3.7.9</a>.</li>
       <li>More enhancements to the build and test automation.</li>
       <li>Plug native memory leak when closing a database connection containing a statement that cannot be finalized for some reason.</li>
       <li>The SQLite3 class should always attempt to dispose the contained SQLiteConnectionHandle, even when called via the finalizer.</li>
       <li>When compiled with DEBUG defined, emit diagnostic information related to resource cleanup to any TraceListener objects that may be registered.</li>
       <li>Stop characterizing all log messages as errors. From now on, if the errorCode is zero, the message will not be considered an error.</li>
-      <li>Never attempt to configure the native logging interface if the SQLite core library has already been initialized for the process. Fix for <a href="http://system.data.sqlite.org/index.html/info/2ce0870fad">[2ce0870fad]</a>.</li>
+      <li>Never attempt to configure the native logging interface if the SQLite core library has already been initialized for the process. Fix for <a href="https://system.data.sqlite.org/index.html/info/2ce0870fad">[2ce0870fad]</a>.</li>
       <li>Allow the SQLiteLog class to be used for logging messages without having an open connection.</li>
-      <li>Support building the core System.Data.SQLite assemblies using the .NET Framework 4.0 Client Profile. Fix for <a href="http://system.data.sqlite.org/index.html/info/566f1ad1e4">[566f1ad1e4]</a>.</li>
-      <li>When generating the schema based on the contents of a SQLiteDataReader, skip flagging columns as unique if the data reader is holding the result of some kind of multi-table construct (e.g. a cross join) because we must allow duplicate values in that case. Fix for <a href="http://system.data.sqlite.org/index.html/info/7e3fa93744">[7e3fa93744]</a>.</li>
-      <li>When returning schema information that may be used by the .NET Framework to construct dynamic SQL, use a fake schema name (instead of null) so that the table names will be properly qualified with the catalog name (i.e. the attached database name). Partial fix for <a href="http://system.data.sqlite.org/index.html/info/343d392b51">[343d392b51]</a>.</li>
+      <li>Support building the core System.Data.SQLite assemblies using the .NET Framework 4.0 Client Profile. Fix for <a href="https://system.data.sqlite.org/index.html/info/566f1ad1e4">[566f1ad1e4]</a>.</li>
+      <li>When generating the schema based on the contents of a SQLiteDataReader, skip flagging columns as unique if the data reader is holding the result of some kind of multi-table construct (e.g. a cross join) because we must allow duplicate values in that case. Fix for <a href="https://system.data.sqlite.org/index.html/info/7e3fa93744">[7e3fa93744]</a>.</li>
+      <li>When returning schema information that may be used by the .NET Framework to construct dynamic SQL, use a fake schema name (instead of null) so that the table names will be properly qualified with the catalog name (i.e. the attached database name). Partial fix for <a href="https://system.data.sqlite.org/index.html/info/343d392b51">[343d392b51]</a>.</li>
       <li>Add SQLiteSourceId property to the SQLiteConnection class to return the SQLite source identifier.</li>
       <li>Add MemoryUsed and MemoryHighwater properties to the SQLiteConnection class to help determine the memory usage of SQLite.</li>
-      <li>Add DateTimeKind connection string property to control the DateTimeKind of parsed DateTime values. Partial fix for <a href="http://system.data.sqlite.org/index.html/info/343d392b51">[343d392b51]</a>.&nbsp;<b>** Potentially Incompatible Change **</b></li>
+      <li>Add DateTimeKind connection string property to control the DateTimeKind of parsed DateTime values. Partial fix for <a href="https://system.data.sqlite.org/index.html/info/343d392b51">[343d392b51]</a>.&nbsp;<b>** Potentially Incompatible Change **</b></li>
       <li>Improve the robustness of the SQLiteLog class when it will be initialized and unloaded multiple times.</li>
-      <li>Fix the name of the interop assembly for Windows CE. Add unit tests to prevent this type of issue from happening again. Fix for <a href="http://system.data.sqlite.org/index.html/info/737ca4ff74">[737ca4ff74]</a>.</li>
-      <li>Formally support the SQL type name BOOLEAN in addition to BOOL. Fix for <a href="http://system.data.sqlite.org/index.html/info/544dba0a2f">[544dba0a2f]</a>.</li>
-      <li>Make sure the SQLiteConvert.TypeNameToDbType method is thread-safe. Fix for <a href="http://system.data.sqlite.org/index.html/info/84718e79fa">[84718e79fa]</a>.</li>
+      <li>Fix the name of the interop assembly for Windows CE. Add unit tests to prevent this type of issue from happening again. Fix for <a href="https://system.data.sqlite.org/index.html/info/737ca4ff74">[737ca4ff74]</a>.</li>
+      <li>Formally support the SQL type name BOOLEAN in addition to BOOL. Fix for <a href="https://system.data.sqlite.org/index.html/info/544dba0a2f">[544dba0a2f]</a>.</li>
+      <li>Make sure the SQLiteConvert.TypeNameToDbType method is thread-safe. Fix for <a href="https://system.data.sqlite.org/index.html/info/84718e79fa">[84718e79fa]</a>.</li>
     </ul>
     <p><b>1.0.76.0 - October 4, 2011</b></p>
     <ul>
-      <li>Prevent the domain unload event handler in SQLiteLog from being registered multiple times. Fix for <a href="http://system.data.sqlite.org/index.html/info/0d5b1ef362">[0d5b1ef362]</a>.</li>
-      <li>Stop allowing non-default application domains to initialize the SQLiteLog class. Fix for <a href="http://system.data.sqlite.org/index.html/info/ac47dd230a">[ac47dd230a]</a>.</li>
+      <li>Prevent the domain unload event handler in SQLiteLog from being registered multiple times. Fix for <a href="https://system.data.sqlite.org/index.html/info/0d5b1ef362">[0d5b1ef362]</a>.</li>
+      <li>Stop allowing non-default application domains to initialize the SQLiteLog class. Fix for <a href="https://system.data.sqlite.org/index.html/info/ac47dd230a">[ac47dd230a]</a>.</li>
     </ul>
     <p><b>1.0.75.0 - October 3, 2011</b></p>
     <ul>
-      <li>Updated to <a href="http://www.sqlite.org/releaselog/3_7_8.html">SQLite 3.7.8</a>.</li>
+      <li>Updated to <a href="https://www.sqlite.org/releaselog/3_7_8.html">SQLite 3.7.8</a>.</li>
       <li>More enhancements to the build system.</li>
-      <li>Add official <a href="http://www.nuget.org/">NuGet</a> packages for x86 and x64.</li>
+      <li>Add official <a href="https://www.nuget.org/">NuGet</a> packages for x86 and x64.</li>
       <li>Add Changes and LastInsertRowId properties to the connection class.</li>
       <li>Support more formats when converting data from/to the DateTime type.</li>
       <li>Make all the assembly versioning attributes consistent.</li>
       <li>Add unit testing infrastructure using <a href="http://eagle.to/">Eagle</a>.</li>
       <li>Integrate all legacy unit tests, including the &quot;testlinq&quot; project, into the new test suite.</li>
-      <li>Add projects to build the interop assembly statically linked to the Visual C++ runtime. Fix for <a href="http://system.data.sqlite.org/index.html/info/53f0c5cbf6">[53f0c5cbf6]</a>.</li>
-      <li>Add SQLITE_ENABLE_STAT2 compile-time option to the interop assembly. Fix for <a href="http://system.data.sqlite.org/index.html/info/74807fbf27">[74807fbf27]</a>.</li>
+      <li>Add projects to build the interop assembly statically linked to the Visual C++ runtime. Fix for <a href="https://system.data.sqlite.org/index.html/info/53f0c5cbf6">[53f0c5cbf6]</a>.</li>
+      <li>Add SQLITE_ENABLE_STAT2 compile-time option to the interop assembly. Fix for <a href="https://system.data.sqlite.org/index.html/info/74807fbf27">[74807fbf27]</a>.</li>
       <li>Fix mutex issues exposed when running the test suite with the debug version of SQLite.</li>
-      <li>Fix transaction enlistment when repeated attempts are made to enlist in the same transaction. Fix for <a href="http://system.data.sqlite.org/index.html/info/ccfa69fc32">[ccfa69fc32]</a>.</li>
+      <li>Fix transaction enlistment when repeated attempts are made to enlist in the same transaction. Fix for <a href="https://system.data.sqlite.org/index.html/info/ccfa69fc32">[ccfa69fc32]</a>.</li>
       <li>Support the SQLITE_FCNTL_WIN32_AV_RETRY file control to mitigate the impact of file sharing violations caused by external processes.</li>
       <li>Refactor the logging interface to be thread-safe and self-initializing.</li>
-      <li>Shutdown the SQLite native interface when the AppDomain is being unloaded. Fix for <a href="http://system.data.sqlite.org/index.html/info/b4a7ddc83f">[b4a7ddc83f]</a>.</li>
-      <li>Support Skip operation for LINQ using OFFSET. Fix for <a href="http://system.data.sqlite.org/index.html/info/8b7d179c3c">[8b7d179c3c]</a>.</li>
-      <li>Support EndsWith operation for LINQ using SUBSTR. Fix for <a href="http://system.data.sqlite.org/index.html/info/59edc1018b">[59edc1018b]</a>.</li>
-      <li>Support all SQLite journal modes. Fix for <a href="http://system.data.sqlite.org/index.html/info/448d663d11">[448d663d11]</a>.</li>
-      <li>Do not throw exceptions when disposing SQLiteDataReader. Fix for <a href="http://system.data.sqlite.org/index.html/info/e1b2e0f769">[e1b2e0f769]</a>.</li>
-      <li>The REAL type should be mapped to System.Double. Fix for <a href="http://system.data.sqlite.org/index.html/info/2c630bffa7">[2c630bffa7]</a> and <a href="http://system.data.sqlite.org/index.html/info/b0a5990f48">[b0a5990f48]</a>.</li>
-      <li>Minor optimization to GetParamValueBytes(). Fix for <a href="http://system.data.sqlite.org/index.html/info/201128cc88">[201128cc88]</a>.</li>
-      <li>Support the ON UPDATE, ON DELETE, and MATCH clause information when generating schema metadata for foreign keys. Partial fix for <a href="http://system.data.sqlite.org/index.html/info/b226147b37">[b226147b37]</a>. VS designer changes are not yet tested.</li>
+      <li>Shutdown the SQLite native interface when the AppDomain is being unloaded. Fix for <a href="https://system.data.sqlite.org/index.html/info/b4a7ddc83f">[b4a7ddc83f]</a>.</li>
+      <li>Support Skip operation for LINQ using OFFSET. Fix for <a href="https://system.data.sqlite.org/index.html/info/8b7d179c3c">[8b7d179c3c]</a>.</li>
+      <li>Support EndsWith operation for LINQ using SUBSTR. Fix for <a href="https://system.data.sqlite.org/index.html/info/59edc1018b">[59edc1018b]</a>.</li>
+      <li>Support all SQLite journal modes. Fix for <a href="https://system.data.sqlite.org/index.html/info/448d663d11">[448d663d11]</a>.</li>
+      <li>Do not throw exceptions when disposing SQLiteDataReader. Fix for <a href="https://system.data.sqlite.org/index.html/info/e1b2e0f769">[e1b2e0f769]</a>.</li>
+      <li>The REAL type should be mapped to System.Double. Fix for <a href="https://system.data.sqlite.org/index.html/info/2c630bffa7">[2c630bffa7]</a> and <a href="https://system.data.sqlite.org/index.html/info/b0a5990f48">[b0a5990f48]</a>.</li>
+      <li>Minor optimization to GetParamValueBytes(). Fix for <a href="https://system.data.sqlite.org/index.html/info/201128cc88">[201128cc88]</a>.</li>
+      <li>Support the ON UPDATE, ON DELETE, and MATCH clause information when generating schema metadata for foreign keys. Partial fix for <a href="https://system.data.sqlite.org/index.html/info/b226147b37">[b226147b37]</a>. VS designer changes are not yet tested.</li>
       <li>Fix incorrect resource name for SR.resx in the mixed-mode assembly.</li>
       <li>Reduce the number of String.Compare() calls in the hot path for SQLiteCommand.ExecuteReader().</li>
     </ul>
     <p><b>1.0.74.0 - July 4, 2011</b></p>
     <ul>
-      <li>Updated to <a href="http://www.sqlite.org/releaselog/3_7_7_1.html">SQLite 3.7.7.1</a>.</li>
+      <li>Updated to <a href="https://www.sqlite.org/releaselog/3_7_7_1.html">SQLite 3.7.7.1</a>.</li>
       <li>Fix incorrect hard-coded .NET Framework version information SQLiteFactory_Linq.cs that was causing IServiceProvider.GetService to fail when running against the .NET Framework 3.5.</li>
       <li>Fix all XML documentation warnings.</li>
       <li>Restore support for the mixed-mode assembly (i.e. the one that can be registered in the Global Assembly Cache).</li>
@@ -389,20 +389,20 @@
     </ul>
     <p><b>1.0.73.0 - June 2, 2011</b></p>
     <ul>
-      <li>Updated to <a href="http://www.sqlite.org/releaselog/3_7_6_3.html">SQLite 3.7.6.3</a>.</li>
-      <li>Minor optimization to GetBytes(). Fix for <a href="http://system.data.sqlite.org/index.html/info/8c1650482e">[8c1650482e]</a>.</li>
+      <li>Updated to <a href="https://www.sqlite.org/releaselog/3_7_6_3.html">SQLite 3.7.6.3</a>.</li>
+      <li>Minor optimization to GetBytes(). Fix for <a href="https://system.data.sqlite.org/index.html/info/8c1650482e">[8c1650482e]</a>.</li>
       <li>Update various assembly information settings.</li>
-      <li>Correct System.Data.SQLite.Linq version and resource information. Fix for <a href="http://system.data.sqlite.org/index.html/info/6489c5a396">[6489c5a396]</a> and <a href="http://system.data.sqlite.org/index.html/info/133daf50d6">[133daf50d6]</a>.</li>
+      <li>Correct System.Data.SQLite.Linq version and resource information. Fix for <a href="https://system.data.sqlite.org/index.html/info/6489c5a396">[6489c5a396]</a> and <a href="https://system.data.sqlite.org/index.html/info/133daf50d6">[133daf50d6]</a>.</li>
       <li>Moved log handler from SQLiteConnection object to SQLiteFactory object to prevent if from being prematurely GCed.</li>
-      <li>We should block x64 installs on x86 and we should install native only if the setup package itself is native. Fix for <a href="http://system.data.sqlite.org/index.html/info/e058ce156e">[e058ce156e]</a>.</li>
+      <li>We should block x64 installs on x86 and we should install native only if the setup package itself is native. Fix for <a href="https://system.data.sqlite.org/index.html/info/e058ce156e">[e058ce156e]</a>.</li>
     </ul>
     <p><b>1.0.72.0 - May 1, 2011</b></p>
     <ul>
-      <li>Add the correct directory to the path. Fix for <a href="http://system.data.sqlite.org/index.html/info/50515a0c8e">[50515a0c8e]</a>.</li>
+      <li>Add the correct directory to the path. Fix for <a href="https://system.data.sqlite.org/index.html/info/50515a0c8e">[50515a0c8e]</a>.</li>
     </ul>
     <p><b>1.0.71.0 - April 27, 2011</b></p>
     <ul>
-      <li>Updated to SQLite 3.7.6+ <a href="http://www.sqlite.org/src/info/1bd1484cd7">[1bd1484cd7]</a> to get additional Windows error logging.</li>
+      <li>Updated to SQLite 3.7.6+ <a href="https://www.sqlite.org/src/info/1bd1484cd7">[1bd1484cd7]</a> to get additional Windows error logging.</li>
       <li>Updated setup to optionally add install directory to PATH if GAC option selected.</li>
     </ul>
     <p><b>1.0.70.0 - April 22, 2011</b></p>
@@ -412,7 +412,7 @@
     </ul>
     <p><b>1.0.69.0 - April 12, 2011</b></p>
     <ul>
-      <li>Code merge with <a href="http://www.sqlite.org/releaselog/3_7_6.html">SQLite 3.7.6</a>.</li>
+      <li>Code merge with <a href="https://www.sqlite.org/releaselog/3_7_6.html">SQLite 3.7.6</a>.</li>
       <li>New VS2008 and VS2010 solution files.</li>
       <li>Build and packaging automation.</li>
       <li>New Inno Setup files.</li>
@@ -420,12 +420,12 @@
     </ul>
     <p><b>1.0.68.0 - February 2011</b></p>
     <ul>
-      <li>Code merge with <a href="http://www.sqlite.org/releaselog/3_7_5.html">SQLite 3.7.5</a>.</li>
+      <li>Code merge with <a href="https://www.sqlite.org/releaselog/3_7_5.html">SQLite 3.7.5</a>.</li>
       <li>Continuing work on supporting Visual Studio 2010.</li>
     </ul>
     <p><b>1.0.67.0 - January 3, 2011</b></p>
     <ul>
-      <li>Code merge with <a href="http://www.sqlite.org/releaselog/3_7_4.html">SQLite 3.7.4</a>.</li>
+      <li>Code merge with <a href="https://www.sqlite.org/releaselog/3_7_4.html">SQLite 3.7.4</a>.</li>
       <li>Continuing work on supporting Visual Studio 2010.</li>
     </ul>
     <p><b>1.0.66.1 - August 1, 2010</b></p>
@@ -448,7 +448,7 @@
       <li>Fixed a bug in the encryption module to prevent a double free() when rekeying a database.</li>
       <li>Fixed a bug in the encryption module when ATTACHing an encrypted database.</li>
       <li>Incorporated the WinCE locking fix from ticket
-        <a href="http://www.sqlite.org/cvstrac/tktview?tn=3991">#3991</a></li>
+        <a href="https://www.sqlite.org/cvstrac/tktview?tn=3991">#3991</a></li>
       <li>Added &quot;bigint&quot; to the dropdown in the table designer, plus other minor table
         designer bugfixes.</li>
     </ul>
@@ -505,7 +505,7 @@
         /subsystem had no version specified, it was causing a problem for many CE-based
         platforms.</li>
       <li>Incorporated SQLite patch for ticket
-        <a href="http://www.sqlite.org/cvstrac/tktview?tn=3387">#3387</a> and reverted
+        <a href="https://www.sqlite.org/cvstrac/tktview?tn=3387">#3387</a> and reverted
         out the vfs override code I added in build 59 to work around this problem.</li>
       <li>Fixed a designer issue when creating a new table from the Server Explorer.&nbsp;
         After initially saving it, if you then continued to edit it and tried to save it
@@ -546,7 +546,7 @@
     <p><b>1.0.57.0 - August 29, 2008</b></p>
     <ul>
       <li>Compiled against 3.6.1 with checkin
-        <a href="http://www.sqlite.org/cvstrac/tktview?tn=3300">#3300</a> resolved,
+        <a href="https://www.sqlite.org/cvstrac/tktview?tn=3300">#3300</a> resolved,
         which fixes an Entity Framework bug I was seeing.&nbsp; I currently have 3 other
         tickets out on the engine, which are not yet resolved and relate to EF.</li>
       <li>Fixed decimal types to store and fetch using InvariantCulture.&nbsp; If you&#39;re
@@ -590,7 +590,7 @@
     <ul>
       <li>Code merge with SQLite 3.6.1</li>
       <li>Added support for the user-contributed extension-functions at
-        <a href="http://www.sqlite.org/contrib">http://www.sqlite.org/contrib</a>.&nbsp;
+        <a href="https://www.sqlite.org/contrib">https://www.sqlite.org/contrib</a>.&nbsp;
         Feel free to override any of them with your own implementation.&nbsp; The new
         functions are: <i>acos, asin, atan, atn2, atan2, acosh, asinh, atanh,
         difference, degrees, radians, cos, sin, tan, cot, cosh, sinh, tanh, coth, exp,

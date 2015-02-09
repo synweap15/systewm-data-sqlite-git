@@ -6668,7 +6668,7 @@ namespace System.Data.SQLite
                     //       the following URL is the proper place to generate
                     //       package load keys:
                     //
-                    //       http://msdn.microsoft.com/en-us/vstudio/cc655795
+                    //       https://msdn.microsoft.com/en-us/vstudio/cc655795
                     //
                     using (MockRegistryKey packageKey =
                             RegistryHelper.CreateSubKey(subKey,
@@ -6707,7 +6707,7 @@ namespace System.Data.SQLite
                             whatIf, verbose);
 
                         RegistryHelper.SetValue(packageKey, "CompanyName",
-                            "http://system.data.sqlite.org/", whatIf, verbose);
+                            "https://system.data.sqlite.org/", whatIf, verbose);
 
                         RegistryHelper.SetValue(packageKey, "MinEdition",
                             "standard", whatIf, verbose);

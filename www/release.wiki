@@ -204,16 +204,16 @@
 
   <li>
     Enter the following command to build all the documentation in
-    [http://en.wikipedia.org/wiki/Microsoft_Compiled_HTML_Help | CHM]
+    [https://en.wikipedia.org/wiki/Microsoft_Compiled_HTML_Help | CHM]
     format:
     <br />
     <br />
     <b>tclsh.exe&nbsp;buildChm.tcl</b>
     <br />
     <br />
-    <i>This assumes that [http://www.activestate.com/activetcl | ActiveTcl]
+    <i>This assumes that [https://www.activestate.com/activetcl | ActiveTcl]
     version 8.4 or later, the
-    [http://www.microsoft.com/download/en/details.aspx?displaylang=en&id=21138 | HTML Help Workshop],
+    [https://www.microsoft.com/download/en/details.aspx?displaylang=en&id=21138 | HTML Help Workshop],
     and [http://ndoc3.sourceforge.net/ | NDoc3] have all been installed using
     the default settings.</i>
   </li>
@@ -325,8 +325,8 @@
     <b>..\Externals\Eagle\bin\EagleShell.exe -file verify.eagle Output true</b>
     <br />
     <br />
-    <i>This assumes that the <a href="http://www.fossil-scm.org/">Fossil</a>,
-    <a href="http://sourceforge.net/projects/innounp/">Inno Setup Unpacker</a>,
+    <i>This assumes that the <a href="https://www.fossil-scm.org/">Fossil</a>,
+    <a href="https://sourceforge.net/projects/innounp/">Inno Setup Unpacker</a>,
     <a href="http://www.rarlab.com/">UnRAR</a>, and
     <a href="http://www.info-zip.org/">UnZip</a> binaries are available in the
     locations specified via the &quot;FossilTool&quot;,
@@ -357,8 +357,8 @@
     <br />
     <br />
     <i>This assumes that the NuGet binary is available somewhere along the
-    [http://en.wikipedia.org/wiki/PATH_%28variable%29 | PATH].<br />Please refer
-    to [http://docs.nuget.org/ | NuGet Documentation] for further details.</i>
+    [https://en.wikipedia.org/wiki/PATH_%28variable%29 | PATH].<br />Please refer
+    to [https://docs.nuget.org/ | NuGet Documentation] for further details.</i>
   </li>
 </ol>
 
@@ -384,10 +384,10 @@
     <b>tclsh.exe&nbsp;updateFileInfo.tcl</b>
     <br />
     <br />
-    <i>This assumes that [http://www.activestate.com/activetcl | ActiveTcl]
+    <i>This assumes that [https://www.activestate.com/activetcl | ActiveTcl]
     version 8.4 or later has been installed using the default settings and that
     the Fossil binary is available somewhere along the
-    [http://en.wikipedia.org/wiki/PATH_%28variable%29 | PATH] (i.e. for
+    [https://en.wikipedia.org/wiki/PATH_%28variable%29 | PATH] (i.e. for
     calculating the SHA1 hashes).</i>
   </li>
 </ol>
@@ -400,14 +400,14 @@
 
   <li>
     Commit pending source code changes to the
-    [http://www.fossil-scm.org/ | Fossil] repository.
+    [https://www.fossil-scm.org/ | Fossil] repository.
   </li>
 
   <li>Tag the release in the Fossil repository.</li>
 
   <li>
-    Push the [http://www.nuget.org/ | NuGet] packages.<br />
-    <i>Please refer to [http://docs.nuget.org/ | NuGet Documentation] for
+    Push the [https://www.nuget.org/ | NuGet] packages.<br />
+    <i>Please refer to [https://docs.nuget.org/ | NuGet Documentation] for
     further details.</i>
   </li>
 

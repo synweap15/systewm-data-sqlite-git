@@ -77,11 +77,11 @@
         modified (by a third-party) to work with Visual Studio 2010 (or higher).
         Only the software contained on this page is directly
         <a href="support.wiki">supported</a> by the maintainers of this project
-        (i.e. the <a href="http://www.sqlite.org">SQLite Development Team</a>)
+        (i.e. the <a href="https://www.sqlite.org">SQLite Development Team</a>)
         as we do not necessarily have any knowledge of the other projects that
         use the same (or a similar) name.  That being said, if a particular
         question is related to the core SQLite native library itself, one of the
-        <a href="http://www.sqlite.org/support.html">SQLite support options</a>
+        <a href="https://www.sqlite.org/support.html">SQLite support options</a>
         is probably the best way to get an answer.
       </td>
     </tr>
@@ -180,7 +180,7 @@
             The binary packages are intended to be used by developers in order
             to obtain the assembly binaries necessary for development and
             deployment of their applications onto customer machines via
-            <a href="http://en.wikipedia.org/wiki/XCOPY_deployment">XCOPY
+            <a href="https://en.wikipedia.org/wiki/XCOPY_deployment">XCOPY
             deployment</a>.
           </li>
         </ul>
@@ -195,19 +195,19 @@
         &quot;System.Data.SQLite.dll&quot; mixed-mode assembly.  These packages
         should <b>only</b> be used in cases where the assembly binary
         <b>must</b> be deployed to the
-        <a href="http://en.wikipedia.org/wiki/Global_Assembly_Cache">Global
+        <a href="https://en.wikipedia.org/wiki/Global_Assembly_Cache">Global
         Assembly Cache</a> for some reason (e.g. to support some legacy
         application on customer machines).
         <br /><br />
         All the &quot;static&quot; packages contain either native or mixed-mode
         assembly binaries linked statically to the appropriate version of the
-        <a href="http://en.wikipedia.org/wiki/Visual_C++">Visual C++</a>
+        <a href="https://en.wikipedia.org/wiki/Visual_C++">Visual C++</a>
         runtime.  Typically, these packages are used in cases where customer
         machines may not have the necessary version of the Visual C++ runtime
         installed and it cannot be installed due to limited privileges.
         <br /><br />
         The next step is to identify the version of the
-        <a href="http://en.wikipedia.org/wiki/.NET_Framework">.NET Framework</a>
+        <a href="https://en.wikipedia.org/wiki/.NET_Framework">.NET Framework</a>
         being targeted by the application.
         Generally, assembly binaries linked against the
         <a href="http://go.microsoft.com/fwlink/?LinkID=32168">.NET Framework
@@ -233,10 +233,10 @@
       <td colspan="3" class="importantNotes">
         The final step is to identify the target processor architecture on both
         the development and customer machines.  Generally,
-        <a href="http://en.wikipedia.org/wiki/X86">x86</a> binaries will work on
-        an <a href="http://en.wikipedia.org/wiki/X64">x64</a> machine running
-        <a href="http://en.wikipedia.org/wiki/Windows">Windows</a> (using
-        <a href="http://en.wikipedia.org/wiki/WoW64">WoW64</a>).  However, there
+        <a href="https://en.wikipedia.org/wiki/X86">x86</a> binaries will work on
+        an <a href="https://en.wikipedia.org/wiki/X64">x64</a> machine running
+        <a href="https://en.wikipedia.org/wiki/Windows">Windows</a> (using
+        <a href="https://en.wikipedia.org/wiki/WoW64">WoW64</a>).  However, there
         is a problem when using managed code.  If the executable that starts the
         process consists entirely of managed code, it will run with the native
         processor architecture of the machine, which will be x64 on an x64
@@ -344,10 +344,10 @@
         For the full .NET Framework, the XML configuration file <b>must</b> be
         named &quot;<b>System.Data.SQLite.dll.config</b>&quot; and it
         <b>must</b> be present in the
-        <a href="http://msdn.microsoft.com/en-us/library/system.appdomain.basedirectory%28v=vs.80%29.aspx">base directory for the application domain</a>
+        <a href="https://msdn.microsoft.com/en-us/library/system.appdomain.basedirectory%28v=vs.80%29.aspx">base directory for the application domain</a>
         <b>or</b> the directory containing the primary System.Data.SQLite
         assembly as reported by its
-        <a href="http://msdn.microsoft.com/en-us/library/system.reflection.assembly.location%28v=vs.80%29.aspx">location</a>
+        <a href="https://msdn.microsoft.com/en-us/library/system.reflection.assembly.location%28v=vs.80%29.aspx">location</a>
         property; otherwise, it will be ignored.
         <br /><br />
         For the .NET Compact Framework, the XML configuration file <b>must</b>
@@ -1871,7 +1871,7 @@
     <tr>
       <td width="10">&nbsp;</td>
       <td width="30%" valign="top" align="right">
-        <a href="http://nuget.org/api/v2/package/System.Data.SQLite/1.0.94.1">System.Data.SQLite.1.0.94.1.nupkg</a>
+        <a href="https://www.nuget.org/api/v2/package/System.Data.SQLite/1.0.94.1">System.Data.SQLite.1.0.94.1.nupkg</a>
         <br />
         (0.00 MiB)
       </td>
@@ -1902,7 +1902,7 @@
     <tr>
       <td width="10">&nbsp;</td>
       <td width="30%" valign="top" align="right">
-        <a href="http://nuget.org/api/v2/package/System.Data.SQLite.Core/1.0.94.0">System.Data.SQLite.Core.1.0.94.0.nupkg</a>
+        <a href="https://www.nuget.org/api/v2/package/System.Data.SQLite.Core/1.0.94.0">System.Data.SQLite.Core.1.0.94.0.nupkg</a>
         <br />
         (4.92 MiB)
       </td>
@@ -1925,7 +1925,7 @@
     <tr>
       <td width="10">&nbsp;</td>
       <td width="30%" valign="top" align="right">
-        <a href="http://nuget.org/api/v2/package/System.Data.SQLite.Core.MSIL/1.0.94.0">System.Data.SQLite.Core.MSIL.1.0.94.0.nupkg</a>
+        <a href="https://www.nuget.org/api/v2/package/System.Data.SQLite.Core.MSIL/1.0.94.0">System.Data.SQLite.Core.MSIL.1.0.94.0.nupkg</a>
         <br />
         (0.68 MiB)
       </td>
@@ -1951,7 +1951,7 @@
     <tr>
       <td width="10">&nbsp;</td>
       <td width="30%" valign="top" align="right">
-        <a href="http://nuget.org/api/v2/package/System.Data.SQLite.EF6/1.0.94.0">System.Data.SQLite.EF6.1.0.94.0.nupkg</a>
+        <a href="https://www.nuget.org/api/v2/package/System.Data.SQLite.EF6/1.0.94.0">System.Data.SQLite.EF6.1.0.94.0.nupkg</a>
         <br />
         (0.13 MiB)
       </td>
@@ -1972,7 +1972,7 @@
     <tr>
       <td width="10">&nbsp;</td>
       <td width="30%" valign="top" align="right">
-        <a href="http://nuget.org/api/v2/package/System.Data.SQLite.Linq/1.0.94.1">System.Data.SQLite.Linq.1.0.94.1.nupkg</a>
+        <a href="https://www.nuget.org/api/v2/package/System.Data.SQLite.Linq/1.0.94.1">System.Data.SQLite.Linq.1.0.94.1.nupkg</a>
         <br />
         (0.17 MiB)
       </td>
@@ -1992,7 +1992,7 @@
     <tr>
       <td width="10">&nbsp;</td>
       <td width="30%" valign="top" align="right">
-        <a href="http://nuget.org/api/v2/package/System.Data.SQLite.MSIL/1.0.94.1">System.Data.SQLite.MSIL.1.0.94.1.nupkg</a>
+        <a href="https://www.nuget.org/api/v2/package/System.Data.SQLite.MSIL/1.0.94.1">System.Data.SQLite.MSIL.1.0.94.1.nupkg</a>
         <br />
         (0.99 MiB)
       </td>
@@ -2021,7 +2021,7 @@
     <tr>
       <td width="10">&nbsp;</td>
       <td width="30%" valign="top" align="right">
-        <a href="http://nuget.org/api/v2/package/System.Data.SQLite.x86/1.0.94.1">System.Data.SQLite.x86.1.0.94.1.nupkg</a>
+        <a href="https://www.nuget.org/api/v2/package/System.Data.SQLite.x86/1.0.94.1">System.Data.SQLite.x86.1.0.94.1.nupkg</a>
         <br />
         (2.84 MiB)
       </td>
@@ -2045,7 +2045,7 @@
     <tr>
       <td width="10">&nbsp;</td>
       <td width="30%" valign="top" align="right">
-        <a href="http://nuget.org/api/v2/package/System.Data.SQLite.x64/1.0.94.1">System.Data.SQLite.x64.1.0.94.1.nupkg</a>
+        <a href="https://www.nuget.org/api/v2/package/System.Data.SQLite.x64/1.0.94.1">System.Data.SQLite.x64.1.0.94.1.nupkg</a>
         <br />
         (3.11 MiB)
       </td>
@@ -2167,11 +2167,11 @@
     <ul>
     <li>The &quot;Beta&quot; release type is used to indicate that the package
     was intended to be used for
-    <a href="http://en.wikipedia.org/wiki/Software_release_life_cycle#Beta">beta</a>
+    <a href="https://en.wikipedia.org/wiki/Software_release_life_cycle#Beta">beta</a>
     testing.</li>
     <li>The &quot;Test&quot; release type is used to indicate that the package
     was intended to be used for
-    <a href="http://en.wikipedia.org/wiki/Software_release_life_cycle#Release_candidate">release candidate</a>
+    <a href="https://en.wikipedia.org/wiki/Software_release_life_cycle#Release_candidate">release candidate</a>
     testing.</li>
     </ul>
   </p>

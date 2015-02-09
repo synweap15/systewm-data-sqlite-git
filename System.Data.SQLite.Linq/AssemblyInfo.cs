@@ -21,7 +21,7 @@ using System.Runtime.ConstrainedExecution;
 #endif
 
 [assembly: AssemblyDescription("ADO.NET Data Provider for SQLite")]
-[assembly: AssemblyCompany("http://system.data.sqlite.org/")]
+[assembly: AssemblyCompany("https://system.data.sqlite.org/")]
 [assembly: AssemblyProduct("System.Data.SQLite")]
 [assembly: AssemblyCopyright("Public Domain")]
 
