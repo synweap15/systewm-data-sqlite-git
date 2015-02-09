@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 // associated with an assembly.
 [assembly: AssemblyTitle("System.Data.SQLite Designer Installer")]
 [assembly: AssemblyDescription("ADO.NET Data Provider for SQLite")]
-[assembly: AssemblyCompany("http://system.data.sqlite.org/")]
+[assembly: AssemblyCompany("https://system.data.sqlite.org/")]
 [assembly: AssemblyProduct("System.Data.SQLite")]
 [assembly: AssemblyCopyright("Public Domain")]
 

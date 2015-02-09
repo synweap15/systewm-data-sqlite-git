@@ -48,13 +48,13 @@
 
 <ul>
   <li>
-    <a href="http://www.mail-archive.com/sqlite-users%40sqlite.org/">
-    http://www.mail-archive.com/sqlite-users%40sqlite.org/</a>
+    <a href="https://www.mail-archive.com/sqlite-users%40sqlite.org/">
+    https://www.mail-archive.com/sqlite-users%40sqlite.org/</a>
   </li>
 
   <li>
-    <a href="http://marc.info/?l=sqlite-users&r=1&w=2">
-    http://marc.info/?l=sqlite-users&r=1&w=2</a>
+    <a href="https://marc.info/?l=sqlite-users&r=1&w=2">
+    https://marc.info/?l=sqlite-users&r=1&w=2</a>
   </li>
 
   <li>
@@ -73,7 +73,7 @@
 <ul>
   <li>
     You have or intend to acquire a
-    <a href="http://www.sqlite.org/support.html">
+    <a href="https://www.sqlite.org/support.html">
     professional support contract</a>.
   </li>
 

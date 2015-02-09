@@ -14,13 +14,13 @@ and &quot;System.Data.SQLite.EF6&quot; assemblies.
 <tr><td align="center">
 <img src="art/nocopy.gif"><br>
 System.Data.SQLite is in the<br>
-<a href="http://en.wikipedia.org/wiki/Public_Domain">Public Domain</a>
+<a href="https://en.wikipedia.org/wiki/Public_Domain">Public Domain</a>
 </td></tr>
 </table>
 
 <p>
 All other code and documentation in System.Data.SQLite has been dedicated to
-the <a href="http://en.wikipedia.org/wiki/Public_Domain">public domain</a>
+the <a href="https://en.wikipedia.org/wiki/Public_Domain">public domain</a>
 by the authors.
 All code authors, and representatives of the companies they work for, have
 signed affidavits dedicating their contributions to the public domain and
@@ -98,7 +98,7 @@ USA
 
 <p>
 A template copyright release is available
-in <a href="http://www.sqlite.org/copyright-release.pdf">PDF</a> or
-<a href="http://www.sqlite.org/copyright-release.html">HTML</a>.
+in <a href="https://www.sqlite.org/copyright-release.pdf">PDF</a> or
+<a href="https://www.sqlite.org/copyright-release.html">HTML</a>.
 You can use this release to make future changes.
 </p>
