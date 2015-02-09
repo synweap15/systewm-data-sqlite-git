@@ -30,13 +30,13 @@ Instructions:
 2) In your application, call sqlite3_enable_load_extension(db,1) to
    allow loading external libraries.  Then load the library libsqlitefunctions
    using sqlite3_load_extension; the third argument should be 0.
-   See http://www.sqlite.org/cvstrac/wiki?p=LoadableExtensions.
+   See https://www.sqlite.org/cvstrac/wiki?p=LoadableExtensions.
 3) Use, for example:
    SELECT cos(radians(inclination)) FROM satsum WHERE satnum = 25544;
 
 Note: Loading extensions is by default prohibited as a
 security measure; see "Security Considerations" in
-http://www.sqlite.org/cvstrac/wiki?p=LoadableExtensions.
+https://www.sqlite.org/cvstrac/wiki?p=LoadableExtensions.
 If the sqlite3 program and library are built this
 way, you cannot use these functions from the program, you
 must write your own program using the sqlite3 API, and call
@@ -1350,7 +1350,7 @@ static void reverseFunc(sqlite3_context *context, int argc, sqlite3_value **argv
 /*
 ** An instance of the following structure holds the context of a
 ** stdev() or variance() aggregate computation.
-** implementaion of http://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Algorithm_II
+** implementaion of https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Algorithm_II
 ** less prone to rounding errors
 */
 typedef struct StdevCtx StdevCtx;

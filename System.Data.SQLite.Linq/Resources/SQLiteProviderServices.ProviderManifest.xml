@@ -84,7 +84,7 @@ PROCESS
   <Functions>
 
     <!-- BEGIN AGGREGATES 
-		http://www.sqlite.org/lang_aggfunc.html  -->
+		https://www.sqlite.org/lang_aggfunc.html  -->
     <!-- AVG -->
     <Function Name="AVG" Aggregate="true" BuiltIn="true">
       <ReturnType Type="Double" />
@@ -285,7 +285,7 @@ PROCESS
 
     <!-- END AGGREGATES ############################################# -->
 
-    <!-- Begin Scalars http://www.sqlite.org/lang_corefunc.html -->
+    <!-- Begin Scalars https://www.sqlite.org/lang_corefunc.html -->
 
     <Function Name="ABS" BuiltIn="true">
       <ReturnType Type="Int32" />

@@ -128,7 +128,7 @@
 <p>
   The release schedule for the System.Data.SQLite project is roughly
   synchronized (within about two or three weeks) with that of the
-  [http://www.sqlite.org/ | SQLite] core itself.  The release history for the
+  [https://www.sqlite.org/ | SQLite] core itself.  The release history for the
   System.Data.SQLite project is [./news.wiki | here].
 </p>
 
@@ -227,14 +227,14 @@
 
   <ul>
     <li>
-      <a href="http://www.nuget.org/packages/System.Data.SQLite">
+      <a href="https://www.nuget.org/packages/System.Data.SQLite">
       System.Data.SQLite</a>: The SQLite database engine for both x86 and x64
       along with the ADO.NET provider, including support for LINQ and Entity
       Framework 6.
     </li>
 
     <li>
-      <a href="http://www.nuget.org/packages/System.Data.SQLite.Beta">
+      <a href="https://www.nuget.org/packages/System.Data.SQLite.Beta">
       System.Data.SQLite.Beta</a>: The SQLite database engine for both x86
       and x64 along with the ADO.NET provider, including support for LINQ
       and Entity Framework 6.  <br><b>This package may contain &quot;beta&quot;
@@ -242,107 +242,107 @@
     </li>
 
     <li>
-      <a href="http://www.nuget.org/packages/System.Data.SQLite.Core">
+      <a href="https://www.nuget.org/packages/System.Data.SQLite.Core">
       System.Data.SQLite.Core</a>: The SQLite database engine for both x86 and
       x64 along with the ADO.NET provider.
     </li>
 
     <li>
-      <a href="http://www.nuget.org/packages/System.Data.SQLite.Core.Beta">
+      <a href="https://www.nuget.org/packages/System.Data.SQLite.Core.Beta">
       System.Data.SQLite.Core.Beta</a>: The SQLite database engine for both x86
       and x64 along with the ADO.NET provider.  <br><b>This package may contain
       &quot;beta&quot; code and is not intended for production use.</b>
     </li>
 
     <li>
-      <a href="http://www.nuget.org/packages/System.Data.SQLite.Core.Test">
+      <a href="https://www.nuget.org/packages/System.Data.SQLite.Core.Test">
       System.Data.SQLite.Core.Test</a>: The SQLite database engine for both x86
       and x64 along with the ADO.NET provider.  <br><b>This package may contain
       pre-release code and is not intended for production use.</b>
     </li>
 
     <li>
-      <a href="http://www.nuget.org/packages/System.Data.SQLite.Core.MSIL">
+      <a href="https://www.nuget.org/packages/System.Data.SQLite.Core.MSIL">
       System.Data.SQLite.Core.MSIL</a>: Just the managed ADO.NET provider for
       SQLite.
     </li>
 
     <li>
-      <a href="http://www.nuget.org/packages/System.Data.SQLite.Core.MSIL.Beta">
+      <a href="https://www.nuget.org/packages/System.Data.SQLite.Core.MSIL.Beta">
       System.Data.SQLite.Core.MSIL.Beta</a>: Just the managed ADO.NET provider
       for SQLite.  <br><b>This package may contain &quot;beta&quot; code and is
       not intended for production use.</b>
     </li>
 
     <li>
-      <a href="http://www.nuget.org/packages/System.Data.SQLite.Core.MSIL.Test">
+      <a href="https://www.nuget.org/packages/System.Data.SQLite.Core.MSIL.Test">
       System.Data.SQLite.Core.MSIL.Test</a>: Just the managed ADO.NET provider
       for SQLite.  <br><b>This package may contain pre-release code and is not
       intended for production use.</b>
     </li>
 
     <li>
-      <a href="http://www.nuget.org/packages/System.Data.SQLite.EF6">
+      <a href="https://www.nuget.org/packages/System.Data.SQLite.EF6">
       System.Data.SQLite.EF6</a>: Just support for Entity Framework 6 using
       System.Data.SQLite.
     </li>
 
     <li>
-      <a href="http://www.nuget.org/packages/System.Data.SQLite.EF6.Beta">
+      <a href="https://www.nuget.org/packages/System.Data.SQLite.EF6.Beta">
       System.Data.SQLite.EF6.Beta</a>: Just support for Entity Framework 6
       using System.Data.SQLite.  <br><b>This package may contain
       &quot;beta&quot; code and is not intended for production use.</b>
     </li>
 
     <li>
-      <a href="http://www.nuget.org/packages/System.Data.SQLite.EF6.Test">
+      <a href="https://www.nuget.org/packages/System.Data.SQLite.EF6.Test">
       System.Data.SQLite.EF6.Test</a>: Just support for Entity Framework 6
       using System.Data.SQLite.  <br><b>This package may contain pre-release
       code and is not intended for production use.</b>
     </li>
 
     <li>
-      <a href="http://www.nuget.org/packages/System.Data.SQLite.Linq">
+      <a href="https://www.nuget.org/packages/System.Data.SQLite.Linq">
       System.Data.SQLite.Linq</a>: Just support for LINQ using
       System.Data.SQLite.
     </li>
 
     <li>
-      <a href="http://www.nuget.org/packages/System.Data.SQLite.Linq.Beta">
+      <a href="https://www.nuget.org/packages/System.Data.SQLite.Linq.Beta">
       System.Data.SQLite.Linq.Beta</a>: Just support for LINQ using
       System.Data.SQLite.  <br><b>This package may contain &quot;beta&quot;
       code and is not intended for production use.</b>
     </li>
 
     <li>
-      <a href="http://www.nuget.org/packages/System.Data.SQLite.Linq.Test">
+      <a href="https://www.nuget.org/packages/System.Data.SQLite.Linq.Test">
       System.Data.SQLite.Linq.Test</a>: Just support for LINQ using
       System.Data.SQLite.  <br><b>This package may contain pre-release code
       and is not intended for production use.</b>
     </li>
 
     <li>
-      <a href="http://www.nuget.org/packages/System.Data.SQLite.MSIL">
+      <a href="https://www.nuget.org/packages/System.Data.SQLite.MSIL">
       System.Data.SQLite.MSIL</a>: Just the managed ADO.NET provider for
       SQLite.
     </li>
 
     <li>
-      <a href="http://www.nuget.org/packages/System.Data.SQLite.MSIL.Beta">
+      <a href="https://www.nuget.org/packages/System.Data.SQLite.MSIL.Beta">
       System.Data.SQLite.MSIL.Beta</a>: Just the managed ADO.NET provider for
       SQLite.  <br><b>This package may contain &quot;beta&quot; code and is
       not intended for production use.</b>
     </li>
 
     <li>
-      <a href="http://www.nuget.org/packages/System.Data.SQLite.MSIL.Test">
+      <a href="https://www.nuget.org/packages/System.Data.SQLite.MSIL.Test">
       System.Data.SQLite.MSIL.Test</a>: Just the managed ADO.NET provider for
       SQLite.  <br><b>This package may contain pre-release code and is not
       intended for production use.</b>
     </li>
 
     <li>
-      <a href="http://www.nuget.org/packages/System.Data.SQLite.Test">
+      <a href="https://www.nuget.org/packages/System.Data.SQLite.Test">
       System.Data.SQLite.Test</a>: The SQLite database engine for both x86
       and x64 along with the ADO.NET provider, including support for LINQ
       and Entity Framework 6.  <br><b>This package may contain pre-release
@@ -350,14 +350,14 @@
     </li>
 
     <li>
-      <a href="http://www.nuget.org/packages/System.Data.SQLite.x86">
+      <a href="https://www.nuget.org/packages/System.Data.SQLite.x86">
       System.Data.SQLite.x86</a>: The SQLite database engine combined with a
       complete ADO.NET provider all rolled into a single mixed-mode assembly
       for x86.
     </li>
 
     <li>
-      <a href="http://www.nuget.org/packages/System.Data.SQLite.x64">
+      <a href="https://www.nuget.org/packages/System.Data.SQLite.x64">
       System.Data.SQLite.x64</a>: The SQLite database engine combined with a
       complete ADO.NET provider all rolled into a single mixed-mode assembly
       for x64.
@@ -514,7 +514,7 @@
   code and native code for a particular processor architecture.  Since it
   contains native code it can only be loaded into a process that matches the
   processor architecture it was compiled for.  Also see this
-  <a href="http://stackoverflow.com/questions/7266936/what-is-a-mixed-mode-assembly">StackOverflow question</a>.
+  <a href="https://stackoverflow.com/questions/7266936/what-is-a-mixed-mode-assembly">StackOverflow question</a>.
 </p>
 
 <hr>
@@ -667,11 +667,11 @@
   objects associated with that SQLiteConnection object have also been disposed.
   These changes were made to allow the SQLite native resource management to
   integrate better with the
-  <a href="http://en.wikipedia.org/wiki/Garbage_collection_%28computer_science%29">garbage collection</a>
+  <a href="https://en.wikipedia.org/wiki/Garbage_collection_%28computer_science%29">garbage collection</a>
   semantics used by the
-  <a href="http://en.wikipedia.org/wiki/Common_Language_Runtime">Common Language
+  <a href="https://en.wikipedia.org/wiki/Common_Language_Runtime">Common Language
   Runtime</a>.  Allowing native SQLite resources to be released in a
   non-deterministic order is accomplished through careful use of the
-  <a href="http://www.sqlite.org/c3ref/close.html">sqlite3_close_v2()</a> core
+  <a href="https://www.sqlite.org/c3ref/close.html">sqlite3_close_v2()</a> core
   native library routine.
 </p>
