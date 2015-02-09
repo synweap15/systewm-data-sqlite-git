@@ -47,6 +47,7 @@
     <ul>
       <li>Updated to <a href="https://www.sqlite.org/releaselog/3_8_8_2.html">SQLite 3.8.8.2</a>.</li>
       <li>Updated to <a href="https://www.nuget.org/packages/EntityFramework/6.1.2">Entity Framework 6.1.2</a>.</li>
+      <li>Modify configuration file transforms performed by the NuGet packages to allow Entity Framework 6 design-time integration to work automatically. Fix for <a href="https://system.data.sqlite.org/index.html/info/2be4298631">[2be4298631]</a>, <a href="https://system.data.sqlite.org/index.html/info/abad7c577d">[abad7c577d]</a>, and <a href="https://system.data.sqlite.org/index.html/info/417d669435">[417d669435]</a>.</li>
       <li>Make sure SQL statements generated for DbUpdateCommandTree objects are properly delimited.</li>
       <li>Make sure SQLiteIndexOutputs.ConstraintUsages instances are created prior to calling ISQLiteManagedModule.BestIndex. Fix for <a href="https://system.data.sqlite.org/index.html/info/56f511d268">[56f511d268]</a>.</li>
       <li>Correct marshalling of strings and blobs in the SQLiteValue class. Fix for <a href="https://system.data.sqlite.org/index.html/info/85b824b736">[85b824b736]</a>.</li>
