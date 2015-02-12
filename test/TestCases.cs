@@ -82,12 +82,12 @@ namespace test
     }
 
 /*
- * NOTE: Using SEE or CEROD for this particular test case is currently
- *       unsupported because we have no easy way of executing the SQL
- *       beforehand that is needed to set it up.
+ * NOTE: Using SEE for this particular test case is currently unsupported
+ *       because we have no easy way of executing the SQL beforehand that
+ *       is needed to set it up.
  */
 
-#if INTEROP_CODEC // || INTEROP_INCLUDE_SEE || INTEROP_INCLUDE_CEROD
+#if INTEROP_CODEC // || INTEROP_INCLUDE_SEE
     /// <summary>
     /// Tests changing password on an encrypted database.
     /// </summary>

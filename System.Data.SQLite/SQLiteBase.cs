@@ -375,7 +375,7 @@ namespace System.Data.SQLite
     /// <returns></returns>
     internal abstract void LogMessage(SQLiteErrorCode iErrCode, string zMessage);
 
-#if INTEROP_CODEC || INTEROP_INCLUDE_SEE || INTEROP_INCLUDE_CEROD
+#if INTEROP_CODEC || INTEROP_INCLUDE_SEE
     internal abstract void SetPassword(byte[] passwordBytes);
     internal abstract void ChangePassword(byte[] newPasswordBytes);
 #endif

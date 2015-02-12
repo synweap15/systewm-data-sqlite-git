@@ -2283,7 +2283,7 @@ namespace System.Data.SQLite
       UnsafeNativeMethods.sqlite3_log(iErrCode, ToUTF8(zMessage));
     }
 
-#if INTEROP_CODEC || INTEROP_INCLUDE_SEE || INTEROP_INCLUDE_CEROD
+#if INTEROP_CODEC || INTEROP_INCLUDE_SEE
     internal override void SetPassword(byte[] passwordBytes)
     {
       SQLiteErrorCode n = UnsafeNativeMethods.sqlite3_key(_sql, passwordBytes, passwordBytes.Length);

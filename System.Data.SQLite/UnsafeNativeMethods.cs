@@ -2090,7 +2090,7 @@ namespace System.Data.SQLite
 #endif
     internal static extern void sqlite3_result_text16(IntPtr context, string strName, int nLen, IntPtr pvReserved);
 
-#if INTEROP_CODEC || INTEROP_INCLUDE_SEE || INTEROP_INCLUDE_CEROD
+#if INTEROP_CODEC || INTEROP_INCLUDE_SEE
 #if !PLATFORM_COMPACTFRAMEWORK
     [DllImport(SQLITE_DLL, CallingConvention = CallingConvention.Cdecl)]
 #else
