@@ -978,6 +978,7 @@ namespace System.Data.SQLite
       int len = 0;
       SQLiteErrorCode n = SQLiteErrorCode.Schema;
       int retries = 0;
+      int maximumRetries = (cnn != null) ? cnn._prepareRetries : SQLiteConnection.DefaultPrepareRetries;
       byte[] b = ToUTF8(strSql);
       string typedefs = null;
       SQLiteStatement cmd = null;
@@ -989,7 +990,7 @@ namespace System.Data.SQLite
       SQLiteStatementHandle statementHandle = null;
       try
       {
-        while ((n == SQLiteErrorCode.Schema || n == SQLiteErrorCode.Locked || n == SQLiteErrorCode.Busy) && retries < 3)
+        while ((n == SQLiteErrorCode.Schema || n == SQLiteErrorCode.Locked || n == SQLiteErrorCode.Busy) && retries < maximumRetries)
         {
           try
           {

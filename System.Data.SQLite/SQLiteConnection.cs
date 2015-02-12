@@ -377,6 +377,7 @@ namespace System.Data.SQLite
     private const bool DefaultForeignKeys = false;
     private const bool DefaultEnlist = true;
     private const bool DefaultSetDefaults = true;
+    internal const int DefaultPrepareRetries = 3;
 
     private const int SQLITE_FCNTL_CHUNK_SIZE = 6;
     private const int SQLITE_FCNTL_WIN32_AV_RETRY = 9;
@@ -517,7 +518,14 @@ namespace System.Data.SQLite
     /// <summary>
     /// Default command timeout
     /// </summary>
-    private int _defaultTimeout = 30;
+    private int _defaultTimeout = DefaultConnectionTimeout;
+
+    /// <summary>
+    /// The maximum number of retries when preparing SQL to be executed.  This
+    /// normally only applies to preparation errors resulting from the database
+    /// schema being changed.
+    /// </summary>
+    internal int _prepareRetries = DefaultPrepareRetries;
 
     /// <summary>
     /// Non-zero if the built-in (i.e. framework provided) connection string
@@ -1358,7 +1366,7 @@ namespace System.Data.SQLite
       get
       {
         CheckDisposed();
-        return 30;
+        return DefaultConnectionTimeout;
       }
     }
 #endif
@@ -2541,6 +2549,7 @@ namespace System.Data.SQLite
         int maxPoolSize = Convert.ToInt32(FindKey(opts, "Max Pool Size", DefaultMaxPoolSize.ToString()), CultureInfo.InvariantCulture);
 
         _defaultTimeout = Convert.ToInt32(FindKey(opts, "Default Timeout", DefaultConnectionTimeout.ToString()), CultureInfo.InvariantCulture);
+        _prepareRetries = Convert.ToInt32(FindKey(opts, "PrepareRetries", DefaultPrepareRetries.ToString()), CultureInfo.InvariantCulture);
 
         enumValue = TryParseEnum(typeof(IsolationLevel), FindKey(opts, "Default IsolationLevel", DefaultIsolationLevel.ToString()), true);
         _defaultIsolation = (enumValue is IsolationLevel) ? (IsolationLevel)enumValue : DefaultIsolationLevel;
@@ -2756,6 +2765,17 @@ namespace System.Data.SQLite
     {
       get { CheckDisposed(); return _defaultTimeout; }
       set { CheckDisposed(); _defaultTimeout = value; }
+    }
+
+    /// <summary>
+    /// The maximum number of retries when preparing SQL to be executed.  This
+    /// normally only applies to preparation errors resulting from the database
+    /// schema being changed.
+    /// </summary>
+    public int PrepareRetries
+    {
+        get { CheckDisposed(); return _prepareRetries; }
+        set { CheckDisposed(); _prepareRetries = value; }
     }
 
     /// <summary>

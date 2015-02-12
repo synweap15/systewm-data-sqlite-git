@@ -253,6 +253,28 @@ namespace System.Data.SQLite
     }
 
     /// <summary>
+    /// Gets/sets the maximum number of retries when preparing SQL to be executed.
+    /// This normally only applies to preparation errors resulting from the database
+    /// schema being changed.
+    /// </summary>
+    [DisplayName("Prepare Retries")]
+    [Browsable(true)]
+    [DefaultValue(3)]
+    public int PrepareRetries
+    {
+        get
+        {
+            object value;
+            TryGetValue("prepareretries", out value);
+            return Convert.ToInt32(value, CultureInfo.CurrentCulture);
+        }
+        set
+        {
+            this["prepareretries"] = value;
+        }
+    }
+
+    /// <summary>
     /// Determines whether or not the connection will automatically participate
     /// in the current distributed transaction (if one exists)
     /// </summary>

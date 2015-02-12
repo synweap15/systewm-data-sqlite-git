@@ -1015,7 +1015,7 @@ runTest {test data-1.17 {SQLiteConnectionStringBuilder properties} -body {
                    DateTimeFormat DateTimeKind DateTimeFormatString \
                    BaseSchemaName "Journal Mode" "Default IsolationLevel" \
                    "Foreign Keys" Flags SetDefaults ToFullPath HexPassword \
-                   DefaultDbType DefaultTypeName NoSharedFlags]
+                   DefaultDbType DefaultTypeName NoSharedFlags PrepareRetries]
 
     set values [list null 3 Normal True False \
                      True test.db test.db file:test.db 60 \
@@ -1024,7 +1024,7 @@ runTest {test data-1.17 {SQLiteConnectionStringBuilder properties} -body {
                      UnixEpoch Utc yyyy-MM-dd sqlite_schema \
                      Memory Serializable False \
                      Default False False 736563726574 String \
-                     TEXT True]
+                     TEXT True 20]
 
     set propertyNames [list null Version SyncMode UseUTF16Encoding Pooling \
                             BinaryGUID DataSource Uri FullUri DefaultTimeout \
@@ -1034,7 +1034,7 @@ runTest {test data-1.17 {SQLiteConnectionStringBuilder properties} -body {
                             BaseSchemaName JournalMode DefaultIsolationLevel \
                             ForeignKeys Flags SetDefaults ToFullPath \
                             HexPassword DefaultDbType DefaultTypeName \
-                            NoSharedFlags]
+                            NoSharedFlags PrepareRetries]
 
     foreach key $keys value $values propertyName $propertyNames {
       set code [catch {
@@ -1068,7 +1068,7 @@ Keys=False\} 0 \{(?:Default|LogCallbackException),\
 Flags=(?:Default|LogCallbackException)\} 0 \{False, SetDefaults=False\} 0\
 \{False, ToFullPath=False\} 0 {736563726574, HexPassword=736563726574} 0\
 \{String, DefaultDbType=String\} 0 \{TEXT, DefaultTypeName=TEXT\} 0 \{True,\
-NoSharedFlags=True\}$}}
+NoSharedFlags=True\} 0 \{20, PrepareRetries=20\}$}}
 
 ###############################################################################
 

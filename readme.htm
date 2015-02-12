@@ -229,6 +229,7 @@ released versions of System.Data.SQLite.
     <li>Add AppendManifestToken_SQLiteProviderManifest environment variable to enable better integration between LINQ and the underlying store connection.</li>
     <li>Add SQLite_ForceLogPrepare environment variable to force logging of all prepared SQL regardless of the flags for the associated connection.</li>
     <li>Honor the DateTimeFormat, DateTimeKind, DateTimeFormatString, BinaryGUID connection string and/or provider manifest token properties from within the LINQ assembly. Fix for [8d928c3e88].&nbsp;<b>** Potentially Incompatible Change **</b></li>
+    <li>Add PrepareRetries connection string property to allow the maximum number of retries when preparing a query to be overridden. Fix for [647d282d11].</li>
 </ul>
 <p>
     <b>1.0.94.0 - September 9, 2014</b>
