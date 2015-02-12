@@ -35,6 +35,8 @@ extern int RegisterExtensionFunctions(sqlite3 *db);
 #include "crypt.c"
 #elif defined(INTEROP_INCLUDE_SEE)
 #include "../ext/see.c"
+#elif defined(INTEROP_INCLUDE_CEROD)
+#include "../ext/cerod.c"
 #endif
 
 #include "interop.h"
@@ -89,6 +91,9 @@ static const char * const azInteropCompileOpt[] = {
 #endif
 #ifdef INTEROP_EXTENSION_FUNCTIONS
   "EXTENSION_FUNCTIONS",
+#endif
+#ifdef INTEROP_INCLUDE_CEROD
+  "INCLUDE_CEROD",
 #endif
 #ifdef INTEROP_INCLUDE_SEE
   "INCLUDE_SEE",

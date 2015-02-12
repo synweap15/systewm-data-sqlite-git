@@ -165,6 +165,14 @@
   </PropertyGroup>
 
   <!--
+      NOTE: Enable support (in the managed assemblies) for compressed and
+            encrypted databases using CEROD?
+  -->
+  <PropertyGroup Condition="'$(InteropIncludeCerod)' != 'false'">
+    <DefineConstants>$(DefineConstants);INTEROP_INCLUDE_CEROD</DefineConstants>
+  </PropertyGroup>
+
+  <!--
       NOTE: Enable extra diagnostics from the custom built interop DLL (see the
             "SQLite.NET.Settings.targets" file for more information)?
   -->
