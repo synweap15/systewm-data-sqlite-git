@@ -97,7 +97,7 @@
 
   <!--
       NOTE: For interaction with the native SQLite implementation, use the
-            custom build interop DLL (i.e. "SQLite.Interop.DLL")?
+            custom built interop DLL (i.e. "SQLite.Interop.DLL")?
   -->
   <PropertyGroup Condition="'$(UseInteropDll)' != 'false'">
     <DefineConstants>$(DefineConstants);USE_INTEROP_DLL</DefineConstants>
@@ -162,6 +162,23 @@
   -->
   <PropertyGroup Condition="'$(InteropIncludeSee)' != 'false'">
     <DefineConstants>$(DefineConstants);INTEROP_INCLUDE_SEE</DefineConstants>
+  </PropertyGroup>
+
+  <!--
+      NOTE: Enable support (in the managed assemblies) for compressed and
+            encrypted databases using CEROD?
+  -->
+  <PropertyGroup Condition="'$(InteropIncludeCerod)' != 'false'">
+    <DefineConstants>$(DefineConstants);INTEROP_INCLUDE_CEROD</DefineConstants>
+  </PropertyGroup>
+
+  <!--
+      NOTE: Enable support (in the managed assemblies) for whatever "extra"
+            code (e.g. "extensions") may be included by the custom built
+            interop DLL (i.e. "SQLite.Interop.DLL")?
+  -->
+  <PropertyGroup Condition="'$(InteropIncludeExtra)' != 'false'">
+    <DefineConstants>$(DefineConstants);INTEROP_INCLUDE_EXTRA</DefineConstants>
   </PropertyGroup>
 
   <!--

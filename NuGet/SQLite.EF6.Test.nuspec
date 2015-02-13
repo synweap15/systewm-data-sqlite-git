@@ -22,15 +22,6 @@
     <copyright>Public Domain</copyright>
     <dependencies>
       <group targetFramework="net40">
-        <dependency id="System.Data.SQLite.Core.Test" version="1.0.95.0" />
-      </group>
-      <group targetFramework="net45">
-        <dependency id="System.Data.SQLite.Core.Test" version="1.0.95.0" />
-      </group>
-      <group targetFramework="net451">
-        <dependency id="System.Data.SQLite.Core.Test" version="1.0.95.0" />
-      </group>
-      <group targetFramework="net40">
         <dependency id="EntityFramework" version="6.1.2.0" />
       </group>
       <group targetFramework="net45">

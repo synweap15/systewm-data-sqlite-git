@@ -9,6 +9,18 @@
 
 #include "../core/sqlite3.c"
 
+#if defined(INTEROP_INCLUDE_EXTRA)
+#include "../ext/extra.c"
+#endif
+
+#if defined(INTEROP_INCLUDE_CEROD)
+#include "../ext/cerod.c"
+#endif
+
+#if defined(INTEROP_INCLUDE_SEE)
+#include "../ext/see.c"
+#endif
+
 #if defined(INTEROP_VIRTUAL_TABLE) && SQLITE_VERSION_NUMBER >= 3004001
 #include "../ext/vtshim.c"
 #endif
@@ -31,10 +43,8 @@ extern int RegisterExtensionFunctions(sqlite3 *db);
 #endif
 
 #if defined(SQLITE_OS_WIN)
-#if defined(INTEROP_CODEC)
+#if defined(INTEROP_CODEC) && !defined(INTEROP_INCLUDE_SEE)
 #include "crypt.c"
-#elif defined(INTEROP_INCLUDE_SEE)
-#include "../ext/see.c"
 #endif
 
 #include "interop.h"
@@ -89,6 +99,12 @@ static const char * const azInteropCompileOpt[] = {
 #endif
 #ifdef INTEROP_EXTENSION_FUNCTIONS
   "EXTENSION_FUNCTIONS",
+#endif
+#ifdef INTEROP_INCLUDE_CEROD
+  "INCLUDE_CEROD",
+#endif
+#ifdef INTEROP_INCLUDE_EXTRA
+  "INCLUDE_EXTRA",
 #endif
 #ifdef INTEROP_INCLUDE_SEE
   "INCLUDE_SEE",

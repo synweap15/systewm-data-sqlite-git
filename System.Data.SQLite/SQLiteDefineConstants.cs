@@ -36,6 +36,14 @@ namespace System.Data.SQLite
             "INTEROP_EXTENSION_FUNCTIONS",
 #endif
 
+#if INTEROP_INCLUDE_CEROD
+            "INTEROP_INCLUDE_CEROD",
+#endif
+
+#if INTEROP_INCLUDE_EXTRA
+            "INTEROP_INCLUDE_EXTRA",
+#endif
+
 #if INTEROP_INCLUDE_SEE
             "INTEROP_INCLUDE_SEE",
 #endif
