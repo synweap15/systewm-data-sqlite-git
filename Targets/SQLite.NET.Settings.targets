@@ -377,6 +377,21 @@
     <InteropIncludeCerod Condition="'$(InteropIncludeCerod)' == ''">false</InteropIncludeCerod>
 
     <!--
+        NOTE: Enable including "extra" code with the custom built interop DLL
+              (i.e. "SQLite.Interop.dll")?  By default, this is disabled.  If
+              this is enabled, the "extra.c" file will be included from the
+              extensions directory.  If this is enabled, it must also be
+              enabled via the "INTEROP_INCLUDE_EXTRA=1" preprocessor define
+              being present in the "INTEROP_EXTRA_DEFINES" macro in the build
+              properties file:
+
+                  "SQLite.Interop\props\SQLite.Interop.20YY.[vs]props"
+
+              for the corresponding version(s) of Visual Studio.
+    -->
+    <InteropIncludeExtra Condition="'$(InteropIncludeExtra)' == ''">false</InteropIncludeExtra>
+
+    <!--
         NOTE: Enable extra diagnostics from the custom built interop DLL (i.e.
               "SQLite.Interop.dll")?  By default, this is enabled in the Debug
               build configuration.  If this is disabled, no extra diagnostics

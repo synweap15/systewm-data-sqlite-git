@@ -9,6 +9,10 @@
 
 #include "../core/sqlite3.c"
 
+#if defined(INTEROP_INCLUDE_EXTRA)
+#include "../ext/extra.c"
+#endif
+
 #if defined(INTEROP_INCLUDE_CEROD)
 #include "../ext/cerod.c"
 #endif
@@ -98,6 +102,9 @@ static const char * const azInteropCompileOpt[] = {
 #endif
 #ifdef INTEROP_INCLUDE_CEROD
   "INCLUDE_CEROD",
+#endif
+#ifdef INTEROP_INCLUDE_EXTRA
+  "INCLUDE_EXTRA",
 #endif
 #ifdef INTEROP_INCLUDE_SEE
   "INCLUDE_SEE",
