@@ -1988,9 +1988,8 @@
         Framework 6 using System.Data.SQLite 1.0.94.0 (3.8.6).  The .NET
         Framework 4.0, 4.5, or 4.5.1 is required.
         <br />
-        <big><b>This package depends on both the
-        &quot;System.Data.SQLite.Core&quot; and &quot;EntityFramework&quot;
-        packages.</b></big>
+        <big><b>This package depends on the &quot;EntityFramework&quot;
+        package.</b></big>
         <br />
         (sha1: fc4b0046b083a9fc7a294df3af3b9d3918ee88d8)
       </td>
@@ -2009,8 +2008,7 @@
         System.Data.SQLite 1.0.94.0 (3.8.6).  The .NET Framework 3.5 SP1, 4.0,
         4.5, or 4.5.1 is required.
         <br />
-        <big><b>This package depends on the &quot;System.Data.SQLite.Core&quot;
-        package.</b></big>
+        <big><b>This package does not depend on any other package.</b></big>
         <br />
         (sha1: a08052b4d350e3ba830ebf0618bc8c221a2ef70e)
       </td>
@@ -2030,8 +2028,7 @@
         <br />
         <big><b>This is a legacy package; if possible, please use either the
         &quot;System.Data.SQLite&quot; or &quot;System.Data.SQLite.Core&quot;
-        package instead.  This package depends on the &quot;EntityFramework&quot;
-        package.</b></big>
+        package instead.</b></big>
         <br />
         <br />
         <big><b><i>This NuGet package does not include any code from the native
@@ -2039,6 +2036,13 @@
         assembly &quot;SQLite.Interop.dll&quot; compiled for the processor
         architecture of the host process being present in a directory in the
         native library search path.</i></b></big>
+        <br />
+        <br />
+        <big><b><i>As of version 1.0.95.0, this package will not directly
+        contain any of the required binaries. Instead, this package will
+        depend on the &quot;System.Data.SQLite.Core.MSIL&quot;,
+        &quot;System.Data.SQLite.Linq&quot;, and
+        &quot;System.Data.SQLite.EF6&quot; packages.</i></b></big>
         <br />
         <br />
         (sha1: 7689db66a5b1f2c9c751dbece99ec2faa840f48d)
@@ -2062,8 +2066,7 @@
         <br />
         <big><b>This is a legacy package; if possible, please use either the
         &quot;System.Data.SQLite&quot; or &quot;System.Data.SQLite.Core&quot;
-        package instead.  This package depends on the &quot;EntityFramework&quot;
-        package.</b></big>
+        package instead.</b></big>
         <br />
         (sha1: 501c8252fc23134ab99bc6c170a66732578e4a73)
       </td>
@@ -2086,8 +2089,7 @@
         <br />
         <big><b>This is a legacy package; if possible, please use either the
         &quot;System.Data.SQLite&quot; or &quot;System.Data.SQLite.Core&quot;
-        package instead.  This package depends on the
-        &quot;EntityFramework&quot; package.</b></big>
+        package instead.</b></big>
         <br />
         (sha1: 0c9fffde7bd3ed7181ad5aa4dba8e372abe54f0c)
       </td>
