@@ -447,6 +447,13 @@ namespace eval ::Eagle {
       #       file exists, we should have everything we need.
       #
       set fileName [file nativename [file join $directory \
+          [machineToPlatform $::tcl_platform(machine)] SQLite.Interop.dll]]
+
+      if {[file exists $fileName]} then {
+        return true
+      }
+
+      set fileName [file nativename [file join $directory \
           SQLite.Interop.dll]]
 
       if {[file exists $fileName]} then {
@@ -458,6 +465,13 @@ namespace eval ::Eagle {
       #       library.  If this file exists, we should have everything we
       #       need.
       #
+      set fileName [file nativename [file join $directory \
+          [machineToPlatform $::tcl_platform(machine)] sqlite3.dll]]
+
+      if {[file exists $fileName]} then {
+        return true
+      }
+
       set fileName [file nativename [file join $directory \
           sqlite3.dll]]
 
