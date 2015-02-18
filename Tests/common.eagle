@@ -442,12 +442,17 @@ namespace eval ::Eagle {
       }
 
       #
+      # NOTE: What is the platform for this machine?
+      #
+      set platform [machineToPlatform $::tcl_platform(machine)]
+
+      #
       # NOTE: Build the fully qualified file name for the interop assembly
       #       containing the System.Data.SQLite native components.  If this
       #       file exists, we should have everything we need.
       #
       set fileName [file nativename [file join $directory \
-          [machineToPlatform $::tcl_platform(machine)] SQLite.Interop.dll]]
+          $platform SQLite.Interop.dll]]
 
       if {[file exists $fileName]} then {
         return true
@@ -466,7 +471,7 @@ namespace eval ::Eagle {
       #       need.
       #
       set fileName [file nativename [file join $directory \
-          [machineToPlatform $::tcl_platform(machine)] sqlite3.dll]]
+          $platform sqlite3.dll]]
 
       if {[file exists $fileName]} then {
         return true
