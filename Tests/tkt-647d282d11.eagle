@@ -33,7 +33,7 @@ runTest {test tkt-647d282d11-1.1 {Open with PrepareRetries} -setup {
 
   freeDbConnection
 
-  unset -nocomplain db fileName
+  unset -nocomplain connection db fileName
 } -constraints \
 {eagle monoBug28 command.sql compile.DATA SQLite System.Data.SQLite} -result \
 {10 {} 20}}

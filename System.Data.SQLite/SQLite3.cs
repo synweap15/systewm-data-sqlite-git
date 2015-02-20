@@ -1330,6 +1330,19 @@ namespace System.Data.SQLite
         }
 #endif
 
+        if ((flags & SQLiteConnectionFlags.BindDateTimeWithKind) == SQLiteConnectionFlags.BindDateTimeWithKind)
+        {
+            if ((_datetimeKind != DateTimeKind.Unspecified) &&
+                (dt.Kind != DateTimeKind.Unspecified) &&
+                (dt.Kind != _datetimeKind))
+            {
+                if (_datetimeKind == DateTimeKind.Utc)
+                    dt = dt.ToUniversalTime();
+                else if (_datetimeKind == DateTimeKind.Local)
+                    dt = dt.ToLocalTime();
+            }
+        }
+
         switch (_datetimeFormat)
         {
             case SQLiteDateFormats.Ticks:

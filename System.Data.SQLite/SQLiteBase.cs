@@ -1099,6 +1099,13 @@ namespace System.Data.SQLite
       NoConvertSettings = 0x8000000,
 
       /// <summary>
+      /// When binding parameter values with the <see cref="DateTime" />
+      /// type, take their <see cref="DateTimeKind" /> into account as
+      /// well as that of the associated <see cref="SQLiteConnection" />.
+      /// </summary>
+      BindDateTimeWithKind = 0x10000000,
+
+      /// <summary>
       /// When binding parameter values or returning column values, always
       /// treat them as though they were plain text (i.e. no numeric,
       /// date/time, or other conversions should be attempted).

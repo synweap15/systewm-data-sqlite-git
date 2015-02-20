@@ -244,6 +244,14 @@ namespace eval ::Eagle {
     #       not testing the Eagle core library itself).
     #
     set no(core) 1
+
+    #
+    # NOTE: Make the per-test connection flag output a little less noisy.
+    #
+    set no(emitLocalFlagsIfNone) 1
+    set no(emitSharedFlagsIfNone) 1
+    set no(emitGlobalFlagsIfNone) 1
+    set no(emitCombinedFlagsIfNone) 1
   }
 }
 
