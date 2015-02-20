@@ -1576,6 +1576,24 @@ namespace eval ::Eagle {
       }
     }
 
+    proc hasNoFlags { varName none } {
+      upvar 1 $varName flags
+
+      if {![info exists flags]} then {
+        return true
+      }
+
+      if {[string length $flags] == 0} then {
+        return true
+      }
+
+      if {$none && $flags eq "None"} then {
+        return true
+      }
+
+      return false
+    }
+
     proc getConnectionFlags { fileName flags {quiet false} } {
       #
       # NOTE: Figure out which database file name or connection string these
@@ -1599,10 +1617,14 @@ namespace eval ::Eagle {
       #       data source or file name.
       #
       if {!$quiet} then {
-        tputs $::test_channel [appendArgs \
-            "---- local connection flags for " $database \
-            " are: " [expr {[string length $flags] > 0 ? \
-            [appendArgs \" $flags \"] : "<none>"}] \n]
+        if {![info exists ::no(emitLocalFlags)] && \
+            (![info exists ::no(emitLocalFlagsIfNone)] || \
+             ![hasNoFlags flags false])} then {
+          tputs $::test_channel [appendArgs \
+              "---- local connection flags for " $database \
+              " are: " [expr {![hasNoFlags flags false] ? \
+              [appendArgs \" $flags \"] : "<none>"}] \n]
+        }
       }
 
       #
@@ -1612,15 +1634,21 @@ namespace eval ::Eagle {
         if {[catch {
           object invoke System.Data.SQLite.SQLiteConnection SharedFlags
         } sharedFlags] == 0} then {
-          tputs $::test_channel [appendArgs \
-              "---- shared connection flags for " $database \
-              " are: " [expr {[string length $sharedFlags] > 0 && \
-              $sharedFlags ne "None" ? \
-              [appendArgs \" $sharedFlags \"] : "<none>"}] \n]
+          if {![info exists ::no(emitSharedFlags)] && \
+              (![info exists ::no(emitSharedFlagsIfNone)] || \
+               ![hasNoFlags sharedFlags true])} then {
+            tputs $::test_channel [appendArgs \
+                "---- shared connection flags for " $database \
+                " are: " [expr {![hasNoFlags sharedFlags true] ? \
+                [appendArgs \" $sharedFlags \"] : "<none>"}] \n]
+          }
         } else {
-          tputs $::test_channel [appendArgs \
-              "---- shared connection flags for " $database \
-              " are: <unavailable>\n"]
+          if {![info exists ::no(emitSharedFlags)] && \
+              ![info exists ::no(emitSharedFlagsIfUnavailable)]} then {
+            tputs $::test_channel [appendArgs \
+                "---- shared connection flags for " $database \
+                " are: <unavailable>\n"]
+          }
         }
       }
 
@@ -1629,17 +1657,19 @@ namespace eval ::Eagle {
       #       set, use them now (i.e. by combining them with the ones for this
       #       connection).
       #
-      if {[info exists ::connection_flags] && \
-          [string length $::connection_flags] > 0} then {
+      if {[info exists ::connection_flags]} then {
         #
         # NOTE: Show (and log) the detected global connection flags.
         #
         if {!$quiet} then {
-          tputs $::test_channel [appendArgs \
-              "---- global connection flags detected: " \
-              [expr {[info exists ::connection_flags] && \
-              [string length $::connection_flags] > 0 ? \
-              [appendArgs \" $::connection_flags \"] : "<none>"}] \n]
+          if {![info exists ::no(emitGlobalFlags)] && \
+              (![info exists ::no(emitGlobalFlagsIfNone)] || \
+               ![hasNoFlags ::connection_flags false])} then {
+            tputs $::test_channel [appendArgs \
+                "---- global connection flags detected: " \
+                [expr {![hasNoFlags ::connection_flags false] ? \
+                [appendArgs \" $::connection_flags \"] : "<none>"}] \n]
+          }
         }
 
         #
@@ -1652,10 +1682,14 @@ namespace eval ::Eagle {
         # NOTE: Show (and log) the new effective connection flags.
         #
         if {!$quiet} then {
-          tputs $::test_channel [appendArgs \
-              "---- combined connection flags for " $database \
-              " are: " [expr {[string length $flags] > 0 ? \
-              [appendArgs \" $flags \"] : "<none>"}] \n]
+          if {![info exists ::no(emitCombinedFlags)] && \
+              (![info exists ::no(emitCombinedFlagsIfNone)] || \
+               ![hasNoFlags flags false])} then {
+            tputs $::test_channel [appendArgs \
+                "---- combined connection flags for " $database \
+                " are: " [expr {![hasNoFlags flags false] ? \
+                [appendArgs \" $flags \"] : "<none>"}] \n]
+          }
         }
       }
 
