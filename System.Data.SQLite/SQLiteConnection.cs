@@ -2328,9 +2328,9 @@ namespace System.Data.SQLite
         ref string error
         )
     {
-        if (String.IsNullOrEmpty(text))
+        if (text == null)
         {
-            error = "string is null or empty";
+            error = "string is null";
             return null;
         }
 
@@ -2591,7 +2591,7 @@ namespace System.Data.SQLite
 #if INTEROP_CODEC || INTEROP_INCLUDE_SEE
         string hexPassword = FindKey(opts, "HexPassword", DefaultHexPassword);
 
-        if (!String.IsNullOrEmpty(hexPassword))
+        if (hexPassword != null)
         {
             string error = null;
             byte[] hexPasswordBytes = FromHexString(hexPassword, ref error);
@@ -2610,7 +2610,7 @@ namespace System.Data.SQLite
         {
             string password = FindKey(opts, "Password", DefaultPassword);
 
-            if (!String.IsNullOrEmpty(password))
+            if (password != null)
                 _sql.SetPassword(UTF8Encoding.UTF8.GetBytes(password));
             else if (_password != null)
                 _sql.SetPassword(_password);
