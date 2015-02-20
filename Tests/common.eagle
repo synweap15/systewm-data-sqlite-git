@@ -1653,25 +1653,25 @@ namespace eval ::Eagle {
       }
 
       #
+      # NOTE: Show (and log) the detected global connection flags, if any.
+      #
+      if {!$quiet} then {
+        if {![info exists ::no(emitGlobalFlags)] && \
+            (![info exists ::no(emitGlobalFlagsIfNone)] || \
+             ![hasNoFlags ::connection_flags false])} then {
+          tputs $::test_channel [appendArgs \
+              "---- global connection flags are: " \
+              [expr {![hasNoFlags ::connection_flags false] ? \
+              [appendArgs \" $::connection_flags \"] : "<none>"}] \n]
+        }
+      }
+
+      #
       # NOTE: If there are any global (per test run) connection flags currently
       #       set, use them now (i.e. by combining them with the ones for this
       #       connection).
       #
       if {[info exists ::connection_flags]} then {
-        #
-        # NOTE: Show (and log) the detected global connection flags.
-        #
-        if {!$quiet} then {
-          if {![info exists ::no(emitGlobalFlags)] && \
-              (![info exists ::no(emitGlobalFlagsIfNone)] || \
-               ![hasNoFlags ::connection_flags false])} then {
-            tputs $::test_channel [appendArgs \
-                "---- global connection flags detected: " \
-                [expr {![hasNoFlags ::connection_flags false] ? \
-                [appendArgs \" $::connection_flags \"] : "<none>"}] \n]
-          }
-        }
-
         #
         # NOTE: Combine and/or replace the connection flags and then show the
         #       new value.
