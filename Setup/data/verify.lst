@@ -739,6 +739,7 @@ set sds_manifests(source) {
   Tests/tkt-58ed318f2f.eagle
   Tests/tkt-59edc1018b.eagle
   Tests/tkt-6434e23a0f.eagle
+  Tests/tkt-647d282d11.eagle
   Tests/tkt-6c6ecccc5f.eagle
   Tests/tkt-72905c9a77.eagle
   Tests/tkt-7e3fa93744.eagle
@@ -750,6 +751,7 @@ set sds_manifests(source) {
   Tests/tkt-8d928c3e88.eagle
   Tests/tkt-996d13cd87.eagle
   Tests/tkt-9ba9346f75.eagle
+  Tests/tkt-a7d04fb111.eagle
   Tests/tkt-aba4549801.eagle
   Tests/tkt-ac47dd230a.eagle
   Tests/tkt-ae5267b863.eagle
