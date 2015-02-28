@@ -322,6 +322,16 @@ namespace System.Data.SQLite
   /// <description>N</description>
   /// <description>True</description>
   /// </item>
+  /// <item>
+  /// <description>PrepareRetries</description>
+  /// <description>
+  /// The maximum number of retries when preparing SQL to be executed.  This
+  /// normally only applies to preparation errors resulting from the database
+  /// schema being changed.
+  /// </description>
+  /// <description>N</description>
+  /// <description>3</description>
+  /// </item>
   /// </list>
   /// </remarks>
   public sealed partial class SQLiteConnection : DbConnection, ICloneable, IDisposable
@@ -1829,6 +1839,16 @@ namespace System.Data.SQLite
     /// </description>
     /// <description>N</description>
     /// <description>True</description>
+    /// </item>
+    /// <item>
+    /// <description>PrepareRetries</description>
+    /// <description>
+    /// The maximum number of retries when preparing SQL to be executed.  This
+    /// normally only applies to preparation errors resulting from the database
+    /// schema being changed.
+    /// </description>
+    /// <description>N</description>
+    /// <description>3</description>
     /// </item>
     /// </list>
     /// </remarks>
