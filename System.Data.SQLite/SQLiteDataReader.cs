@@ -727,7 +727,6 @@ namespace System.Data.SQLite
     public override int GetOrdinal(string name)
     {
       CheckDisposed();
-      VerifyForGet();
 
       if (_throwOnDisposed) SQLiteCommand.Check(_command);
 
