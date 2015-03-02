@@ -892,14 +892,45 @@ namespace System.Data.SQLite
             ColumnParent key = new ColumnParent(databaseName, tableName, null);
             ColumnParent value = new ColumnParent(databaseName, tableName, columnName);
 
-            if (!parentToColumns.ContainsKey(key))
+            List<int> indexList;
+
+            if (!parentToColumns.TryGetValue(key, out indexList))
                 parentToColumns.Add(key, new List<int>(new int[] { n }));
+            else if (indexList != null)
+                indexList.Add(n);
             else
-                parentToColumns[key].Add(n);
+                parentToColumns[key] = new List<int>(new int[] { n });
 
             columnToParent.Add(n, value);
         }
     }
+
+    ///////////////////////////////////////////////////////////////////////////
+
+    private static int CountParents(
+        Dictionary<ColumnParent, List<int>> parentToColumns
+        )
+    {
+        int result = 0;
+
+        if (parentToColumns != null)
+        {
+            foreach (ColumnParent key in parentToColumns.Keys)
+            {
+                if (key == null)
+                    continue;
+
+                if (String.IsNullOrEmpty(key.TableName))
+                    continue;
+
+                result++;
+            }
+        }
+
+        return result;
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
 
     internal DataTable GetSchemaTable(bool wantUniqueInfo, bool wantDefaultValue)
     {
@@ -1020,7 +1051,7 @@ namespace System.Data.SQLite
 
           if (bNotNull || bPrimaryKey) row[SchemaTableColumn.AllowDBNull] = false;
 
-          row[SchemaTableColumn.IsKey] = bPrimaryKey && parentToColumns.Count <= 1;
+          row[SchemaTableColumn.IsKey] = bPrimaryKey && CountParents(parentToColumns) <= 1;
           row[SchemaTableOptionalColumn.IsAutoIncrement] = bAutoIncrement;
           row["CollationType"] = collSeq;
 
