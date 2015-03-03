@@ -50,13 +50,13 @@
   <li>
     <a href="https://www.mail-archive.com/sqlite-users%40sqlite.org/">
     https://www.mail-archive.com/sqlite-users%40sqlite.org/</a>
-    (<b>Old Address, before mid-February 2015</b>)
+    (<b>old address, before mid-February 2015</b>)
   </li>
 
   <li>
     <a href="https://www.mail-archive.com/sqlite-users%40mailinglists.sqlite.org/">
     https://www.mail-archive.com/sqlite-users%40mailinglists.sqlite.org/</a>
-    (<b>New Address, after mid-February 2015</b>)
+    (<b>new address, after mid-February 2015</b>)
   </li>
 
   <li>
