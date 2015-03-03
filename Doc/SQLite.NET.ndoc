@@ -15,7 +15,7 @@
             <property name="BinaryTOC" value="False" />
             <property name="AdditionalContentResourceDirectory" value=".\Extra\" />
             <property name="AssemblyVersionInfo" value="AssemblyVersion" />
-            <property name="FeedbackEmailAddress" value="sqlite-users@sqlite.org" />
+            <property name="FeedbackEmailAddress" value="sqlite-users@mailinglists.sqlite.org" />
             <property name="SdkDocVersion" value="SDK_v3_5" />
             <property name="SdkDocVersionString" value="VS.90" />
             <property name="DocumentAttributes" value="False" />
