@@ -839,9 +839,12 @@ namespace eval ::Eagle {
         set process [$array -alias GetValue $index]
 
         #
-        # NOTE: Add the Id of the process to the result list.
+        # NOTE: Add the Id of the process to the result list.  This
+        #       may fail on some versions of Mono.
         #
-        lappend result [$process Id]
+        if {[catch {$process Id} id] == 0} then {
+          lappend result $id
+        }
 
         #
         # NOTE: Get rid of the process object, we no longer need it.
@@ -1241,10 +1244,39 @@ namespace eval ::Eagle {
           [file join $directory Hippogriff.exe] -delay 2000]
 
       if {$automatic} then {
-        eval lappend command -silent true -confirm false
+        lappend command -silent true -confirm false
+      }
+
+      set baseUri [getUpdateBaseUri]
+
+      if {[string length $baseUri] > 0} then {
+        lappend command -baseUri $baseUri
       }
 
       eval $command &; exit -force
+    }
+
+    proc getUpdateBaseUri {} {
+      #
+      # NOTE: Check the current base URI for updates against the one baked
+      #       into the assembly.  If they are different, then the base URI
+      #       must have been overridden.  In that case, we must return the
+      #       current base URI; otherwise, we must return an empty string.
+      #
+      set baseUri(0) [info engine UpdateBaseUri false]; # NOTE: Current.
+      set baseUri(1) [info engine UpdateBaseUri true];  # NOTE: Default.
+
+      if {[string length $baseUri(0)] > 0 && \
+          [string length $baseUri(1)] > 0} then {
+        #
+        # NOTE: Ok, they are both valid.  Are they different?
+        #
+        if {$baseUri(0) ne $baseUri(1)} then {
+          return $baseUri(0)
+        }
+      }
+
+      return ""
     }
 
     proc getUpdateData { uri } {
@@ -1313,10 +1345,15 @@ namespace eval ::Eagle {
             {wantScripts false} {quiet false} {prompt false}
             {automatic false} } {
       #
-      # NOTE: This should work properly in Eagle only.
+      # NOTE: Grab the base URI for updates.
+      #
+      set updateBaseUri [info engine UpdateBaseUri]
+
+      #
+      # NOTE: Append the path and query string used for updates to it.
       #
       set updateUri [appendArgs \
-          [info engine UpdateBaseUri] [info engine UpdatePathAndQuery]]
+          $updateBaseUri [info engine UpdatePathAndQuery]]
 
       #
       # NOTE: Fetch the master update data from the distribution site
@@ -1428,13 +1465,21 @@ namespace eval ::Eagle {
               }
 
               #
+              # NOTE: What should the DateTime format be for display?  This
+              #       should be some variation on ISO-8601.
+              #
+              set dateTimeFormat yyyy-MM-ddTHH:mm:ss
+
+              #
               # NOTE: Does it look like the number of seconds since the epoch
               #       or some kind of date/time string?
               #
               if {[string is integer -strict $timeStamp]} then {
-                set dateTime [clock format $timeStamp]
+                set dateTime [clock format \
+                    $timeStamp -format $dateTimeFormat]
               } else {
-                set dateTime [clock format [clock scan $timeStamp]]
+                set dateTime [clock format \
+                    [clock scan $timeStamp] -format $dateTimeFormat]
               }
 
               #
@@ -1456,9 +1501,11 @@ namespace eval ::Eagle {
               #       or some kind of date/time string?
               #
               if {[string is integer -strict $engineTimeStamp]} then {
-                set engineDateTime [clock format $engineTimeStamp]
+                set engineDateTime [clock format \
+                    $engineTimeStamp -format $dateTimeFormat]
               } else {
-                set engineDateTime [clock format [clock scan $engineTimeStamp]]
+                set engineDateTime [clock format \
+                    [clock scan $engineTimeStamp] -format $dateTimeFormat]
               }
 
               #
@@ -1536,7 +1583,8 @@ namespace eval ::Eagle {
                   set text [appendArgs \
                       "latest build " $patchLevel ", dated " $dateTime \
                       ", is newer than the running build " $enginePatchLevel \
-                      ", dated " $engineDateTime]
+                      ", dated " $engineDateTime ", based on data from " \
+                      $updateBaseUri]
 
                   if {$prompt && [isInteractive]} then {
                     set caption [appendArgs \
@@ -1775,14 +1823,16 @@ namespace eval ::Eagle {
                 return [list [appendArgs \
                     "running build " $enginePatchLevel ", dated " \
                     $engineDateTime ", is newer than the latest build " \
-                    $patchLevel ", dated " $dateTime]]
+                    $patchLevel ", dated " $dateTime ", based on data " \
+                    "from " $updateBaseUri]]
               } elseif {$checkBuild} then {
                 #
                 # NOTE: The patch levels are equal, we are up-to-date.
                 #
                 return [list [appendArgs \
                     "running build " $enginePatchLevel ", dated " \
-                    $engineDateTime ", is the latest build"]]
+                    $engineDateTime ", is the latest build, based on " \
+                    "data from " $updateBaseUri]]
               }
             }
           }

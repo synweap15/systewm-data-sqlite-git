@@ -487,8 +487,8 @@ namespace eval ::Eagle {
     set options [list \
         -breakOnLeak -configuration -constraints -exitOnComplete -file \
         -logFile -machine -match -no -notFile -platform -postTest -preTest \
-        -randomOrder -skip -startFile -stopFile -stopOnFailure -stopOnLeak \
-        -suffix -suite -tclsh -threshold]
+        -postWait -preWait -randomOrder -skip -startFile -stopFile \
+        -stopOnFailure -stopOnLeak -suffix -suite -tclsh -threshold]
 
     set length [llength $args]
 
@@ -1974,13 +1974,47 @@ namespace eval ::Eagle {
           }
 
           #
-          # NOTE: Evaluate the file in the context of the caller,
-          #       catching any errors.  If an error is raised and the
-          #       stop-on-failure flag is set, assume it was a test
-          #       failure and that we need to stop any and all further
-          #       processing of test files.
+          # NOTE: Evaluate the test file, optionally waiting for a certain
+          #       number of milliseconds before and/or after doing so.
           #
-          if {[catch {uplevel 1 [list source $fileName]} error]} then {
+          if {[catch {
+            #
+            # NOTE: Are we being prevented from waiting before the file?
+            #
+            if {![info exists ::no(preWait)]} then {
+              if {[info exists ::test_wait(pre)] && \
+                  [string is integer -strict $::test_wait(pre)]} then {
+                tputs $channel [appendArgs \
+                    "---- waiting for " $::test_wait(pre) \
+                    " milliseconds before test file...\n"]
+
+                after $::test_wait(pre); # NOTE: Sleep.
+              }
+            }
+
+            #
+            # NOTE: Evaluate the file in the context of the caller,
+            #       catching any errors.  If an error is raised and the
+            #       stop-on-failure flag is set, assume it was a test
+            #       failure and that we need to stop any and all further
+            #       processing of test files.
+            #
+            uplevel 1 [list source $fileName]
+
+            #
+            # NOTE: Are we being prevented from waiting after the file?
+            #
+            if {![info exists ::no(postWait)]} then {
+              if {[info exists ::test_wait(post)] && \
+                  [string is integer -strict $::test_wait(post)]} then {
+                tputs $channel [appendArgs \
+                    "---- waiting for " $::test_wait(post) \
+                    " milliseconds after test file...\n"]
+
+                after $::test_wait(post); # NOTE: Sleep.
+              }
+            }
+          } error]} then {
             #
             # NOTE: Most likely, this error was caused by malformed or
             #       incorrect code in-between the tests themselves.  We
@@ -2566,6 +2600,49 @@ namespace eval ::Eagle {
       }
 
       return false; # still alive (or error).
+    }
+
+    proc reportTestConstraintCounts { channel skippedNames } {
+      #
+      # NOTE: Process the list of skipped tests, which is really a dictionary
+      #       of test names to the list of constraints that caused them to be
+      #       skipped.  We need to "roll them up", on a per-constraint basis,
+      #       and produce counts for each constraint.  At the same time, we
+      #       need to keep track of the maximum count seen, to help align the
+      #       final output.
+      #
+      set maximum 0
+
+      foreach {testName constraintNames} $skippedNames {
+        foreach constraintName $constraintNames {
+          if {[info exists skippedCounts($constraintName)]} then {
+            incr skippedCounts($constraintName)
+          } else {
+            set skippedCounts($constraintName) 1
+          }
+
+          if {$skippedCounts($constraintName) > $maximum} then {
+            set maximum $skippedCounts($constraintName)
+          }
+        }
+      }
+
+      #
+      # NOTE: Produce the final output, which includes a single line header
+      #       followed by one line per test constraint seen.
+      #
+      if {$maximum > 0 && [array size skippedCounts] > 0} then {
+        set places [expr {int(log10($maximum)) + 1}]
+
+        tputs $channel "Number of tests skipped for each constraint:\n"
+
+        foreach {name value} [array get skippedCounts] {
+          tputs $channel [appendArgs \
+              \t [format [appendArgs % $places s] $value] \t $name \n]
+        }
+
+        tputs $channel \n
+      }
     }
 
     proc purgeAndCleanup { channel name } {

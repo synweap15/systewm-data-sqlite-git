@@ -22,8 +22,8 @@ if {![info exists no([file tail [info script]])]} then {
   #
   # NOTE: Make sure all the variables used by this prologue are unset.
   #
-  unset -nocomplain pkg_dir pattern exec dummy directory name value expr \
-      publicKeyToken encoding memory stack drive server database timeout \
+  unset -nocomplain pkg_dir pattern dummy directory name value exec encoding \
+      host memory stack drive publicKeyToken expr server database timeout \
       user password percent checkout timeStamp loaded
 
   #
@@ -304,6 +304,8 @@ if {![info exists no([file tail [info script]])]} then {
   set test_flags(-exitOnComplete) ""; # default to not exit after complete.
   set test_flags(-preTest) ""; # default to not evaluating anything.
   set test_flags(-postTest) ""; # default to not evaluating anything.
+  set test_flags(-preWait) ""; # default to not waiting.
+  set test_flags(-postWait) ""; # default to not waiting.
   set test_flags(-tclsh) ""; # Tcl shell, default to empty.
 
   #
@@ -402,6 +404,22 @@ if {![info exists no([file tail [info script]])]} then {
       # NOTE: Set the pre-test script to the one provided by the command line.
       #
       set test_script(post) $test_flags(-postTest)
+    }
+
+    if {[info exists test_flags(-preWait)] && \
+        [string is integer -strict $test_flags(-preWait)]} then {
+      #
+      # NOTE: Set the specified wait (in milliseconds) before each file.
+      #
+      set test_wait(pre) $test_flags(-preWait)
+    }
+
+    if {[info exists test_flags(-postWait)] && \
+        [string is integer -strict $test_flags(-postWait)]} then {
+      #
+      # NOTE: Set the specified wait (in milliseconds) after each file.
+      #
+      set test_wait(post) $test_flags(-postWait)
     }
   }
 
@@ -556,6 +574,22 @@ if {![info exists no([file tail [info script]])]} then {
       [expr {[info exists test_script(post)] && \
       [string length $test_script(post)] > 0 ? \
       [appendArgs \" $test_script(post) \"] : "<none>"}] \n]
+
+  #
+  # NOTE: Show both the pre-test and post-test waits now, prior to actually
+  #       using either of them (even if their use has been disabled).
+  #
+  tputs $test_channel [appendArgs "---- pre-test wait: " \
+      [expr {[info exists test_wait(pre)] && \
+      [string is integer -strict $test_wait(pre)] ? \
+      [appendArgs $test_wait(pre) " milliseconds"] : \
+      "<none>"}] \n]
+
+  tputs $test_channel [appendArgs "---- post-test wait: " \
+      [expr {[info exists test_wait(post)] && \
+      [string is integer -strict $test_wait(post)] ? \
+      [appendArgs $test_wait(post) " milliseconds"] : \
+      "<none>"}] \n]
 
   #
   # NOTE: Are we being prevented from evaluating the "pre-test" script?
@@ -810,7 +844,7 @@ if {![info exists no([file tail [info script]])]} then {
     #       does not control or change any hacks for Mono that may
     #       be present in the library itself.
     #
-    # if {![info exists no(mono)] && [isMono]} then {
+    # if {[isTestMono]} then {
     #   set no(mono) true
     # }
 
@@ -1477,6 +1511,20 @@ if {![info exists no([file tail [info script]])]} then {
     #
     if {![info exists no(core)] && ![info exists no(test)]} then {
       #
+      # NOTE: Has plugin policy testing support been disabled?
+      #
+      if {![info exists no(testPluginPolicy)]} then {
+        #
+        # NOTE: For tests "load-2.0" and "load-2.1".
+        #
+        checkForObjectMember $test_channel Eagle._Tests.Default \
+            *TestAddLoadPluginPolicy*
+
+        checkForObjectMember $test_channel Eagle._Tests.Default \
+            *TestLoadPluginPolicy*
+      }
+
+      #
       # NOTE: Has script stream testing support been disabled?
       #
       if {![info exists no(testScriptStream)]} then {
@@ -1487,12 +1535,37 @@ if {![info exists no([file tail [info script]])]} then {
             *TestScriptStream*
       }
 
+      #
+      # NOTE: Has complaint testing support been disabled?
+      #
+      if {![info exists no(testComplain)]} then {
+        #
+        # NOTE: For tests "debug-1.98" and "debug-1.99".
+        #
+        checkForObjectMember $test_channel Eagle._Tests.Default \
+            *TestSetComplainCallback*
+
+        checkForObjectMember $test_channel Eagle._Tests.Default \
+            *TestComplainCallbackThrow*
+
+        checkForObjectMember $test_channel Eagle._Tests.Default \
+            *TestComplainCallbackNoThrow*
+      }
+
       if {![info exists no(testLoad)]} then {
         #
         # NOTE: For tests "load-1.6" and "load-1.7".
         #
         checkForObjectMember $test_channel Eagle._Tests.Default \
             *TestLoadPluginViaBytes*
+      }
+
+      if {![info exists no(testPermute)]} then {
+        #
+        # NOTE: For test "lpermute-1.3".
+        #
+        checkForObjectMember $test_channel Eagle._Tests.Default \
+            *TestPermute*
       }
 
       #
@@ -1789,6 +1862,19 @@ if {![info exists no([file tail [info script]])]} then {
             *TestExpr*
 
         #
+        # NOTE: For tests "basic-1.66", "basic-1.67", "basic-1.68",
+        #       and "basic-1.69".
+        #
+        checkForObjectMember $test_channel Eagle._Tests.Default \
+            *TestTakeEventHandler*
+
+        checkForObjectMember $test_channel Eagle._Tests.Default \
+            *TestTakeGenericEventHandler*
+
+        checkForObjectMember $test_channel Eagle._Tests.Default \
+            *TestTakeResolveEventHandler*
+
+        #
         # NOTE: For test "array-4.1".
         #
         checkForObjectMember $test_channel Eagle._Tests.Default \
@@ -1964,6 +2050,17 @@ if {![info exists no([file tail [info script]])]} then {
       # NOTE: For tests "object-4.7", "object-4.8", and "object-4.9".
       #
       checkForPowerShell $test_channel
+    }
+
+    #
+    # NOTE: Has .NET Framework 2.0 Service Pack testing support been
+    #       disabled?
+    #
+    if {![info exists no(netFx20Sp)]} then {
+      #
+      # NOTE: For test "hash-1.1".
+      #
+      checkForNetFx20ServicePack $test_channel
     }
 
     #
@@ -2466,6 +2563,10 @@ if {![info exists no([file tail [info script]])]} then {
 
   if {![info exists no(checkForBigLists)]} then {
     checkForBigLists $test_channel
+  }
+
+  if {![info exists no(checkForTimeIntensive)]} then {
+    checkForTimeIntensive $test_channel
   }
 
   if {![info exists no(checkForMemoryIntensive)]} then {

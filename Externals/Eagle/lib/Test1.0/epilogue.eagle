@@ -155,6 +155,7 @@ if {![info exists no([file tail [info script]])]} then {
     unset -nocomplain name count
 
     tputs $test_channel \n; # NOTE: Blank line.
+    reportTestConstraintCounts $test_channel $eagle_tests(SkippedNames)
 
     if {$eagle_tests(Passed) > 0} then {
       tresult Ok [appendArgs "PASSED: " $eagle_tests(Passed) \n]
