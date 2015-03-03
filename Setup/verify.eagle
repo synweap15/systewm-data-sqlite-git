@@ -14,7 +14,7 @@ proc usage { error } {
 
   puts stdout "usage:\
 [file tail [info nameofexecutable]]\
-[file tail [info script]] <directory> <withHashes>"
+[file tail [info script]] <directory> <withHashes> \[failHashes\]"
 
   #
   # NOTE: Indicate to the caller, if any, that we have failed.
@@ -66,7 +66,7 @@ proc getSha1Sum { fileName } {
 
 set argc [llength $argv]
 
-if {$argc == 2} then {
+if {$argc >= 2 && $argc <= 3} then {
   set directory [lindex $argv 0]
 
   if {[string length $directory] == 0} then {
@@ -86,6 +86,16 @@ if {$argc == 2} then {
 
   if {![string is boolean -strict $withHashes]} then {
     usage "bad \"withHashes\" flag, not a boolean"
+  }
+
+  set failHashes [expr {$argc >= 3 ? [lindex $argv 2] : true}]
+
+  if {[string length $failHashes] == 0} then {
+    usage "invalid \"failHashes\" flag specified"
+  }
+
+  if {![string is boolean -strict $failHashes]} then {
+    usage "bad \"failHashes\" flag, not a boolean"
   }
 
   set exitCode 0
@@ -161,6 +171,7 @@ if {$argc == 2} then {
     }
   }
 
+  set hashPrefix [expr {$failHashes ? "ERROR" : "WARNING"}]
   set archiveFileNames [list]
 
   foreach extension [list exe rar zip] {
@@ -343,37 +354,45 @@ if {$argc == 2} then {
               if {[string length $hash] > 0} then {
                 if {$hash ne $hashes($manifestFileName)} then {
                   puts stdout [appendArgs \
-                      "ERROR: Archive \"" $archiveFileName \
+                      $hashPrefix ": Archive \"" $archiveFileName \
                       "\" file \"" $manifestFileName \
                       "\" repository hash mismatch, have \"" \
                       $hash "\", want \"" $hashes($manifestFileName) \
                       "\"."]
 
-                  set exitCode 1
+                  if {$failHashes} then {
+                    set exitCode 1
+                  }
                 }
               } else {
                 puts stdout [appendArgs \
-                    "ERROR: Archive \"" $archiveFileName \
+                    $hashPrefix ": Archive \"" $archiveFileName \
                     "\" file \"" $manifestFileName \
                     "\" could not be hashed."]
 
-                set exitCode 1
+                if {$failHashes} then {
+                  set exitCode 1
+                }
               }
             } else {
               puts stdout [appendArgs \
-                  "ERROR: Failed to extract file \"" \
+                  $hashPrefix ": Failed to extract file \"" \
                   $manifestFileName "\" from archive \"" \
                   $archiveFileName "\", error: " $result]
 
-              set exitCode 1
+              if {$failHashes} then {
+                set exitCode 1
+              }
             }
           } else {
             puts stdout [appendArgs \
-                "ERROR: Archive \"" $archiveFileName \
+                $hashPrefix ": Archive \"" $archiveFileName \
                 "\" file \"" $manifestFileName \
                 "\" has no repository hash."]
 
-            set exitCode 1
+            if {$failHashes} then {
+              set exitCode 1
+            }
           }
         } finally {
           catch {
