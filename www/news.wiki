@@ -3,7 +3,7 @@
 <b>Version History</b>
 
 <p>
-    <b>1.0.96.0 - May XX, 2015 <font color="red">(release scheduled)</font></b>
+    <b>1.0.96.0 - March 5, 2015</b>
 </p>
 <ul>
     <li>Prevent the IDataReader.GetOrdinal method from throwing &quot;No current row&quot; exceptions. Fix for [c28d7fe915].</li>
