@@ -920,7 +920,9 @@ namespace System.Data.SQLite
                 if (key == null)
                     continue;
 
-                if (String.IsNullOrEmpty(key.TableName))
+                string tableName = key.TableName;
+
+                if (String.IsNullOrEmpty(tableName))
                     continue;
 
                 result++;
