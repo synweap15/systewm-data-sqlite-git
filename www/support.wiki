@@ -15,18 +15,18 @@
 
 <ul>
   <li>
-    <a href="http://sqlite.org:8080/cgi-bin/mailman/listinfo/sqlite-announce">
+    <a href="http://mailinglists.sqlite.org/cgi-bin/mailman/listinfo/sqlite-announce">
     sqlite-announce</a> - announcements of new releases or significant
     developments.
   </li>
 
   <li>
-    <a href="http://sqlite.org:8080/cgi-bin/mailman/listinfo/sqlite-users">
+    <a href="http://mailinglists.sqlite.org/cgi-bin/mailman/listinfo/sqlite-users">
     sqlite-users</a> - general user discussion; most postings belong here.
   </li>
 
   <li>
-    <a href="http://sqlite.org:8080/cgi-bin/mailman/listinfo/sqlite-dev">
+    <a href="http://mailinglists.sqlite.org/cgi-bin/mailman/listinfo/sqlite-dev">
     sqlite-dev</a> - developer conversations; for people who have or aspire to
     have write permission on the SQLite and/or System.Data.SQLite source code
     repositories.
@@ -35,14 +35,14 @@
 
 <p>
   Most users of SQLite and/or System.Data.SQLite will want to join the
-  <a href="http://sqlite.org:8080/cgi-bin/mailman/listinfo/sqlite-announce">
+  <a href="http://mailinglists.sqlite.org/cgi-bin/mailman/listinfo/sqlite-announce">
   sqlite-announce</a> list and many will want to join the
-  <a href="http://sqlite.org:8080/cgi-bin/mailman/listinfo/sqlite-users">
+  <a href="http://mailinglists.sqlite.org/cgi-bin/mailman/listinfo/sqlite-users">
   sqlite-users</a> list.  The
-  <a href="http://sqlite.org:8080/cgi-bin/mailman/listinfo/sqlite-dev">
+  <a href="http://mailinglists.sqlite.org/cgi-bin/mailman/listinfo/sqlite-dev">
   sqlite-dev</a> list is more specialized and appeals to a narrower audience.
   Off-site archives of the
-  <a href="http://sqlite.org:8080/cgi-bin/mailman/listinfo/sqlite-users">
+  <a href="http://mailinglists.sqlite.org/cgi-bin/mailman/listinfo/sqlite-users">
   sqlite-users</a> list are available at:
 </p>
 
@@ -50,6 +50,13 @@
   <li>
     <a href="https://www.mail-archive.com/sqlite-users%40sqlite.org/">
     https://www.mail-archive.com/sqlite-users%40sqlite.org/</a>
+    (<b>old address, before mid-February 2015</b>)
+  </li>
+
+  <li>
+    <a href="https://www.mail-archive.com/sqlite-users%40mailinglists.sqlite.org/">
+    https://www.mail-archive.com/sqlite-users%40mailinglists.sqlite.org/</a>
+    (<b>new address, after mid-February 2015</b>)
   </li>
 
   <li>

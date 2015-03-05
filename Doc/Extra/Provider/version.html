@@ -43,6 +43,11 @@
     <div id="mainSection">
     <div id="mainBody">
     <h1 class="heading">Version History</h1>
+    <p><b>1.0.96.0 - March 5, 2015</b></p>
+    <ul>
+      <li>Prevent the IDataReader.GetOrdinal method from throwing &quot;No current row&quot; exceptions. Fix for <a href="https://system.data.sqlite.org/index.html/info/2be4298631">[2be4298631]</a>, <a href="https://system.data.sqlite.org/index.html/info/abad7c577d">[abad7c577d]</a>, and <a href="https://system.data.sqlite.org/index.html/info/c28d7fe915">[c28d7fe915]</a>.</li>
+      <li>When counting the number of tables in the GetSchemaTable method, do not include those that have a null or empty name. Fix for <a href="https://system.data.sqlite.org/index.html/info/92dbf1229a">[92dbf1229a]</a>.</li>
+    </ul>
     <p><b>1.0.95.0 - March 2, 2015</b></p>
     <ul>
       <li>Updated to <a href="https://www.sqlite.org/releaselog/3_8_8_3.html">SQLite 3.8.8.3</a>.</li>
@@ -1528,7 +1533,7 @@
       <hr />
       <div id="footer">
         <p>
-          <a href="mailto:sqlite-users@sqlite.org?subject=SQLite.NET%20Class%20Library%20Documentation%20Feedback:%20Version%20History">
+          <a href="mailto:sqlite-users@mailinglists.sqlite.org?subject=SQLite.NET%20Class%20Library%20Documentation%20Feedback:%20Version%20History">
             Send comments on this topic.</a>
         </p>
         <p>

@@ -43,8 +43,8 @@ namespace eval ::Eagle {
         PREVIOUS_RESULT RANDOMIZE_ID REMOTING SAMPLE SERIALIZATION \
         SHARED_ID_POOL SHELL SOURCE_ID SOURCE_TIMESTAMP STATIC TCL TCL_KITS \
         TCL_THREADED TCL_THREADS TCL_UNICODE TCL_WRAPPER TEST THREADING \
-        THROW_ON_DISPOSED TRACE TYPE_CACHE UNIX VERBOSE WEB WINDOWS WINFORMS \
-        WIX_30 WIX_35 WIX_36 WIX_37 WIX_38 X64 X86 XML]
+        THROW_ON_DISPOSED TRACE TYPE_CACHE UNIX USE_NAMESPACES VERBOSE WEB \
+        WINDOWS WINFORMS WIX_30 WIX_35 WIX_36 WIX_37 WIX_38 WIX_39 X64 X86 XML]
   }
 
   proc getKnownMonoVersions {} {
@@ -55,7 +55,7 @@ namespace eval ::Eagle {
     return [list \
         [list 2 0] [list 2 2] [list 2 4] [list 2 6] [list 2 8] [list 2 10] \
         [list 2 11] [list 2 12] [list 3 0] [list 3 1] [list 3 2] [list 3 3] \
-        [list 3 4] [list 3 5] [list 3 6]]
+        [list 3 4] [list 3 5] [list 3 6] [list 3 8] [list 3 10] [list 3 12]]
   }
 
   #
@@ -107,6 +107,27 @@ namespace eval ::Eagle {
   }
 
   #
+  # NOTE: This procedure should return non-zero if the "whoami" command may
+  #       be executed by the test suite infrastructure outside the context
+  #       of any specific tests.
+  #
+  proc canExecWhoAmI {} {
+    if {[info exists ::no(exec)]} then {
+      return false
+    }
+
+    if {[info exists ::no(whoami)]} then {
+      return false
+    }
+
+    if {[info exists ::no(canExecWhoAmI)]} then {
+      return false
+    }
+
+    return true
+  }
+
+  #
   # NOTE: This procedure should return non-zero if the native Tcl shell may
   #       be executed by the test suite infrastructure outside the context
   #       of any specific tests.  The specific tests themselves must make
@@ -149,6 +170,109 @@ namespace eval ::Eagle {
     }
 
     return true
+  }
+
+  #
+  # NOTE: This procedure should return non-zero if the test suite should be
+  #       considered to be running on Mono.
+  #
+  proc isTestMono {} {
+    return [expr {![info exists ::no(mono)] && [isMono]}]
+  }
+
+  proc isTestAdministrator { {force false} } {
+    #
+    # NOTE: This is a workaround for the [isAdministrator] procedure being
+    #       inaccurate for Mono on Windows, primarily due to the inability
+    #       of Mono to call a P/Invoke method by ordinal.  Also, this can
+    #       be used for native Tcl on Windows.  This only works on Windows.
+    #
+    if {[isWindows]} then {
+      #
+      # NOTE: Normally, this is only used for native Tcl or Eagle on Mono;
+      #       however, it can be used for Eagle on the .NET Framework if
+      #       forced.
+      #
+      if {$force || ![isEagle] || [isTestMono]} then {
+        if {[canExecWhoAmI] && \
+            [catch {exec -- whoami /groups} groups] == 0} then {
+          set groups [string map [list \r\n \n] $groups]
+
+          foreach group [split $groups \n] {
+            #
+            # NOTE: Match this group line against the "well-known" SID for
+            #       the "Administrators" group on Windows.
+            #
+            if {[regexp -- {\sS-1-5-32-544\s} $group]} then {
+              #
+              # NOTE: Match this group line against the attributes column
+              #       sub-value that should be present when running with
+              #       elevated administrator credentials.
+              #
+              if {[regexp -- {\sEnabled group(?:,|\s)} $group]} then {
+                return true
+              }
+            }
+          }
+        }
+      }
+    }
+
+    #
+    # NOTE: We must be running in native Tcl, running on Unix, running in
+    #       Eagle on the .NET Framework, or unable to execute the "whoami"
+    #       command.  If running in Eagle, we can just fallback to using
+    #       the [isAdministrator] procedure; otherwise, just return false.
+    #
+    return [expr {[isEagle] ? [isAdministrator] : false}]
+  }
+
+  proc canPing { {varName ""} } {
+    #
+    # NOTE: If requested by the caller, provide a reason whenever false is
+    #       returned from this procedure.
+    #
+    if {[string length $varName] > 0} then {
+      upvar 1 $varName reason
+    }
+
+    #
+    # NOTE: Native Tcl (without extra packages) does not provide support for
+    #       pinging a network host.
+    #
+    if {[isEagle]} then {
+      if {[isTestMono]} then {
+        #
+        # NOTE: Using [uri ping] on the Mono 3.3.0 (or 3.4.0?) release will
+        #       lock up the process; therefore, skip it in that case.
+        #
+        if {[haveConstraint mono33] || [haveConstraint mono34]} then {
+          set reason "skipped, may hang on Mono 3.3.0 and 3.4.0"
+          return false
+        }
+
+        #
+        # NOTE: Other versions of Mono, e.g. 3.12, appear to require elevated
+        #       privileges (i.e. full administrator) in order to successfully
+        #       execute [uri ping].  This has been verified on Windows.
+        #
+        if {![isTestAdministrator]} then {
+          set reason "skipped, need administrator privileges"
+          return false
+        }
+      }
+
+      #
+      # NOTE: Eagle, when running on the Microsoft .NET Framework, supports
+      #       pinging a network host as long as it was compiled with network
+      #       support (which this procedure purposely does not check).  That
+      #       is done using [checkForCompileOption], by the test prologue.
+      #
+      return true
+    }
+
+    set reason "skipped, need Eagle"
+    return false
   }
 
   proc checkForTestSuiteFiles { channel } {
@@ -1431,8 +1555,7 @@ namespace eval ::Eagle {
         #       join big lists seems to cause StackOverflowException to
         #       be thrown.
         #
-        if {[info exists ::no(mono)] || ![isMono] || \
-            ![haveConstraint nativeUtility]} then {
+        if {![isTestMono] || ![haveConstraint nativeUtility]} then {
           #
           # NOTE: Yes, it appears that it is available.
           #
@@ -1447,6 +1570,21 @@ namespace eval ::Eagle {
 
         tputs $channel yes\n
       }
+    } else {
+      tputs $channel no\n
+    }
+  }
+
+  proc checkForTimeIntensive { channel } {
+    tputs $channel "---- checking for time intensive testing... "
+
+    #
+    # NOTE: Are we allowed to do time intensive testing?
+    #
+    if {![info exists ::no(timeIntensive)]} then {
+      addConstraint timeIntensive
+
+      tputs $channel yes\n
     } else {
       tputs $channel no\n
     }
@@ -1573,8 +1711,9 @@ namespace eval ::Eagle {
       # NOTE: Running this check on the Mono 3.3.0 (or 3.4.0?) release build
       #       will lock up the process; therefore, skip it in that case.
       #
-      if {[info exists ::no(mono)] || ![isMono] || \
-          (![haveConstraint mono33] && ![haveConstraint mono34])} then {
+      set reason unknown
+
+      if {[canPing reason]} then {
         #
         # BUGBUG: Tcl 8.4 does not like this expression (and Tcl tries to
         #         compile it even though it will only actually ever be
@@ -1600,7 +1739,7 @@ namespace eval ::Eagle {
           tputs $channel no\n
         }
       } else {
-        tputs $channel "skipped, may hang on Mono 3.3.0 and 3.4.0\n"
+        tputs $channel [appendArgs $reason \n]
       }
     } else {
       #
@@ -1817,17 +1956,28 @@ namespace eval ::Eagle {
     proc checkForCertificate { channel } {
       tputs $channel "---- checking for certificate... "
 
-      if {[catch {object invoke Interpreter.GetActive GetCertificate} \
-              certificate] == 0 && \
-          [string length $certificate] > 0} then {
+      if {[catch {
+        object invoke Interpreter.GetActive GetCertificate
+      } certificate] == 0 && [string length $certificate] > 0} then {
         #
         # NOTE: Yes, it appears that the core library was signed with a
         #       code-signing certificate.
         #
         addConstraint certificate
 
-        tputs $channel [appendArgs "yes (" \
-            [object invoke $certificate Subject] ")\n"]
+        #
+        # NOTE: Attempt to query the subject from the certificate.
+        #
+        if {[catch {
+          object invoke $certificate Subject
+        } subject] != 0 || [string length $subject] == 0} then {
+          #
+          # TODO: No certificate subject, better handling here?
+          #
+          set subject unknown
+        }
+
+        tputs $channel [appendArgs "yes (" $subject ")\n"]
       } else {
         tputs $channel no\n
       }
@@ -1848,7 +1998,7 @@ namespace eval ::Eagle {
     proc checkForAdministrator { channel } {
       tputs $channel "---- checking for administrator... "
 
-      if {[isAdministrator]} then {
+      if {[isTestAdministrator]} then {
         addConstraint administrator; # running as full admin.
 
         tputs $channel yes\n
@@ -1919,16 +2069,27 @@ namespace eval ::Eagle {
     proc checkForDefaultAppDomain { channel } {
       tputs $channel "---- checking for default application domain... "
 
-      if {[catch {object invoke AppDomain CurrentDomain} appDomain] == 0 && \
-          [string length $appDomain] > 0} then {
-        if {[object invoke $appDomain IsDefaultAppDomain]} then {
+      if {[catch {
+        object invoke AppDomain CurrentDomain
+      } appDomain] == 0 && [string length $appDomain] > 0} then {
+        if {[catch {
+          object invoke $appDomain IsDefaultAppDomain
+        } default] != 0 || [string length $default] == 0} then {
+          set default false
+        }
+
+        if {[catch {
+          object invoke $appDomain Id
+        } id] != 0 || [string length $id] == 0} then {
+          set id unknown
+        }
+
+        if {$default} then {
           addConstraint defaultAppDomain
 
-          tputs $channel [appendArgs "yes (" [object invoke $appDomain Id] \
-              ")\n"]
+          tputs $channel [appendArgs "yes (" $id ")\n"]
         } else {
-          tputs $channel [appendArgs "no (" [object invoke $appDomain Id] \
-              ")\n"]
+          tputs $channel [appendArgs "no (" $id ")\n"]
         }
       } else {
         tputs $channel [appendArgs "no (null)\n"]
@@ -1941,7 +2102,7 @@ namespace eval ::Eagle {
       #
       # NOTE: Are we running inside Mono (regardless of operating system)?
       #
-      if {![info exists ::no(mono)] && [isMono]} then {
+      if {[isTestMono]} then {
         #
         # NOTE: Yes, it appears that we are running inside Mono.
         #
@@ -2048,7 +2209,7 @@ namespace eval ::Eagle {
         #
         set version [string map [list . ""] $dotVersion]
 
-        if {![info exists ::no(mono)] && [isMono]} then {
+        if {[isTestMono]} then {
           #
           # NOTE: If the runtime version was found, add a test constraint
           #       for it now.
@@ -2475,7 +2636,7 @@ namespace eval ::Eagle {
       #       it fails to timeout (unless special test suite hacks
       #       for Mono have been disabled by the user).
       #
-      if {[info exists ::no(mono)] || ![isMono]} then {
+      if {![isTestMono]} then {
         #
         # NOTE: Can we access the local database?
         #
@@ -2970,6 +3131,66 @@ namespace eval ::Eagle {
       }
     }
 
+    proc checkForNetFx20ServicePack { channel } {
+      tputs $channel "---- checking for .NET Framework 2.0 Service Pack... "
+
+      #
+      # NOTE: Platform must be Windows for this constraint to even be
+      #       checked (i.e. we require the registry).
+      #
+      if {[isWindows]} then {
+        #
+        # NOTE: Registry hive where the .NET Framework 2.0 setup and
+        #       servicing information is stored.  No need to look in
+        #       the WoW64 registry because the .NET Framework should
+        #       be installed natively as well.
+        #
+        set key [appendArgs HKEY_LOCAL_MACHINE\\ \
+            {Software\Microsoft\NET Framework Setup\NDP\v2.0.50727}]
+
+        #
+        # NOTE: Attempt to fetch the .NET Framework 2.0 "SP" value from the
+        #       servicing registry hive.  If this value does not exist -OR-
+        #       is less than 1, then no .NET Framework 2.0 service pack is
+        #       installed.  If this raises a script error, that will almost
+        #       certainly cause the result to be a non-integer, this failing
+        #       the check below.
+        #
+        catch {
+          object invoke Microsoft.Win32.Registry GetValue $key SP null
+        } servicePack
+
+        if {[string is integer -strict $servicePack]} then {
+          #
+          # NOTE: Service packs are always cumulative; therefore, add test
+          #       constraints for all service pack levels up to the one that
+          #       is actually installed.
+          #
+          for {set level 0} {$level <= $servicePack} {incr level} {
+            addConstraint [appendArgs dotNet20Sp $level OrHigher]
+          }
+
+          #
+          # NOTE: Also add the "exact" service pack test constraint even
+          #       though it should almost never be used.
+          #
+          addConstraint [appendArgs dotNet20Sp $servicePack]
+
+          #
+          # NOTE: Show the "servicePack" value we found in the registry.
+          #
+          tputs $channel [appendArgs "yes (" $servicePack ")\n"]
+
+          #
+          # NOTE: We are done here, return now.
+          #
+          return
+        }
+      }
+
+      tputs $channel no\n
+    }
+
     proc checkForNetFx45 { channel } {
       tputs $channel "---- checking for .NET Framework 4.5... "
 
@@ -2991,10 +3212,13 @@ namespace eval ::Eagle {
         # NOTE: Attempt to fetch the .NET Framework 4.0 "release" value from
         #       the servicing registry hive.  If this value does not exist
         #       -OR- is less than 378389, then the .NET Framework 4.5 is not
-        #       installed.
+        #       installed.  If this raises a script error, that will almost
+        #       certainly cause the result to be a non-integer, this failing
+        #       the check below.
         #
-        set release [object invoke Microsoft.Win32.Registry GetValue $key \
-            Release null]
+        catch {
+          object invoke Microsoft.Win32.Registry GetValue $key Release null
+        } release
 
         if {[string is integer -strict $release] && $release >= 378389} then {
           #
@@ -3003,10 +3227,19 @@ namespace eval ::Eagle {
           addConstraint dotNet45OrHigher
 
           #
-          # NOTE: If the "release" value is greater than or equal to 378758,
-          #       then the .NET Framework 4.5.1 is installed.
+          # NOTE: If the "release" value is greater than or equal to 378758
+          #       (or 378675 for Windows 8.1), then the .NET Framework 4.5.1
+          #       is installed.  However, if the "release" value is also
+          #       greater than or equal to 379893, then the .NET Framework
+          #       4.5.2 is installed, which is an in-place upgrade to 4.5.1
+          #       (and 4.5).
           #
-          if {$release >= 378758} then {
+          if {$release >= 379893} then {
+            addConstraint dotNet452
+            addConstraint dotNet452OrHigher
+
+            set version 4.5.2
+          } elseif {$release >= 378675} then {
             addConstraint dotNet451
             addConstraint dotNet451OrHigher
 
@@ -3232,21 +3465,21 @@ namespace eval ::Eagle {
     #
     exportAndImportPackageCommands [namespace current] [list \
         getKnownCompileOptions getKnownMonoVersions lpermute \
-        alwaysFullInterpReady canExecTclShell canExecFossil \
-        checkForTestSuiteFiles checkForPlatform checkForWindowsVersion \
-        checkForScriptLibrary checkForVariable checkForTclOptions \
-        checkForWindowsCommandProcessor checkForFossil checkForEagle \
-        checkForSymbols checkForLogFile checkForGaruda checkForShell \
-        checkForDebug checkForTk checkForVersion checkForCommand \
-        checkForNamespaces checkForTestExec checkForTestMachine \
-        checkForTestPlatform checkForTestConfiguration checkForTestSuffix \
-        checkForFile checkForPathFile checkForNativeCode checkForTip127 \
-        checkForTip194 checkForTip207 checkForTip241 checkForTip285 \
-        checkForTip405 checkForTip426 checkForTip429 checkForTiming \
-        checkForPerformance checkForBigLists checkForMemoryIntensive \
-        checkForStackIntensive checkForInteractive checkForInteractiveCommand \
-        checkForUserInteraction checkForNetwork checkForCompileOption \
-        checkForKnownCompileOptions] false false
+        alwaysFullInterpReady canExecWhoAmI canExecTclShell canExecFossil \
+        isTestMono isTestAdministrator canPing checkForTestSuiteFiles \
+        checkForPlatform checkForWindowsVersion checkForScriptLibrary \
+        checkForVariable checkForTclOptions checkForWindowsCommandProcessor \
+        checkForFossil checkForEagle checkForSymbols checkForLogFile \
+        checkForGaruda checkForShell checkForDebug checkForTk checkForVersion \
+        checkForCommand checkForNamespaces checkForTestExec \
+        checkForTestMachine checkForTestPlatform checkForTestConfiguration \
+        checkForTestSuffix checkForFile checkForPathFile checkForNativeCode \
+        checkForTip127 checkForTip194 checkForTip207 checkForTip241 \
+        checkForTip285 checkForTip405 checkForTip426 checkForTip429 \
+        checkForTiming checkForPerformance checkForBigLists \
+        checkForTimeIntensive checkForMemoryIntensive checkForStackIntensive \
+        checkForInteractive checkForInteractiveCommand checkForUserInteraction \
+        checkForNetwork checkForCompileOption checkForKnownCompileOptions] false false
 
     ###########################################################################
     ############################## END Tcl ONLY ###############################
