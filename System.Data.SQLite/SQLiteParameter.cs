@@ -20,7 +20,7 @@ namespace System.Data.SQLite
     /// <summary>
     /// The data type of the parameter
     /// </summary>
-    internal int            _dbType;
+    internal DbType        _dbType;
     /// <summary>
     /// The version information for mapping the parameter
     /// </summary>
@@ -181,7 +181,7 @@ namespace System.Data.SQLite
     public SQLiteParameter(string parameterName, DbType parameterType, int parameterSize, string sourceColumn, DataRowVersion rowVersion)      
     {
       _parameterName = parameterName;
-      _dbType = (int)parameterType;
+      _dbType = parameterType;
       _sourceColumn = sourceColumn;
       _rowVersion = rowVersion;
       _dataSize = parameterSize;
@@ -301,7 +301,7 @@ namespace System.Data.SQLite
     {
       get
       {
-        if (_dbType == -1)
+        if (_dbType == (DbType)-1)
         {
           if (_objValue != null && _objValue != DBNull.Value)
           {
@@ -313,7 +313,7 @@ namespace System.Data.SQLite
       }
       set
       {
-        _dbType = (int)value;
+        _dbType = value;
       }
     }
 
@@ -353,7 +353,7 @@ namespace System.Data.SQLite
     /// </summary>
     public override void ResetDbType()
     {
-      _dbType = -1;
+      _dbType = (DbType)-1;
     }
 
     /// <summary>
@@ -434,8 +434,8 @@ namespace System.Data.SQLite
       set
       {
         _objValue = value;
-        if (_dbType == -1 && _objValue != null && _objValue != DBNull.Value) // If the DbType has never been assigned, try to glean one from the value's datatype 
-          _dbType = (int)SQLiteConvert.TypeToDbType(_objValue.GetType());
+        if (_dbType == (DbType)-1 && _objValue != null && _objValue != DBNull.Value) // If the DbType has never been assigned, try to glean one from the value's datatype
+          _dbType = SQLiteConvert.TypeToDbType(_objValue.GetType());
       }
     }
 
