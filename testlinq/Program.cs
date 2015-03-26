@@ -162,6 +162,24 @@ namespace testlinq
 
                       return BinaryGuidTest(value);
                   }
+              case "binaryguid2":
+                  {
+                      bool value = false;
+
+                      if (args.Length > 1)
+                      {
+                          if (!bool.TryParse(args[1], out value))
+                          {
+                              Console.WriteLine(
+                                  "cannot parse \"{0}\" as boolean",
+                                  args[1]);
+
+                              return 1;
+                          }
+                      }
+
+                      return BinaryGuidTest2(value);
+                  }
               default:
                   {
                       Console.WriteLine("unknown test \"{0}\"", arg);
@@ -582,6 +600,49 @@ namespace testlinq
 
           return 0;
       }
+
+#if NET_40 || NET_45 || NET_451
+      //
+      // NOTE: Used to test the BinaryGUID connection string property with
+      //       the Contains() function (ticket [a4d9c7ee94]).  We cannot
+      //       use the Contains extension method within a LINQ query with
+      //       the .NET Framework 3.5.
+      //
+      private static int BinaryGuidTest2(bool binaryGuid)
+      {
+          Environment.SetEnvironmentVariable(
+              "AppendManifestToken_SQLiteProviderManifest",
+              String.Format(";BinaryGUID={0};", binaryGuid));
+
+          using (northwindEFEntities db = new northwindEFEntities())
+          {
+              Guid guid = new Guid("2d3d2d3d-2d3d-2d3d-2d3d-2d3d2d3d2d3d");
+              Guid[] guids = new Guid[] { guid };
+
+              bool once = false;
+              var query = from t in db.Territories
+                          where guids.AsQueryable<Guid>().Contains<Guid>(guid)
+                          orderby t.TerritoryID
+                          select t;
+
+              foreach (Territories t in query)
+              {
+                  if (once)
+                      Console.Write(' ');
+
+                  Console.Write(t.TerritoryID);
+
+                  once = true;
+              }
+          }
+
+          Environment.SetEnvironmentVariable(
+              "AppendManifestToken_SQLiteProviderManifest",
+              null);
+
+          return 0;
+      }
+#endif
 
       private static int DateTimeTest()
       {

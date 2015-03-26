@@ -72,11 +72,11 @@ namespace System.Data.SQLite.Linq
           FunctionParameter functionParameter;
           if (null != function && function.Parameters.TryGetValue(queryParameter.Key, false, out functionParameter))
           {
-            parameter = CreateSqlParameter(functionParameter.Name, functionParameter.TypeUsage, functionParameter.Mode, DBNull.Value);
+            parameter = CreateSqlParameter((SQLiteProviderManifest)manifest, functionParameter.Name, functionParameter.TypeUsage, functionParameter.Mode, DBNull.Value);
           }
           else
           {
-            parameter = CreateSqlParameter(queryParameter.Key, queryParameter.Value, ParameterMode.In, DBNull.Value);
+            parameter = CreateSqlParameter((SQLiteProviderManifest)manifest, queryParameter.Key, queryParameter.Value, ParameterMode.In, DBNull.Value);
           }
 
           command.Parameters.Add(parameter);
@@ -127,9 +127,21 @@ namespace System.Data.SQLite.Linq
     /// <summary>
     /// Creates a SQLiteParameter given a name, type, and direction
     /// </summary>
-    internal static SQLiteParameter CreateSqlParameter(string name, TypeUsage type, ParameterMode mode, object value)
+    internal static SQLiteParameter CreateSqlParameter(SQLiteProviderManifest manifest, string name, TypeUsage type, ParameterMode mode, object value)
     {
       int? size;
+
+      //
+      // NOTE: Adjust the parameter type so that it will work with textual
+      //       GUIDs.  Please see ticket [a4d9c7ee94] for more details.
+      //
+      if ((manifest != null) && !manifest._binaryGuid &&
+          (MetadataHelpers.GetPrimitiveTypeKind(type) == PrimitiveTypeKind.Guid))
+      {
+          type = TypeUsage.CreateStringTypeUsage(
+              PrimitiveType.GetEdmPrimitiveType(PrimitiveTypeKind.String),
+              false, true);
+      }
 
       SQLiteParameter result = new SQLiteParameter(name, value);
 
