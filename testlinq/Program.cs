@@ -162,6 +162,7 @@ namespace testlinq
 
                       return BinaryGuidTest(value);
                   }
+#if NET_40 || NET_45 || NET_451
               case "binaryguid2":
                   {
                       bool value = false;
@@ -180,6 +181,7 @@ namespace testlinq
 
                       return BinaryGuidTest2(value);
                   }
+#endif
               default:
                   {
                       Console.WriteLine("unknown test \"{0}\"", arg);
