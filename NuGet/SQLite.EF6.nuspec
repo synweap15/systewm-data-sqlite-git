@@ -11,7 +11,7 @@
   <metadata>
     <id>System.Data.SQLite.EF6</id>
     <title>System.Data.SQLite EF6</title>
-    <version>1.0.96.0</version>
+    <version>1.0.97.0</version>
     <authors>SQLite Development Team</authors>
     <description>Support for Entity Framework 6 using System.Data.SQLite.</description>
     <language>en-US</language>
@@ -22,13 +22,13 @@
     <copyright>Public Domain</copyright>
     <dependencies>
       <group targetFramework="net40">
-        <dependency id="EntityFramework" version="6.1.2.0" />
+        <dependency id="EntityFramework" version="6.1.3.0" />
       </group>
       <group targetFramework="net45">
-        <dependency id="EntityFramework" version="6.1.2.0" />
+        <dependency id="EntityFramework" version="6.1.3.0" />
       </group>
       <group targetFramework="net451">
-        <dependency id="EntityFramework" version="6.1.2.0" />
+        <dependency id="EntityFramework" version="6.1.3.0" />
       </group>
     </dependencies>
   </metadata>
