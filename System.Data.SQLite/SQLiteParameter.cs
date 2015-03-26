@@ -18,6 +18,11 @@ namespace System.Data.SQLite
   public sealed class SQLiteParameter : DbParameter, ICloneable
   {
     /// <summary>
+    /// This value represents an "unknown" <see cref="DbType" />.
+    /// </summary>
+    private const DbType UnknownDbType = (DbType)(-1);
+
+    /// <summary>
     /// The data type of the parameter
     /// </summary>
     internal DbType        _dbType;
@@ -49,7 +54,7 @@ namespace System.Data.SQLite
     /// Default constructor
     /// </summary>
     public SQLiteParameter() 
-      : this(null, (DbType)(-1), 0, null, DataRowVersion.Current)
+      : this(null, UnknownDbType, 0, null, DataRowVersion.Current)
     {
     }
 
@@ -58,7 +63,7 @@ namespace System.Data.SQLite
     /// </summary>
     /// <param name="parameterName">The parameter name</param>
     public SQLiteParameter(string parameterName)
-      : this(parameterName, (DbType)(-1), 0, null, DataRowVersion.Current)
+      : this(parameterName, UnknownDbType, 0, null, DataRowVersion.Current)
     {
     }
 
@@ -68,7 +73,7 @@ namespace System.Data.SQLite
     /// <param name="parameterName">The parameter name</param>
     /// <param name="value">The initial value of the parameter</param>
     public SQLiteParameter(string parameterName, object value)
-      : this(parameterName, (DbType)(-1), 0, null, DataRowVersion.Current)
+      : this(parameterName, UnknownDbType, 0, null, DataRowVersion.Current)
     {
       Value = value;
     }
@@ -301,7 +306,7 @@ namespace System.Data.SQLite
     {
       get
       {
-        if (_dbType == (DbType)-1)
+        if (_dbType == UnknownDbType)
         {
           if (_objValue != null && _objValue != DBNull.Value)
           {
@@ -353,7 +358,7 @@ namespace System.Data.SQLite
     /// </summary>
     public override void ResetDbType()
     {
-      _dbType = (DbType)-1;
+      _dbType = UnknownDbType;
     }
 
     /// <summary>
@@ -434,7 +439,7 @@ namespace System.Data.SQLite
       set
       {
         _objValue = value;
-        if (_dbType == (DbType)-1 && _objValue != null && _objValue != DBNull.Value) // If the DbType has never been assigned, try to glean one from the value's datatype
+        if (_dbType == UnknownDbType && _objValue != null && _objValue != DBNull.Value) // If the DbType has never been assigned, try to glean one from the value's datatype
           _dbType = SQLiteConvert.TypeToDbType(_objValue.GetType());
       }
     }
