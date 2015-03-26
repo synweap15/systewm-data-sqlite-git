@@ -1895,6 +1895,16 @@
       </td>
     </tr>
 
+    <tr bgcolor="#fff1c8">
+      <td colspan="4" class="importantNotes">
+        Generally, these NuGet packages should be obtained from the
+        <a href="https://www.nuget.org/">NuGet Gallery</a>; however, they are
+        also included here as &quot;local downloads&quot; for reference.  They
+        should be identical to those listed on the NuGet Gallery with the same
+        name and version.
+      </td>
+    </tr>
+
     <tr>
       <td width="10">&nbsp;</td>
       <td width="30%" valign="top" align="right">
