@@ -506,7 +506,7 @@ namespace System.Data.SQLite
     public new SQLiteParameter CreateParameter()
     {
       CheckDisposed();
-      return new SQLiteParameter();
+      return new SQLiteParameter(this);
     }
 
     /// <summary>
@@ -760,10 +760,16 @@ namespace System.Data.SQLite
                     {
                         foreach (object arg in args)
                         {
-                            if (arg is SQLiteParameter)
-                                command.Parameters.Add((SQLiteParameter)arg);
-                            else
-                                command.Parameters.Add(new SQLiteParameter(DbType.Object, arg));
+                            SQLiteParameter parameter = arg as SQLiteParameter;
+
+                            if (parameter == null)
+                            {
+                                parameter = command.CreateParameter();
+                                parameter.DbType = DbType.Object;
+                                parameter.Value = arg;
+                            }
+
+                            command.Parameters.Add(parameter);
                         }
                     }
 

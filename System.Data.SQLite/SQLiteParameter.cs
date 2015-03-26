@@ -23,6 +23,10 @@ namespace System.Data.SQLite
     private const DbType UnknownDbType = (DbType)(-1);
 
     /// <summary>
+    /// The command associated with this parameter.
+    /// </summary>
+    private IDbCommand     _command;
+    /// <summary>
     /// The data type of the parameter
     /// </summary>
     internal DbType        _dbType;
@@ -49,6 +53,20 @@ namespace System.Data.SQLite
 
     private bool           _nullable;
     private bool           _nullMapping;
+
+    /// <summary>
+    /// Constructor used when creating for use with a specific command.
+    /// </summary>
+    /// <param name="command">
+    /// The command associated with this parameter.
+    /// </param>
+    internal SQLiteParameter(
+        IDbCommand command
+        )
+        : this()
+    {
+        _command = command;
+    }
 
     /// <summary>
     /// Default constructor
@@ -194,7 +212,7 @@ namespace System.Data.SQLite
     }
 
     private SQLiteParameter(SQLiteParameter source)
-      : this(source.ParameterName, (DbType)source._dbType, 0, source.Direction, source.IsNullable, 0, 0, source.SourceColumn, source.SourceVersion, source.Value)
+      : this(source.ParameterName, source._dbType, 0, source.Direction, source.IsNullable, 0, 0, source.SourceColumn, source.SourceVersion, source.Value)
     {
       _nullMapping = source._nullMapping;
     }
@@ -281,6 +299,21 @@ namespace System.Data.SQLite
     }
 
     /// <summary>
+    /// The command associated with this parameter.
+    /// </summary>
+    public IDbCommand Command
+    {
+      get
+      {
+        return _command;
+      }
+      set 
+      {
+        _command = value;
+      }
+    }
+
+    /// <summary>
     /// Whether or not the parameter can contain a null value
     /// </summary>
     public override bool IsNullable
@@ -314,7 +347,7 @@ namespace System.Data.SQLite
           }
           return DbType.String; // Unassigned default value is String
         }
-        return (DbType)_dbType;
+        return _dbType;
       }
       set
       {
