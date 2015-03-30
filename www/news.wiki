@@ -7,7 +7,9 @@
 </p>
 <ul>
     <li>Updated to [https://www.nuget.org/packages/EntityFramework/6.1.3|Entity Framework 6.1.3].</li>
+    <li>Prevent the IDataReader.GetDataTypeName method from throwing &quot;No current row&quot; exceptions. Fix for [94252b9059].</li>
     <li>When BinaryGUID handling is off, transform the LINQ parameter types as well. Fix for [a4d9c7ee94].&nbsp;<b>** Potentially Incompatible Change **</b></li>
+    <li>The IDataReader.GetDataTypeName method should always return the declared type name.&nbsp;<b>** Potentially Incompatible Change **</b></li>
 </ul>
 <p>
     <b>1.0.96.0 - March 5, 2015</b>

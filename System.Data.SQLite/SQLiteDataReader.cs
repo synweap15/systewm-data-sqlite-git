@@ -536,14 +536,12 @@ namespace System.Data.SQLite
     public override string GetDataTypeName(int i)
     {
         CheckDisposed();
-        VerifyForGet();
 
         if (i >= PrivateVisibleFieldCount && _keyInfo != null)
             return _keyInfo.GetDataTypeName(i - PrivateVisibleFieldCount);
 
-        SQLiteType typ = GetSQLiteType(_flags, i);
-        if (typ.Type == DbType.Object) return SQLiteConvert.SQLiteTypeToType(typ).Name;
-        return _activeStatement._sql.ColumnType(_activeStatement, i, ref typ.Affinity);
+        TypeAffinity affin = TypeAffinity.Uninitialized;
+        return _activeStatement._sql.ColumnType(_activeStatement, i, ref affin);
     }
 
     /// <summary>
