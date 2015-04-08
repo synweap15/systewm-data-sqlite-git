@@ -60,7 +60,7 @@ a:visited { color: #734559 }
 .fancy p.todo        { border: solid #AA3333 1px; padding: 1ex }
 .fancy img { display:block; }
 .fancy :link:hover, .fancy :visited:hover { background: wheat }
-.fancy p,.fancy ul,.fancy ol { margin: 1em 5ex }
+.fancy p,.fancy ul,.fancy ol,.fancy dl { margin: 1em 5ex }
 .fancy li p { margin: 1em 0 }
 /* End of "fancyformat" specific rules. */
 
@@ -311,8 +311,15 @@ are as follows:
 
 <ol>
 <li><p>
+If foreign key constraints are enabled,
+disable them using <a href="pragma.html#pragma_foreign_keys">PRAGMA foreign_keys=OFF</a>.
+
+<li><p>
+Start a transaction.
+
+<li><p>
 Remember the format of all indexes and triggers associated with table X.
-This information will be needed in step 7 below.  One way to do this is
+This information will be needed in step 8 below.  One way to do this is
 to run a query like the following:
 SELECT type, sql FROM sqlite_master WHERE tbl_name='X'.
 
@@ -326,10 +333,6 @@ Transfer content from X into new_X using a statement
 like: INSERT INTO new_X SELECT ... FROM X.
 
 <li><p>
-If foreign key constraints are enabled,
-disable them using <a href="pragma.html#pragma_foreign_keys">PRAGMA foreign_keys=OFF</a>.
-
-<li><p>
 Drop the old table X:  <a href="lang_droptable.html">DROP TABLE X</a>.
 
 <li><p>
@@ -338,21 +341,25 @@ Change the name of new_X to X using: ALTER TABLE new_X RENAME TO X.
 <li><p>
 Use <a href="lang_createindex.html">CREATE INDEX</a> and <a href="lang_createtrigger.html">CREATE TRIGGER</a> to reconstruct indexes and triggers
 associated with table X.  Perhaps use the old format of the triggers and
-indexes saved from step 1 above as a guide, making changes as appropriate
+indexes saved from step 3 above as a guide, making changes as appropriate
 for the alteration.
-
-<li><p>
-If foreign key constraints were originally enabled (prior to
-step 4) then run <a href="pragma.html#pragma_foreign_key_check">PRAGMA foreign_key_check</a> to verify that the schema
-change did not break any foreign key constraints, and run
-<a href="pragma.html#pragma_foreign_keys">PRAGMA foreign_keys=ON</a> to re-enable foreign key
-constraints.
 
 <li><p>If any views refer to table X in a way that is affected by the
 schema change, then drop those views using <a href="lang_dropview.html">DROP VIEW</a> and recreate them
 with whatever changes are necessary to accommodate the schema change
 using <a href="lang_createview.html">CREATE VIEW</a>.
 
+<li><p>
+If foreign key constraints were originally enabled
+then run <a href="pragma.html#pragma_foreign_key_check">PRAGMA foreign_key_check</a> to verify that the schema
+change did not break any foreign key constraints.
+
+
+<li><p>
+Commit the transaction started in step 2.
+
+<li><p>
+If foreign keys constraints were originally enabled, reenable them now.
 </ol>
 
 <p>The procedure above is completely general and will work even if the
@@ -369,8 +376,10 @@ renaming columns, or adding or removing or changing default values on
 a column.
 
 <ol>
+<lI><p> Start a transaction.
+
 <li><p> Run <a href="pragma.html#pragma_schema_version">PRAGMA schema_version</a> to determine the current schema
-version number.  This number will be needed for step 5 below.
+version number.  This number will be needed for step 6 below.
 
 <li><p> Activate schema editing using 
 <a href="pragma.html#pragma_writable_schema">PRAGMA writable_schema=ON</a>.
@@ -405,11 +414,9 @@ more than the old schema version number found in step 2 above.
 
 <li><p> (Optional) Run <a href="pragma.html#pragma_integrity_check">PRAGMA integrity_check</a> to verify that the
 schema changes did not damage the database.
-</ol>
 
-<p>It is important that both of the above procedures be run from within
-a transaction to prevent other processes from accessing the database file
-while the schema change is only partially complete.  
+<li><p> Commit the transaction started on step 1 above.
+</ol>
 
 <p>If some future version of SQLite adds new ALTER TABLE capabilities, 
 those capabilities will very likely use one of the two procedures

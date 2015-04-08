@@ -60,7 +60,7 @@ a:visited { color: #734559 }
 .fancy p.todo        { border: solid #AA3333 1px; padding: 1ex }
 .fancy img { display:block; }
 .fancy :link:hover, .fancy :visited:hover { background: wheat }
-.fancy p,.fancy ul,.fancy ol { margin: 1em 5ex }
+.fancy p,.fancy ul,.fancy ol,.fancy dl { margin: 1em 5ex }
 .fancy li p { margin: 1em 0 }
 /* End of "fancyformat" specific rules. */
 
@@ -131,10 +131,8 @@ a:visited { color: #734559 }
 <h1 align="center">SQL As Understood By SQLite</h1><p><a href="lang.html">[Top]</a></p><h2>INDEXED BY</h2>
 <p>The INDEXED BY phrase forces the <a href="optoverview.html">SQLite query planner</a> to use a
 particular named index on a <a href="lang_delete.html">DELETE</a>, <a href="lang_select.html">SELECT</a>, or <a href="lang_update.html">UPDATE</a> statement.
-The INDEXED BY phrase is an extension that is particular to SQLite and
-is not portable to other SQL database engines.
-The INDEXED BY phrase can be seen in the following syntax
-diagrams:</p>
+The INDEXED BY phrase is an SQLite extension and
+is not portable to other SQL database engines.</p>
 
 <p><b><a href="syntax/qualified-table-name.html">qualified-table-name:</a></b>
 <button id='x1433' onclick='hideorshow("x1433","x1434")'>hide</button></p>
@@ -149,7 +147,7 @@ If index-name does not exist or cannot be used for the query, then
 the preparation of the SQL statement fails.
 The "NOT INDEXED" clause specifies that no index shall be used when
 accessing the preceding table, including implied indices create by
-UNIQUE and PRIMARY KEY constraints.  However, the INTEGER PRIMARY KEY
+UNIQUE and PRIMARY KEY constraints.  However, the <a href="lang_createtable.html#rowid">rowid</a>
 can still be used to look up entries even when "NOT INDEXED" is specified.</p>
 
 <p>Some SQL database engines provide non-standard "hint" mechanisms which

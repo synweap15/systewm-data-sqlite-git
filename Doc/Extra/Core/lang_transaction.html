@@ -60,7 +60,7 @@ a:visited { color: #734559 }
 .fancy p.todo        { border: solid #AA3333 1px; padding: 1ex }
 .fancy img { display:block; }
 .fancy :link:hover, .fancy :visited:hover { background: wheat }
-.fancy p,.fancy ul,.fancy ol { margin: 1em 5ex }
+.fancy p,.fancy ul,.fancy ol,.fancy dl { margin: 1em 5ex }
 .fancy li p { margin: 1em 0 }
 /* End of "fancyformat" specific rules. */
 
@@ -234,11 +234,15 @@ after the reader has had a chance to clear.
 </p>
 
 <p>
-In older versions of SQLite the ROLLBACK will fail with an error code 
+In very old versions of SQLite (before version 3.7.11 circa 2012-03-20)
+the ROLLBACK will fail with an error code 
 <a href="rescode.html#busy">SQLITE_BUSY</a> if there are any pending queries.  In more recent
-versions of SQLite (since version 3.7.11 circa 2012-03-20) the ROLLBACK
-will proceed and pending statements will be aborted with an
-<a href="rescode.html#abort">SQLITE_ABORT</a> or <a href="rescode.html#abort_rollback">SQLITE_ABORT_ROLLBACK</a> error.
+versions of SQLite, the ROLLBACK will proceed and pending statements
+will often be aborted, causing them to return an <a href="rescode.html#abort">SQLITE_ABORT</a> or
+<a href="rescode.html#abort_rollback">SQLITE_ABORT_ROLLBACK</a> error.
+In SQLite version 3.8.8 and later, a pending read will continue functioning
+after the ROLLBACK as long as the ROLLBACK does not modify the database
+schema.
 </p>
 
 <p>
@@ -257,8 +261,6 @@ errors that can cause an automatic rollback include:</p>
 <li> <a href="rescode.html#ioerr">SQLITE_IOERR</a>: disk I/O error
 <li> <a href="rescode.html#busy">SQLITE_BUSY</a>: database in use by another process
 <li> <a href="rescode.html#nomem">SQLITE_NOMEM</a>: out or memory
-<li> <a href="rescode.html#interrupt">SQLITE_INTERRUPT</a>: processing <a href="c3ref/interrupt.html">interrupted</a>
-     by application request
 </ul>
 
 <p>

@@ -60,7 +60,7 @@ a:visited { color: #734559 }
 .fancy p.todo        { border: solid #AA3333 1px; padding: 1ex }
 .fancy img { display:block; }
 .fancy :link:hover, .fancy :visited:hover { background: wheat }
-.fancy p,.fancy ul,.fancy ol { margin: 1em 5ex }
+.fancy p,.fancy ul,.fancy ol,.fancy dl { margin: 1em 5ex }
 .fancy li p { margin: 1em 0 }
 /* End of "fancyformat" specific rules. */
 
@@ -206,7 +206,10 @@ rather than the keyword.</p>
 The database name is the name of an <a href="lang_attach.html">ATTACH</a>-ed database or it can be
 "main" or "temp" for the main and the TEMP databases.  If the optional
 database name is omitted, "main" is assumed.  In some pragmas, the database
-name is meaningless and is simply ignored.</p>
+name is meaningless and is simply ignored.  In the documentation below,
+pragmas for which the database name is meaningful are shown with a
+"<i>database.</i>" prefix.</p>
+
 
 
 
@@ -227,6 +230,7 @@ name is meaningless and is simply ignored.</p>
 <li><a href="#pragma_compile_options">compile_options</a>
 <li><a href="#pragma_count_changes"><s>count_changes</s></a>&sup1;
 <li><a href="#pragma_data_store_directory"><s>data_store_directory</s></a>&sup1;
+<li><a href="#pragma_data_version">data_version</a>
 <li><a href="#pragma_database_list">database_list</a>
 <li><a href="#pragma_default_cache_size"><s>default_cache_size</s></a>&sup1;
 <li><a href="#pragma_defer_foreign_keys">defer_foreign_keys</a>
@@ -235,14 +239,15 @@ name is meaningless and is simply ignored.</p>
 <li><a href="#pragma_foreign_key_check">foreign_key_check</a>
 <li><a href="#pragma_foreign_key_list">foreign_key_list</a>
 <li><a href="#pragma_foreign_keys">foreign_keys</a>
-<li><a href="#pragma_freelist_count">freelist_count</a>
 </ul></td><td valign="top" align="left"><ul>
+<li><a href="#pragma_freelist_count">freelist_count</a>
 <li><a href="#pragma_full_column_names"><s>full_column_names</s></a>&sup1;
 <li><a href="#pragma_fullfsync">fullfsync</a>
 <li><a href="#pragma_ignore_check_constraints">ignore_check_constraints</a>
 <li><a href="#pragma_incremental_vacuum">incremental_vacuum</a>
 <li><a href="#pragma_index_info">index_info</a>
 <li><a href="#pragma_index_list">index_list</a>
+<li><a href="#pragma_index_xinfo">index_xinfo</a>
 <li><a href="#pragma_integrity_check">integrity_check</a>
 <li><a href="#pragma_journal_mode">journal_mode</a>
 <li><a href="#pragma_journal_size_limit">journal_size_limit</a>
@@ -256,9 +261,9 @@ name is meaningless and is simply ignored.</p>
 <li><a href="#pragma_query_only">query_only</a>
 <li><a href="#pragma_quick_check">quick_check</a>
 <li><a href="#pragma_read_uncommitted">read_uncommitted</a>
+</ul></td><td valign="top" align="left"><ul>
 <li><a href="#pragma_recursive_triggers">recursive_triggers</a>
 <li><a href="#pragma_reverse_unordered_selects">reverse_unordered_selects</a>
-</ul></td><td valign="top" align="left"><ul>
 <li><a href="#pragma_schema_version">schema_version</a>
 <li><a href="#pragma_secure_delete">secure_delete</a>
 <li><a href="#pragma_short_column_names"><s>short_column_names</s></a>&sup1;
@@ -293,8 +298,8 @@ are only available when SQLite is compiled using <a href="compile.html#debug">SQ
 for use in application programs.</ol></p>
 <a name="pragma_application_id"></a>
 <hr>
-    <p><b>PRAGMA application_id;
-       <br>PRAGMA application_id = </b><i>integer </i><b>;</b>
+    <p><b>PRAGMA </b><i>database.</i><b>application_id;
+     <br>PRAGMA </b><i>database.</i><b>application_id = </b><i>integer </i><b>;</b>
   
 <p>    The application_id PRAGMA is used to query or set the 32-bit
        unsigned big-endian "Application ID" integer located at offset
@@ -307,8 +312,8 @@ for use in application programs.</ol></p>
        <a href="http://www.sqlite.org/src/artifact?ci=trunk&filename=magic.txt">magic.txt</a> file in the SQLite source repository.
 <a name="pragma_auto_vacuum"></a>
 <hr>
-    <p><b>PRAGMA auto_vacuum;<br>
-          PRAGMA auto_vacuum = </b>
+    <p><b>PRAGMA </b><i>database.</i><b>auto_vacuum;<br>
+          PRAGMA </b><i>database.</i><b>auto_vacuum = </b>
            <i>0 | NONE | 1 | FULL | 2 | INCREMENTAL</i><b>;</b></p>
 
     <p>Query or set the auto-vacuum status in the database.</p>
@@ -384,9 +389,9 @@ for use in application programs.</ol></p>
     for the process, possibly overwriting any previously set busy handler.
 <a name="pragma_cache_size"></a>
 <hr>
-    <p><b>PRAGMA cache_size;
-       <br>PRAGMA cache_size = </b><i>pages</i><b>;
-       <br>PRAGMA cache_size = -</b><i>kibibytes</i><b>;</b></p>
+    <p><b>PRAGMA </b><i>database.</i><b>cache_size;
+       <br>PRAGMA </b><i>database.</i><b>cache_size = </b><i>pages</i><b>;
+       <br>PRAGMA </b><i>database.</i><b>cache_size = -</b><i>kibibytes</i><b>;</b></p>
     <p>Query or change the suggested maximum number of database disk pages
     that SQLite will hold in memory at once per open database file.  Whether
     or not this suggestion is honored is at the discretion of the
@@ -395,11 +400,14 @@ for use in application programs.</ol></p>
     however alternative application-defined page cache implementations
     may choose to interpret the suggested cache size in different ways
     or to ignore it all together.
-    The default suggested cache size is 2000 pages.</p>
+    The default suggested cache size is 2000 pages.
+    The default suggested cache size can be altered using the
+    <a href="compile.html#default_cache_size">SQLITE_DEFAULT_CACHE_SIZE</a> compile-time options.
+    The TEMP database has a default suggested cache size of 0 pages.</p>
 
     <p>If the argument N is positive then the suggested cache size is set 
     to N. If the argument N is negative, then the
-    number of cache pages is adjusted to use approximately N*1024 bytes
+    number of cache pages is adjusted to use approximately abs(N*1024) bytes
     of memory.
     <i>Backwards compatibility note:</i>
     The behavior of cache_size with a negative N
@@ -502,7 +510,7 @@ for use in application programs.</ol></p>
 <a name="pragma_data_store_directory"></a>
 <hr>
     <p><b>PRAGMA data_store_directory;
-       <br>PRAGMA data_store_directory = '</b><i>directory-name</i><b>';</b></p>
+      <br>PRAGMA data_store_directory = '</b><i>directory-name</i><b>';</b></p>
     <p>Query or change the value of the <a href="c3ref/data_directory.html">sqlite3_data_directory</a> global
     variable, which windows operating-system interface backends use to
     determine where to store database files specified using a relative
@@ -529,6 +537,33 @@ for use in application programs.</ol></p>
     from the build when SQLite is compiled using <a href="compile.html#omit_deprecated">SQLITE_OMIT_DEPRECATED</a>.
     </p>
   
+<a name="pragma_data_version"></a>
+<hr>
+    <p><b>PRAGMA </b><i>database.</i><b>data_version;</b></p>
+    <p>The "PRAGMA data_version" command provides an indication that the
+    database file has been modified.
+    Interactive programs that hold database content in memory or that
+    display database content on-screen can use the PRAGMA data_version
+    command to determine if they need to flush and reload their memory
+    or update the screen display.</p>
+
+    <p>The integer values returned by two
+    invocations of "PRAGMA data_version" from the same connection
+    will be different if changes were committed to the database 
+    by any other connection in the interim.
+    The "PRAGMA data_version" value is unchanged for commits made
+    on the same database connection.
+    The behavior of "PRAGMA data_version" is the same for all database
+    connections, including database connections in separate processes
+    and <a href="sharedcache.html">shared cache</a> database connections.
+
+    <p>The "PRAGMA data_version" value is a local property of each
+    database connection and so values returned by two concurrent invocations
+    of "PRAGMA data_version" on separate database connections are 
+    often different even though the underlying database is identical.
+    It is only meaningful to compare the "PRAGMA data_version" values
+    returned by the same database connection at two different points in
+    time.
 <a name="pragma_database_list"></a>
 <hr>
     <p><b>PRAGMA database_list;</b></p>
@@ -541,8 +576,9 @@ for use in application programs.</ol></p>
     string if the database is not associated with a file.</p>
 <a name="pragma_default_cache_size"></a>
 <hr>
-    <b>PRAGMA default_cache_size;
-       <br>PRAGMA default_cache_size = </b><i>Number-of-pages</i><b>;</b></p>
+    <b>PRAGMA </b><i>database.</i><b>default_cache_size;
+       <br>PRAGMA </b><i>database.</i><b>default_cache_size
+            = </b><i>Number-of-pages</i><b>;</b></p>
 
     <p>This pragma queries or sets the suggested maximum number of pages
     of disk cache that will be allocated per open database file.
@@ -633,8 +669,8 @@ for use in application programs.</ol></p>
     text encoding from the "main" database will fail.</p>
 <a name="pragma_foreign_key_check"></a>
 <hr>
-    <p><b>PRAGMA foreign_key_check;
-        <br>PRAGMA foreign_key_check(</b><i>table-name</i><b>);</b></b></p>
+    <p><b>PRAGMA </b><i>database.</i><b>foreign_key_check;
+        <br>PRAGMA </b><i>database.</i><b>foreign_key_check(</b><i>table-name</i><b>);</b></b></p>
 
     <p>The foreign_key_check pragma checks the database, or the table
     called "<i>table-name</i>", for 
@@ -683,7 +719,7 @@ for use in application programs.</ol></p>
        and not depend on the default setting.
 <a name="pragma_freelist_count"></a>
 <hr>
-    <p><b>PRAGMA freelist_count;</b></p>
+    <p><b>PRAGMA </b><i>database.</i><b>freelist_count;</b></p>
     <p>Return the number of unused pages in the database file.</p>
 <a name="pragma_full_column_names"></a>
 <hr>
@@ -738,7 +774,7 @@ for use in application programs.</ol></p>
     enforced by default.</p>
 <a name="pragma_incremental_vacuum"></a>
 <hr>
-    <p><b>PRAGMA incremental_vacuum</b><i>(N)</i><b>;</b></p>
+    <p><b>PRAGMA </b><i>database.</i><b>incremental_vacuum</b><i>(N)</i><b>;</b></p>
     <p>The incremental_vacuum pragma causes up to <i>N</i> pages to
     be removed from the <a href="fileformat2.html#freelist">freelist</a>.  The database file is truncated by
     the same amount.  The incremental_vacuum pragma has no effect if
@@ -749,24 +785,68 @@ for use in application programs.</ol></p>
     if <i>N</i> is omitted entirely, then the entire freelist is cleared.</p>
 <a name="pragma_index_info"></a>
 <hr>
-    <p><b>PRAGMA index_info(</b><i>index-name</i><b>);</b></p>
-    <p>This pragma returns one row each column in the named index.
-    The first column of the result is the rank of the column within the index.
-    The second column of the result is the rank of the column within the
-    table. The third column of output is the name of the column being indexed.
-    </p>
+    <p><b>PRAGMA </b><i>database.</i><b>index_info(</b><i>index-name</i><b>);</b></p>
+    <p>This pragma returns one row for each key column in the named index.
+    A key column is a column that is actually named in the <a href="lang_createindex.html">CREATE INDEX</a>
+    index statement or <a href="lang_createtable.html#uniqueconst">UNIQUE constraint</a> or <a href="lang_createtable.html#primkeyconst">PRIMARY KEY constraint</a> that
+    created the index.  Index entries also usually contain auxiliary
+    columns that point back to the table row being indexed.  The auxiliary
+    index-columns are not shown by the index_info pragma, but they are
+    listed by the <a href="pragma.html#pragma_index_xinfo">index_xinfo pragma</a>.</p>
+
+    <p>Output columns from the index_info pragma are as follows:
+    <ol>
+    <li>The rank of the column within the index.  (0 means left-most.)
+    <li>The rank of the column within the table being indexed.
+    <li>The name of the column being indexed.
+    </ol>
 <a name="pragma_index_list"></a>
 <hr>
-    <p><b>PRAGMA index_list(</b><i>table-name</i><b>);</b></p>
+    <p><b>PRAGMA </b><i>database.</i><b>index_list(</b><i>table-name</i><b>);</b></p>
     <p>This pragma returns one row for each index associated with the
     given table.
-    Columns of the result set include the
-    index name and a flag to indicate whether or not the index is UNIQUE.
+    <p>Output columns from the index_list pragma are as follows:
+    <ol>
+    <li>A sequence number assigned to each index for internal tracking
+          purposes.
+    <li>The name of the index.
+    <li>"1" if the index is UNIQUE and "0" if not.
+    <li>"c" if the index was created by a <a href="lang_createindex.html">CREATE INDEX</a> statement,
+          "u" if the index was created by a <a href="lang_createtable.html#uniqueconst">UNIQUE constraint</a>, or
+          "pk" if the index was created by a <a href="lang_createtable.html#primkeyconst">PRIMARY KEY constraint</a>.
+    <li>"1" if the index is a <a href="partialindex.html">partial index</a> and "0" if not.
+    </ol>
     </p>
+<a name="pragma_index_xinfo"></a>
+<hr>
+    <p><b>PRAGMA </b><i>database.</i><b>index_xinfo(</b><i>index-name</i><b>);</b></p>
+    <p>This pragma returns information about every column in an index.
+    Unlike this <a href="pragma.html#pragma_index_info">index_info pragma</a>, this pragma returns information about
+    every column in the index, not just the key columns.
+    (A key column is a column that is actually named in the <a href="lang_createindex.html">CREATE INDEX</a>
+    index statement or <a href="lang_createtable.html#uniqueconst">UNIQUE constraint</a> or <a href="lang_createtable.html#primkeyconst">PRIMARY KEY constraint</a> that
+    created the index.  Auxiliary columns are additional columns needed to
+    locate the table entry that corresponds to each index entry.)
+
+    <p>Output columns from the index_xinfo pragma are as follows:
+    <ol>
+    <li>The rank of the column within the index. (0 means left-most.
+         Key columns come before auxiliary columns.)
+    <li>The rank of the column within the table being indexed, or -1 if
+         the index-column is the <a href="lang_createtable.html#rowid">rowid</a> of the table being indexed.
+    <li>The name of the column being indexed, or NULL if the index-column
+         is the <a href="lang_createtable.html#rowid">rowid</a> of the table being indexed.
+    <li>1 if the index-column is sorted in reverse (DESC) order by the
+         index and 0 otherwise.
+    <li>The name for the <a href="datatype3.html#collation">collating sequence</a>
+         used to compare values in the index-column.
+    <li>1 if the index-column is a key column and 0 if the index-column
+         is an auxiliary column.
+    </ol>
 <a name="pragma_integrity_check"></a>
 <hr>
-    <p><b>PRAGMA integrity_check;
-    <br>PRAGMA integrity_check(</b><i>N</i><b>)</b></p>
+    <p><b>PRAGMA </b><i>database.</i><b>integrity_check;
+      <br>PRAGMA </b><i>database.</i><b>integrity_check(</b><i>N</i><b>)</b></p>
     <p>This pragma does an integrity check of the entire database.  The
     integrity_check pragma
     looks for out-of-order records, missing pages, malformed records, missing
@@ -787,27 +867,19 @@ for use in application programs.</ol></p>
     checking of PRAGMA integrity_check but runs much faster.</p>
 <a name="pragma_journal_mode"></a>
 <hr>
-    <p><b>PRAGMA journal_mode;
-       <br>PRAGMA </b><i>database</i><b>.journal_mode;
-       <br>PRAGMA journal_mode
-              = <i>DELETE | TRUNCATE | PERSIST | MEMORY | WAL | OFF</i>
-       <br>PRAGMA </b><i>database</i><b>.journal_mode
+    <p><b>PRAGMA </b><i>database.</i><b>journal_mode;
+        <br>PRAGMA </b><i>database.</i><b>journal_mode
               = <i>DELETE | TRUNCATE | PERSIST | MEMORY | WAL | OFF</i></b></p>
 
     <p>This pragma queries or sets the journal mode for databases
     associated with the current <a href="c3ref/sqlite3.html">database connection</a>.</p>
 
-    <p>The first two forms of this pragma query the current journaling
+    <p>The first form of this pragma queries the current journaling
     mode for <i>database</i>.  When <i>database</i> is omitted, the
     "main" database is queried.</p>
 
-    <p>The last two forms change the journaling mode.  The 4th form
-    changes the journaling mode for a specific database connection named.
-    Use "main" for the main database (the database that was opened by
-    the original <a href="c3ref/open.html">sqlite3_open()</a>, <a href="c3ref/open.html">sqlite3_open16()</a>, or
-    <a href="c3ref/open.html">sqlite3_open_v2()</a> interface call) and use "temp" for database
-    that holds TEMP tables.  The 3rd form changes the journaling mode
-    on all databases attached to the connection.
+    <p>The second form changes the journaling mode for "<i>database</i>"
+    or for all attached databases if "<i>database</i>" is omitted.
     The new journal mode is returned.  If the journal mode
     could not be changed, the original journal mode is returned.</p>
 
@@ -863,8 +935,8 @@ for use in application programs.</ol></p>
 <a name="pragma_journal_size_limit"></a>
 <hr>
     <p><b>
-    PRAGMA journal_size_limit<br>
-    PRAGMA journal_size_limit = </b><i>N</i> <b>;</b>
+    PRAGMA </b><i>database.</i><b>journal_size_limit<br>
+    PRAGMA </b><i>database.</i><b>journal_size_limit = </b><i>N</i> <b>;</b>
 
   <p>If a database connection is operating in
   <a href="pragma.html#pragma_locking_mode">exclusive locking mode</a> or in
@@ -928,8 +1000,9 @@ for use in application programs.</ol></p>
     <a href="compile.html#default_file_format">SQLITE_DEFAULT_FILE_FORMAT</a> compile-time option.</p>
 <a name="pragma_locking_mode"></a>
 <hr>
-    <p><b>PRAGMA locking_mode;
-       <br>PRAGMA locking_mode = <i>NORMAL | EXCLUSIVE</i></b></p>
+    <p><b>PRAGMA </b><i>database.</i><b>locking_mode;
+    <br>PRAGMA </b><i>database.</i><b>locking_mode
+                = <i>NORMAL | EXCLUSIVE</i></b></p>
     <p>This pragma sets or queries the database connection locking-mode. 
     The locking-mode is either NORMAL or EXCLUSIVE.
 
@@ -989,8 +1062,8 @@ PRAGMA <b>main.</b>locking_mode=EXCLUSIVE;
    WAL journal mode.</p>
 <a name="pragma_max_page_count"></a>
 <hr>
-    <p><b>PRAGMA max_page_count;
-       <br>PRAGMA max_page_count = </b><i>N</i><b>;</b></p>
+    <p><b>PRAGMA </b><i>database.</i><b>max_page_count;
+        <br>PRAGMA </b><i>database.</i><b>max_page_count = </b><i>N</i><b>;</b></p>
     <p>Query or set the maximum number of pages in the database file.
     Both forms of the pragma return the maximum page count.  The second
     form attempts to modify the maximum page count.  The maximum page
@@ -998,8 +1071,8 @@ PRAGMA <b>main.</b>locking_mode=EXCLUSIVE;
     </p>
 <a name="pragma_mmap_size"></a>
 <hr>
-    <p><br><b>PRAGMA </b><i>database</i><b>.mmap_size;
-         <br>PRAGMA </b><i>database</i><b>.mmap_size=</b><i>N</i></p>
+    <p><br><b>PRAGMA </b><i>database.</i><b>mmap_size;
+         <br>PRAGMA </b><i>database.</i><b>mmap_size=</b><i>N</i></p>
 
     <p>Query or change the maximum number of bytes that are set
        aside for memory-mapped I/O on a single database.  The first form
@@ -1033,12 +1106,12 @@ PRAGMA <b>main.</b>locking_mode=EXCLUSIVE;
        <a href="c3ref/sqlite3.html">database connection</a>.</p>
 <a name="pragma_page_count"></a>
 <hr>
-    <p><b>PRAGMA page_count;</b></p>
+    <p><b>PRAGMA </b><i>database.</i><b>page_count;</b></p>
     <p>Return the total number of pages in the database file.</p>
 <a name="pragma_page_size"></a>
 <hr>
-   <p><b>PRAGMA page_size;
-       <br>PRAGMA page_size = </b><i>bytes</i><b>;</b></p>
+   <p><b>PRAGMA </b><i>database.</i><b>page_size;
+       <br>PRAGMA </b><i>database.</i><b>page_size = </b><i>bytes</i><b>;</b></p>
     <p>Query or set the page size of the database. The page
     size must be a power of two between 512 and 65536 inclusive.
     </p>
@@ -1095,14 +1168,14 @@ PRAGMA <b>main.</b>locking_mode=EXCLUSIVE;
 <a name="pragma_query_only"></a>
 <hr>
     <p><b>PRAGMA query_only;
-       <br>PRAGMA query_only = </b><i>boolean</i><b>;</b></p>
+      <br>PRAGMA query_only = </b><i>boolean</i><b>;</b></p>
 
     <p>The query_only pragma prevents all changes to database files when
     enabled.</p>
 <a name="pragma_quick_check"></a>
 <hr>
-    <p><b>PRAGMA quick_check;
-    <br>PRAGMA quick_check(</b><i>N</i><b>)</b></p>
+    <p><b>PRAGMA </b><i>database.</i><b>quick_check;
+      <br>PRAGMA </b><i>database.</i><b>quick_check(</b><i>N</i><b>)</b></p>
     <p>The pragma is like <a href="pragma.html#pragma_integrity_check">integrity_check</a> except that it does not verify
     UNIQUE and NOT NULL constraints and does not verify
     that index content matches table content.  By skipping UNIQUE and NOT NULL
@@ -1149,10 +1222,15 @@ PRAGMA <b>main.</b>locking_mode=EXCLUSIVE;
 <hr>
     <p><b>PRAGMA reverse_unordered_selects;
        <br>PRAGMA reverse_unordered_selects = </b><i>boolean</i><b>;</b></p>
-    <p>When enabled, this PRAGMA causes <a href="lang_select.html">SELECT</a> statements without
-    an ORDER BY clause to emit their results in the reverse order of what
+    <p>When enabled, this PRAGMA causes many <a href="lang_select.html">SELECT</a> statements without
+    an ORDER BY clause to emit their results in the reverse order from what
     they normally would.  This can help debug applications that are
-    making invalid assumptions about the result order.<p>SQLite makes no
+    making invalid assumptions about the result order.  
+    The reverse_unordered_selects pragma works for most SELECT statements,
+    however the query planner may sometimes choose an algorithm that is
+    not easily reversed, in which case the output will appear in the same
+    order regardless of the reverse_unordered_selects setting.
+    <p>SQLite makes no
     guarantees about the order of results if a SELECT omits the ORDER BY
     clause.  Even so, the order of results does not change from one
     run to the next, and so many applications mistakenly come to depend
@@ -1168,10 +1246,10 @@ PRAGMA <b>main.</b>locking_mode=EXCLUSIVE;
     </p>
 <a name="pragma_schema_version"></a>
 <hr>
-    <p><b>PRAGMA schema_version; 
-       <br>PRAGMA schema_version = </b><i>integer </i><b>;
-       <br>PRAGMA user_version;
-       <br>PRAGMA user_version = </b><i>integer </i><b>;</b>
+    <p><b>PRAGMA </b><i>database.</i><b>schema_version; 
+      <br>PRAGMA </b><i>database.</i><b>schema_version = </b><i>integer </i><b>;
+      <br>PRAGMA </b><i>database.</i><b>user_version;
+      <br>PRAGMA </b><i>database.</i><b>user_version = </b><i>integer </i><b>;</b>
 
   
 <p>    The pragmas schema_version and user_version are used to set or get
@@ -1194,11 +1272,8 @@ PRAGMA <b>main.</b>locking_mode=EXCLUSIVE;
        applications for any purpose.</p>
 <a name="pragma_secure_delete"></a>
 <hr>
-    <p><b>PRAGMA secure_delete;
-       <br>PRAGMA </b><i>database</i><b>.secure_delete;
-       <br>PRAGMA secure_delete = </b><i>boolean</i><b>
-       <br>PRAGMA </b><i>database</i><b>.secure_delete =
-               </b><i>boolean</i></p>
+    <p>PRAGMA </b><i>database.</i><b>secure_delete;
+     <br>PRAGMA </b><i>database.</i><b>secure_delete = </b><i>boolean</i></p>
     <p>Query or change the secure-delete setting. When secure-delete
     on, SQLite overwrites deleted content with zeros.  The default
     setting is determined by the <a href="compile.html#secure_delete">SQLITE_SECURE_DELETE</a>
@@ -1260,7 +1335,7 @@ PRAGMA <b>main.</b>locking_mode=EXCLUSIVE;
     <p>This pragma returns auxiliary information about tables and
     indices.  The returned information is used during testing to help
     verify that the query planner is operating correctly.  The format
-    and meaning of this pragma will likely change from release
+    and meaning of this pragma will likely change from one release
     to the next. Because of its volatility, the behavior and output
     format of this pragma are deliberately undocumented.</p>
 
@@ -1272,8 +1347,8 @@ PRAGMA <b>main.</b>locking_mode=EXCLUSIVE;
   
 <a name="pragma_synchronous"></a>
 <hr>
-    <p><b>PRAGMA synchronous;
-       <br>PRAGMA synchronous = </b>
+    <p><b>PRAGMA </b><i>database.</i><b>synchronous;
+        <br>PRAGMA </b><i>database.</i><b>synchronous = </b>
           <i>0 | OFF | 1 | NORMAL | 2 | FULL</i><b>;</b></p>
 
     <p>Query or change the setting of the "synchronous" flag.
@@ -1318,7 +1393,7 @@ PRAGMA <b>main.</b>locking_mode=EXCLUSIVE;
     <p>See also the <a href="pragma.html#pragma_fullfsync">fullfsync</a> and <a href="pragma.html#pragma_checkpoint_fullfsync">checkpoint_fullfsync</a> pragmas.</p>
 <a name="pragma_table_info"></a>
 <hr>
-    <p><b>PRAGMA table_info(</b><i>table-name</i><b>);</b></p>
+    <p><b>PRAGMA </b><i>database.</i><b>table_info(</b><i>table-name</i><b>);</b></p>
     <p>This pragma returns one row for each column in the named table.
     Columns in the result set include the column name,
     data type, whether or not the column can be NULL, and the default
@@ -1330,7 +1405,7 @@ PRAGMA <b>main.</b>locking_mode=EXCLUSIVE;
 <a name="pragma_temp_store"></a>
 <hr>
     <p><b>PRAGMA temp_store;
-       <br>PRAGMA temp_store = </b>
+        <br>PRAGMA temp_store = </b>
             <i>0 | DEFAULT | 1 | FILE | 2 | MEMORY</i><b>;</b></p>
 
     <p>Query or change the setting of the "<b>temp_store</b>" parameter.
@@ -1386,7 +1461,7 @@ PRAGMA <b>main.</b>locking_mode=EXCLUSIVE;
 <a name="pragma_temp_store_directory"></a>
 <hr>
     <p><b>PRAGMA temp_store_directory;
-       <br>PRAGMA temp_store_directory = '</b><i>directory-name</i><b>';</b></p>
+      <br>PRAGMA temp_store_directory = '</b><i>directory-name</i><b>';</b></p>
     <p>Query or change the value of the <a href="c3ref/temp_directory.html">sqlite3_temp_directory</a> global
     variable, which many operating-system interface backends use to
     determine where to store <a href="inmemorydb.html#temp_db">temporary tables</a> and indices.</p>
@@ -1430,7 +1505,7 @@ PRAGMA <b>main.</b>locking_mode=EXCLUSIVE;
 <a name="pragma_threads"></a>
 <hr>
     <p><b>PRAGMA threads;
-       <br>PRAGMA threads = </b><i>N</i><b>;</b></p>
+      <br>PRAGMA threads = </b><i>N</i><b>;</b></p>
     <p>Query or change the value of the 
     <a href="c3ref/limit.html">sqlite3_limit</a>(db,<a href="c3ref/c_limit_attached.html#sqlitelimitworkerthreads">SQLITE_LIMIT_WORKER_THREADS</a>,...) limit for
     the current database connection.  This limit sets an upper bound
@@ -1518,7 +1593,7 @@ PRAGMA <b>main.</b>locking_mode=EXCLUSIVE;
 <a name="pragma_wal_autocheckpoint"></a>
 <hr>
     <p><b>PRAGMA wal_autocheckpoint;<br>
-     PRAGMA wal_autocheckpoint=</b><i>N</i><b>;</b></p>
+          PRAGMA wal_autocheckpoint=</b><i>N</i><b>;</b></p>
 
     <p>This pragma queries or sets the <a href="wal.html">write-ahead log</a> 
     <a href="wal.html#ckpt">auto-checkpoint</a> interval.
@@ -1537,10 +1612,11 @@ PRAGMA <b>main.</b>locking_mode=EXCLUSIVE;
 
 <a name="pragma_wal_checkpoint"></a>
 <hr>
-    <p><b>PRAGMA </b><i>database</i><b>.wal_checkpoint;</b><br>
-    <b>PRAGMA </b><i>database</i><b>.wal_checkpoint(PASSIVE);</b><br>
-    <b>PRAGMA </b><i>database</i><b>.wal_checkpoint(FULL);</b><br>
-    <b>PRAGMA </b><i>database</i><b>.wal_checkpoint(RESTART);</b>
+    <p><b>PRAGMA </b><i>database.</i><b>wal_checkpoint;</b><br>
+       <b>PRAGMA </b><i>database.</i><b>wal_checkpoint(PASSIVE);</b><br>
+       <b>PRAGMA </b><i>database.</i><b>wal_checkpoint(FULL);</b><br>
+       <b>PRAGMA </b><i>database.</i><b>wal_checkpoint(RESTART);</b><br>
+       <b>PRAGMA </b><i>database.</i><b>wal_checkpoint(TRUNCATE);</b>
    </p>
 
     <p>If the <a href="wal.html">write-ahead log</a> is enabled (via the <a href="pragma.html#pragma_journal_mode">journal_mode pragma</a>),
@@ -1561,9 +1637,10 @@ PRAGMA <b>main.</b>locking_mode=EXCLUSIVE;
     <dt>PASSIVE<dd>
       Checkpoint as many frames as possible without waiting for any database 
       readers or writers to finish. Sync the db file if all frames in the log
-      are checkpointed. This mode is the same as calling 
-      sqlite3_wal_checkpoint(). The
-      <a href="c3ref/busy_handler.html">busy-handler callback</a> is never invoked.
+      are checkpointed. This mode is the same as calling the
+      <a href="c3ref/wal_checkpoint.html">sqlite3_wal_checkpoint()</a> C interface. The
+      <a href="c3ref/busy_handler.html">busy-handler callback</a> is never invoked in
+      this mode.
    
     <dt>FULL<dd>
       This mode blocks 
@@ -1571,23 +1648,28 @@ PRAGMA <b>main.</b>locking_mode=EXCLUSIVE;
       until there is no
       database writer and all readers are reading from the most recent database
       snapshot. It then checkpoints all frames in the log file and syncs the
-      database file. FULL blocks database writers while it is
-      running, but not database readers.
+      database file. FULL blocks concurrent writers while it is
+      running, but readers can proceed.
    
     <dt>RESTART<dd>
-      This mode works the same way as SQLITE_CHECKPOINT_FULL, except after 
+      This mode works the same way as FULL with the addition that after 
       checkpointing the log file it blocks (calls the 
       <a href="c3ref/busy_handler.html">busy-handler callback</a>)
-      until all readers are reading from the database file only. This ensures 
+      until all readers are finished with the log file. This ensures 
       that the next client to write to the database file restarts the log file 
-      from the beginning. RESTART blocks database writers while it is
-      running, but not database readers.
+      from the beginning. RESTART blocks concurrent writers while it is
+      running, but allowed readers to proceed.
+   
+    <dt>TRUNCATE<dd>
+      This mode works the same way as RESTART with the 
+      addition that the WAL file is truncated to zero bytes upon successful
+      completion.
     </dl>
 
 
     <p>The wal_checkpoint pragma returns a single row with three
     integer columns.  The first column is usually 0 but will be
-    1 if a RESTART or FULL checkpoint was blocked from completing,
+    1 if a RESTART or FULL or TRUNCATE checkpoint was blocked from completing,
     for example because another thread or process was actively
     using the database.  In other words, the first column is 0 if the
     equivalent call to <a href="c3ref/wal_checkpoint_v2.html">sqlite3_wal_checkpoint_v2()</a> would have returned

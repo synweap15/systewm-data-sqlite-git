@@ -60,7 +60,7 @@ a:visited { color: #734559 }
 .fancy p.todo        { border: solid #AA3333 1px; padding: 1ex }
 .fancy img { display:block; }
 .fancy :link:hover, .fancy :visited:hover { background: wheat }
-.fancy p,.fancy ul,.fancy ol { margin: 1em 5ex }
+.fancy p,.fancy ul,.fancy ol,.fancy dl { margin: 1em 5ex }
 .fancy li p { margin: 1em 0 }
 /* End of "fancyformat" specific rules. */
 
@@ -635,13 +635,13 @@ and outputs the result as ASCII-art:
 
 <blockquote><pre>
 WITH RECURSIVE
-  xaxis(x) AS (VALUES(-2.0) UNION ALL SELECT x+0.05 FROM xaxis WHERE x<1.2),
-  yaxis(y) AS (VALUES(-1.0) UNION ALL SELECT y+0.1 FROM yaxis WHERE y<1.0),
+  xaxis(x) AS (VALUES(-2.0) UNION ALL SELECT x+0.05 FROM xaxis WHERE x&lt;1.2),
+  yaxis(y) AS (VALUES(-1.0) UNION ALL SELECT y+0.1 FROM yaxis WHERE y&lt;1.0),
   m(iter, cx, cy, x, y) AS (
     SELECT 0, x, y, 0.0, 0.0 FROM xaxis, yaxis
     UNION ALL
     SELECT iter+1, cx, cy, x*x-y*y + cx, 2.0*x*y + cy FROM m 
-     WHERE (x*x + y*y) < 4.0 AND iter<28
+     WHERE (x*x + y*y) &lt; 4.0 AND iter&lt;28
   ),
   m2(iter, cx, cy) AS (
     SELECT max(iter), cx, cy FROM m GROUP BY cx, cy
@@ -732,7 +732,7 @@ WITH RECURSIVE
   digits(z, lp) AS (
     VALUES('1', 1)
     UNION ALL SELECT
-    CAST(lp+1 AS TEXT), lp+1 FROM digits WHERE lp<9
+    CAST(lp+1 AS TEXT), lp+1 FROM digits WHERE lp&lt;9
   ),
   x(s, ind) AS (
     SELECT sud, instr(sud, '.') FROM input

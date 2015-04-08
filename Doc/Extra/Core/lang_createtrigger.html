@@ -60,7 +60,7 @@ a:visited { color: #734559 }
 .fancy p.todo        { border: solid #AA3333 1px; padding: 1ex }
 .fancy img { display:block; }
 .fancy :link:hover, .fancy :visited:hover { background: wheat }
-.fancy p,.fancy ul,.fancy ol { margin: 1em 5ex }
+.fancy p,.fancy ul,.fancy ol,.fancy dl { margin: 1em 5ex }
 .fancy li p { margin: 1em 0 }
 /* End of "fancyformat" specific rules. */
 
@@ -357,6 +357,11 @@ restrictions apply:</p>
   using the <a href="compile.html#enable_update_delete_limit">SQLITE_ENABLE_UPDATE_DELETE_LIMIT</a> compile-time option.  However,
   that compile-time option only applies to top-level <a href="lang_update.html">UPDATE</a> and <a href="lang_delete.html">DELETE</a>
   statements, not <a href="lang_update.html">UPDATE</a> and <a href="lang_delete.html">DELETE</a> statements within triggers.
+  </p></li>
+
+<li><p>
+  <a href="syntax/common-table-expression.html">Common table expression</a> are not supported for
+  statements inside of triggers.
   </p></li>
 </ul>
 

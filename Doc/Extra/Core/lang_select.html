@@ -60,7 +60,7 @@ a:visited { color: #734559 }
 .fancy p.todo        { border: solid #AA3333 1px; padding: 1ex }
 .fancy img { display:block; }
 .fancy :link:hover, .fancy :visited:hover { background: wheat }
-.fancy p,.fancy ul,.fancy ol { margin: 1em 5ex }
+.fancy p,.fancy ul,.fancy ol,.fancy dl { margin: 1em 5ex }
 .fancy li p { margin: 1em 0 }
 /* End of "fancyformat" specific rules. */
 
@@ -1114,20 +1114,20 @@ using a LIMIT clause with a comma-separated offset.
 as "SELECT <i>expr-list</i>".  The phrase
 "VALUES(<i>expr-list-1</i>),...,(<i>expr-list-N</i>)" means the same
 thing as "SELECT <i>expr-list-1</i> UNION ALL ... UNION ALL
-SELECT <i>expr-list-N</i>".  There is no advantage to using one form
-over the other.  Both forms yield the same result and both forms use
-the same amount of memory and processing time.
+SELECT <i>expr-list-N</i>".  Both forms are the same, except that
+the number of SELECT statements in a compound is limited by
+<a href="c3ref/c_limit_attached.html#sqlitelimitcompoundselect">SQLITE_LIMIT_COMPOUND_SELECT</a> whereas the number of rows in a
+VALUES clause has no arbitrary limit.
 
 <p>There are some restrictions on the use of a VALUES clause that are
 not shown on the syntax diagrams:
 
 <ul>
 <li><p>
-A VALUES clause cannot be followed by <a href="lang_select.html#orderby">ORDER BY</a> or <a href="lang_select.html#limitoffset">LIMIT</a>.
+A VALUES clause cannot be followed by <a href="lang_select.html#orderby">ORDER BY</a>.
 
 <li><p>
-A VALUES clause cannot be used together with a <a href="lang_with.html">WITH</a> clause in a
-<a href="lang_select.html#simpleselect">simple SELECT</a>.
+A VALUES clause cannot be followed by <a href="lang_select.html#limitoffset">LIMIT</a>.
 </ul>
 
 
