@@ -130,7 +130,26 @@ namespace eval ::Eagle {
             # NOTE: Force Eagle to rebuild the auto-path list for the current
             #       interpreter right now.
             #
-            object invoke Utility RefreshAutoPathList true
+            if {[catch {
+              object invoke Utility RefreshAutoPathList true
+            }]} then {
+              #
+              # NOTE: Ok, maybe the [object] command is not available.  Rescan
+              #       the package indexes using the [package scan] sub-command
+              #       in that case.  The directories within EAGLELIBPATH will
+              #       not be added to the auto-path; however, all the package
+              #       indexes and their associated packages will be available.
+              #
+              if {!$quiet} then {
+                catch {
+                  tqputs $channel [appendArgs \
+                      "---- unable to refresh auto-path list, scanning \"" \
+                      $::env(EAGLELIBPATH) "\" instead...\n"]
+                }
+              }
+
+              eval package scan -host -normal -refresh -- $::env(EAGLELIBPATH)
+            }
           }
 
           #
@@ -162,16 +181,24 @@ namespace eval ::Eagle {
     }
 
     proc setupInterpreterTestPath { channel dir quiet } {
-      set testPath [object invoke -flags +NonPublic Interpreter.GetActive \
-          TestPath]
+      if {[llength [info commands object]] > 0} then {
+        set testPath [object invoke -flags +NonPublic Interpreter.GetActive \
+            TestPath]
 
-      if {$dir ne $testPath} then {
-        object invoke -flags +NonPublic Interpreter.GetActive TestPath $dir
+        if {$dir ne $testPath} then {
+          object invoke -flags +NonPublic Interpreter.GetActive TestPath $dir
 
+          if {!$quiet} then {
+            catch {
+              tqputs $channel [appendArgs \
+                  "---- set interpreter test path to \"" $dir \"\n]
+            }
+          }
+        }
+      } else {
         if {!$quiet} then {
           catch {
-            tqputs $channel [appendArgs \
-                "---- set interpreter test path to \"" $dir \"\n]
+            tqputs $channel "---- cannot set interpreter test path\n"
           }
         }
       }
