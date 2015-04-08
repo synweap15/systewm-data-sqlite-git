@@ -36,7 +36,7 @@ runTest {test tkt-e47b3d8346-1.1 {parse semi-colon in data source} -setup {
   set result
 } -cleanup {
   unset -nocomplain result list pair
-} -constraints {eagle System.Data.SQLite} -result \
+} -constraints {eagle command.object System.Data.SQLite} -result \
 {{{Data Source} {C:\full\path\to\file.db;more.data.here}}}}
 
 ###############################################################################

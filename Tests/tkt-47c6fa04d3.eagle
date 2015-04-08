@@ -117,7 +117,7 @@ runTest {test tkt-47c6fa04d3-1.1 {loading DataTable with JOIN} -setup {
   cleanupDb $fileName
 
   unset -nocomplain result results errors code sql dataSource id db fileName
-} -constraints {eagle monoBug28 command.sql compile.DATA SQLite\
+} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
 System.Data.SQLite compileCSharp} -match regexp -result {^Ok\
 System#CodeDom#Compiler#CompilerResults#\d+ \{\} 0 System#Data#DataTable#\d+\
 \{\{\{id 2\} \{min 2\} \{max 3\} \{sum 5\}\} \{\{id 2\} \{min 1\} \{max 2\}\

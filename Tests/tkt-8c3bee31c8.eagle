@@ -39,7 +39,7 @@ runTest {test tkt-8c3bee31c8-1.1 {built connection string quoting} -setup {
   set result
 } -cleanup {
   unset -nocomplain dataSource o result
-} -constraints {eagle monoBug28 command.sql compile.DATA SQLite\
+} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
 System.Data.SQLite} -result {{{C:\test_path\test.db}\
 {data source=C:\test_path\test.db}} {/test_path/test.db\
 {data source=/test_path/test.db}} {{C:\test path\test.db} {data source="C:\test\
@@ -63,7 +63,7 @@ runTest {test tkt-8c3bee31c8-1.2 {open single quoted file name} -setup {
   cleanupFile [string trim $fileName ']
 
   unset -nocomplain fileName o
-} -constraints {eagle monoBug28 command.sql compile.DATA SQLite\
+} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
 System.Data.SQLite} -result {}}
 
 ###############################################################################
@@ -82,7 +82,7 @@ runTest {test tkt-8c3bee31c8-1.3 {open double quoted file name} -setup {
   cleanupFile [string trim $fileName \"]
 
   unset -nocomplain fileName o
-} -constraints {eagle monoBug28 command.sql compile.DATA SQLite\
+} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
 System.Data.SQLite} -result {}}
 
 ###############################################################################

@@ -94,6 +94,57 @@ namespace eval ::Eagle {
       }
     }
 
+    #
+    # NOTE: This procedure is only used when adding shimmed test constraints.
+    #
+    proc getBuildClrVersion {} {
+      if {[info exists ::test_clr] && [string length $::test_clr] > 0} then {
+        #
+        # NOTE: Use the specified test version for the CLR.  If this variable
+        #       is not set, the default value will be based on whether or not
+        #       Eagle has been compiled against the CLR v2.0 or CLR v4.0.
+        #
+        return $::test_clr
+      } else {
+        #
+        # NOTE: Check if Eagle has been compiled against the CLR v4.0.  If so,
+        #       just use that CLR version.  Otherwise, use the version for the
+        #       CLR v2.0.  If another major [incompatible] version of the CLR
+        #       is released, this check will have to be changed.  The default
+        #       version value for a particular CLR version may be overridden
+        #       by setting the global variable "test_clr_v$X", where "$X" may
+        #       [currently] be either "2" or "4".
+        #
+        if {[haveConstraint imageRuntime40]} then {
+          if {[info exists ::test_clr_v4] && \
+              [string length $::test_clr_v4] > 0} then {
+            #
+            # NOTE: Use the specified test version for the CLR v4.0.
+            #
+            return $::test_clr_v4
+          } else {
+            #
+            # NOTE: Use the default test version for the CLR v4.0.
+            #
+            return 4.0.30319; # TODO: Good "fallback" default?
+          }
+        } else {
+          if {[info exists ::test_clr_v2] && \
+              [string length $::test_clr_v2] > 0} then {
+            #
+            # NOTE: Use the specified test version for the CLR v2.0.
+            #
+            return $::test_clr_v2
+          } else {
+            #
+            # NOTE: Use the default test version for the CLR v2.0.
+            #
+            return 2.0.50727; # TODO: Good "fallback" default?
+          }
+        }
+      }
+    }
+
     proc getBuildYears {} {
       #
       # NOTE: See if the list of test years has been overridden by the user
@@ -901,7 +952,14 @@ namespace eval ::Eagle {
       #
       return [uplevel 1 [list subst [appendArgs $prefix {
         if {[hasRuntimeOption native]} then {
-          object invoke Interpreter.GetActive AddRuntimeOption native
+          #
+          # NOTE: The \[object\] command may be missing in some Eagle core
+          #       library configurations.  In that case, we cannot copy the
+          #       "native" runtime option.
+          #
+          catch {
+            object invoke Interpreter.GetActive AddRuntimeOption native
+          }
         }
       } [getTestOverridesPreamble [list path test_channel]] $suffix]]]
     }
@@ -1145,6 +1203,53 @@ namespace eval ::Eagle {
       return false
     }
 
+    proc haveSQLiteObjectCommand {} {
+      #
+      # NOTE: Is the [object] command currently available?
+      #
+      return [expr {[llength [info commands object]] > 0}]
+    }
+
+    proc checkForSQLiteObjectCommand { channel } {
+      tputs $channel "---- checking for \"object\" command usage... "
+
+      if {![info exists ::no(sqliteObjectCommand)] && \
+          [haveSQLiteObjectCommand]} then {
+        tputs $channel yes\n
+      } else {
+        #
+        # NOTE: Unless we are forbidden from doing so, add some constraints
+        #       that will allow most of the test suite to run (i.e. those
+        #       tests that do not directly rely upon the [object] command).
+        #
+        if {![info exists ::no(shimSQLiteAssemblyConstraints)]} then {
+          addConstraint SQLite
+          addConstraint SQLiteInterop
+          addConstraint System.Data.SQLite
+          addConstraint System.Data.SQLite.Encryption
+          addConstraint System.Data.SQLite.Linq
+
+          addConstraint [appendArgs \
+              System.Data.SQLite.dll_v [getBuildClrVersion]]
+        }
+
+        if {![info exists ::no(shimSQLiteDefineConstantConstraints)]} then {
+          foreach defineConstant [list \
+              INTEROP_EXTENSION_FUNCTIONS INTEROP_TEST_EXTENSION \
+              INTEROP_VIRTUAL_TABLE USE_INTEROP_DLL] {
+            addConstraint [appendArgs \
+                defineConstant.System.Data.SQLite. $defineConstant]
+          }
+        }
+
+        if {![info exists ::no(shimSQLiteVisualStudioConstraints)]} then {
+          addConstraint [appendArgs visualStudio [getBuildYear]]
+        }
+
+        tputs $channel no\n
+      }
+    }
+
     proc checkForSQLiteBuilds { channel {select false} } {
       #
       # NOTE: Check for every possible valid combination of values used when
@@ -1191,8 +1296,16 @@ namespace eval ::Eagle {
                 #       related test settings in order to force this build
                 #       of System.Data.SQLite to be used.
                 #
-                object invoke Interpreter.GetActive [expr {$native ? \
-                    "AddRuntimeOption" : "RemoveRuntimeOption"}] native
+                if {[catch {
+                  object invoke Interpreter.GetActive [expr {$native ? \
+                      "AddRuntimeOption" : "RemoveRuntimeOption"}] native
+                } error]} then {
+                  tputs $channel [appendArgs \
+                      "no, failed to " [expr {$native ? "add" : "remove"}] \
+                      " the \"native\" runtime option, error: " \n\t $error \n]
+
+                  return false
+                }
 
                 set ::test_year $year
                 set ::test_platform $platform
@@ -1517,8 +1630,13 @@ namespace eval ::Eagle {
       # NOTE: Alias the compiler local results and errors variables to the
       #       variable names provided by our caller.
       #
-      upvar 1 $resultsVarName results
-      upvar 1 $errorsVarName errors
+      if {[string length $resultsVarName] > 0} then {
+        upvar 1 $resultsVarName results
+      }
+
+      if {[string length $errorsVarName] > 0} then {
+        upvar 1 $errorsVarName errors
+      }
 
       #
       # NOTE: Evaluate the constructed [compileCSharp] command and return the
@@ -1718,10 +1836,24 @@ namespace eval ::Eagle {
       #       type.  Failing that, the check against the default value will be
       #       skipped.
       #
-      set error null; # IGNORED
-      set value [object invoke Utility TryParseFlagsEnum "" \
-          System.Data.SQLite.SQLiteConnectionFlags "" $flags null true \
-          true error]
+      if {[catch {
+        set error null; # IGNORED
+
+        object invoke Utility TryParseFlagsEnum "" \
+            System.Data.SQLite.SQLiteConnectionFlags "" $flags null true \
+            true error
+      } value]} then {
+        #
+        # NOTE: Attempting to parse the connection flags caused a script
+        #       error.  Emit a warning to the test log file and continue
+        #       using an emtpy string instead.
+        #
+        tlog [appendArgs \
+            "==== WARNING: failed to parse connection flags, error: " \
+            \n\t $value \n]
+
+        set value ""
+      }
 
       #
       # NOTE: If the combined flags string could not actually be converted
@@ -1944,6 +2076,11 @@ namespace eval ::Eagle {
               $db "\", error: " \n\t $result \n]
         }
       }
+
+      #
+      # NOTE: Failure, return an obviously invalid opaque object handle.
+      #
+      return ""
     }
 
     proc freeDbConnection { {varName connection} } {
@@ -2167,20 +2304,29 @@ namespace eval ::Eagle {
           #
           if {"Canceled" in [split [$e InterruptType] ", "]} then {
             #
-            # NOTE: Iterate through all database connections known to the
-            #       parent interpreter.
+            # NOTE: Make sure the [object] command is available.
             #
-            object foreach -alias pair \
-                [object invoke -flags +NonPublic $e Interpreter.connections] {
+            if {[haveSQLiteObjectCommand]} then {
               #
-              # NOTE: Attempt to cancel any SQL queries in progress on this
-              #       database connection.
+              # NOTE: Iterate through all database connections known to the
+              #       parent interpreter.
               #
-              if {[catch {$pair Value.Cancel} error]} then {
-                tputs $::test_channel [appendArgs \n \
-                    "==== WARNING: failed to cancel query for connection \"" \
-                    [$pair Key] "\", error: " \n\t $error \n]
+              object foreach -alias pair [object invoke -flags +NonPublic \
+                  $e Interpreter.connections] {
+                #
+                # NOTE: Attempt to cancel any SQL queries in progress on this
+                #       database connection.
+                #
+                if {[catch {$pair Value.Cancel} error]} then {
+                  tputs $::test_channel [appendArgs \n \
+                      "==== WARNING: failed to cancel query for connection \"" \
+                      [$pair Key] "\", error: " \n\t $error \n]
+                }
               }
+            } else {
+              tputs $::test_channel [appendArgs \n \
+                  "==== WARNING: cannot cancel any queries: " \
+                  "the \"object\" command is not available\n"]
             }
           }
         }}
@@ -2244,16 +2390,20 @@ namespace eval ::Eagle {
     }
 
     proc collectGarbage { channel {milliseconds 1000} {quiet true} } {
-      if {[catch {object invoke GC GetTotalMemory false} result] == 0} then {
-        if {!$quiet} then {
+      if {[haveSQLiteObjectCommand]} then {
+        if {[catch {
+          object invoke GC GetTotalMemory false
+        } result] == 0} then {
+          if {!$quiet} then {
+            tputs $channel [appendArgs \
+                "---- memory in use by the CLR before collection... " \
+                $result " bytes\n"]
+          }
+        } else {
           tputs $channel [appendArgs \
-              "---- memory in use by the CLR before collection... " \
-              $result " bytes\n"]
+              "==== WARNING: failed to get CLR memory usage, error: " \
+              \n\t $result \n]
         }
-      } else {
-        tputs $channel [appendArgs \
-            "==== WARNING: failed to get CLR memory usage, error: " \
-            \n\t $result \n]
       }
 
       #########################################################################
@@ -2263,56 +2413,70 @@ namespace eval ::Eagle {
       #       of milliseconds has elapsed.  Always attempt to collect garbage
       #       at least once.
       #
-      set start [clock seconds]
-      set stop [expr {$start + ($milliseconds / 1000)}]
+      if {[haveSQLiteObjectCommand]} then {
+        set start [clock seconds]
+        set stop [expr {$start + ($milliseconds / 1000)}]
 
-      do {
-        #
-        # NOTE: Attempt to force a full garbage collection now.  Report any
-        #       error that is encountered if we fail.
-        #
-        if {[catch {object invoke GC GetTotalMemory true} error]} then {
-          tputs $channel [appendArgs \
-              "==== WARNING: failed full garbage collection, error: " \
-              \n\t $error \n]
-        }
+        do {
+          #
+          # NOTE: Attempt to force a full garbage collection now.  Report any
+          #       error that is encountered if we fail.
+          #
+          if {[catch {
+            object invoke GC GetTotalMemory true
+          } error]} then {
+            tputs $channel [appendArgs \
+                "==== WARNING: failed full garbage collection, error: " \
+                \n\t $error \n]
+          }
 
-        set now [clock seconds]
-      } while {$start <= $now && $now < $stop}
+          set now [clock seconds]
+        } while {$start <= $now && $now < $stop}
+      }
 
       #########################################################################
 
-      if {[catch {object invoke GC GetTotalMemory false} result] == 0} then {
-        if {!$quiet} then {
+      if {[haveSQLiteObjectCommand]} then {
+        if {[catch {
+          object invoke GC GetTotalMemory false
+        } result] == 0} then {
+          if {!$quiet} then {
+            tputs $channel [appendArgs \
+                "---- memory in use by the CLR after collection... " \
+                $result " bytes\n"]
+          }
+        } else {
           tputs $channel [appendArgs \
-              "---- memory in use by the CLR after collection... " \
-              $result " bytes\n"]
+              "==== WARNING: failed to get CLR memory usage, error: " \
+              \n\t $result \n]
         }
-      } else {
-        tputs $channel [appendArgs \
-            "==== WARNING: failed to get CLR memory usage, error: " \
-            \n\t $result \n]
       }
     }
 
     proc getSQLiteHandleCounts { channel {quiet false} } {
       set result [list]
 
-      if {[haveConstraint \
+      if {[haveSQLiteObjectCommand] && [haveConstraint \
               defineConstant.System.Data.SQLite.COUNT_HANDLE]} then {
         #
         # NOTE: Add each critical handle count to the resulting list.
         #
         foreach name [list connectionCount statementCount backupCount] {
-          set value [object invoke -flags +NonPublic \
-              System.Data.SQLite.UnsafeNativeMethods $name]
+          if {[catch {
+            object invoke -flags +NonPublic \
+                System.Data.SQLite.UnsafeNativeMethods $name
+          } value] == 0} then {
+            if {!$quiet} then {
+              tputs $channel [appendArgs \
+                  "---- critical handle count \"" $name "\" is " $value \n]
+            }
 
-          if {!$quiet} then {
+            lappend result $value
+          } else {
             tputs $channel [appendArgs \
-                "---- critical handle count \"" $name "\" is " $value \n]
+                "==== WARNING: failed to get critical handle count \"" \
+                $name "\", error: " \n\t $value \n]
           }
-
-          lappend result $value
         }
       } elseif {!$quiet} then {
         #
@@ -2408,7 +2572,8 @@ namespace eval ::Eagle {
       # NOTE: If available, report on (and possibly reset) the runtime
       #       configuration statistics.
       #
-      if {[haveConstraint buildConfiguration.Debug] && [catch {
+      if {[haveSQLiteObjectCommand] && \
+          [haveConstraint buildConfiguration.Debug] && [catch {
         object invoke -flags +NonPublic -alias \
             System.Data.SQLite.UnsafeNativeMethods settingReadCounts
       } settingReadCounts] == 0} then {
@@ -2441,7 +2606,7 @@ namespace eval ::Eagle {
         }
       }
 
-      if {[haveConstraint \
+      if {[haveSQLiteObjectCommand] && [haveConstraint \
               defineConstant.System.Data.SQLite.INTEROP_VIRTUAL_TABLE] && \
           [haveConstraint \
               defineConstant.System.Data.SQLite.TRACK_MEMORY_BYTES]} then {
@@ -2488,18 +2653,26 @@ namespace eval ::Eagle {
         tputs $channel "---- current memory in use by SQLite... "
       }
 
-      if {[catch {
-        object invoke -flags +NonPublic \
-            System.Data.SQLite.UnsafeNativeMethods sqlite3_memory_used
-      } memory] == 0} then {
-        if {!$quiet} then {
-          tputs $channel [appendArgs $memory " bytes\n"]
+      if {[haveSQLiteObjectCommand]} then {
+        if {[catch {
+          object invoke -flags +NonPublic \
+              System.Data.SQLite.UnsafeNativeMethods sqlite3_memory_used
+        } memory] == 0} then {
+          if {!$quiet} then {
+            tputs $channel [appendArgs $memory " bytes\n"]
+          }
+        } else {
+          #
+          # NOTE: Maybe the SQLite core library is unavailable?
+          #
+          set memory unknown
+
+          if {!$quiet} then {
+            tputs $channel [appendArgs $memory \n]
+          }
         }
       } else {
-        #
-        # NOTE: Maybe the SQLite core library is unavailable?
-        #
-        set memory unknown
+        set memory unavailable
 
         if {!$quiet} then {
           tputs $channel [appendArgs $memory \n]
@@ -2512,18 +2685,27 @@ namespace eval ::Eagle {
         tputs $channel "---- maximum memory in use by SQLite... "
       }
 
-      if {[catch {
-        object invoke -flags +NonPublic \
-            System.Data.SQLite.UnsafeNativeMethods sqlite3_memory_highwater 0
-      } memory] == 0} then {
-        if {!$quiet} then {
-          tputs $channel [appendArgs $memory " bytes\n"]
+      if {[haveSQLiteObjectCommand]} then {
+        if {[catch {
+          object invoke -flags +NonPublic \
+              System.Data.SQLite.UnsafeNativeMethods \
+              sqlite3_memory_highwater 0
+        } memory] == 0} then {
+          if {!$quiet} then {
+            tputs $channel [appendArgs $memory " bytes\n"]
+          }
+        } else {
+          #
+          # NOTE: Maybe the SQLite core library is unavailable?
+          #
+          set memory unknown
+
+          if {!$quiet} then {
+            tputs $channel [appendArgs $memory \n]
+          }
         }
       } else {
-        #
-        # NOTE: Maybe the SQLite core library is unavailable?
-        #
-        set memory unknown
+        set memory unavailable
 
         if {!$quiet} then {
           tputs $channel [appendArgs $memory \n]
@@ -2538,20 +2720,30 @@ namespace eval ::Eagle {
         tputs $channel "---- current memory in use by the CLR... "
       }
 
-      if {[catch {object invoke GC GetTotalMemory false} memory] == 0} then {
-        if {[string is integer -strict $memory]} then {
-          if {!$quiet} then {
-            tputs $channel [appendArgs $memory " bytes\n"]
+      if {[haveSQLiteObjectCommand]} then {
+        if {[catch {
+          object invoke GC GetTotalMemory false
+        } memory] == 0} then {
+          if {[string is integer -strict $memory]} then {
+            if {!$quiet} then {
+              tputs $channel [appendArgs $memory " bytes\n"]
+            }
+          } else {
+            set memory invalid
+
+            if {!$quiet} then {
+              tputs $channel [appendArgs $memory \n]
+            }
           }
         } else {
-          set memory invalid
+          set memory unknown
 
           if {!$quiet} then {
             tputs $channel [appendArgs $memory \n]
           }
         }
       } else {
-        set memory unknown
+        set memory unavailable
 
         if {!$quiet} then {
           tputs $channel [appendArgs $memory \n]
@@ -2749,6 +2941,12 @@ namespace eval ::Eagle {
         #       test settings now.
         #
         uplevel 1 [list loadSQLiteTestSettings $::test_channel .before]
+
+        #
+        # NOTE: Check if the [object] command is available; if not, add some
+        #       shims to make the test suite run smoother.
+        #
+        checkForSQLiteObjectCommand $::test_channel
 
         #
         # NOTE: Determine the names of the native platform and architecture.
@@ -3115,12 +3313,14 @@ namespace eval ::Eagle {
         # NOTE: Grab the list of managed assemblies for the current process
         #       and report on the System.Data.SQLite related ones.
         #
-        set assemblies [object invoke AppDomain.CurrentDomain GetAssemblies]
+        if {[haveSQLiteObjectCommand]} then {
+          set assemblies [object invoke AppDomain.CurrentDomain GetAssemblies]
 
-        object foreach assembly $assemblies {
-          if {[string match \{System.Data.SQLite* $assembly]} then {
-            tputs $::test_channel [appendArgs \
-                "---- found loaded assembly: " $assembly \n]
+          object foreach assembly $assemblies {
+            if {[string match \{System.Data.SQLite* $assembly]} then {
+              tputs $::test_channel [appendArgs \
+                  "---- found loaded assembly: " $assembly \n]
+            }
           }
         }
 
@@ -3315,24 +3515,26 @@ namespace eval ::Eagle {
         # NOTE: Grab the list of native modules for the current process and
         #       report on the System.Data.SQLite related ones.
         #
-        set modules [object invoke \
-            System.Diagnostics.Process.GetCurrentProcess Modules]
+        if {[haveSQLiteObjectCommand]} then {
+          set modules [object invoke \
+              System.Diagnostics.Process.GetCurrentProcess Modules]
 
-        object foreach -alias module $modules {
-          #
-          # NOTE: The module file name here must be normalized.
-          #
-          set fileName [file normalize [$module FileName]]
+          object foreach -alias module $modules {
+            #
+            # NOTE: The module file name here must be normalized.
+            #
+            set fileName [file normalize [$module FileName]]
 
-          if {[string match -nocase */sqlite3.dll $fileName]} then {
-            tputs $::test_channel [appendArgs \
-                "---- found loaded SQLite native library module: " \
-                $fileName \n]
-          } elseif {[string match \
-              -nocase */SQLite.Interop.dll $fileName]} then {
-            tputs $::test_channel [appendArgs \
-                "---- found loaded SQLite interop assembly module: " \
-                $fileName \n]
+            if {[string match -nocase */sqlite3.dll $fileName]} then {
+              tputs $::test_channel [appendArgs \
+                  "---- found loaded SQLite native library module: " \
+                  $fileName \n]
+            } elseif {[string match \
+                -nocase */SQLite.Interop.dll $fileName]} then {
+              tputs $::test_channel [appendArgs \
+                  "---- found loaded SQLite interop assembly module: " \
+                  $fileName \n]
+            }
           }
         }
 

@@ -44,9 +44,9 @@ runTest {test tkt-f2c47a01eb-1.1 {GetSchema w/INDEXES, PK} -setup {
   freeDbConnection
 
   unset -nocomplain dataRow dataRows dataTable results connection db fileName
-} -constraints \
-{eagle monoBug28 command.sql compile.DATA SQLite System.Data.SQLite} \
--result {{t1 t1_2 False} {t1 t1_1 False} {t1 sqlite_autoindex_t1_1 True}}}
+} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
+System.Data.SQLite} -result {{t1 t1_2 False} {t1 t1_1 False} {t1\
+sqlite_autoindex_t1_1 True}}}
 
 ###############################################################################
 
@@ -74,9 +74,9 @@ runTest {test tkt-f2c47a01eb-1.2 {GetSchema w/INDEXES, composite PK} -setup {
   freeDbConnection
 
   unset -nocomplain dataRow dataRows dataTable results connection db fileName
-} -constraints \
-{eagle monoBug28 command.sql compile.DATA SQLite System.Data.SQLite} \
--result {{t1 t1_2 False} {t1 t1_1 False} {t1 sqlite_autoindex_t1_1 True}}}
+} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
+System.Data.SQLite} -result {{t1 t1_2 False} {t1 t1_1 False} {t1\
+sqlite_autoindex_t1_1 True}}}
 
 ###############################################################################
 

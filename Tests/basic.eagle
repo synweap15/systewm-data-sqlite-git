@@ -96,7 +96,7 @@ runTest {test data-1.2 {unit tests from the 'testlinq' project} -setup {
 
   unset -nocomplain code output error savedEncoding encoding
 } -constraints \
-{eagle monoToDo SQLite file_System.Data.SQLite.dll\
+{eagle command.object monoToDo SQLite file_System.Data.SQLite.dll\
 file_System.Data.SQLite.Linq.dll file_testlinq.exe file_northwindEF.db\
 file_testlinq.out testExec} -result {0 True {}}}
 
@@ -137,9 +137,9 @@ runTest {test data-1.3 {unit tests from the 'testef6' project} -setup {
 
   unset -nocomplain code output error savedEncoding encoding
 } -constraints \
-{eagle monoToDo SQLite file_EntityFramework.dll file_System.Data.SQLite.dll\
-file_System.Data.SQLite.EF6.dll file_testef6.exe file_northwindEF.db\
-file_testlinq.out testExec} -result {0 True {}}}
+{eagle command.object monoToDo SQLite file_EntityFramework.dll\
+file_System.Data.SQLite.dll file_System.Data.SQLite.EF6.dll file_testef6.exe\
+file_northwindEF.db file_testlinq.out testExec} -result {0 True {}}}
 
 ###############################################################################
 
@@ -218,7 +218,7 @@ runTest {test data-1.5 {GetSchema with ReservedWords} -setup {
   cleanupDb $fileName
 
   unset -nocomplain result results errors code dataSource id db fileName
-} -constraints {eagle monoBug28 command.sql compile.DATA SQLite\
+} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
 System.Data.SQLite compileCSharp} -match regexp -result {^Ok\
 System#CodeDom#Compiler#CompilerResults#\d+ \{\} 0 System#Data#DataTable#\d+$}}
 
@@ -304,7 +304,7 @@ runTest {test data-1.6 {GetSchema with ForeignKeys} -setup {
 
   unset -nocomplain result rows foreignKey foreignKeys results errors code \
       dataSource id db fileName
-} -constraints {eagle monoBug28 command.sql compile.DATA SQLite\
+} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
 System.Data.SQLite compileCSharp} -match regexp -result {^Ok\
 System#CodeDom#Compiler#CompilerResults#\d+ \{\} 0 \{\{main FK_t1_0_0 main t1\
 \{FOREIGN KEY\} False False 0 x main t2 \{\} 0 \{SET DEFAULT\} CASCADE NONE\}\
@@ -407,7 +407,7 @@ runTest {test data-1.7 {SQLITE_FCNTL_WIN32_AV_RETRY} -setup {
 
   unset -nocomplain result count interval savedCount savedInterval results \
       errors code dataSource id db fileName
-} -constraints {eagle monoBug28 command.sql compile.DATA SQLite\
+} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
 System.Data.SQLite compileCSharp} -match regexp -result {^Ok\
 System#CodeDom#Compiler#CompilerResults#\d+ \{\} 0 True$}}
 
@@ -463,7 +463,7 @@ runTest {test data-1.8 {properly closed database file (non-query)} -setup {
   cleanupDb $fileName
 
   unset -nocomplain result results errors code sql dataSource id fileName
-} -constraints {eagle monoBug28 command.sql compile.DATA SQLite\
+} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
 System.Data.SQLite compileCSharp} -match regexp -result {^Ok\
 System#CodeDom#Compiler#CompilerResults#\d+ \{\} 0 \{\} \{\}$}}
 
@@ -522,7 +522,7 @@ runTest {test data-1.9 {properly closed database file (reader #1)} -setup {
   cleanupDb $fileName
 
   unset -nocomplain result results errors code sql dataSource id fileName
-} -constraints {eagle monoBug28 command.sql compile.DATA SQLite\
+} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
 System.Data.SQLite compileCSharp} -match regexp -result {^Ok\
 System#CodeDom#Compiler#CompilerResults#\d+ \{\} 0 \{\} \{\}$}}
 
@@ -583,7 +583,7 @@ runTest {test data-1.10 {properly closed database file (reader #2)} -setup {
   cleanupDb $fileName
 
   unset -nocomplain result results errors code sql dataSource id fileName
-} -constraints {eagle monoBug28 command.sql compile.DATA SQLite\
+} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
 System.Data.SQLite compileCSharp} -match regexp -result {^Ok\
 System#CodeDom#Compiler#CompilerResults#\d+ \{\} 0 \{\} \{\}$}}
 
@@ -619,8 +619,8 @@ runTest {test data-1.11 {Changes property} -setup {
   freeDbConnection
 
   unset -nocomplain name rows result connection db fileName
-} -constraints \
-{eagle monoBug28 command.sql compile.DATA SQLite System.Data.SQLite} \
+} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
+System.Data.SQLite} \
 -result {1 2 2 {1 {{x 1} {y foobar} {z 1234}}} {2 {{x 2} {y foobar} {z 5678}}}}}
 
 ###############################################################################
@@ -676,8 +676,8 @@ runTest {test data-1.12 {LastInsertRowId property} -setup {
   freeDbConnection
 
   unset -nocomplain name rows result connection db fileName
-} -constraints \
-{eagle monoBug28 command.sql compile.DATA SQLite System.Data.SQLite} \
+} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
+System.Data.SQLite} \
 -result {0 1 2 2 1 2 2 2 {1 {{x 1} {y foobar} {z 1234}}} {2 {{x 2} {y foobar}\
 {z 5678}}} 2 {1 {{x 1} {y foobar} {z 1234}}} {2 {{x 2} {y foobar} {z 5678}}}}}
 
@@ -926,7 +926,7 @@ runTest {test data-1.16 {SQLiteConnectionStringBuilder DateTime} -body {
       } result] : [set result ""]}] $result
 } -cleanup {
   unset -nocomplain result results errors code id
-} -constraints {eagle monoBug28 command.sql compile.DATA SQLite\
+} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
 System.Data.SQLite compileCSharp} -match regexp -result {^Ok\
 System#CodeDom#Compiler#CompilerResults#\d+ \{\} 0 \{Data Source=test\.db\} 0\
 \{Data Source=test\.db;DateTimeFormat=(?:Default|ISO8601)\} 0 \{Data\
@@ -1050,7 +1050,7 @@ runTest {test data-1.17 {SQLiteConnectionStringBuilder properties} -body {
 } -cleanup {
   unset -nocomplain propertyName propertyNames value key values keys result \
       results errors code id
-} -constraints {eagle monoBug28 command.sql compile.DATA SQLite\
+} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
 System.Data.SQLite compileCSharp} -match regexp -result \
 {^System#CodeDom#Compiler#CompilerResults#\d+ Ok \{\} 0 \{, \} 0 \{3,\
 Version=3\} 0 \{Normal, Synchronous=Normal\} 0 \{True, UseUTF16Encoding=True\}\
@@ -1079,14 +1079,15 @@ runTest {test data-1.18 {SQLiteConvert ToDateTime (Julian Day)} -body {
   object invoke $dateTime ToString [getDateTimeFormat]
 } -cleanup {
   unset -nocomplain dateTime
-} -constraints {eagle System.Data.SQLite} -result {2012-01-01 12:00:00Z}}
+} -constraints {eagle command.object System.Data.SQLite} -result \
+{2012-01-01 12:00:00Z}}
 
 ###############################################################################
 
 runTest {test data-1.19 {SQLiteConvert ToJulianDay} -body {
   expr {round([object invoke System.Data.SQLite.SQLiteConvert ToJulianDay \
       "2012-01-01 12:00:00Z"])}
-} -constraints {eagle System.Data.SQLite} -result {2455928}}
+} -constraints {eagle command.object System.Data.SQLite} -result {2455928}}
 
 ###############################################################################
 
@@ -1108,7 +1109,7 @@ runTest {test data-1.20 {SQLiteConvert ToUnixEpoch (Utc)} -body {
   #
   expr {round([object invoke System.Data.SQLite.SQLiteConvert ToUnixEpoch \
       "2012-01-01 12:00:00Z"])}
-} -constraints {eagle System.Data.SQLite} -result {1325390400}}
+} -constraints {eagle command.object System.Data.SQLite} -result {1325390400}}
 
 ###############################################################################
 
@@ -1130,7 +1131,7 @@ runTest {test data-1.21 {SQLiteConvert ToUnixEpoch (Local)} -body {
   #
   expr {round([object invoke System.Data.SQLite.SQLiteConvert ToUnixEpoch \
       "2012-01-01 12:00:00"])}
-} -constraints {eagle System.Data.SQLite} -result {1325419200}}
+} -constraints {eagle command.object System.Data.SQLite} -result {1325419200}}
 
 ###############################################################################
 
@@ -1210,7 +1211,7 @@ runTest {test data-1.22 {SQLiteTransaction disposal behavior} -setup {
   cleanupDb $fileName
 
   unset -nocomplain result results errors code sql dataSource id db fileName
-} -constraints {eagle monoBug28 command.sql compile.DATA SQLite\
+} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
 System.Data.SQLite compileCSharp} -match regexp -result {^Ok\
 System#CodeDom#Compiler#CompilerResults#\d+ \{\} 0 \{\}$}}
 
@@ -1294,7 +1295,7 @@ runTest {test data-1.23 {SQLiteFunction collation exception} -setup {
   cleanupDb $fileName
 
   unset -nocomplain result results errors code sql dataSource id db fileName
-} -constraints {eagle monoBug28 command.sql compile.DATA SQLite\
+} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
 System.Data.SQLite compileCSharp} -match regexp -result {^Ok\
 System#CodeDom#Compiler#CompilerResults#\d+ \{\} 1\
 \{System\.Reflection\.TargetInvocationException: Exception has been thrown by\
@@ -1306,7 +1307,8 @@ interrupted.*$}}
 runTest {test data-1.24 {LINQ SQL_CONSTRAINTCOLUMNS resource} -body {
   object invoke -flags +NonPublic \
       System.Data.SQLite.Linq.Properties.Resources SQL_CONSTRAINTCOLUMNS
-} -constraints {eagle System.Data.SQLite System.Data.SQLite.Linq} -result {
+} -constraints {eagle command.object System.Data.SQLite\
+System.Data.SQLite.Linq} -result {
       CREATE TEMP VIEW SCHEMACONSTRAINTCOLUMNS AS
         SELECT CONSTRAINT_CATALOG,
                NULL AS CONSTRAINT_SCHEMA,
@@ -1332,7 +1334,8 @@ runTest {test data-1.24 {LINQ SQL_CONSTRAINTCOLUMNS resource} -body {
 runTest {test data-1.25 {EF6 SQL_CONSTRAINTCOLUMNS resource} -body {
   object invoke -flags +NonPublic \
       System.Data.SQLite.EF6.Properties.Resources SQL_CONSTRAINTCOLUMNS
-} -constraints {eagle System.Data.SQLite System.Data.SQLite.EF6} -result {
+} -constraints {eagle command.object System.Data.SQLite\
+System.Data.SQLite.EF6} -result {
       CREATE TEMP VIEW SCHEMACONSTRAINTCOLUMNS AS
         SELECT CONSTRAINT_CATALOG,
                NULL AS CONSTRAINT_SCHEMA,
@@ -1358,7 +1361,8 @@ runTest {test data-1.25 {EF6 SQL_CONSTRAINTCOLUMNS resource} -body {
 runTest {test data-1.26 {LINQ SQL_CONSTRAINTS resource} -body {
   object invoke -flags +NonPublic \
       System.Data.SQLite.Linq.Properties.Resources SQL_CONSTRAINTS
-} -constraints {eagle System.Data.SQLite System.Data.SQLite.Linq} -result {
+} -constraints {eagle command.object System.Data.SQLite\
+System.Data.SQLite.Linq} -result {
       CREATE TEMP VIEW SCHEMACONSTRAINTS AS
         SELECT INDEX_CATALOG AS CONSTRAINT_CATALOG,
                NULL AS CONSTRAINT_SCHEMA,
@@ -1404,7 +1408,8 @@ runTest {test data-1.26 {LINQ SQL_CONSTRAINTS resource} -body {
 runTest {test data-1.27 {EF6 SQL_CONSTRAINTS resource} -body {
   object invoke -flags +NonPublic \
       System.Data.SQLite.EF6.Properties.Resources SQL_CONSTRAINTS
-} -constraints {eagle System.Data.SQLite System.Data.SQLite.EF6} -result {
+} -constraints {eagle command.object System.Data.SQLite\
+System.Data.SQLite.EF6} -result {
       CREATE TEMP VIEW SCHEMACONSTRAINTS AS
         SELECT INDEX_CATALOG AS CONSTRAINT_CATALOG,
                NULL AS CONSTRAINT_SCHEMA,
@@ -1502,9 +1507,8 @@ runTest {test data-1.28 {SQLiteDataReader GetValues w/collection} -setup {
   cleanupDb $fileName; # NOTE: After object disposal.
 
   unset -nocomplain db fileName
-} -constraints \
-{eagle monoBug28 command.sql compile.DATA SQLite System.Data.SQLite} -result \
-{{26 26} {zebra zebra}}}
+} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
+System.Data.SQLite} -result {{26 26} {zebra zebra}}}
 
 ###############################################################################
 
@@ -1525,8 +1529,8 @@ runTest {test data-1.29 {LINQ ISQLiteSchemaExtensions.BuildTempSchema} -setup {
   freeDbConnection
 
   unset -nocomplain providerServices connection db fileName
-} -constraints {eagle SQLite System.Data.SQLite System.Data.SQLite.Linq} \
--result {}}
+} -constraints {eagle command.object SQLite System.Data.SQLite\
+System.Data.SQLite.Linq} -result {}}
 
 ###############################################################################
 
@@ -1547,8 +1551,8 @@ runTest {test data-1.30 {EF6 ISQLiteSchemaExtensions.BuildTempSchema} -setup {
   freeDbConnection
 
   unset -nocomplain providerServices connection db fileName
-} -constraints {eagle SQLite System.Data.SQLite System.Data.SQLite.EF6} \
--result {}}
+} -constraints {eagle command.object SQLite System.Data.SQLite\
+System.Data.SQLite.EF6} -result {}}
 
 ###############################################################################
 
@@ -1565,7 +1569,7 @@ runTest {test data-1.31 {VARCHAR / NVARCHAR types with spaces} -body {
       TypeNameToDbType null "VARCHAR (1)" None] \
       [object invoke -flags +NonPublic System.Data.SQLite.SQLiteConvert \
       TypeNameToDbType null "NVARCHAR (1)" None] \
-} -constraints {eagle System.Data.SQLite} -result \
+} -constraints {eagle command.object System.Data.SQLite} -result \
 {AnsiString String AnsiString String AnsiString String}}
 
 ###############################################################################
@@ -1651,10 +1655,9 @@ runTest {test data-1.32 {SetMemoryStatus method} -setup {
   }
 
   unset -nocomplain result sqlite3 zero
-} -constraints \
-{eagle monoBug28 command.sql compile.DATA SQLite System.Data.SQLite} -match \
-regexp -result {^Ok Misuse Ok Ok System#IntPtr#\d+ System#IntPtr#\d+ \d+ \d+\
-\d+ \d+ \d+ True True True True True True$}}
+} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
+System.Data.SQLite} -match regexp -result {^Ok Misuse Ok Ok System#IntPtr#\d+\
+System#IntPtr#\d+ \d+ \d+ \d+ \d+ \d+ True True True True True True$}}
 
 ###############################################################################
 
@@ -1897,8 +1900,9 @@ runTest {test data-1.37 {sqlite3_win32_set_directory function} -setup {
   unset -nocomplain t found i db fileName result directory
 
   rename threadStart ""
-} -constraints {eagle windows monoBug28 command.sql compile.DATA SQLite\
-System.Data.SQLite sqlite3_win32_set_directory} -result {Ok Ok True True}}
+} -constraints {eagle command.object windows monoBug28 command.sql compile.DATA\
+SQLite System.Data.SQLite sqlite3_win32_set_directory} -result \
+{Ok Ok True True}}
 
 ###############################################################################
 
@@ -1923,7 +1927,7 @@ runTest {test data-1.38 {serialization of SQLiteException} -body {
       [expr {[$exception(1) Message] eq [$exception(2) Message]}]
 } -cleanup {
   unset -nocomplain exception stream serializer
-} -constraints {eagle SQLite System.Data.SQLite} -result \
+} -constraints {eagle command.object SQLite System.Data.SQLite} -result \
 [string map [list \n \r\n] {CantOpen {unable to open database file
 this is a test} CantOpen {unable to open database file
 this is a test} True True}]}
@@ -2243,8 +2247,8 @@ runTest {test data-1.46 {encrypted database, password via builder} -setup {
   cleanupDb $fileName; # NOTE: After object disposal.
 
   unset -nocomplain connectionStringBuilder error result db fileName
-} -constraints {eagle System.Data.SQLite.Encryption monoBug28 command.sql\
-compile.DATA SQLite System.Data.SQLite} -result {0 1 0 1 0 1 0 3}}
+} -constraints {eagle command.object System.Data.SQLite.Encryption monoBug28\
+command.sql compile.DATA SQLite System.Data.SQLite} -result {0 1 0 1 0 1 0 3}}
 
 ###############################################################################
 
@@ -2272,9 +2276,10 @@ runTest {test data-1.47 {quoted connection string properties} -setup {
   set result
 } -cleanup {
   unset -nocomplain result list pair strings string
-} -constraints {eagle System.Data.SQLite} -result {{OneTwo ThreeFour} {OneTwo\
-ThreeFour} {{One Two} {Three Four}} {{One Two} {Three Four}} {OneTwo ThreeFour}\
-{OneTwo ThreeFour} {{One Two} {Three Four}} {{One Two} {Three Four}}}}
+} -constraints {eagle command.object System.Data.SQLite} -result {{OneTwo\
+ThreeFour} {OneTwo ThreeFour} {{One Two} {Three Four}} {{One Two} {Three Four}}\
+{OneTwo ThreeFour} {OneTwo ThreeFour} {{One Two} {Three Four}} {{One Two}\
+{Three Four}}}}
 
 ###############################################################################
 
@@ -2370,9 +2375,8 @@ runTest {test data-1.50 {column name and index lookup} -setup {
   cleanupDb $fileName
 
   unset -nocomplain result db fileName
-} -constraints \
-{eagle monoBug28 command.sql compile.DATA SQLite System.Data.SQLite} -result \
-{{x 0 1} {y 1 foo} {z 2 1234}}}
+} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
+System.Data.SQLite} -result {{x 0 1} {y 1 foo} {z 2 1234}}}
 
 ###############################################################################
 
@@ -2409,9 +2413,8 @@ runTest {test data-1.51 {nullable value types} -setup {
   cleanupDb $fileName
 
   unset -nocomplain e d c b a x result db fileName
-} -constraints \
-{eagle monoBug28 command.sql compile.DATA SQLite System.Data.SQLite} -match \
-regexp -result {^\{0 x System#DBNull#\d+ 1\
+} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
+System.Data.SQLite} -match regexp -result {^\{0 x System#DBNull#\d+ 1\
 \{System\.Reflection\.TargetInvocationException: Exception has been thrown by\
 the target of an invocation\. ---> System\.InvalidCastException:.*\}\
 System#DBNull#\d+\} \{0 x 1 0 1 1\}$}}
@@ -2461,9 +2464,10 @@ runTest {test data-1.52 {static SQLiteCommand.Execute method} -setup {
       $result(7) $result(8)
 } -cleanup {
   unset -nocomplain result sql
-} -constraints {eagle monoBug28 SQLite System.Data.SQLite} -match regexp \
--result {^\{\} 1 System#DBNull#\d+ System#Data#SQLite#SQLiteDataReader#\d+ \{\}\
-1 1 System#Data#SQLite#SQLiteDataReader#\d+$}}
+} -constraints {eagle command.object monoBug28 SQLite System.Data.SQLite} \
+-match regexp -result {^\{\} 1 System#DBNull#\d+\
+System#Data#SQLite#SQLiteDataReader#\d+ \{\} 1 1\
+System#Data#SQLite#SQLiteDataReader#\d+$}}
 
 ###############################################################################
 
@@ -2480,9 +2484,8 @@ runTest {test data-1.53 {BindAllAsText w/DateTime} -setup {
   cleanupDb $fileName
 
   unset -nocomplain dateTime db fileName
-} -constraints \
-{eagle monoBug28 command.sql compile.DATA SQLite System.Data.SQLite} -result \
-{1 630874007980000000}}
+} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
+System.Data.SQLite} -result {1 630874007980000000}}
 
 ###############################################################################
 
@@ -2572,7 +2575,7 @@ runTest {test data-1.54 {bind SQLiteFunction to one SQLiteConnection} -setup {
   cleanupDb $fileName
 
   unset -nocomplain result code results errors sql dataSource id fileName
-} -constraints {eagle monoBug28 command.sql compile.DATA SQLite\
+} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
 System.Data.SQLite compileCSharp} -match regexp -result \
 [string map [list \n \r\n] {^Ok System#CodeDom#Compiler#CompilerResults#\d+\
 \{\} 1 \{System\.Reflection\.TargetInvocationException: Exception has been\
@@ -2605,24 +2608,24 @@ runTest {test data-1.55 {SQLiteConvert TypeNameToDbType} -setup {
   set result
 } -cleanup {
   unset -nocomplain result typeName
-} -constraints {eagle System.Data.SQLite} -result {{BIGINT Int64} {BIGUINT\
-UInt64} {BINARY Binary} {BIT Boolean} {BLOB Binary} {BOOL Boolean} {BOOLEAN\
-Boolean} {CHAR AnsiStringFixedLength} {CLOB String} {COUNTER Int64} {CURRENCY\
-Decimal} {DATE DateTime} {DATETIME DateTime} {DECIMAL Decimal} {DOUBLE Double}\
-{FLOAT Double} {GENERAL Binary} {GUID Guid} {IDENTITY Int64} {IMAGE Binary}\
-{INT Int32} {INT8 SByte} {INT16 Int16} {INT32 Int32} {INT64 Int64} {INTEGER\
-Int64} {INTEGER8 SByte} {INTEGER16 Int16} {INTEGER32 Int32} {INTEGER64 Int64}\
-{LOGICAL Boolean} {LONG Int64} {LONGCHAR String} {LONGTEXT String} {LONGVARCHAR\
-String} {MEMO String} {MONEY Decimal} {NCHAR StringFixedLength} {NOTE String}\
-{NTEXT String} {NUMBER Decimal} {NUMERIC Decimal} {NVARCHAR String} {OLEOBJECT\
-Binary} {RAW Binary} {REAL Double} {SINGLE Single} {SMALLDATE DateTime}\
-{SMALLINT Int16} {SMALLUINT UInt16} {STRING String} {TEXT String} {TIME\
-DateTime} {TIMESTAMP DateTime} {TINYINT Byte} {TINYSINT SByte} {UINT UInt32}\
-{UINT8 Byte} {UINT16 UInt16} {UINT32 UInt32} {UINT64 UInt64} {ULONG UInt64}\
-{UNIQUEIDENTIFIER Guid} {UNSIGNEDINTEGER UInt64} {UNSIGNEDINTEGER8 Byte}\
-{UNSIGNEDINTEGER16 UInt16} {UNSIGNEDINTEGER32 UInt32} {UNSIGNEDINTEGER64\
-UInt64} {VARBINARY Binary} {VARCHAR AnsiString} {VARCHAR2 AnsiString} {YESNO\
-Boolean}}}
+} -constraints {eagle command.object System.Data.SQLite} -result {{BIGINT\
+Int64} {BIGUINT UInt64} {BINARY Binary} {BIT Boolean} {BLOB Binary} {BOOL\
+Boolean} {BOOLEAN Boolean} {CHAR AnsiStringFixedLength} {CLOB String} {COUNTER\
+Int64} {CURRENCY Decimal} {DATE DateTime} {DATETIME DateTime} {DECIMAL Decimal}\
+{DOUBLE Double} {FLOAT Double} {GENERAL Binary} {GUID Guid} {IDENTITY Int64}\
+{IMAGE Binary} {INT Int32} {INT8 SByte} {INT16 Int16} {INT32 Int32} {INT64\
+Int64} {INTEGER Int64} {INTEGER8 SByte} {INTEGER16 Int16} {INTEGER32 Int32}\
+{INTEGER64 Int64} {LOGICAL Boolean} {LONG Int64} {LONGCHAR String} {LONGTEXT\
+String} {LONGVARCHAR String} {MEMO String} {MONEY Decimal} {NCHAR\
+StringFixedLength} {NOTE String} {NTEXT String} {NUMBER Decimal} {NUMERIC\
+Decimal} {NVARCHAR String} {OLEOBJECT Binary} {RAW Binary} {REAL Double}\
+{SINGLE Single} {SMALLDATE DateTime} {SMALLINT Int16} {SMALLUINT UInt16}\
+{STRING String} {TEXT String} {TIME DateTime} {TIMESTAMP DateTime} {TINYINT\
+Byte} {TINYSINT SByte} {UINT UInt32} {UINT8 Byte} {UINT16 UInt16} {UINT32\
+UInt32} {UINT64 UInt64} {ULONG UInt64} {UNIQUEIDENTIFIER Guid} {UNSIGNEDINTEGER\
+UInt64} {UNSIGNEDINTEGER8 Byte} {UNSIGNEDINTEGER16 UInt16} {UNSIGNEDINTEGER32\
+UInt32} {UNSIGNEDINTEGER64 UInt64} {VARBINARY Binary} {VARCHAR AnsiString}\
+{VARCHAR2 AnsiString} {YESNO Boolean}}}
 
 ###############################################################################
 
@@ -2649,9 +2652,8 @@ runTest {test data-1.56 {totype extension} -setup {
   cleanupDb $fileName
 
   unset -nocomplain db fileName
-} -constraints \
-{eagle monoBug28 command.sql compile.DATA SQLite System.Data.SQLite} -result \
-{1 {} 1.01 {}}}
+} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
+System.Data.SQLite} -result {1 {} 1.01 {}}}
 
 ###############################################################################
 
@@ -2710,10 +2712,9 @@ runTest {test data-1.57 {regexp extension} -setup {
   cleanupDb $fileName
 
   unset -nocomplain db fileName
-} -constraints \
-{eagle monoBug28 command.sql compile.DATA SQLite System.Data.SQLite} -result \
-{0 1 1 {unmatched '('} 0 1 1 {unmatched '('} 0 0 1 {unmatched '('} 0 0 1\
-{unmatched '('}}}
+} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
+System.Data.SQLite} -result {0 1 1 {unmatched '('} 0 1 1 {unmatched '('} 0 0 1\
+{unmatched '('} 0 0 1 {unmatched '('}}}
 
 ###############################################################################
 
@@ -2762,9 +2763,9 @@ runTest {test data-1.58 {SQLiteConnection.ReleaseMemory method} -setup {
   cleanupDb $fileName
 
   unset -nocomplain nLargest resetOk nFree code result db fileName
-} -constraints {eagle monoBug28 configuration.Release command.sql compile.DATA\
-SQLite System.Data.SQLite} -match regexp -result {^\{Busy 0 False 0\} \{Busy\
-\d+ False 0\} \{Ok 0 True \d+\}$}}
+} -constraints {eagle command.object monoBug28 configuration.Release\
+command.sql compile.DATA SQLite System.Data.SQLite} -match regexp -result \
+{^\{Busy 0 False 0\} \{Busy \d+ False 0\} \{Ok 0 True \d+\}$}}
 
 ###############################################################################
 
@@ -2793,9 +2794,8 @@ runTest {test data-1.59 {percentile extension} -setup {
   cleanupDb $fileName
 
   unset -nocomplain db fileName
-} -constraints \
-{eagle monoBug28 command.sql compile.DATA SQLite System.Data.SQLite} -result \
-{0 4 0 1.75}}
+} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
+System.Data.SQLite} -result {0 4 0 1.75}}
 
 ###############################################################################
 
@@ -2844,10 +2844,10 @@ runTest {test data-1.60 {per-connection type mappings} -setup {
   cleanupDb $fileName
 
   unset -nocomplain dateTime db fileName
-} -constraints \
-{eagle monoBug28 command.sql compile.DATA SQLite System.Data.SQLite} -result \
-{0 1 {{2014-02-01 12:34:56} 20140201123456} 0 0 1 1 2 2 0 {MYDATE {MYDATE\
-DateTime True}} {{2014-02-01 12:34:56} {2014-02-01 12:34:56}}}}
+} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
+System.Data.SQLite} -result {0 1 {{2014-02-01 12:34:56} 20140201123456} 0 0 1 1\
+2 2 0 {MYDATE {MYDATE DateTime True}} {{2014-02-01 12:34:56} {2014-02-01\
+12:34:56}}}}
 
 ###############################################################################
 
@@ -2870,11 +2870,10 @@ runTest {test data-1.61 {SELECT without TYPES} -setup {
   cleanupDb $fileName
 
   unset -nocomplain y x values db fileName
-} -constraints \
-{eagle monoBug28 command.sql compile.DATA SQLite System.Data.SQLite} -result \
-{1 {} {} 2 {} 1 3 {} one 4 {} 1 5 {} 1 6 1 {} 7 1 1 8 1 one 9 1 1 10 1 1 11 one\
-{} 12 one 1 13 one one 14 one 1 15 one 1 16 1 {} 17 1 1 18 1 one 19 1 1 20 1 1\
-21 1 {} 22 1 1 23 1 one 24 1 1 25 1 1}}
+} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
+System.Data.SQLite} -result {1 {} {} 2 {} 1 3 {} one 4 {} 1 5 {} 1 6 1 {} 7 1 1\
+8 1 one 9 1 1 10 1 1 11 one {} 12 one 1 13 one one 14 one 1 15 one 1 16 1 {} 17\
+1 1 18 1 one 19 1 1 20 1 1 21 1 {} 22 1 1 23 1 one 24 1 1 25 1 1}}
 
 ###############################################################################
 
@@ -2897,11 +2896,10 @@ runTest {test data-1.62 {SELECT with TYPES} -setup {
   cleanupDb $fileName
 
   unset -nocomplain y x values db fileName
-} -constraints \
-{eagle monoBug28 command.sql compile.DATA SQLite System.Data.SQLite} -result \
-{1 {} {} 2 {} 1 3 {} 0 4 {} 1 5 {} 0 6 1 {} 7 1 1 8 1 0 9 1 1 10 1 0 11 0 {} 12\
-0 1 13 0 0 14 0 1 15 0 0 16 1 {} 17 1 1 18 1 0 19 1 1 20 1 0 21 0 {} 22 0 1 23\
-0 0 24 0 1 25 0 0}}
+} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
+System.Data.SQLite} -result {1 {} {} 2 {} 1 3 {} 0 4 {} 1 5 {} 0 6 1 {} 7 1 1 8\
+1 0 9 1 1 10 1 0 11 0 {} 12 0 1 13 0 0 14 0 1 15 0 0 16 1 {} 17 1 1 18 1 0 19 1\
+1 20 1 0 21 0 {} 22 0 1 23 0 0 24 0 1 25 0 0}}
 
 ###############################################################################
 
@@ -2952,11 +2950,11 @@ runTest {test data-1.63 {SQLiteDataReader HasRows property} -setup {
   cleanupDb $fileName
 
   unset -nocomplain error noRow db fileName
-} -constraints \
-{eagle monoBug28 command.sql compile.DATA SQLite System.Data.SQLite} -result \
-{False True True False True True False True True 1 True 0 False 0 False False\
-True True False False True False False True 1 True 1 True 0 False False False\
-True False False False False False False 1 True 1 True 1 True}}
+} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
+System.Data.SQLite} -result {False True True False True True False True True 1\
+True 0 False 0 False False True True False False True False False True 1 True 1\
+True 0 False False False True False False False False False False 1 True 1 True\
+1 True}}
 
 ###############################################################################
 
@@ -3007,11 +3005,11 @@ runTest {test data-1.64 {SQLiteDataReader sticky HasRows property} -setup {
   cleanupDb $fileName
 
   unset -nocomplain error noRow db fileName
-} -constraints \
-{eagle monoBug28 command.sql compile.DATA SQLite System.Data.SQLite} -result \
-{False True True False True True False True True 1 True 0 False 0 False False\
-True True False False True False True True 1 True 1 True 0 False False True\
-True False False False False True True 1 True 1 True 1 True}}
+} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
+System.Data.SQLite} -result {False True True False True True False True True 1\
+True 0 False 0 False False True True False False True False True True 1 True 1\
+True 0 False False True True False False False False True True 1 True 1 True 1\
+True}}
 
 ###############################################################################
 
@@ -3062,10 +3060,10 @@ runTest {test data-1.65 {SQLiteDataReader StepCount property} -setup {
   cleanupDb $fileName
 
   unset -nocomplain error noRow db fileName
-} -constraints \
-{eagle monoBug28 command.sql compile.DATA SQLite System.Data.SQLite} -result \
-{0 1 1 False True True 0 1 1 1 True 0 False 0 False 0 1 1 False False True 0 1\
-2 1 True 1 True 0 False 0 1 2 False False False 0 1 2 1 True 1 True 1 True}}
+} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
+System.Data.SQLite} -result {0 1 1 False True True 0 1 1 1 True 0 False 0 False\
+0 1 1 False False True 0 1 2 1 True 1 True 0 False 0 1 2 False False False 0 1\
+2 1 True 1 True 1 True}}
 
 ###############################################################################
 
@@ -3105,9 +3103,8 @@ runTest {test data-1.67 {SQLiteConnection.SetChunkSize method} -setup {
   freeDbConnection
 
   unset -nocomplain result connection db fileName
-} -constraints \
-{eagle monoBug28 command.sql compile.DATA SQLite System.Data.SQLite} -result \
-{Ok 32768}}
+} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
+System.Data.SQLite} -result {Ok 32768}}
 
 ###############################################################################
 

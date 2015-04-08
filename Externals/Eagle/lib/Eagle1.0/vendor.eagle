@@ -212,10 +212,10 @@ namespace eval ::Eagle {
         $test_overrides : [list binary_directory build_base_directory \
         build_directory common_directory connection_flags database_directory \
         datetime_format execute_on_setup release_version scratch_directory \
-        temporary_directory test_configuration test_configurations \
-        test_constraints test_machine test_net_fx test_overrides \
-        test_platform test_suite test_year test_years test_year_clr_v2 \
-        test_year_clr_v4 vendor_directory]}] false
+        temporary_directory test_clr test_clr_v2 test_clr_v4 \
+        test_configuration test_configurations test_constraints test_machine \
+        test_net_fx test_overrides test_platform test_suite test_year \
+        test_years test_year_clr_v2 test_year_clr_v4 vendor_directory]}] false
 
     #
     # NOTE: Set the name of the running test suite, if necessary.

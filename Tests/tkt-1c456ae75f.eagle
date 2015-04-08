@@ -183,8 +183,8 @@ runTest {test tkt-1c456ae75f-1.4 {database, hex password via builder} -setup {
   cleanupDb $fileName; # NOTE: After object disposal.
 
   unset -nocomplain connectionStringBuilder error result db fileName
-} -constraints {eagle System.Data.SQLite.Encryption monoBug28 command.sql\
-compile.DATA SQLite System.Data.SQLite} -result {0 1 0 1 0 1 0 3}}
+} -constraints {eagle command.object System.Data.SQLite.Encryption monoBug28\
+command.sql compile.DATA SQLite System.Data.SQLite} -result {0 1 0 1 0 1 0 3}}
 
 ###############################################################################
 

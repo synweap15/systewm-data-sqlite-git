@@ -37,7 +37,7 @@ runTest {test tkt-fe50b8c2e8-1.1 {compatibility data types} -body {
       DbTypeToTypeName null Decimal None] \
       [object invoke -flags +NonPublic System.Data.SQLite.SQLiteConvert \
       DbTypeToTypeName null Binary None]
-} -constraints {eagle System.Data.SQLite} -result \
+} -constraints {eagle command.object System.Data.SQLite} -result \
 {AnsiString String Decimal Binary VARCHAR NVARCHAR DECIMAL BLOB}}
 
 ###############################################################################

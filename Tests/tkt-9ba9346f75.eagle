@@ -51,9 +51,8 @@ runTest {test tkt-9ba9346f75-1.1 {AutoCommit property} -setup {
   freeDbConnection
 
   unset -nocomplain result connection db fileName
-} -constraints \
-{eagle monoBug28 command.sql compile.DATA SQLite System.Data.SQLite} -result \
-{True True True False False True}}
+} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
+System.Data.SQLite} -result {True True True False False True}}
 
 ###############################################################################
 

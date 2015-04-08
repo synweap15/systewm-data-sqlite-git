@@ -70,9 +70,8 @@ runTest {test tkt-84718e79fa-1.1 {SQLiteConvert thread safety} -setup {
   unset -nocomplain results t i c db fileName
 
   rename threadStart ""
-} -constraints \
-{eagle shell monoBug28 command.sql compile.DATA SQLite System.Data.SQLite} \
--result [lrepeat $c 1]}
+} -constraints {eagle command.object shell monoBug28 command.sql compile.DATA\
+SQLite System.Data.SQLite} -result [lrepeat $c 1]}
 
 ###############################################################################
 

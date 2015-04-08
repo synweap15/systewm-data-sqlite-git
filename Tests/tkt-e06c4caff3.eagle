@@ -31,10 +31,9 @@ runTest {test tkt-e06c4caff3-1.1 {NaN to NULL constraint failure} -setup {
   cleanupDb $fileName
 
   unset -nocomplain NaN db fileName
-} -constraints \
-{eagle monoBug28 command.sql compile.DATA SQLite System.Data.SQLite} \
--returnCodes 1 -match regexp -result [string map [list \n \r\n] \
-{^System\.Data\.SQLite\.SQLiteException \(0x80004005\): constraint failed
+} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
+System.Data.SQLite} -returnCodes 1 -match regexp -result [string map [list \n\
+\r\n] {^System\.Data\.SQLite\.SQLiteException \(0x80004005\): constraint failed
 NOT NULL constraint failed: t1\.x
 .*$}]}
 
@@ -53,9 +52,8 @@ runTest {test tkt-e06c4caff3-1.2 {NaN to NULL} -setup {
   cleanupDb $fileName
 
   unset -nocomplain NaN db fileName
-} -constraints \
-{eagle monoBug28 command.sql compile.DATA SQLite System.Data.SQLite} \
--result {}}
+} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
+System.Data.SQLite} -result {}}
 
 ###############################################################################
 
@@ -71,9 +69,8 @@ runTest {test tkt-e06c4caff3-1.3 {NaN w/BindAllAsText} -setup {
   cleanupDb $fileName
 
   unset -nocomplain NaN db fileName
-} -constraints \
-{eagle monoBug28 command.sql compile.DATA SQLite System.Data.SQLite} -result \
-{1 0}}
+} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
+System.Data.SQLite} -result {1 0}}
 
 ###############################################################################
 
@@ -89,9 +86,8 @@ runTest {test tkt-e06c4caff3-1.4 {NaN w/BindAllAsText & GetAllAsText} -setup {
   cleanupDb $fileName
 
   unset -nocomplain NaN db fileName
-} -constraints \
-{eagle monoBug28 command.sql compile.DATA SQLite System.Data.SQLite} -result \
-{1 NaN}}
+} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
+System.Data.SQLite} -result {1 NaN}}
 
 ###############################################################################
 

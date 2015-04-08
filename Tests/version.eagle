@@ -79,7 +79,8 @@ runTest {test version-1.2 {'System.Data.SQLite' assembly version} -body {
   $assemblyName Version.ToString
 } -cleanup {
   unset -nocomplain assemblyName
-} -constraints {eagle file_System.Data.SQLite.dll} -result $version(full)}
+} -constraints {eagle command.object file_System.Data.SQLite.dll} -result \
+$version(full)}
 
 ###############################################################################
 
@@ -96,7 +97,8 @@ runTest {test version-1.4 {'System.Data.SQLite.Linq' assembly version} -body {
   $assemblyName Version.ToString
 } -cleanup {
   unset -nocomplain assemblyName
-} -constraints {eagle file_System.Data.SQLite.Linq.dll} -result $version(full)}
+} -constraints {eagle command.object file_System.Data.SQLite.Linq.dll} -result \
+$version(full)}
 
 ###############################################################################
 
@@ -113,7 +115,8 @@ runTest {test version-1.6 {'System.Data.SQLite.EF6' assembly version} -body {
   $assemblyName Version.ToString
 } -cleanup {
   unset -nocomplain assemblyName
-} -constraints {eagle file_System.Data.SQLite.EF6.dll} -result $version(full)}
+} -constraints {eagle command.object file_System.Data.SQLite.EF6.dll} -result \
+$version(full)}
 
 ###############################################################################
 
@@ -130,7 +133,8 @@ runTest {test version-1.8 {'SQLite.Designer' assembly version} -body {
   $assemblyName Version.ToString
 } -cleanup {
   unset -nocomplain assemblyName
-} -constraints {eagle file_SQLite.Designer.dll} -result $version(full)}
+} -constraints {eagle command.object file_SQLite.Designer.dll} -result \
+$version(full)}
 
 ###############################################################################
 
@@ -147,7 +151,7 @@ runTest {test version-1.10 {'test' assembly version} -body {
   $assemblyName Version.ToString
 } -cleanup {
   unset -nocomplain assemblyName
-} -constraints {eagle file_test.exe} -result $version(full)}
+} -constraints {eagle command.object file_test.exe} -result $version(full)}
 
 ###############################################################################
 
@@ -164,7 +168,7 @@ runTest {test version-1.12 {'testlinq' assembly version} -body {
   $assemblyName Version.ToString
 } -cleanup {
   unset -nocomplain assemblyName
-} -constraints {eagle file_testlinq.exe} -result $version(full)}
+} -constraints {eagle command.object file_testlinq.exe} -result $version(full)}
 
 ###############################################################################
 
@@ -181,40 +185,41 @@ runTest {test version-1.14 {'testef6' assembly version} -body {
   $assemblyName Version.ToString
 } -cleanup {
   unset -nocomplain assemblyName
-} -constraints {eagle file_testef6.exe} -result $version(full)}
+} -constraints {eagle command.object file_testef6.exe} -result $version(full)}
 
 ###############################################################################
 
 runTest {test version-1.15 {SQLiteVersion} -body {
   object invoke System.Data.SQLite.SQLiteConnection SQLiteVersion
-} -constraints {eagle SQLite System.Data.SQLite} -match regexp -result \
-{^\d+\.\d+\.\d+(?:\.\d+)?$}}
+} -constraints {eagle command.object SQLite System.Data.SQLite} -match regexp \
+-result {^\d+\.\d+\.\d+(?:\.\d+)?$}}
 
 ###############################################################################
 
 runTest {test version-1.16 {SQLiteSourceId} -body {
   object invoke System.Data.SQLite.SQLiteConnection SQLiteSourceId
-} -constraints {eagle SQLite System.Data.SQLite} -match regexp -result \
-{^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} [0-9a-f]{40}$}}
+} -constraints {eagle command.object SQLite System.Data.SQLite} -match regexp \
+-result {^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} [0-9a-f]{40}$}}
 
 ###############################################################################
 
 runTest {test version-1.17 {InteropVersion} -body {
   object invoke System.Data.SQLite.SQLiteConnection InteropVersion
-} -constraints {eagle SQLiteInterop System.Data.SQLite} -result $version(full)}
+} -constraints {eagle command.object SQLiteInterop System.Data.SQLite} -result \
+$version(full)}
 
 ###############################################################################
 
 runTest {test version-1.18 {InteropSourceId} -body {
   object invoke System.Data.SQLite.SQLiteConnection InteropSourceId
-} -constraints {eagle SQLiteInterop System.Data.SQLite} -match regexp -result \
-{^[0-9a-f]{40} \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} UTC$}}
+} -constraints {eagle command.object SQLiteInterop System.Data.SQLite} -match \
+regexp -result {^[0-9a-f]{40} \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} UTC$}}
 
 ###############################################################################
 
 runTest {test version-1.19 {ProviderVersion} -body {
   object invoke System.Data.SQLite.SQLiteConnection ProviderVersion
-} -constraints {eagle System.Data.SQLite} -result $version(full)}
+} -constraints {eagle command.object System.Data.SQLite} -result $version(full)}
 
 ###############################################################################
 
@@ -224,7 +229,7 @@ runTest {test version-1.20 {ProviderSourceId} -body {
   #       would result in an empty string being returned here.
   #
   object invoke System.Data.SQLite.SQLiteConnection ProviderSourceId
-} -constraints {eagle System.Data.SQLite} -match regexp -result \
+} -constraints {eagle command.object System.Data.SQLite} -match regexp -result \
 {^(?:|[0-9a-f]{40} \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} UTC)$}}
 
 ###############################################################################

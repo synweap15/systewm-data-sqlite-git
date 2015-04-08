@@ -79,7 +79,7 @@ runTest {test tkt-ef2216192d-1.1 {GetSchemaTable w/large VARCHAR} -setup {
   cleanupDb $fileName
 
   unset -nocomplain result results errors code sql dataSource id db fileName
-} -constraints {eagle monoBug28 command.sql compile.DATA SQLite\
+} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
 System.Data.SQLite compileCSharp} -match regexp -result {^Ok\
 System#CodeDom#Compiler#CompilerResults#\d+ \{\} 0 \{\}$}}
 

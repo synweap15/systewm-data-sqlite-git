@@ -39,9 +39,8 @@ runTest {test tkt-bb4b04d457-1.1 {TIMESTAMP column with Ticks} -setup {
   cleanupDb $fileName
 
   unset -nocomplain dateTime db fileName
-} -constraints \
-{eagle monoBug28 command.sql compile.DATA SQLite System.Data.SQLite} -result \
-{{2011-11-29 12:34:56Z}}}
+} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
+System.Data.SQLite} -result {{2011-11-29 12:34:56Z}}}
 
 ###############################################################################
 

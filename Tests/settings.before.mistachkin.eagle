@@ -8,5 +8,7 @@
 ###############################################################################
 
 if {[info exists ::env(TEST_ALL)]} then {
-  object invoke Interpreter.GetActive AddRuntimeOption noPoolCounts
+  catch {
+    object invoke Interpreter.GetActive AddRuntimeOption noPoolCounts
+  }
 }

@@ -58,14 +58,13 @@ runTest {test tkt-3113734605-1.1 {ColumnSize and NumericPrecision} -setup {
 
   unset -nocomplain value dataRow dataRows dataTable collectionName result \
       connection db fileName
-} -constraints \
-{eagle monoBug28 command.sql compile.DATA SQLite System.Data.SQLite} -match \
-regexp -result {^t1 v 12 System#DBNull#\d+ t1 w 23 System#DBNull#\d+ t1 x 34\
-System#DBNull#\d+ t1 y 45 System#DBNull#\d+ t1 z 56 System#DBNull#\d+ v1 v 12\
-System#DBNull#\d+ v1 w 23 System#DBNull#\d+ v1 x 34 System#DBNull#\d+ v1 y 45\
-System#DBNull#\d+ v1 z 56 System#DBNull#\d+ t1 v 12 System#DBNull#\d+ t1 w 23\
+} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
+System.Data.SQLite} -match regexp -result {^t1 v 12 System#DBNull#\d+ t1 w 23\
 System#DBNull#\d+ t1 x 34 System#DBNull#\d+ t1 y 45 System#DBNull#\d+ t1 z 56\
-System#DBNull#\d+$}}
+System#DBNull#\d+ v1 v 12 System#DBNull#\d+ v1 w 23 System#DBNull#\d+ v1 x 34\
+System#DBNull#\d+ v1 y 45 System#DBNull#\d+ v1 z 56 System#DBNull#\d+ t1 v 12\
+System#DBNull#\d+ t1 w 23 System#DBNull#\d+ t1 x 34 System#DBNull#\d+ t1 y 45\
+System#DBNull#\d+ t1 z 56 System#DBNull#\d+$}}
 
 ###############################################################################
 

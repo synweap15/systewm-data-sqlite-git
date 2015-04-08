@@ -37,9 +37,8 @@ runTest {test tkt-c28d7fe915-1.1 {GetOrdinal without current row} -setup {
   cleanupDb $fileName
 
   unset -nocomplain db fileName
-} -constraints \
-{eagle monoBug28 command.sql compile.DATA SQLite System.Data.SQLite} -result \
-{x 0}}
+} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
+System.Data.SQLite} -result {x 0}}
 
 ###############################################################################
 

@@ -65,9 +65,10 @@ runTest {test tkt-daeaf3150a-1.1 {static Execute connection disposal} -setup {
       $result(7) $result(8)
 } -cleanup {
   unset -nocomplain result sql
-} -constraints {eagle monoBug28 SQLite System.Data.SQLite} -match regexp \
--result {^\{\} 1 System#DBNull#\d+ System#Data#SQLite#SQLiteDataReader#\d+ \{\}\
-1 1 System#Data#SQLite#SQLiteDataReader#\d+$}}
+} -constraints {eagle command.object monoBug28 SQLite System.Data.SQLite} \
+-match regexp -result {^\{\} 1 System#DBNull#\d+\
+System#Data#SQLite#SQLiteDataReader#\d+ \{\} 1 1\
+System#Data#SQLite#SQLiteDataReader#\d+$}}
 
 ###############################################################################
 
