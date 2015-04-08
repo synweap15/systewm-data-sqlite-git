@@ -30,21 +30,22 @@ namespace eval ::Eagle {
         CODE_ANALYSIS COM_TYPE_CACHE CONSOLE DAEMON DATA DEAD_CODE DEBUG \
         DEBUGGER DEBUGGER_ARGUMENTS DEBUGGER_ENGINE DEBUGGER_EXECUTE \
         DEBUGGER_EXPRESSION DEBUGGER_VARIABLE DEBUG_TRACE DEBUG_WRITE DRAWING \
-        DYNAMIC EAGLE EMBEDDED_LIBRARY EXECUTE_CACHE EXPRESSION_FLAGS \
-        FAST_ERRORCODE FAST_ERRORINFO HAVE_SIZEOF HISTORY IA64 \
-        INTERACTIVE_COMMANDS INTERNALS_VISIBLE_TO ISOLATED_INTERPRETERS \
+        DYNAMIC EAGLE EMBEDDED_LIBRARY EMBED_CERTIFICATE EXECUTE_CACHE \
+        EXPRESSION_FLAGS FAST_ERRORCODE FAST_ERRORINFO HAVE_SIZEOF HISTORY \
+        IA64 INTERACTIVE_COMMANDS INTERNALS_VISIBLE_TO ISOLATED_INTERPRETERS \
         ISOLATED_PLUGINS LIBRARY LICENSING LIST_CACHE MONO MONO_BUILD \
-        MONO_HACKS MONO_LEGACY NATIVE NATIVE_PACKAGE NATIVE_UTILITY \
-        NATIVE_UTILITY_BSTR NETWORK NET_20 NET_20_FAST_ENUM NET_20_ONLY \
-        NET_20_SP1 NET_20_SP2 NET_30 NET_35 NET_40 NET_45 NET_451 NET_452 \
-        NON_WORKING_CODE NOTIFY NOTIFY_ACTIVE NOTIFY_ARGUMENTS \
+        MONO_HACKS MONO_LEGACY NATIVE NATIVE_PACKAGE NATIVE_THREAD_ID \
+        NATIVE_UTILITY NATIVE_UTILITY_BSTR NETWORK NET_20 NET_20_FAST_ENUM \
+        NET_20_ONLY NET_20_SP1 NET_20_SP2 NET_30 NET_35 NET_40 NET_45 NET_451 \
+        NET_452 NON_WORKING_CODE NOTIFY NOTIFY_ACTIVE NOTIFY_ARGUMENTS \
         NOTIFY_EXCEPTION NOTIFY_EXECUTE NOTIFY_EXPRESSION NOTIFY_GLOBAL \
-        NOTIFY_OBJECT OBSOLETE OFFICIAL PARSE_CACHE PATCHLEVEL POLICY_TRACE \
-        PREVIOUS_RESULT RANDOMIZE_ID REMOTING SAMPLE SERIALIZATION \
-        SHARED_ID_POOL SHELL SOURCE_ID SOURCE_TIMESTAMP STATIC TCL TCL_KITS \
-        TCL_THREADED TCL_THREADS TCL_UNICODE TCL_WRAPPER TEST THREADING \
-        THROW_ON_DISPOSED TRACE TYPE_CACHE UNIX USE_NAMESPACES VERBOSE WEB \
-        WINDOWS WINFORMS WIX_30 WIX_35 WIX_36 WIX_37 WIX_38 WIX_39 X64 X86 XML]
+        NOTIFY_OBJECT OBSOLETE OBFUSCATION OFFICIAL PARSE_CACHE PATCHLEVEL \
+        PLUGIN_COMMANDS POLICY_TRACE PREVIOUS_RESULT RANDOMIZE_ID REMOTING \
+        SAMPLE SECURITY SERIALIZATION SHARED_ID_POOL SHELL SOURCE_ID \
+        SOURCE_TIMESTAMP STATIC TCL TCL_KITS TCL_THREADED TCL_THREADS \
+        TCL_UNICODE TCL_WRAPPER TEST THREADING THROW_ON_DISPOSED TRACE \
+        TYPE_CACHE UNIX USE_NAMESPACES VERBOSE WEB WINDOWS WINFORMS WIX_30 \
+        WIX_35 WIX_36 WIX_37 WIX_38 WIX_39 X64 X86 XML]
   }
 
   proc getKnownMonoVersions {} {
@@ -1020,52 +1021,47 @@ namespace eval ::Eagle {
 
     if {[isEagle]} then {
       #
-      # NOTE: Check if namespace support was compiled into the core library
-      #       (i.e. this is beta 30 or later).
+      # NOTE: Check if namespace support was compiled into the core
+      #       library (i.e. this is beta 30 or later).
       #
-      set available false
+      if {[catch {namespace enable} enabled] == 0} then {
+        set available true
 
-      if {[catch {string length [object invoke \
-              Type GetType Eagle._Commands.Namespace2]} length] == 0 && \
-          [set available [expr {$length > 0}]]} then {
         addConstraint namespaces.available
       } else {
+        set available false
+
         addConstraint namespaces.unavailable
       }
 
-      if {[catch {object invoke -flags +NonPublic Interpreter.GetActive \
-              AreNamespacesEnabled} enabled] == 0} then {
+      #
+      # NOTE: We were able to query for namespace support (i.e. this
+      #       must be beta 29 or later); however, we still need to
+      #       check if it has been enabled at runtime.
+      #
+      if {$enabled} then {
         #
-        # NOTE: We were able to query for namespace support (i.e. this
-        #       must be beta 29 or later); however, we still need to
-        #       check if it has been enabled at runtime.
+        # NOTE: Yes, it appears that it is available and enabled.
         #
-        if {$enabled} then {
-          #
-          # NOTE: Yes, it appears that it is available and enabled.
-          #
-          addConstraint namespaces
+        addConstraint namespaces
 
-          tputs $channel enabled\n
-        } else {
-          tputs $channel disabled\n
-
-          #
-          # NOTE: Check if namespace support was compiled into the core
-          #       library (i.e. is this beta 30 or later).
-          #
-          if {!$quiet && $available} then {
-            #
-            # NOTE: The tests seem to be running with namespace support
-            #       available, but disabled.  Emit a warning into the
-            #       test log file.
-            #
-            tputs $channel \
-                "==== WARNING: running with namespaces available and disabled\n"
-          }
-        }
+        tputs $channel enabled\n
       } else {
-        tputs $channel error\n
+        tputs $channel disabled\n
+
+        #
+        # NOTE: Check if namespace support was compiled into the core
+        #       library (i.e. is this beta 30 or later).
+        #
+        if {!$quiet && $available} then {
+          #
+          # NOTE: The tests seem to be running with namespace support
+          #       available, but disabled.  Emit a warning into the
+          #       test log file.
+          #
+          tputs $channel \
+              "==== WARNING: running with namespaces available and disabled\n"
+        }
       }
     } else {
       #
@@ -2055,9 +2051,7 @@ namespace eval ::Eagle {
     proc checkForPrimaryThread { channel } {
       tputs $channel "---- checking for primary thread... "
 
-      if {[catch {object invoke Interpreter.GetActive ThreadId} \
-              threadId] == 0 && \
-          [info tid] == $threadId} then {
+      if {[info tid] == [set threadId [info ptid]]} then {
         addConstraint primaryThread
 
         tputs $channel [appendArgs "yes (" $threadId ")\n"]
@@ -2691,9 +2685,9 @@ namespace eval ::Eagle {
       tputs $channel [appendArgs "---- checking for object member \"" \
           $object . $member "\"... "]
 
-      if {[catch {object members -flags +NonPublic -pattern $member $object} \
-              members] == 0 && \
-          [llength $members] > 0} then {
+      if {[catch {
+        object members -flags +NonPublic -pattern $member $object
+      } members] == 0 && [llength $members] > 0} then {
         #
         # NOTE: Yes, it appears that it is available.
         #
@@ -2824,6 +2818,37 @@ namespace eval ::Eagle {
           addConstraint tclReadyOrLibrary84
         }
 
+        tputs $channel no\n
+      }
+    }
+
+    proc checkForTclSelect { channel } {
+      tputs $channel "---- checking for Tcl library selection... "
+
+      if {[catch {tcl select -architecture} select] == 0} then {
+        #
+        # NOTE: Yes, native Tcl is "probably loadable".
+        #
+        addConstraint tclSelect
+
+        #
+        # NOTE: Ok, attempt to determine the selected Tcl version.
+        #
+        if {[catch {
+          getDictionaryValue $select version
+        } version] == 0 && [regexp -- {^\d+\.\d+$} $version]} then {
+          addConstraint [appendArgs \
+              tclSelect [string map [list . ""] $version]]
+
+          tputs $channel [appendArgs "yes (" $select ")\n"]
+        } else {
+          #
+          # NOTE: The Tcl library is "probably loadable"; however, we have
+          #       no idea what version it actually is.
+          #
+          tputs $channel yes\n
+        }
+      } else {
         tputs $channel no\n
       }
     }
@@ -3387,7 +3412,7 @@ namespace eval ::Eagle {
         # NOTE: We do not own this, do not dispose it.
         #
         if {[string length $debugger] > 0} then {
-          object flags $debugger +NoDispose
+          catch {object flags $debugger +NoDispose}
         }
 
         if {[regexp -- {^Debugger#\d+$} $debugger]} then {
@@ -3420,7 +3445,7 @@ namespace eval ::Eagle {
         # NOTE: We do not own this, do not dispose it.
         #
         if {[string length $debugger] > 0} then {
-          object flags $debugger +NoDispose
+          catch {object flags $debugger +NoDispose}
         }
 
         if {[regexp -- {^Debugger#\d+$} $debugger] && \
@@ -3429,7 +3454,7 @@ namespace eval ::Eagle {
           # NOTE: We do not own this, do not dispose it.
           #
           if {[string length $interp] > 0} then {
-            object flags $interp +NoDispose
+            catch {object flags $interp +NoDispose}
           }
 
           if {[regexp -- {^Interpreter#\d+$} $interp]} then {

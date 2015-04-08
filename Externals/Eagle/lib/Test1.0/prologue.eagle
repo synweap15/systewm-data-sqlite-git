@@ -220,15 +220,17 @@ if {![info exists no([file tail [info script]])]} then {
   #       This block requires the "Eagle.Library" package.
   #
   if {[isEagle]} then {
-    #
-    # NOTE: Check the name of the current call frame against the one
-    #       that should be used for evaluating this script file.
-    #
-    if {[object invoke -flags +NonPublic \
-            Interpreter.GetActive.CurrentFrame Name] ne \
-        [list source [file normalize [info script]]]} then {
-      unset -nocomplain test_suite_running
-      error "cannot run, current frame is not for this script"
+    catch {
+      #
+      # NOTE: Check the name of the current call frame against the one
+      #       that should be used for evaluating this script file.
+      #
+      if {[object invoke -flags +NonPublic \
+              Interpreter.GetActive.CurrentFrame Name] ne \
+          [list source [file normalize [info script]]]} then {
+        unset -nocomplain test_suite_running
+        error "cannot run, current frame is not for this script"
+      }
     }
   }
 
@@ -1491,6 +1493,10 @@ if {![info exists no([file tail [info script]])]} then {
         checkForTclReady $test_channel
       }
 
+      if {![info exists no(tclSelect)]} then {
+        checkForTclSelect $test_channel
+      }
+
       if {![info exists no(tclShell)]} then {
         #
         # NOTE: For test "garuda-1.1".
@@ -1510,6 +1516,27 @@ if {![info exists no([file tail [info script]])]} then {
     # NOTE: Has custom test method support been disabled?
     #
     if {![info exists no(core)] && ![info exists no(test)]} then {
+      #
+      # NOTE: Has optional parameter testing support been disabled?
+      #
+      if {![info exists no(testOptionalParameter)]} then {
+        #
+        # NOTE: For tests "object-2.81", "object-2.82", "object-2.83",
+        #       and "object-2.84".
+        #
+        checkForObjectMember $test_channel Eagle._Tests.Default \
+            *TestOptionalParameter0*
+
+        checkForObjectMember $test_channel Eagle._Tests.Default \
+            *TestOptionalParameter1*
+
+        checkForObjectMember $test_channel Eagle._Tests.Default \
+            *TestOptionalParameter2*
+
+        checkForObjectMember $test_channel Eagle._Tests.Default \
+            *TestOptionalParameterZ*
+      }
+
       #
       # NOTE: Has plugin policy testing support been disabled?
       #
@@ -1918,6 +1945,12 @@ if {![info exists no([file tail [info script]])]} then {
 
         checkForObjectMember $test_channel Eagle._Tests.Default \
             *TestOutArray*
+
+        #
+        # NOTE: For tests "object-7.6" and "object-7.7".
+        #
+        checkForObjectMember $test_channel Eagle._Tests.Default \
+            *TestByRefArray*
 
         #
         # NOTE: For test "object-7.5".
@@ -2642,6 +2675,10 @@ if {![info exists no([file tail [info script]])]} then {
     checkForCommand $test_channel library
   }
 
+  if {![info exists no(objectCommand)]} then {
+    checkForCommand $test_channel object
+  }
+
   if {![info exists no(socketCommand)]} then {
     checkForCommand $test_channel socket
   }
@@ -3016,9 +3053,14 @@ if {![info exists no([file tail [info script]])]} then {
     #
     # NOTE: Show the starting operation count (for Eagle only).
     #
+    catch {
+      object invoke -flags +NonPublic Interpreter.GetActive OperationCount
+    } operationCount
+
     tputs $test_channel [appendArgs "---- starting operation count: " \
-        [object invoke -flags +NonPublic Interpreter.GetActive \
-            OperationCount] \n]
+        $operationCount \n]
+
+    unset operationCount
 
     #
     # NOTE: Record the raw starting performance count, for later use in

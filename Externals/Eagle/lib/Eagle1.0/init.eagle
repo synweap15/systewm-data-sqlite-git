@@ -140,18 +140,49 @@ namespace eval ::Eagle {
     return [expr {[info exists ::env($name)] ? $::env($name) : ""}]
   }
 
-  proc combineFlags { flags1 flags2 } {
+  proc combineFlags { flags1 flags2 {flags3 ""} {noCase false} } {
     #
     # NOTE: This should work properly in both Tcl and Eagle.
     #
     set result [list]
+    set notFlags [list]
+
+    if {[string length $flags3] > 0} then {
+      foreach flag [split $flags3 ", "] {
+        set flag [string trim $flag]
+
+        if {[string length $flag] > 0} then {
+          lappend notFlags $flag
+        }
+      }
+    }
 
     foreach flags [list $flags1 $flags2] {
       foreach flag [split $flags ", "] {
         set flag [string trim $flag]
 
         if {[string length $flag] > 0} then {
-          lappend result $flag
+          set addFlag false
+
+          if {[llength $notFlags] > 0} then {
+            set command [list lsearch -exact]
+
+            if {$noCase} then {
+              lappend command -nocase
+            }
+
+            lappend command -- $notFlags $flag
+
+            if {[eval $command] == -1} then {
+              set addFlag true
+            }
+          } else {
+            set addFlag true
+          }
+
+          if {$addFlag} then {
+            lappend result $flag
+          }
         }
       }
     }
@@ -787,7 +818,13 @@ namespace eval ::Eagle {
       #
       # NOTE: Returns non-zero if the specified runtime option is set.
       #
-      return [object invoke Interpreter.GetActive HasRuntimeOption $name]
+      if {[catch {
+        object invoke Interpreter.GetActive HasRuntimeOption $name
+      } result] == 0} then {
+        return $result
+      } else {
+        return false
+      }
     }
 
     proc getPluginFlags { pattern } {
@@ -810,22 +847,32 @@ namespace eval ::Eagle {
       set result [list]
 
       #
-      # NOTE: Does the caller want processes matching a specific name
-      #       or all processes on the local machine?
+      # NOTE: Are we able to actually query the active processes?
       #
-      if {[string length $name] > 0} then {
+      if {[llength [info commands object]] > 0} then {
         #
-        # NOTE: Get the managed array of processes with matching names.
+        # NOTE: Does the caller want processes matching a specific name
+        #       or all processes on the local machine?
         #
-        set array [object invoke -alias System.Diagnostics.Process \
-            GetProcessesByName $name]
+        if {[string length $name] > 0} then {
+          #
+          # NOTE: Get the managed array of processes with matching names.
+          #
+          set array [object invoke -alias System.Diagnostics.Process \
+              GetProcessesByName $name]
+        } else {
+          #
+          # NOTE: Get the managed array of all processes on the local
+          #       machine.
+          #
+          set array [object invoke -alias System.Diagnostics.Process \
+              GetProcesses]
+        }
       } else {
         #
-        # NOTE: Get the managed array of all processes on the local
-        #       machine.
+        # NOTE: No, return nothing.
         #
-        set array [object invoke -alias System.Diagnostics.Process \
-            GetProcesses]
+        return $result
       }
 
       #
@@ -915,6 +962,34 @@ namespace eval ::Eagle {
     #
     proc compileCSharp {
             string memory symbols strict resultsVarName errorsVarName args } {
+      #
+      # NOTE: The [object] command is required by this procedure.  If it
+      #       is not available, bail out now.
+      #
+      if {[llength [info commands object]] == 0} then {
+        #
+        # NOTE: We cannot even attempt to compile anything, fail.
+        #
+        set code Error
+
+        #
+        # NOTE: Prepare to transfer error messages to the caller.
+        #
+        if {[string length $errorsVarName] > 0} then {
+          upvar 1 $errorsVarName local_errors
+        }
+
+        #
+        # NOTE: Append to the list of errors.
+        #
+        lappend local_errors "cannot compile, missing \"object\" command"
+
+        #
+        # NOTE: Return the overall result to the caller.
+        #
+        return $code
+      }
+
       #
       # NOTE: Create the C# code provider object (i.e. the compiler).
       #
@@ -1013,7 +1088,9 @@ namespace eval ::Eagle {
       #       must use upvar here because otherwise the object is lost when
       #       the procedure call frame is cleaned up.
       #
-      upvar 1 $resultsVarName results
+      if {[string length $resultsVarName] > 0} then {
+        upvar 1 $resultsVarName results
+      }
 
       #
       # NOTE: Attempt to compile the specified string as C# and capture the
@@ -1045,9 +1122,11 @@ namespace eval ::Eagle {
         set code Error
 
         #
-        # NOTE: Prepare to transfer the error messages to the caller.
+        # NOTE: Prepare to transfer error messages to the caller.
         #
-        upvar 1 $errorsVarName local_errors
+        if {[string length $errorsVarName] > 0} then {
+          upvar 1 $errorsVarName local_errors
+        }
 
         #
         # NOTE: How many compile errors?
@@ -1089,6 +1168,9 @@ namespace eval ::Eagle {
       #
       unset errors; # dispose
 
+      #
+      # NOTE: Return the overall result to the caller.
+      #
       return $code
     }
 
@@ -1587,17 +1669,23 @@ namespace eval ::Eagle {
                       $updateBaseUri]
 
                   if {$prompt && [isInteractive]} then {
-                    set caption [appendArgs \
-                        [info engine Name] " " [lindex [info level 0] 0]]
+                    #
+                    # NOTE: Is the [object] command available?  If not,
+                    #       this cannot be done.
+                    #
+                    if {[llength [info commands object]] > 0} then {
+                      set caption [appendArgs \
+                          [info engine Name] " " [lindex [info level 0] 0]]
 
-                    if {[object invoke -flags +NonPublic \
-                        Eagle._Components.Private.WindowOps YesOrNo \
-                        [appendArgs $text \n\n "Run the updater now?"] \
-                        $caption false]} then {
-                      #
-                      # NOTE: Ok, run the updater now and then exit.
-                      #
-                      runUpdateAndExit $automatic
+                      if {[object invoke -flags +NonPublic \
+                          Eagle._Components.Private.WindowOps YesOrNo \
+                          [appendArgs $text \n\n "Run the updater now?"] \
+                          $caption false]} then {
+                        #
+                        # NOTE: Ok, run the updater now and then exit.
+                        #
+                        runUpdateAndExit $automatic
+                      }
                     }
                   }
 
@@ -1862,7 +1950,11 @@ namespace eval ::Eagle {
     }
 
     proc getReturnType { object member } {
-      if {[string length $object] == 0 || [string length $member] == 0} then {
+      if {[string length $object] == 0} then {
+        return ""
+      }
+
+      if {[string length $member] == 0} then {
         return ""
       }
 
@@ -1898,6 +1990,10 @@ namespace eval ::Eagle {
     }
 
     proc getDefaultValue { typeName } {
+      if {[llength [info commands object]] == 0} then {
+        return ""
+      }
+
       if {[string length $typeName] == 0} then {
         return ""
       }
@@ -1919,6 +2015,7 @@ namespace eval ::Eagle {
       if {[catch {host size} result] == 0} then {
         return $result
       }
+
       return [list 80 25]; # TODO: Good default?
     }
 
@@ -1974,9 +2071,12 @@ namespace eval ::Eagle {
         if {![isMono]} then {
           set line [string format -verbatim -- [appendArgs "\{0,-" \
               $maxLength "\} = {1}"] $nameString $valueString]
-        } else {
+        } elseif {[llength [info commands object]] > 0} then {
           set line [object invoke String Format [appendArgs "\{0,-" \
               $maxLength "\} = {1}"] $nameString $valueString]
+        } else {
+          set line [format [appendArgs "%-" $maxLength "s = %s"] \
+              $nameString $valueString]
         }
 
         puts stdout $line
@@ -2015,10 +2115,13 @@ namespace eval ::Eagle {
         #       reflection (Mono bug #636939).
         #
         if {![isMono]} then {
-          set line [string format -verbatim -- "{0,-$maxLength} = {1}" \
-              $name $valueString]
+          set line [string format -verbatim -- [appendArgs "\{0,-" \
+              $maxLength "\} = {1}"] $name $valueString]
+        } elseif {[llength [info commands object]] > 0} then {
+          set line [object invoke String Format [appendArgs "\{0,-" \
+              $maxLength "\} = {1}"] $name $valueString]
         } else {
-          set line [object invoke String Format "{0,-$maxLength} = {1}" \
+          set line [format [appendArgs "%-" $maxLength "s = %s"] \
               $name $valueString]
         }
 

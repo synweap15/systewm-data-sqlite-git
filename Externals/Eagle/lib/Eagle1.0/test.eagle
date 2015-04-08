@@ -425,7 +425,7 @@ namespace eval ::Eagle {
   }
 
   proc formatElapsedTime { seconds } {
-    if {[isEagle]} then {
+    if {[isEagle] && [llength [info commands object]] > 0} then {
       #
       # NOTE: Create a TimeSpan instance based on the number of whole
       #       seconds.
@@ -1417,6 +1417,8 @@ namespace eval ::Eagle {
     #
     upvar 1 $varName array
 
+    ###########################################################################
+
     set array(uncounted,$index) [list]
     set array(time,$index) [clock seconds]
     set array(afters,$index) [llength [after info]]
@@ -1431,6 +1433,8 @@ namespace eval ::Eagle {
     set array(interpreters,$index) [llength [interp slaves]]
     set array(environment,$index) [llength [array names env]]
 
+    ###########################################################################
+
     #
     # NOTE: These native resource types cannot be positively checked
     #       for leaks (i.e. because the "leak" may be from an external
@@ -1438,22 +1442,34 @@ namespace eval ::Eagle {
     #
     lappend array(uncounted,$index) temporaryFiles
 
-    if {[isEagle]} then {
-      set array(scopes,$index) [llength [scope list]]
-      set array(assemblies,$index) [llength [object assemblies]]
-      set array(processes,$index) [llength [getProcesses ""]]
-      set array(objects,$index) [llength [info objects]]
-      set array(objectCallbacks,$index) [llength [info callbacks]]
-      set array(objectTypes,$index) [llength [object types]]
-      set array(objectInterfaces,$index) [llength [object interfaces]]
-      set array(objectNamespaces,$index) [llength [object namespaces]]
+    ###########################################################################
 
+    if {[isEagle]} then {
       #
-      # NOTE: These managed resource types cannot be positively checked
-      #       for leaks (i.e. because the "leak" may be from an external
-      #       process).
+      # NOTE: Support for some of all of these entity types may not be
+      #       present in the interpreter, initialize all these counts
+      #       to zero and then try to query each one individually below
+      #       wrapped in a catch.
       #
-      lappend array(uncounted,$index) assemblies processes
+      set array(scopes,$index) 0
+      set array(assemblies,$index) 0
+      set array(processes,$index) 0
+      set array(objects,$index) 0
+      set array(objectCallbacks,$index) 0
+      set array(objectTypes,$index) 0
+      set array(objectInterfaces,$index) 0
+      set array(objectNamespaces,$index) 0
+
+      catch {set array(scopes,$index) [llength [scope list]]}
+      catch {set array(assemblies,$index) [llength [object assemblies]]}
+      catch {set array(processes,$index) [llength [getProcesses ""]]}
+      catch {set array(objects,$index) [llength [info objects]]}
+      catch {set array(objectCallbacks,$index) [llength [info callbacks]]}
+      catch {set array(objectTypes,$index) [llength [object types]]}
+      catch {set array(objectInterfaces,$index) [llength [object interfaces]]}
+      catch {set array(objectNamespaces,$index) [llength [object namespaces]]}
+
+      #########################################################################
 
       #
       # NOTE: Support for some of all of these entity types may not be
@@ -1477,7 +1493,7 @@ namespace eval ::Eagle {
       catch {set array(delegates,$index) [llength [info delegates]]}
 
       if {[llength [info commands tcl]] > 0} then {
-        set array(tcl,$index) [tcl ready]
+        catch {set array(tcl,$index) [tcl ready]}
       }
 
       catch {set array(tclInterps,$index) [llength [tcl interps]]}
@@ -1490,9 +1506,18 @@ namespace eval ::Eagle {
       #       is Beta 31 or higher.
       #
       catch {
-        set array(scriptThreads,$index) [object invoke -flags +NonPublic \
-            ScriptThread activeCount]
+        set array(scriptThreads,$index) \
+            [object invoke -flags +NonPublic ScriptThread activeCount]
       }
+
+      #########################################################################
+
+      #
+      # NOTE: These managed resource types cannot be positively checked
+      #       for leaks (i.e. because the "leak" may be from an external
+      #       process).
+      #
+      lappend array(uncounted,$index) assemblies processes
     }
   }
 
