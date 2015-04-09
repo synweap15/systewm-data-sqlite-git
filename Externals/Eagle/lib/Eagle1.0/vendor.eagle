@@ -66,7 +66,8 @@ namespace eval ::Eagle {
     }
 
     proc refreshAutoPath {} {
-      if {[llength [info subcommands debug refreshautopath]] > 0 && \
+      if {[llength [info commands debug]] > 0 && \
+          [llength [info subcommands debug refreshautopath]] > 0 && \
           [catch {debug refreshautopath true}] == 0} then {
         return debug
       }
@@ -208,7 +209,8 @@ namespace eval ::Eagle {
     }
 
     proc setupInterpreterTestPath { channel dir quiet } {
-      if {[llength [info subcommands debug testpath]] > 0 && \
+      if {[llength [info commands debug]] > 0 && \
+          [llength [info subcommands debug testpath]] > 0 && \
           [catch {debug testpath} testPath] == 0} then {
         if {$dir ne $testPath} then {
           debug testpath $dir
@@ -290,7 +292,7 @@ namespace eval ::Eagle {
       #       by us.
       #
       addTestSuiteToAutoPath stdout [expr {$have_vendor_directory ? "" : \
-          "vendor_directory"}] false
+          "vendor_directory"}] [info exists ::env(quietAddTestSuiteToAutoPath)]
 
       unset have_vendor_directory
 
@@ -300,7 +302,8 @@ namespace eval ::Eagle {
       #       interpreter to point directly to it.
       #
       if {[string length $vendor_directory] > 0} then {
-        setupInterpreterTestPath stdout $vendor_directory false
+        setupInterpreterTestPath stdout $vendor_directory [info exists \
+            ::env(quietSetupInterpreterTestPath)]
       }
     }
 

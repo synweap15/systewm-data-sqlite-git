@@ -1250,6 +1250,24 @@ namespace eval ::Eagle {
       }
     }
 
+    proc changeNativeRuntimeOption { native } {
+      if {[llength [info commands debug]] > 0 && \
+          [llength [info subcommands debug runtimeoption]] > 0 && [catch {
+        debug runtimeoption [expr {$native ? "add" : "remove"}] native
+      }] == 0} then {
+        return true
+      }
+
+      if {[haveSQLiteObjectCommand] && [catch {
+        object invoke Interpreter.GetActive [expr {$native ? \
+            "AddRuntimeOption" : "RemoveRuntimeOption"}] native
+      }] == 0} then {
+        return true
+      }
+
+      return false
+    }
+
     proc checkForSQLiteBuilds { channel {select false} } {
       #
       # NOTE: Check for every possible valid combination of values used when
@@ -1296,13 +1314,10 @@ namespace eval ::Eagle {
                 #       related test settings in order to force this build
                 #       of System.Data.SQLite to be used.
                 #
-                if {[catch {
-                  object invoke Interpreter.GetActive [expr {$native ? \
-                      "AddRuntimeOption" : "RemoveRuntimeOption"}] native
-                } error]} then {
+                if {![changeNativeRuntimeOption $native]} then {
                   tputs $channel [appendArgs \
                       "no, failed to " [expr {$native ? "add" : "remove"}] \
-                      " the \"native\" runtime option, error: " \n\t $error \n]
+                      " the \"native\" runtime option\n"]
 
                   return false
                 }
@@ -2272,64 +2287,73 @@ namespace eval ::Eagle {
       tputs $channel "---- setting up debugger interrupt callback... "
 
       if {[catch {
-        #
-        # NOTE: Make sure the script debugger and the isolated interpreter are
-        #       setup and ready for use.
-        #
-        debug setup true true
+        set ::env(quietSetupInterpreterTestPath) 1
 
-        #
-        # NOTE: Load the necessary packages into the isolated interpreter.
-        #
-        debug eval {
-          package require Eagle
-          package require Eagle.Library
-          package require Eagle.Test
-        }
-
-        #
-        # NOTE: Copy the necessary variables into the isolated interpreter.
-        #
-        debug invoke 0 set ::test_channel $channel; # NOTE: For [tputs].
-        debug invoke 0 set ::test_log $log; # NOTE: For [tlog].
-
-        #
-        # NOTE: Install the callback script to be evaluated in the isolated
-        #       interpreter when this interpreter is interrupted by script
-        #       cancellation, etc.
-        #
-        debug callback apply {{sender e} {
+        try {
           #
-          # NOTE: Check if this callback is one that we care about.
+          # NOTE: Make sure the script debugger and the isolated interpreter
+          #       are setup and ready for use.
           #
-          if {"Canceled" in [split [$e InterruptType] ", "]} then {
-            #
-            # NOTE: Make sure the [object] command is available.
-            #
-            if {[haveSQLiteObjectCommand]} then {
-              #
-              # NOTE: Iterate through all database connections known to the
-              #       parent interpreter.
-              #
-              object foreach -alias pair [object invoke -flags +NonPublic \
-                  $e Interpreter.connections] {
-                #
-                # NOTE: Attempt to cancel any SQL queries in progress on this
-                #       database connection.
-                #
-                if {[catch {$pair Value.Cancel} error]} then {
-                  tputs $::test_channel [appendArgs \n \
-                      "==== WARNING: failed to cancel query for connection \"" \
-                      [$pair Key] "\", error: " \n\t $error \n]
-                }
-              }
-            } else {
-              tputs $::test_channel [appendArgs \n \
-                  "==== WARNING: cannot cancel any queries: " \
-                  "the \"object\" command is not available\n"]
-            }
+          debug setup true true
+
+          #
+          # NOTE: Load the necessary packages into the isolated interpreter.
+          #
+          debug eval {
+            package require Eagle
+            package require Eagle.Library
+            package require Eagle.Test
           }
-        }}
+
+          #
+          # NOTE: Copy the necessary variables into the isolated interpreter.
+          #
+          debug invoke 0 set ::test_channel $channel; # NOTE: For [tputs].
+          debug invoke 0 set ::test_log $log; # NOTE: For [tlog].
+
+          #
+          # NOTE: Install the callback script to be evaluated in the isolated
+          #       interpreter when this interpreter is interrupted by script
+          #       cancellation, etc.
+          #
+          debug callback apply {{sender e} {
+            #
+            # NOTE: Check if this callback is one that we care about.
+            #
+            if {"Canceled" in [split [$e InterruptType] ", "]} then {
+              #
+              # NOTE: Make sure the [object] command is available.  Since
+              #       this is an isolated interpreter, check for it the hard
+              #       way.
+              #
+              if {[llength [info commands object]] > 0} then {
+                #
+                # NOTE: Iterate through all database connections known to the
+                #       parent interpreter.
+                #
+                object foreach -alias pair [object invoke -flags +NonPublic \
+                    $e Interpreter.connections] {
+                  #
+                  # NOTE: Attempt to cancel any SQL queries in progress on
+                  #       this database connection.
+                  #
+                  if {[catch {$pair Value.Cancel} error]} then {
+                    tputs $::test_channel [appendArgs \n \
+                        "==== WARNING: failed to cancel query for " \
+                        "connection \"" [$pair Key] "\", error: " \n\t \
+                        $error \n]
+                  }
+                }
+              } else {
+                tputs $::test_channel [appendArgs \n \
+                    "==== WARNING: cannot cancel any queries: " \
+                    "the \"object\" command is not available\n"]
+              }
+            }
+          }}
+        } finally {
+          catch {unset ::env(quietSetupInterpreterTestPath)}
+        }
       } error] == 0} then {
         addConstraint interruptCallback.sqlite3
 

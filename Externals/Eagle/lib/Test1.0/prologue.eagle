@@ -219,7 +219,7 @@ if {![info exists no([file tail [info script]])]} then {
   #       tests or other errors.  This check only applies to Eagle.
   #       This block requires the "Eagle.Library" package.
   #
-  if {[isEagle]} then {
+  if {[isEagle] && [llength [info commands object]] > 0} then {
     catch {
       #
       # NOTE: Check the name of the current call frame against the one
@@ -678,12 +678,20 @@ if {![info exists no([file tail [info script]])]} then {
     tputs $test_channel [appendArgs "---- processors: " \
         [info processors] \n]
 
-    catch {object invoke Console.InputEncoding WebName} encoding
+    if {[llength [info commands object]] > 0} then {
+      catch {object invoke Console.InputEncoding WebName} encoding
+    } else {
+      set encoding unavailable
+    }
 
     tputs $test_channel [appendArgs "---- input encoding: " \
         $encoding \n]
 
-    catch {object invoke Console.OutputEncoding WebName} encoding
+    if {[llength [info commands object]] > 0} then {
+      catch {object invoke Console.OutputEncoding WebName} encoding
+    } else {
+      set encoding unavailable
+    }
 
     tputs $test_channel [appendArgs "---- output encoding: " \
         $encoding \n]
@@ -3053,9 +3061,13 @@ if {![info exists no([file tail [info script]])]} then {
     #
     # NOTE: Show the starting operation count (for Eagle only).
     #
-    catch {
-      object invoke -flags +NonPublic Interpreter.GetActive OperationCount
-    } operationCount
+    if {[llength [info commands object]] > 0} then {
+      catch {
+        object invoke -flags +NonPublic Interpreter.GetActive OperationCount
+      } operationCount
+    } else {
+      set operationCount unavailable
+    }
 
     tputs $test_channel [appendArgs "---- starting operation count: " \
         $operationCount \n]

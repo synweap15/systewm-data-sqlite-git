@@ -8,7 +8,9 @@
 ###############################################################################
 
 if {[info exists ::env(TEST_ALL)]} then {
-  catch {
-    object invoke Interpreter.GetActive AddRuntimeOption noPoolCounts
+  if {[haveSQLiteObjectCommand]} then {
+    catch {
+      object invoke Interpreter.GetActive AddRuntimeOption noPoolCounts
+    }
   }
 }

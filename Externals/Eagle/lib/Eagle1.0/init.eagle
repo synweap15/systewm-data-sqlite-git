@@ -814,17 +814,27 @@ namespace eval ::Eagle {
           $::eagle_platform(administrator)}]
     }
 
-    proc hasRuntimeOption { name } {
+    proc hasRuntimeOption { name {default false} } {
       #
       # NOTE: Returns non-zero if the specified runtime option is set.
       #
-      if {[catch {
-        object invoke Interpreter.GetActive HasRuntimeOption $name
-      } result] == 0} then {
-        return $result
-      } else {
-        return false
+      if {[llength [info commands debug]] > 0} then {
+        if {[llength [info subcommands debug runtimeoption]] > 0} then {
+          if {[catch {debug runtimeoption has $name} result] == 0} then {
+            return $result
+          }
+        }
       }
+
+      if {[llength [info commands object]] > 0} then {
+        if {[catch {
+          object invoke Interpreter.GetActive HasRuntimeOption $name
+        } result] == 0} then {
+          return $result
+        }
+      }
+
+      return $default
     }
 
     proc getPluginFlags { pattern } {

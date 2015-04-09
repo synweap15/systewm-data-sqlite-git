@@ -24,7 +24,7 @@ if {![info exists no([file tail [info script]])]} then {
   #       interpreter call stack has not been imbalanced by previous
   #       tests or other errors.  This check only applies to Eagle.
   #
-  if {[isEagle]} then {
+  if {[isEagle] && [llength [info commands object]] > 0} then {
     catch {
       #
       # NOTE: Check the name of the current call frame against the one
@@ -113,9 +113,13 @@ if {![info exists no([file tail [info script]])]} then {
     #
     # NOTE: Show the ending operation count (for Eagle only).
     #
-    catch {
-      object invoke -flags +NonPublic Interpreter.GetActive OperationCount
-    } operationCount
+    if {[llength [info commands object]] > 0} then {
+      catch {
+        object invoke -flags +NonPublic Interpreter.GetActive OperationCount
+      } operationCount
+    } else {
+      set operationCount unavailable
+    }
 
     tputs $test_channel [appendArgs "---- ending operation count: " \
         $operationCount \n]

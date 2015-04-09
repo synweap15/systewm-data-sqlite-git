@@ -1612,10 +1612,10 @@ namespace eval ::Eagle {
         #
         # NOTE: Attempt to query for native stack checking in Eagle.
         #
-        if {[catch {object invoke -flags +NonPublic \
-                Eagle._Components.Private.NativeStack CanQueryThread} \
-                canQueryThread] == 0 && \
-            $canQueryThread} then {
+        if {[catch {
+          object invoke -flags +NonPublic \
+              Eagle._Components.Private.NativeStack CanQueryThread
+        } canQueryThread] == 0 && $canQueryThread} then {
           #
           # NOTE: Yes, it appears that it is available.
           #
@@ -1661,9 +1661,9 @@ namespace eval ::Eagle {
       #
       # NOTE: Attempt to query the interactive command names from Eagle.
       #
-      if {[catch {object invoke Utility GetInteractiveCommandNames $name \
-              false} names] == 0 && \
-          [llength $names] > 0} then {
+      if {[catch {
+        object invoke Utility GetInteractiveCommandNames $name false
+      } names] == 0 && [llength $names] > 0} then {
         #
         # NOTE: Yes, it appears that it is available.
         #
@@ -1934,9 +1934,9 @@ namespace eval ::Eagle {
     proc checkForStrongName { channel } {
       tputs $channel "---- checking for strong name... "
 
-      if {[catch {object invoke Interpreter.GetActive GetStrongName} \
-              strongName] == 0 && \
-          [string length $strongName] > 0} then {
+      if {[catch {
+        object invoke Interpreter.GetActive GetStrongName
+      } strongName] == 0 && [string length $strongName] > 0} then {
         #
         # NOTE: Yes, it appears that the core library was signed with a
         #       strong name key.
@@ -2034,9 +2034,9 @@ namespace eval ::Eagle {
     proc checkForHostType { channel } {
       tputs $channel "---- checking for host type... "
 
-      if {[set code [catch {object invoke \
-              Interpreter.GetActive.Host.GetType ToString} hostType]] == 0 && \
-          [string length $hostType] > 0} then {
+      if {[set code [catch {
+        object invoke Interpreter.GetActive.Host.GetType ToString
+      } hostType]] == 0 && [string length $hostType] > 0} then {
         addConstraint [appendArgs hostType. [string map \
             [list , _ + _ & _ * _ \[ _ \] _ . _ \\ _] $hostType]]
 
@@ -2072,9 +2072,8 @@ namespace eval ::Eagle {
           set default false
         }
 
-        if {[catch {
-          object invoke $appDomain Id
-        } id] != 0 || [string length $id] == 0} then {
+        if {[catch {object invoke $appDomain Id} id] != 0 || \
+            [string length $id] == 0} then {
           set id unknown
         }
 
@@ -2437,11 +2436,12 @@ namespace eval ::Eagle {
       #
       # NOTE: Grab the current thread culture.
       #
-      if {[catch {object invoke System.Threading.Thread.CurrentThread \
-              CurrentCulture} culture] == 0 && \
-          [catch {object invoke Eagle._Components.Private.FormatOps \
-              CultureName $culture false} culture] == 0 && \
-          [string length $culture] > 0} then {
+      if {[catch {
+        object invoke System.Threading.Thread.CurrentThread CurrentCulture
+      } culture] == 0 && [catch {
+        object invoke Eagle._Components.Private.FormatOps CultureName \
+            $culture false
+      } culture] == 0 && [string length $culture] > 0} then {
         #
         # NOTE: The culture information is present, use it and show it.
         #
@@ -2552,7 +2552,9 @@ namespace eval ::Eagle {
         #
         # NOTE: Is the Windows Forms assembly available?
         #
-        if {[catch {object resolve System.Windows.Forms} assembly] == 0} then {
+        if {[catch {
+          object resolve System.Windows.Forms
+        } assembly] == 0} then {
           #
           # NOTE: Yes, it appears that it is available.
           #
@@ -2590,9 +2592,9 @@ namespace eval ::Eagle {
     proc checkForStaThread { channel } {
       tputs $channel "---- checking for STA thread... "
 
-      if {[catch {object invoke System.Threading.Thread.CurrentThread \
-              GetApartmentState} apartmentState] == 0 && \
-          $apartmentState eq "STA"} then {
+      if {[catch {
+        object invoke System.Threading.Thread.CurrentThread GetApartmentState
+      } apartmentState] == 0 && $apartmentState eq "STA"} then {
         #
         # NOTE: Yes, we are running in an STA thread.
         #
@@ -2610,7 +2612,9 @@ namespace eval ::Eagle {
       #
       # NOTE: Is the Windows Presentation Foundation available?
       #
-      if {[catch {object resolve PresentationFramework} assembly] == 0} then {
+      if {[catch {
+        object resolve PresentationFramework
+      } assembly] == 0} then {
         #
         # NOTE: Yes, it appears that it is available.
         #
@@ -2910,8 +2914,9 @@ namespace eval ::Eagle {
       #
       # NOTE: Can the PowerShell assembly be loaded?
       #
-      if {[catch {object resolve System.Management.Automation} \
-              assembly] == 0} then {
+      if {[catch {
+        object resolve System.Management.Automation
+      } assembly] == 0} then {
         #
         # NOTE: Yes, it appears that it is available.
         #
@@ -3367,9 +3372,11 @@ namespace eval ::Eagle {
       #
       # NOTE: Is the native debugger present?
       #
-      if {[catch {object invoke -flags +NonPublic \
-              Eagle._Components.Private.NativeOps+SafeNativeMethods \
-              IsDebuggerPresent} present] == 0 && $present} then {
+      if {[catch {
+        object invoke -flags +NonPublic \
+            Eagle._Components.Private.NativeOps+SafeNativeMethods \
+            IsDebuggerPresent
+      } present] == 0 && $present} then {
         #
         # NOTE: Yes, it appears that it is present.
         #
@@ -3387,8 +3394,9 @@ namespace eval ::Eagle {
       #
       # NOTE: Is the managed debugger attached?
       #
-      if {[catch {object invoke System.Diagnostics.Debugger IsAttached} \
-              attached] == 0 && $attached} then {
+      if {[catch {
+        object invoke System.Diagnostics.Debugger IsAttached
+      } attached] == 0 && $attached} then {
         #
         # NOTE: Yes, it appears that it is attached.
         #
@@ -3406,8 +3414,9 @@ namespace eval ::Eagle {
       #
       # NOTE: Is the script debugger available?
       #
-      if {[catch {object invoke -flags +NonPublic Interpreter.GetActive \
-              Debugger} debugger] == 0} then {
+      if {[catch {
+        object invoke -flags +NonPublic Interpreter.GetActive Debugger
+      } debugger] == 0} then {
         #
         # NOTE: We do not own this, do not dispose it.
         #
@@ -3439,8 +3448,9 @@ namespace eval ::Eagle {
       #
       # NOTE: Is the script debugger interpreter available?
       #
-      if {[catch {object invoke -flags +NonPublic Interpreter.GetActive \
-              Debugger} debugger] == 0} then {
+      if {[catch {
+        object invoke -flags +NonPublic Interpreter.GetActive Debugger
+      } debugger] == 0} then {
         #
         # NOTE: We do not own this, do not dispose it.
         #
@@ -3504,7 +3514,8 @@ namespace eval ::Eagle {
         checkForTiming checkForPerformance checkForBigLists \
         checkForTimeIntensive checkForMemoryIntensive checkForStackIntensive \
         checkForInteractive checkForInteractiveCommand checkForUserInteraction \
-        checkForNetwork checkForCompileOption checkForKnownCompileOptions] false false
+        checkForNetwork checkForCompileOption checkForKnownCompileOptions] \
+        false false
 
     ###########################################################################
     ############################## END Tcl ONLY ###############################
