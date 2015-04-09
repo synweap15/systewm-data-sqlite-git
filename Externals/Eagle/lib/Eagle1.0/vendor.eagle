@@ -162,13 +162,18 @@ namespace eval ::Eagle {
                 }
               }
 
+              #
+              # NOTE: In theory, this call to the [package scan] sub-command
+              #       could fail, raising a script error here; however, that
+              #       is highly unlikely.
+              #
               eval package scan -host -normal -refresh -- $::env(EAGLELIBPATH)
             } else {
               if {!$quiet} then {
                 catch {
                   tqputs $channel [appendArgs \
-                      "---- refreshed auto-path list via \"" $refresh \
-                      "\" command\n"]
+                      "---- forcibly refreshed auto-path list via \"" \
+                      $refresh "\" command\n"]
                 }
               }
             }
