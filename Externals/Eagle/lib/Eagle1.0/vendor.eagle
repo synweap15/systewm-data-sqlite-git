@@ -65,6 +65,20 @@ namespace eval ::Eagle {
       return $result
     }
 
+    proc refreshAutoPath {} {
+      if {[llength [info subcommands debug refreshautopath]] > 0 && \
+          [catch {debug refreshautopath true}] == 0} then {
+        return debug
+      }
+
+      if {[llength [info commands object]] > 0 && \
+          [catch {object invoke Utility RefreshAutoPathList true}] == 0} then {
+        return object
+      }
+
+      return ""
+    }
+
     proc addTestSuiteToAutoPath { channel varName quiet } {
       #
       # NOTE: Start with the directory containing this file.
@@ -127,12 +141,12 @@ namespace eval ::Eagle {
             lappend ::env(EAGLELIBPATH) $dir2
 
             #
-            # NOTE: Force Eagle to rebuild the auto-path list for the current
-            #       interpreter right now.
+            # NOTE: Attempt to force Eagle to rebuild the auto-path for the
+            #       current interpreter right now.
             #
-            if {[catch {
-              object invoke Utility RefreshAutoPathList true
-            }]} then {
+            set refresh [refreshAutoPath]
+
+            if {[string length $refresh] == 0} then {
               #
               # NOTE: Ok, maybe the [object] command is not available.  Rescan
               #       the package indexes using the [package scan] sub-command
@@ -143,12 +157,20 @@ namespace eval ::Eagle {
               if {!$quiet} then {
                 catch {
                   tqputs $channel [appendArgs \
-                      "---- unable to refresh auto-path list, scanning \"" \
-                      $::env(EAGLELIBPATH) "\" instead...\n"]
+                      "---- unable to forcibly refresh auto-path list, " \
+                      "scanning \"" $::env(EAGLELIBPATH) "\" instead...\n"]
                 }
               }
 
               eval package scan -host -normal -refresh -- $::env(EAGLELIBPATH)
+            } else {
+              if {!$quiet} then {
+                catch {
+                  tqputs $channel [appendArgs \
+                      "---- refreshed auto-path list via \"" $refresh \
+                      "\" command\n"]
+                }
+              }
             }
           }
 
@@ -181,17 +203,30 @@ namespace eval ::Eagle {
     }
 
     proc setupInterpreterTestPath { channel dir quiet } {
-      if {[llength [info commands object]] > 0} then {
-        set testPath [object invoke -flags +NonPublic Interpreter.GetActive \
-            TestPath]
+      if {[llength [info subcommands debug testpath]] > 0 && \
+          [catch {debug testpath} testPath] == 0} then {
+        if {$dir ne $testPath} then {
+          debug testpath $dir
 
+          if {!$quiet} then {
+            catch {
+              tqputs $channel [appendArgs \
+                  "---- set interpreter test path to \"" $dir \
+                  "\" via \"debug\" command\n"]
+            }
+          }
+        }
+      } elseif {[llength [info commands object]] > 0 && [catch {
+        object invoke -flags +NonPublic Interpreter.GetActive TestPath
+      } testPath] == 0} then {
         if {$dir ne $testPath} then {
           object invoke -flags +NonPublic Interpreter.GetActive TestPath $dir
 
           if {!$quiet} then {
             catch {
               tqputs $channel [appendArgs \
-                  "---- set interpreter test path to \"" $dir \"\n]
+                  "---- set interpreter test path to \"" $dir \
+                  "\" via \"object\" command\n"]
             }
           }
         }
