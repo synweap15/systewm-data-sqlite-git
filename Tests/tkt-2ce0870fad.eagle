@@ -31,9 +31,13 @@ shutdownSQLite $test_channel
 for {set i 1} {$i < 3} {incr i} {
   runTest {test [appendArgs tkt-2ce0870fad-1. $i] {logging setup} -setup \
       [getAppDomainPreamble {
+    proc haveSQLiteObjectCommand {[info args haveSQLiteObjectCommand]} {
+      [info body haveSQLiteObjectCommand]
+    }
+
     set i {$i}
 
-    set appDomainId($i) {[expr {[haveObjectCommand] ? \
+    set appDomainId($i) {[expr {[haveSQLiteObjectCommand] ? \
         [object invoke AppDomain.CurrentDomain Id] : [info appdomain]}]}
 
     set fileName {[appendArgs tkt-2ce0870fad-1. $i .db]}

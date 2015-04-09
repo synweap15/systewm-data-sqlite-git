@@ -32,7 +32,7 @@ shutdownSQLite $test_channel
 # NOTE: This value is needed as part of the test result; therefore, it must be
 #       set outside of the test setup.
 #
-if {[haveObjectCommand]} then {
+if {[haveSQLiteObjectCommand]} then {
   set id [object invoke Interpreter.GetActive NextId]
 } else {
   set id [clock seconds]
