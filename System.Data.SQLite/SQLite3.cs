@@ -839,6 +839,88 @@ namespace System.Data.SQLite
       }
     }
 
+    /// <summary>
+    /// Has the sqlite3_errstr() core library API been checked for yet?
+    /// If so, is it present?
+    /// </summary>
+    private static bool? have_errstr = null;
+
+    /// <summary>
+    /// Returns the error message for the specified SQLite return code using
+    /// the sqlite3_errstr() function, falling back to the internal lookup
+    /// table if necessary.
+    /// </summary>
+    /// <param name="rc">The SQLite return code.</param>
+    /// <returns>The error message or null if it cannot be found.</returns>
+    internal static string GetErrorString(SQLiteErrorCode rc)
+    {
+        try
+        {
+            if (have_errstr == null)
+            {
+                int versionNumber = SQLiteVersionNumber;
+                have_errstr = (versionNumber >= 3007015);
+            }
+
+            if ((bool)have_errstr)
+            {
+                IntPtr ptr = UnsafeNativeMethods.sqlite3_errstr(rc);
+
+                if (ptr != IntPtr.Zero)
+                {
+#if !PLATFORM_COMPACTFRAMEWORK
+                    return Marshal.PtrToStringAnsi(ptr);
+#else
+                    return UTF8ToString(ptr, -1);
+#endif
+                }
+            }
+        }
+        catch (EntryPointNotFoundException)
+        {
+            // do nothing.
+        }
+
+        return FallbackGetErrorString(rc);
+    }
+
+    /// <summary>
+    /// Has the sqlite3_stmt_readonly() core library API been checked for yet?
+    /// If so, is it present?
+    /// </summary>
+    private static bool? have_stmt_readonly = null;
+
+    /// <summary>
+    /// Returns non-zero if the specified statement is read-only in nature.
+    /// </summary>
+    /// <param name="stmt">The statement to check.</param>
+    /// <returns>True if the outer query is read-only.</returns>
+    internal override bool IsReadOnly(
+        SQLiteStatement stmt
+        )
+    {
+        try
+        {
+            if (have_stmt_readonly == null)
+            {
+                int versionNumber = SQLiteVersionNumber;
+                have_stmt_readonly = (versionNumber >= 3007004);
+            }
+
+            if ((bool)have_stmt_readonly)
+            {
+                return UnsafeNativeMethods.sqlite3_stmt_readonly(
+                    stmt._sqlite_stmt) != 0;
+            }
+        }
+        catch (EntryPointNotFoundException)
+        {
+            // do nothing.
+        }
+
+        return false; /* NOTE: Unknown, assume false. */
+    }
+
     internal override SQLiteErrorCode Reset(SQLiteStatement stmt)
     {
       SQLiteErrorCode n;

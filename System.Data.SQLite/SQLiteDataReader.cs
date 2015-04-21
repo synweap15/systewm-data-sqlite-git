@@ -1364,12 +1364,15 @@ namespace System.Data.SQLite
               if (!schemaOnly && stmt._sql.Step(stmt)) _stepCount++;
               if (stmt._sql.ColumnCount(stmt) == 0)
               {
-                if (_rowsAffected == -1) _rowsAffected = 0;
-                int changes = 0;
-                if (stmt.TryGetChanges(ref changes))
+                if (!stmt._sql.IsReadOnly(stmt))
+                {
+                  if (_rowsAffected == -1) _rowsAffected = 0;
+                  int changes = 0;
+                  if (stmt.TryGetChanges(ref changes))
                     _rowsAffected += changes;
-                else
+                  else
                     return false;
+                }
               }
               if (!schemaOnly) stmt._sql.Reset(stmt); // Gotta reset after every step to release any locks and such!
             }
@@ -1402,12 +1405,15 @@ namespace System.Data.SQLite
           }
           else if (fieldCount == 0) // No rows returned, if fieldCount is zero, skip to the next statement
           {
-            if (_rowsAffected == -1) _rowsAffected = 0;
-            int changes = 0;
-            if (stmt.TryGetChanges(ref changes))
-              _rowsAffected += changes;
-            else
-              return false;
+            if (!stmt._sql.IsReadOnly(stmt))
+            {
+              if (_rowsAffected == -1) _rowsAffected = 0;
+              int changes = 0;
+              if (stmt.TryGetChanges(ref changes))
+                _rowsAffected += changes;
+              else
+                return false;
+            }
             if (!schemaOnly) stmt._sql.Reset(stmt);
             continue; // Skip this command and move to the next, it was not a row-returning resultset
           }
@@ -1574,11 +1580,16 @@ namespace System.Data.SQLite
     }
 
     /// <summary>
-    /// Retrieve the count of records affected by an update/insert command.  Only valid once the data reader is closed!
+    /// Returns the number of rows affected by the statement being executed.
+    /// The value returned may not be accurate for DDL statements.  Also, it
+    /// will be -1 for any statement that does not modify the database (e.g.
+    /// SELECT).  If an otherwise read-only statement modifies the database
+    /// indirectly (e.g. via a virtual table or user-defined function), the
+    /// value returned is undefined.
     /// </summary>
     public override int RecordsAffected
     {
-      get { CheckDisposed(); return (_rowsAffected < 0) ? 0 : _rowsAffected; }
+      get { CheckDisposed(); return _rowsAffected; }
     }
 
     /// <summary>

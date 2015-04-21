@@ -162,6 +162,12 @@ namespace System.Data.SQLite
     /// <returns>True if a row was returned, False if not.</returns>
     internal abstract bool Step(SQLiteStatement stmt);
     /// <summary>
+    /// Returns non-zero if the specified statement is read-only in nature.
+    /// </summary>
+    /// <param name="stmt">The statement to check.</param>
+    /// <returns>True if the outer query is read-only.</returns>
+    internal abstract bool IsReadOnly(SQLiteStatement stmt);
+    /// <summary>
     /// Resets a prepared statement so it can be executed again.  If the error returned is SQLITE_SCHEMA,
     /// transparently attempt to rebuild the SQL statement and throw an error if that was not possible.
     /// </summary>
@@ -570,7 +576,7 @@ namespace System.Data.SQLite
     /// </summary>
     /// <param name="rc">The SQLite return code.</param>
     /// <returns>The error message or null if it cannot be found.</returns>
-    private static string FallbackGetErrorString(SQLiteErrorCode rc)
+    protected static string FallbackGetErrorString(SQLiteErrorCode rc)
     {
         if (_errorMessages == null)
             return null;
@@ -581,36 +587,6 @@ namespace System.Data.SQLite
             index = (int)SQLiteErrorCode.Error; /* Make into generic error. */
 
         return _errorMessages[index];
-    }
-
-    /// <summary>
-    /// Returns the error message for the specified SQLite return code using
-    /// the sqlite3_errstr() function, falling back to the internal lookup
-    /// table if necessary.
-    /// </summary>
-    /// <param name="rc">The SQLite return code.</param>
-    /// <returns>The error message or null if it cannot be found.</returns>
-    internal static string GetErrorString(SQLiteErrorCode rc)
-    {
-        try
-        {
-            IntPtr ptr = UnsafeNativeMethods.sqlite3_errstr(rc);
-
-            if (ptr != IntPtr.Zero)
-            {
-#if !PLATFORM_COMPACTFRAMEWORK
-                return Marshal.PtrToStringAnsi(ptr);
-#else
-                return UTF8ToString(ptr, -1);
-#endif
-            }
-        }
-        catch (EntryPointNotFoundException)
-        {
-            // do nothing.
-        }
-
-        return FallbackGetErrorString(rc);
     }
 
     internal static string GetLastError(SQLiteConnectionHandle hdl, IntPtr db)

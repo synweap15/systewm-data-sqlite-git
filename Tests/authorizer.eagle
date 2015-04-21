@@ -144,9 +144,9 @@ CreateTrigger tr1 t1 main {}}} 0 0} {CreateView {{0 CreateView v1 {} main {}}}\
 0 0} {CreateTempTable {{0 CreateTempTable t2 {} temp {}}} 0 0} {CreateTempIndex\
 {{0 CreateTempIndex i2 t2 temp {}}} 0 0} {CreateTempTrigger {{0\
 CreateTempTrigger tr2 t2 temp {}}} 0 0} {CreateTempView {{0 CreateTempView v2\
-{} temp {}}} 0 0} {Pragma {{0 Pragma journal_mode WAL {} {}}} 0 0} {Function\
-{{0 Function {} julianday {} {}}} 0 0} {Read {{0 Read t1 x main {}}} 0 0}\
-{Select {{0 Select {} {} {} {}}} 0 0} {Insert {{0 Insert t1 {} main {}}} 0 0}\
+{} temp {}}} 0 0} {Pragma {{0 Pragma journal_mode WAL {} {}}} 0 -1} {Function\
+{{0 Function {} julianday {} {}}} 0 -1} {Read {{0 Read t1 x main {}}} 0 -1}\
+{Select {{0 Select {} {} {} {}}} 0 -1} {Insert {{0 Insert t1 {} main {}}} 0 0}\
 {Update {{0 Update t1 x main {}}} 0 0} {Delete {{0 Delete t1 {} main {}}} 0 0}\
 {AlterTable {{0 AlterTable main t1 {} {}}} 0 0} {Reindex {{0 Reindex i1 {} main\
 {}}} 0 0} {Analyze {{0 Analyze t1 {} main {}}} 0 0} {DropTempView {{0\
@@ -154,11 +154,11 @@ DropTempView v2 {} temp {}}} 0 0} {DropTempTrigger {{0 DropTempTrigger tr2 t2\
 temp {}}} 0 0} {DropTempIndex {{0 DropTempIndex i2 t2 temp {}}} 0 0}\
 {DropTempTable {{0 DropTempTable t2 {} temp {}}} 0 0} {DropView {{0 DropView v1\
 {} main {}}} 0 0} {DropTrigger {{0 DropTrigger tr1 t1 main {}}} 0 0} {DropIndex\
-{{0 DropIndex i1 t1 main {}}} 0 0} {Recursive {{0 Recursive {} {} {} {}}} 0 0}\
+{{0 DropIndex i1 t1 main {}}} 0 0} {Recursive {{0 Recursive {} {} {} {}}} 0 -1}\
 {DropTable {{0 DropTable t1 {} main {}}} 0 0} {Transaction {{0 Transaction\
-BEGIN {} {} {}} {0 Transaction COMMIT {} {} {}}} 0 0} {Savepoint {{0 Savepoint\
-BEGIN s1 {} {}} {0 Savepoint RELEASE s1 {} {}}} 0 0} {Attach {{0 Attach\
-:memory: {} {} {}}} 0 0} {Detach {{0 Detach d1 {} {} {}}} 0 0} {CreateVtable\
+BEGIN {} {} {}} {0 Transaction COMMIT {} {} {}}} 0 -1} {Savepoint {{0 Savepoint\
+BEGIN s1 {} {}} {0 Savepoint RELEASE s1 {} {}}} 0 -1} {Attach {{0 Attach\
+:memory: {} {} {}}} 0 -1} {Detach {{0 Detach d1 {} {} {}}} 0 -1} {CreateVtable\
 {{0 CreateVtable t3 fts4 main {}}} 0 0} {DropVtable {{0 DropVtable t3 fts4 main\
 {}}} 0 0} {CreateTable {{0 CreateTable tDeny {} main {}}} 1\
 {System.Data.SQLite.SQLiteException (0x80004005): authorization denied}} False}}

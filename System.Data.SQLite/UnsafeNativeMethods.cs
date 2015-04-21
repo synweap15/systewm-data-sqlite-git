@@ -1880,6 +1880,13 @@ namespace System.Data.SQLite
 
 #if !PLATFORM_COMPACTFRAMEWORK
     [DllImport(SQLITE_DLL, CallingConvention = CallingConvention.Cdecl)]
+#else
+    [DllImport(SQLITE_DLL)]
+#endif
+    internal static extern int sqlite3_stmt_readonly(IntPtr stmt); /* 3.7.4+ */
+
+#if !PLATFORM_COMPACTFRAMEWORK
+    [DllImport(SQLITE_DLL, CallingConvention = CallingConvention.Cdecl)]
     internal static extern double sqlite3_column_double(IntPtr stmt, int index);
 #endif
 
