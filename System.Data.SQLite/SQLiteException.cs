@@ -163,10 +163,10 @@ namespace System.Data.SQLite
         BindingFlags flags = BindingFlags.Static |
             BindingFlags.NonPublic | BindingFlags.InvokeMethod;
 
-        return typeof(SQLiteBase).InvokeMember("GetErrorString",
+        return typeof(SQLite3).InvokeMember("GetErrorString",
             flags, null, null, new object[] { errorCode }) as string;
 #else
-        return SQLiteBase.GetErrorString(errorCode);
+        return SQLite3.GetErrorString(errorCode);
 #endif
     }
 
