@@ -172,12 +172,21 @@ namespace System.Data.SQLite
     /// The number of changes when true is returned.
     /// Undefined if false is returned.
     /// </param>
+    /// <param name="readOnly">
+    /// The read-only flag when true is returned.
+    /// Undefined if false is returned.
+    /// </param>
     /// <returns>Non-zero if the number of changed rows was fetched.</returns>
-    internal bool TryGetChanges(ref int changes)
+    internal bool TryGetChanges(
+        ref int changes,
+        ref bool readOnly
+        )
     {
         if ((_sql != null) && _sql.IsOpen())
         {
             changes = _sql.Changes;
+            readOnly = _sql.IsReadOnly(this);
+
             return true;
         }
 

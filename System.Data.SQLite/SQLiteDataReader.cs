@@ -1364,14 +1364,19 @@ namespace System.Data.SQLite
               if (!schemaOnly && stmt._sql.Step(stmt)) _stepCount++;
               if (stmt._sql.ColumnCount(stmt) == 0)
               {
-                if (!stmt._sql.IsReadOnly(stmt))
+                int changes = 0;
+                bool readOnly = false;
+                if (stmt.TryGetChanges(ref changes, ref readOnly))
                 {
-                  if (_rowsAffected == -1) _rowsAffected = 0;
-                  int changes = 0;
-                  if (stmt.TryGetChanges(ref changes))
+                  if (!readOnly)
+                  {
+                    if (_rowsAffected == -1) _rowsAffected = 0;
                     _rowsAffected += changes;
-                  else
-                    return false;
+                  }
+                }
+                else
+                {
+                  return false;
                 }
               }
               if (!schemaOnly) stmt._sql.Reset(stmt); // Gotta reset after every step to release any locks and such!
@@ -1405,14 +1410,19 @@ namespace System.Data.SQLite
           }
           else if (fieldCount == 0) // No rows returned, if fieldCount is zero, skip to the next statement
           {
-            if (!stmt._sql.IsReadOnly(stmt))
+            int changes = 0;
+            bool readOnly = false;
+            if (stmt.TryGetChanges(ref changes, ref readOnly))
             {
-              if (_rowsAffected == -1) _rowsAffected = 0;
-              int changes = 0;
-              if (stmt.TryGetChanges(ref changes))
+              if (!readOnly)
+              {
+                if (_rowsAffected == -1) _rowsAffected = 0;
                 _rowsAffected += changes;
-              else
-                return false;
+              }
+            }
+            else
+            {
+              return false;
             }
             if (!schemaOnly) stmt._sql.Reset(stmt);
             continue; // Skip this command and move to the next, it was not a row-returning resultset
