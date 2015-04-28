@@ -124,92 +124,107 @@ IF NOT DEFINED CSC (
 
 %_VECHO% Csc = '%CSC%'
 
+REM
+REM TODO: When the next version of Visual Studio is released, this section
+REM       may need updating.
+REM
 IF DEFINED NETFX20ONLY (
   %_AECHO% Forcing the use of the .NET Framework 2.0...
   SET YEAR=2005
-  CALL :fn_CheckFramework v2.0.50727
-  GOTO skip_netFxCheck
+  CALL :fn_CheckFrameworkDir v2.0.50727
+  GOTO setup_buildToolDir
 )
 
 IF DEFINED NETFX35ONLY (
   %_AECHO% Forcing the use of the .NET Framework 3.5...
   SET YEAR=2008
-  CALL :fn_CheckFramework v3.5
-  GOTO skip_netFxCheck
+  CALL :fn_CheckFrameworkDir v3.5
+  GOTO setup_buildToolDir
 )
 
 IF DEFINED NETFX40ONLY (
   %_AECHO% Forcing the use of the .NET Framework 4.0...
   SET YEAR=2010
-  CALL :fn_CheckFramework v4.0.30319
-  GOTO skip_netFxCheck
+  CALL :fn_CheckFrameworkDir v4.0.30319
+  GOTO setup_buildToolDir
 )
 
 IF DEFINED NETFX45ONLY (
   %_AECHO% Forcing the use of the .NET Framework 4.5...
   SET YEAR=2012
-  CALL :fn_CheckFramework v4.0.30319
-  GOTO skip_netFxCheck
+  CALL :fn_CheckFrameworkDir v4.0.30319
+  GOTO setup_buildToolDir
 )
 
 IF DEFINED NETFX451ONLY (
   %_AECHO% Forcing the use of the .NET Framework 4.5.1...
   SET YEAR=2013
-  CALL :fn_CheckFramework v4.0.30319
-  GOTO skip_netFxCheck
+  CALL :fn_CheckFrameworkDir v4.0.30319
+  CALL :fn_CheckMsBuildDir 12.0
+  GOTO setup_buildToolDir
 )
 
-IF DEFINED FRAMEWORKDIR (
-  IF NOT EXIST "%FRAMEWORKDIR%" (
-    CALL :fn_UnsetVariable FRAMEWORKDIR
+IF DEFINED NETFX452ONLY (
+  %_AECHO% Forcing the use of the .NET Framework 4.5.2...
+  SET YEAR=2013
+  CALL :fn_CheckFrameworkDir v4.0.30319
+  CALL :fn_CheckMsBuildDir 12.0
+  GOTO setup_buildToolDir
+)
+
+REM
+REM TODO: When the next version of MSBuild is released, this section may need
+REM       updating.
+REM
+IF NOT DEFINED MSBUILDDIR (
+  CALL :fn_CheckMsBuildDir 12.0
+  IF DEFINED MSBUILDDIR (
+    SET YEAR=2013
   )
 )
 
-IF DEFINED FRAMEWORKDIR (
-  IF NOT EXIST "%FRAMEWORKDIR%\%MSBUILD%" (
-    CALL :fn_UnsetVariable FRAMEWORKDIR
-  )
-  IF NOT EXIST "%FRAMEWORKDIR%\%CSC%" (
-    CALL :fn_UnsetVariable FRAMEWORKDIR
+REM
+REM TODO: When the next version of Visual Studio is released, this section
+REM       may need updating.
+REM
+IF NOT DEFINED FRAMEWORKDIR (
+  CALL :fn_CheckFrameworkDir v4.0.30319
+  IF DEFINED FRAMEWORKDIR (
+    SET YEAR=2010
   )
 )
 
 IF NOT DEFINED FRAMEWORKDIR (
-  %_AECHO% Checking for the .NET Framework 4.0...
-  SET YEAR=2010
-  CALL :fn_CheckFramework v4.0.30319
+  CALL :fn_CheckFrameworkDir v3.5
+  IF DEFINED FRAMEWORKDIR (
+    SET YEAR=2008
+  )
 )
 
-IF NOT EXIST "%FRAMEWORKDIR%" (
-  %_AECHO% Checking for the .NET Framework 3.5...
-  SET YEAR=2008
-  CALL :fn_CheckFramework v3.5
+IF NOT DEFINED FRAMEWORKDIR (
+  CALL :fn_CheckFrameworkDir v2.0.50727
+  IF DEFINED FRAMEWORKDIR (
+    SET YEAR=2005
+  )
 )
 
-IF NOT EXIST "%FRAMEWORKDIR%" (
-  %_AECHO% Checking for the .NET Framework 2.0...
-  SET YEAR=2005
-  CALL :fn_CheckFramework v2.0.50727
-)
+:setup_buildToolDir
 
-:skip_netFxCheck
+IF DEFINED BUILDTOOLDIR (
+  %_AECHO% Forcing the use of build tool directory "%BUILDTOOLDIR%"...
+) ELSE (
+  CALL :fn_CheckBuildToolDir
+  CALL :fn_VerifyBuildToolDir
+)
 
 %_VECHO% Year = '%YEAR%'
 %_VECHO% FrameworkDir = '%FRAMEWORKDIR%'
+%_VECHO% MsBuildDir = '%MSBUILDDIR%'
+%_VECHO% BuildToolDir = '%BUILDTOOLDIR%'
 
-IF NOT DEFINED FRAMEWORKDIR (
+IF NOT DEFINED BUILDTOOLDIR (
   ECHO.
-  ECHO The .NET Framework directory "FRAMEWORKDIR" is not defined.
-  ECHO.
-  ECHO Please install the .NET Framework or set the "FRAMEWORKDIR"
-  ECHO environment variable to the location where it is installed.
-  ECHO.
-  GOTO errors
-)
-
-IF NOT EXIST "%FRAMEWORKDIR%" (
-  ECHO.
-  ECHO The .NET Framework directory "%FRAMEWORKDIR%" was not found.
+  ECHO No directory containing MSBuild could be found.
   ECHO.
   ECHO Please install the .NET Framework or set the "FRAMEWORKDIR"
   ECHO environment variable to the location where it is installed.
@@ -226,7 +241,7 @@ IF ERRORLEVEL 1 (
   GOTO errors
 )
 
-SET PATH=%FRAMEWORKDIR%;%PATH%
+SET PATH=%BUILDTOOLDIR%;%PATH%
 
 %_VECHO% Path = '%PATH%'
 
@@ -347,12 +362,15 @@ IF ERRORLEVEL 1 (
 
 GOTO no_errors
 
-:fn_CheckFramework
+:fn_CheckFrameworkDir
+  IF DEFINED NOFRAMEWORKDIR GOTO :EOF
   SET FRAMEWORKVER=%1
+  %_AECHO% Checking for .NET Framework "%FRAMEWORKVER%"...
   IF NOT DEFINED FRAMEWORKVER GOTO :EOF
-  IF DEFINED NOMSBUILD64 (
-    %_AECHO% Forced into using 32-bit version of MSBuild...
+  IF DEFINED NOFRAMEWORK64 (
+    %_AECHO% Forced into using 32-bit version of MSBuild from Microsoft.NET...
     SET FRAMEWORKDIR=%windir%\Microsoft.NET\Framework\%FRAMEWORKVER%
+    CALL :fn_VerifyFrameworkDir
     GOTO :EOF
   )
   IF NOT "%PROCESSOR_ARCHITECTURE%" == "x86" (
@@ -360,8 +378,9 @@ GOTO no_errors
     IF EXIST "%windir%\Microsoft.NET\Framework64\%FRAMEWORKVER%" (
       IF EXIST "%windir%\Microsoft.NET\Framework64\%FRAMEWORKVER%\%MSBUILD%" (
         IF EXIST "%windir%\Microsoft.NET\Framework64\%FRAMEWORKVER%\%CSC%" (
-          %_AECHO% Using 64-bit version of MSBuild...
+          %_AECHO% Using 64-bit version of MSBuild from Microsoft.NET...
           SET FRAMEWORKDIR=%windir%\Microsoft.NET\Framework64\%FRAMEWORKVER%
+          CALL :fn_VerifyFrameworkDir
           GOTO :EOF
         ) ELSE (
           %_AECHO% Missing 64-bit version of "%CSC%".
@@ -375,8 +394,117 @@ GOTO no_errors
   ) ELSE (
     %_AECHO% The operating system appears to be 32-bit.
   )
-  %_AECHO% Using 32-bit version of MSBuild...
+  %_AECHO% Using 32-bit version of MSBuild from Microsoft.NET...
   SET FRAMEWORKDIR=%windir%\Microsoft.NET\Framework\%FRAMEWORKVER%
+  CALL :fn_VerifyFrameworkDir
+  GOTO :EOF
+
+:fn_VerifyFrameworkDir
+  IF DEFINED NOFRAMEWORKDIR GOTO :EOF
+  IF NOT DEFINED FRAMEWORKDIR (
+    %_AECHO% .NET Framework directory is not defined.
+    GOTO :EOF
+  )
+  IF DEFINED FRAMEWORKDIR IF NOT EXIST "%FRAMEWORKDIR%" (
+    %_AECHO% .NET Framework directory does not exist, unsetting...
+    CALL :fn_UnsetVariable FRAMEWORKDIR
+    GOTO :EOF
+  )
+  IF DEFINED FRAMEWORKDIR IF NOT EXIST "%FRAMEWORKDIR%\%MSBUILD%" (
+    %_AECHO% File "%MSBUILD%" not in .NET Framework directory, unsetting...
+    CALL :fn_UnsetVariable FRAMEWORKDIR
+    GOTO :EOF
+  )
+  IF DEFINED FRAMEWORKDIR IF NOT EXIST "%FRAMEWORKDIR%\%CSC%" (
+    %_AECHO% File "%CSC%" not in .NET Framework directory, unsetting...
+    CALL :fn_UnsetVariable FRAMEWORKDIR
+    GOTO :EOF
+  )
+  %_AECHO% .NET Framework directory "%FRAMEWORKDIR%" verified.
+  GOTO :EOF
+
+:fn_CheckMsBuildDir
+  IF DEFINED NOMSBUILDDIR GOTO :EOF
+  SET MSBUILDVER=%1
+  %_AECHO% Checking for MSBuild "%MSBUILDVER%"...
+  IF NOT DEFINED MSBUILDVER GOTO :EOF
+  IF DEFINED NOMSBUILD64 (
+    %_AECHO% Forced into using 32-bit version of MSBuild from Program Files...
+    GOTO set_msbuild_x86
+  )
+  IF "%PROCESSOR_ARCHITECTURE%" == "x86" GOTO set_msbuild_x86
+  %_AECHO% The operating system appears to be 64-bit.
+  %_AECHO% Using 32-bit version of MSBuild from Program Files...
+  SET MSBUILDDIR=%ProgramFiles(x86)%\MSBuild\%MSBUILDVER%\bin
+  GOTO set_msbuild_done
+  :set_msbuild_x86
+  %_AECHO% The operating system appears to be 32-bit.
+  %_AECHO% Using native version of MSBuild from Program Files...
+  SET MSBUILDDIR=%ProgramFiles%\MSBuild\%MSBUILDVER%\bin
+  :set_msbuild_done
+  CALL :fn_VerifyMsBuildDir
+  GOTO :EOF
+
+:fn_VerifyMsBuildDir
+  IF DEFINED NOMSBUILDDIR GOTO :EOF
+  IF NOT DEFINED MSBUILDDIR (
+    %_AECHO% MSBuild directory is not defined.
+    GOTO :EOF
+  )
+  IF DEFINED MSBUILDDIR IF NOT EXIST "%MSBUILDDIR%" (
+    %_AECHO% MSBuild directory does not exist, unsetting...
+    CALL :fn_UnsetVariable MSBUILDDIR
+    GOTO :EOF
+  )
+  IF DEFINED MSBUILDDIR IF NOT EXIST "%MSBUILDDIR%\%MSBUILD%" (
+    %_AECHO% File "%MSBUILD%" not in MSBuild directory, unsetting...
+    CALL :fn_UnsetVariable MSBUILDDIR
+    GOTO :EOF
+  )
+  IF DEFINED MSBUILDDIR IF NOT EXIST "%MSBUILDDIR%\%CSC%" (
+    %_AECHO% File "%CSC%" not in MSBuild directory, unsetting...
+    CALL :fn_UnsetVariable MSBUILDDIR
+    GOTO :EOF
+  )
+  %_AECHO% MSBuild directory "%MSBUILDDIR%" verified.
+  GOTO :EOF
+
+:fn_CheckBuildToolDir
+  %_AECHO% Checking for build tool directories...
+  IF DEFINED MSBUILDDIR GOTO set_msbuild_tools
+  IF DEFINED FRAMEWORKDIR GOTO set_framework_tools
+  %_AECHO% No build tool directories found.
+  GOTO :EOF
+  :set_msbuild_tools
+  %_AECHO% Using MSBuild directory "%MSBUILDDIR%"...
+  CALL :fn_CopyVariable MSBUILDDIR BUILDTOOLDIR
+  GOTO :EOF
+  :set_framework_tools
+  %_AECHO% Using .NET Framework directory "%FRAMEWORKDIR%"...
+  CALL :fn_CopyVariable FRAMEWORKDIR BUILDTOOLDIR
+  GOTO :EOF
+
+:fn_VerifyBuildToolDir
+  IF NOT DEFINED BUILDTOOLDIR (
+    %_AECHO% Build tool directory is not defined.
+    GOTO :EOF
+  )
+  IF DEFINED BUILDTOOLDIR IF NOT EXIST "%BUILDTOOLDIR%" (
+    %_AECHO% Build tool directory does not exist, unsetting...
+    CALL :fn_UnsetVariable BUILDTOOLDIR
+    GOTO :EOF
+  )
+  IF DEFINED BUILDTOOLDIR IF NOT EXIST "%BUILDTOOLDIR%\%MSBUILD%" (
+    %_AECHO% File "%MSBUILD%" not in build tool directory, unsetting...
+    CALL :fn_UnsetVariable BUILDTOOLDIR
+    GOTO :EOF
+  )
+  IF DEFINED BUILDTOOLDIR IF NOT EXIST "%BUILDTOOLDIR%\%CSC%" (
+    %_AECHO% File "%CSC%" not in build tool directory, unsetting...
+    CALL :fn_UnsetVariable BUILDTOOLDIR
+    GOTO :EOF
+  )
+  %_AECHO% Build tool directory "%BUILDTOOLDIR%" verified.
   GOTO :EOF
 
 :fn_UnquoteVariable
@@ -389,6 +517,17 @@ GOTO no_errors
   SET VALUE=%VALUE:"=%
   REM "
   ENDLOCAL && SET %1=%VALUE%
+  GOTO :EOF
+
+:fn_CopyVariable
+  IF NOT DEFINED %1 GOTO :EOF
+  IF "%2" == "" GOTO :EOF
+  SETLOCAL
+  SET __ECHO_CMD=ECHO %%%1%%
+  FOR /F "delims=" %%V IN ('%__ECHO_CMD%') DO (
+    SET VALUE=%%V
+  )
+  ENDLOCAL && SET %2=%VALUE%
   GOTO :EOF
 
 :fn_UnsetVariable
