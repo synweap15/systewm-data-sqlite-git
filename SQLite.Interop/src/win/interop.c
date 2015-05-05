@@ -177,8 +177,12 @@ SQLITE_PRIVATE void sqlite3InteropDebug(const char *zFormat, ...){
   StrAccum acc;                       /* String accumulator */
   char zMsg[SQLITE_PRINT_BUF_SIZE*3]; /* Complete log message */
   va_start(ap, zFormat);
+#if SQLITE_VERSION_NUMBER >= 3008010
+  sqlite3StrAccumInit(&acc, 0, zMsg, sizeof(zMsg), 0);
+#else
   sqlite3StrAccumInit(&acc, zMsg, sizeof(zMsg), 0);
   acc.useMalloc = 0;
+#endif
   sqlite3VXPrintf(&acc, 0, zFormat, ap);
   va_end(ap);
 #if SQLITE_VERSION_NUMBER >= 3007013

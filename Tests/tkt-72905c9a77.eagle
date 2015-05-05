@@ -286,7 +286,7 @@ configuration.Release !defineConstant.System.Data.SQLite.INTEROP_LOG\
 command.sql compile.DATA SQLite System.Data.SQLite compileCSharp}] -match \
 regexp -result [appendArgs \
 "^Ok System#CodeDom#Compiler#CompilerResults#\\d+ \\{\\} 0 \\{" \
-[string repeat "SQLite message \\(0\\): TEST $id " \
+[string repeat "SQLite message \\(0\\): TEST $id\\n" \
 [expr {min(4 * [info processors], 16)}]] "\\}\$"]}
 
 ###############################################################################
