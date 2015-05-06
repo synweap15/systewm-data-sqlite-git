@@ -21,6 +21,44 @@ runSQLiteTestFilesPrologue
 
 ###############################################################################
 
+proc saveSQLiteConnectionEnvironment {} {
+  foreach name [list \
+      DefaultFlags_SQLiteConnection No_SQLiteConnectionNewParser] {
+    #
+    # NOTE: Does the live environment variable exist?  If so, save the value
+    #       for later; otherwise, make sure the saved value does not exist
+    #       either.  The live environment variables ARE NOT changed by this
+    #       procedure.
+    #
+    if {[uplevel 1 [list info exists env($name)]]} then {
+      uplevel 1 [list set savedEnv($name) [uplevel 1 [list set env($name)]]]
+    } else {
+      uplevel 1 [list unset -nocomplain savedEnv($name)]
+    }
+  }
+}
+
+proc restoreSQLiteConnectionEnvironment {} {
+  foreach name [list \
+      DefaultFlags_SQLiteConnection No_SQLiteConnectionNewParser] {
+    #
+    # NOTE: Does the saved environment variable exist?  If so, restore the
+    #       saved value and then unset it; otherwise, make sure the live
+    #       environment variable does not exist either (i.e. it was not set
+    #       to begin with).  Both the saved and live environment variables
+    #       ARE changed by this procedure.
+    #
+    if {[uplevel 1 [list info exists savedEnv($name)]]} then {
+      uplevel 1 [list set env($name) [uplevel 1 [list set savedEnv($name)]]]
+      uplevel 1 [list unset -nocomplain savedEnv($name)]
+    } else {
+      uplevel 1 [list unset -nocomplain env($name)]
+    }
+  }
+}
+
+###############################################################################
+
 runTest {test data-1.1 {unit tests from the 'test' project} -setup {
   cleanupFile [file join [file dirname $testExeFile] Test.db3]
   set fileName [file join [getDatabaseDirectory] data-1.1.db]
@@ -3105,6 +3143,58 @@ runTest {test data-1.67 {SQLiteConnection.SetChunkSize method} -setup {
   unset -nocomplain result connection db fileName
 } -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
 System.Data.SQLite} -result {Ok 32768}}
+
+###############################################################################
+
+runTest {test data-1.68 {unset env(DefaultFlags_SQLiteConnection)} -setup {
+  saveSQLiteConnectionEnvironment
+
+  unset -nocomplain env(DefaultFlags_SQLiteConnection)
+
+  setupDb [set fileName data-1.68.db]
+} -body {
+  set connection [getDbConnection]
+
+  list [object invoke System.Data.SQLite.SQLiteConnection DefaultFlags] \
+      [$connection Flags]
+} -cleanup {
+  cleanupDb $fileName
+  restoreSQLiteConnectionEnvironment
+
+  freeDbConnection
+
+  unset -nocomplain connection db fileName
+} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
+System.Data.SQLite} -result {Default Default}}
+
+###############################################################################
+
+runTest {test data-1.69 {set env(DefaultFlags_SQLiteConnection)} -setup {
+  saveSQLiteConnectionEnvironment
+
+  set env(DefaultFlags_SQLiteConnection) "DetectTextAffinity, DetectStringType"
+
+  setupDb [set fileName data-1.69.db]
+} -body {
+  set connection [getDbConnection]
+
+  list [object invoke System.Data.SQLite.SQLiteConnection DefaultFlags] \
+      [$connection Flags]
+} -cleanup {
+  cleanupDb $fileName
+  restoreSQLiteConnectionEnvironment
+
+  freeDbConnection
+
+  unset -nocomplain connection db fileName
+} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
+System.Data.SQLite} -result {{DetectTextAffinity, DetectStringType}\
+{DetectTextAffinity, DetectStringType}}}
+
+###############################################################################
+
+rename restoreSQLiteConnectionEnvironment ""
+rename saveSQLiteConnectionEnvironment ""
 
 ###############################################################################
 

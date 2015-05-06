@@ -358,7 +358,7 @@ namespace System.Data.SQLite
     internal const IsolationLevel DeferredIsolationLevel = IsolationLevel.ReadCommitted;
     internal const IsolationLevel ImmediateIsolationLevel = IsolationLevel.Serializable;
 
-    private const SQLiteConnectionFlags DefaultFlags = SQLiteConnectionFlags.Default;
+    private const SQLiteConnectionFlags FallbackDefaultFlags = SQLiteConnectionFlags.Default;
     private const SQLiteSynchronousEnum DefaultSynchronous = SQLiteSynchronousEnum.Default;
     private const SQLiteJournalModeEnum DefaultJournalMode = SQLiteJournalModeEnum.Default;
     private const IsolationLevel DefaultIsolationLevel = IsolationLevel.Serializable;
@@ -3222,6 +3222,27 @@ namespace System.Data.SQLite
             {
                 return null;
             }
+        }
+    }
+
+    /// <summary>
+    /// The default connection flags to be used for all opened connections
+    /// when they are not present in the connection string.
+    /// </summary>
+    public static SQLiteConnectionFlags DefaultFlags
+    {
+        get
+        {
+            object enumValue;
+
+            enumValue = TryParseEnum(typeof(SQLiteConnectionFlags),
+                UnsafeNativeMethods.GetSettingValue(
+                    "DefaultFlags_SQLiteConnection", null), true);
+
+            if (enumValue is SQLiteConnectionFlags)
+                return (SQLiteConnectionFlags)enumValue;
+
+            return FallbackDefaultFlags;
         }
     }
 
