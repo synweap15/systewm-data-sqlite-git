@@ -1591,9 +1591,6 @@ namespace System.Data.SQLite
     internal static extern SQLiteErrorCode sqlite3_index_column_info_interop(IntPtr db, byte[] catalog, byte[] IndexName, byte[] ColumnName, ref int sortOrder, ref int onError, ref IntPtr Collation, ref int colllen);
 
     [DllImport(SQLITE_DLL)]
-    internal static extern void sqlite3_resetall_interop(IntPtr db);
-
-    [DllImport(SQLITE_DLL)]
     internal static extern int sqlite3_table_cursor_interop(IntPtr stmt, int db, int tableRootPage);
 
 #endif
