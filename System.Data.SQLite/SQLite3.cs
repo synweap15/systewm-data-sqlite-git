@@ -269,7 +269,14 @@ namespace System.Data.SQLite
     /// </summary>
     internal override void Cancel()
     {
-      UnsafeNativeMethods.sqlite3_interrupt(_sql);
+      try
+      {
+        // do nothing.
+      }
+      finally /* NOTE: Thread.Abort() protection. */
+      {
+        UnsafeNativeMethods.sqlite3_interrupt(_sql);
+      }
     }
 
     /// <summary>
