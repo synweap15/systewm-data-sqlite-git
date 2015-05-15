@@ -52,6 +52,7 @@
       <li>When BinaryGUID handling is off, transform the LINQ parameter types as well. Fix for <a href="https://system.data.sqlite.org/index.html/info/a4d9c7ee94">[a4d9c7ee94]</a>.&nbsp;<b>** Potentially Incompatible Change **</b></li>
       <li>The IDataReader.GetDataTypeName method should always return the declared type name.&nbsp;<b>** Potentially Incompatible Change **</b></li>
       <li>Add DefaultFlags_SQLiteConnection environment variable to enable customization of the default connection flags.</li>
+      <li>Prevent calls to sqlite3_step() and sqlite3_interrupt() from being interrupted via ThreadAbortException.</li>
     </ul>
     <p><b>1.0.96.0 - March 5, 2015</b></p>
     <ul>

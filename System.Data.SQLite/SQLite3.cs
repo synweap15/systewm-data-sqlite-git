@@ -269,7 +269,14 @@ namespace System.Data.SQLite
     /// </summary>
     internal override void Cancel()
     {
-      UnsafeNativeMethods.sqlite3_interrupt(_sql);
+      try
+      {
+        // do nothing.
+      }
+      finally /* NOTE: Thread.Abort() protection. */
+      {
+        UnsafeNativeMethods.sqlite3_interrupt(_sql);
+      }
     }
 
     /// <summary>
@@ -801,7 +808,14 @@ namespace System.Data.SQLite
 
       while (true)
       {
-        n = UnsafeNativeMethods.sqlite3_step(stmt._sqlite_stmt);
+        try
+        {
+            // do nothing.
+        }
+        finally /* NOTE: Thread.Abort() protection. */
+        {
+          n = UnsafeNativeMethods.sqlite3_step(stmt._sqlite_stmt);
+        }
 
         if (n == SQLiteErrorCode.Row) return true;
         if (n == SQLiteErrorCode.Done) return false;
