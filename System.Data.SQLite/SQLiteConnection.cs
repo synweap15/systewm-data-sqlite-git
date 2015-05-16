@@ -3660,8 +3660,42 @@ namespace System.Data.SQLite
     /// <summary>
     /// Retrieves schema information using the specified constraint(s) for the specified collection
     /// </summary>
-    /// <param name="collectionName">The collection to retrieve</param>
-    /// <param name="restrictionValues">The restrictions to impose</param>
+    /// <param name="collectionName">The collection to retrieve.</param>
+    /// <param name="restrictionValues">
+    /// The restrictions to impose.  Typically, this may include:
+    /// <list type="table">
+    /// <listheader>
+    /// <term>restrictionValues element index</term>
+    /// <term>usage</term>
+    /// </listheader>
+    /// <item>
+    /// <description>0</description>
+    /// <description>The database (or catalog) name, if applicable.</description>
+    /// </item>
+    /// <item>
+    /// <description>1</description>
+    /// <description>The schema name.  This is not used by this provider.</description>
+    /// </item>
+    /// <item>
+    /// <description>2</description>
+    /// <description>The table name, if applicable.</description>
+    /// </item>
+    /// <item>
+    /// <description>3</description>
+    /// <description>
+    /// Depends on <paramref name="collectionName" />.
+    /// When "IndexColumns", it is the index name; otherwise, it is the column name.
+    /// </description>
+    /// </item>
+    /// <item>
+    /// <description>4</description>
+    /// <description>
+    /// Depends on <paramref name="collectionName" />.
+    /// When "IndexColumns", it is the column name; otherwise, it is not used.
+    /// </description>
+    /// </item>
+    /// </list>
+    /// </param>
     /// <returns>A DataTable of the specified collection</returns>
     public override DataTable GetSchema(string collectionName, string[] restrictionValues)
     {
