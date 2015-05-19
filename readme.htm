@@ -220,6 +220,7 @@ released versions of System.Data.SQLite.
     <li>The IDataReader.GetDataTypeName method should always return the declared type name.&nbsp;<b>** Potentially Incompatible Change **</b></li>
     <li>Add DefaultFlags_SQLiteConnection environment variable to enable customization of the default connection flags.</li>
     <li>Prevent calls to sqlite3_step() and sqlite3_interrupt() from being interrupted via ThreadAbortException.</li>
+    <li>Make sure enabling UseUTF16Encoding sets the schema encoding to UTF-16. Fix for [7c151a2f0e].</li>
 </ul>
 <p>
     <b>1.0.96.0 - March 5, 2015</b>

@@ -394,7 +394,16 @@ SQLITE_API int WINAPI sqlite3_open16_interop(const char *filename, int flags, sq
 #endif
 
   if ((ret == SQLITE_OK) && ppdb && !DbHasProperty(*ppdb, 0, DB_SchemaLoaded))
+  {
     ENC(*ppdb) = SQLITE_UTF16NATIVE;
+
+#if SQLITE_VERSION_NUMBER >= 3008008
+    //
+    // BUGFIX: See ticket [7c151a2f0e22804c].
+    //
+    SCHEMA_ENC(*ppdb) = SQLITE_UTF16NATIVE;
+#endif
+  }
 
   return ret;
 }
