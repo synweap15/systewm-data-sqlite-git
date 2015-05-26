@@ -11,6 +11,21 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <!--
   ******************************************************************************
+  **                          Load Per-User Settings                          **
+  ******************************************************************************
+  -->
+
+  <!--
+      NOTE: If the per-user settings file exists, import it now.  The contained
+            settings, if any, will override the default ones provided below.
+  -->
+  <Import Condition="'$(MSBuildThisFileDirectory)' != '' And
+                     HasTrailingSlash('$(MSBuildThisFileDirectory)') And
+                     Exists('$(MSBuildThisFileDirectory)\System.Data.SQLite.Core.targets.user')"
+          Project="$(MSBuildThisFileDirectory)\System.Data.SQLite.Core.targets.user" />
+
+  <!--
+  ******************************************************************************
   **                    SQLite Interop Library Build Items                    **
   ******************************************************************************
   -->
@@ -19,6 +34,21 @@
     <SQLiteInteropFiles Condition="'$(MSBuildThisFileDirectory)' != '' And
                                    HasTrailingSlash('$(MSBuildThisFileDirectory)')"
                         Include="$(MSBuildThisFileDirectory)**\SQLite.Interop.*" />
+  </ItemGroup>
+
+  <!--
+  ******************************************************************************
+  **                   SQLite Interop Library Content Items                   **
+  ******************************************************************************
+  -->
+
+  <ItemGroup Condition="'$(ContentSQLiteInteropFiles)' != '' And
+                        '$(ContentSQLiteInteropFiles)' != 'false' And
+                        '@(SQLiteInteropFiles)' != ''">
+    <Content Include="@(SQLiteInteropFiles)">
+      <Link>%(RecursiveDir)%(FileName)%(Extension)</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <!--
