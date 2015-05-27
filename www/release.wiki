@@ -231,6 +231,8 @@
     Enter the following command to build all the setup packages for x86 and x64:
     <br />
     <br />
+    <b>SET BAKE_DEBUG=1</b>
+    <br />
     <b>bake_all.bat</b>
   </li>
 </ol>
@@ -247,6 +249,8 @@
     Enter the following command to build all the binary release packages for x86
     and x64:
     <br />
+    <br />
+    <b>SET RELEASE_DEBUG=1</b>
     <br />
     <b>release_all.bat</b>
   </li>
@@ -265,6 +269,8 @@
     for x86 and x64:
     <br />
     <br />
+    <b>SET RELEASE_DEBUG=1</b>
+    <br />
     <b>release_static.bat</b>
   </li>
 </ol>
@@ -282,6 +288,8 @@
     Windows CE:
     <br />
     <br />
+    <b>SET RELEASE_DEBUG=1</b>
+    <br />
     <b>release_ce_200x.bat</b>
   </li>
 
@@ -289,6 +297,8 @@
     Enter the following command to build all the binary release packages for
     Windows Embedded Compact 2013:
     <br />
+    <br />
+    <b>SET RELEASE_DEBUG=1</b>
     <br />
     <b>release_ce_2013.bat</b>
   </li>
