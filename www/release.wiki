@@ -228,7 +228,7 @@
   <li>Change the current directory to &quot;&lt;root&gt;\Setup&quot;.</li>
 
   <li>
-    Enter the following command to build all the setup packages for x86 and x64:
+    Enter the following commands to build all the setup packages for x86 and x64:
     <br />
     <br />
     <b>SET BAKE_DEBUG=1</b>
@@ -246,7 +246,7 @@
   <li>Change the current directory to &quot;&lt;root&gt;\Setup&quot;.</li>
 
   <li>
-    Enter the following command to build all the binary release packages for x86
+    Enter the following commands to build all the binary release packages for x86
     and x64:
     <br />
     <br />
@@ -265,7 +265,7 @@
   <li>Change the current directory to &quot;&lt;root&gt;\Setup&quot;.</li>
 
   <li>
-    Enter the following command to build all the static binary release packages
+    Enter the following commands to build all the static binary release packages
     for x86 and x64:
     <br />
     <br />
@@ -284,7 +284,7 @@
   <li>Change the current directory to &quot;&lt;root&gt;\Setup&quot;.</li>
 
   <li>
-    Enter the following command to build all the binary release packages for
+    Enter the following commands to build all the binary release packages for
     Windows CE:
     <br />
     <br />
@@ -294,7 +294,7 @@
   </li>
 
   <li>
-    Enter the following command to build all the binary release packages for
+    Enter the following commands to build all the binary release packages for
     Windows Embedded Compact 2013:
     <br />
     <br />
