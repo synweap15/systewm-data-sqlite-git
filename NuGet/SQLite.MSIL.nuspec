@@ -11,7 +11,7 @@
   <metadata>
     <id>System.Data.SQLite.MSIL</id>
     <title>System.Data.SQLite (MSIL)</title>
-    <version>1.0.97.0</version>
+    <version>1.0.98.0</version>
     <authors>SQLite Development Team</authors>
     <description>This is a legacy package; if possible, please use either the &quot;System.Data.SQLite&quot; or &quot;System.Data.SQLite.Core&quot; package instead.  An ADO.NET provider for SQLite (managed-only).</description>
     <language>en-US</language>
@@ -22,37 +22,37 @@
     <copyright>Public Domain</copyright>
     <dependencies>
       <group targetFramework="net20">
-        <dependency id="System.Data.SQLite.Core.MSIL" version="1.0.97.0" />
+        <dependency id="System.Data.SQLite.Core.MSIL" version="1.0.98.0" />
       </group>
       <group targetFramework="net40">
-        <dependency id="System.Data.SQLite.Core.MSIL" version="1.0.97.0" />
+        <dependency id="System.Data.SQLite.Core.MSIL" version="1.0.98.0" />
       </group>
       <group targetFramework="net45">
-        <dependency id="System.Data.SQLite.Core.MSIL" version="1.0.97.0" />
+        <dependency id="System.Data.SQLite.Core.MSIL" version="1.0.98.0" />
       </group>
       <group targetFramework="net451">
-        <dependency id="System.Data.SQLite.Core.MSIL" version="1.0.97.0" />
+        <dependency id="System.Data.SQLite.Core.MSIL" version="1.0.98.0" />
       </group>
       <group targetFramework="net20">
-        <dependency id="System.Data.SQLite.Linq" version="1.0.97.0" />
+        <dependency id="System.Data.SQLite.Linq" version="1.0.98.0" />
       </group>
       <group targetFramework="net40">
-        <dependency id="System.Data.SQLite.Linq" version="1.0.97.0" />
+        <dependency id="System.Data.SQLite.Linq" version="1.0.98.0" />
       </group>
       <group targetFramework="net45">
-        <dependency id="System.Data.SQLite.Linq" version="1.0.97.0" />
+        <dependency id="System.Data.SQLite.Linq" version="1.0.98.0" />
       </group>
       <group targetFramework="net451">
-        <dependency id="System.Data.SQLite.Linq" version="1.0.97.0" />
+        <dependency id="System.Data.SQLite.Linq" version="1.0.98.0" />
       </group>
       <group targetFramework="net40">
-        <dependency id="System.Data.SQLite.EF6" version="1.0.97.0" />
+        <dependency id="System.Data.SQLite.EF6" version="1.0.98.0" />
       </group>
       <group targetFramework="net45">
-        <dependency id="System.Data.SQLite.EF6" version="1.0.97.0" />
+        <dependency id="System.Data.SQLite.EF6" version="1.0.98.0" />
       </group>
       <group targetFramework="net451">
-        <dependency id="System.Data.SQLite.EF6" version="1.0.97.0" />
+        <dependency id="System.Data.SQLite.EF6" version="1.0.98.0" />
       </group>
     </dependencies>
   </metadata>
