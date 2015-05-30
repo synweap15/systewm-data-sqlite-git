@@ -351,6 +351,7 @@ namespace System.Data.SQLite.Linq
       functionHandlers.Add("Trim", HandleCanonicalFunctionTrim);
       functionHandlers.Add("Left", HandleCanonicalFunctionLeft);
       functionHandlers.Add("Right", HandleCanonicalFunctionRight);
+      functionHandlers.Add("Substring", HandleCanonicalFunctionSubstring);
       functionHandlers.Add("CurrentDateTime", HandleGetDateFunction);
       functionHandlers.Add("CurrentUtcDateTime", HandleGetUtcDateFunction);
 
@@ -3037,6 +3038,35 @@ namespace System.Data.SQLite.Linq
         result.Append(e.Arguments[1].Accept(sqlgen));
         result.Append("), ");
         result.Append(e.Arguments[1].Accept(sqlgen));
+        result.Append(")");
+
+        return result;
+    }
+
+    /// <summary>
+    /// SUBSTRING(string, start) -> SUBSTR(string, start)
+    /// SUBSTRING(string, start, length) -> SUBSTR(string, start, length)
+    /// </summary>
+    /// <param name="sqlgen"></param>
+    /// <param name="e"></param>
+    /// <returns></returns>
+    private static ISqlFragment HandleCanonicalFunctionSubstring(SqlGenerator sqlgen, DbFunctionExpression e)
+    {
+        SqlBuilder result = new SqlBuilder();
+
+        result.Append("SUBSTR(");
+
+        Debug.Assert(e.Arguments.Count == 2 || e.Arguments.Count == 3, "Substring should have two or three arguments");
+        result.Append(e.Arguments[0].Accept(sqlgen));
+        result.Append(", ");
+        result.Append(e.Arguments[1].Accept(sqlgen));
+
+        if (e.Arguments.Count == 3)
+        {
+            result.Append(", ");
+            result.Append(e.Arguments[2].Accept(sqlgen));
+        }
+
         result.Append(")");
 
         return result;

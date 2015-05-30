@@ -90,6 +90,10 @@ namespace testlinq
 
                       return SkipTest(pageSize);
                   }
+              case "substring":
+                  {
+                      return SubStringTest();
+                  }
               case "unionall":
                   {
                       return UnionAllTest();
@@ -229,6 +233,42 @@ namespace testlinq
               return null;
 
           return fieldInfo.GetValue(entityConnection) as DbConnection;
+      }
+
+      //
+      // NOTE: Used to verify that the SUBSTR function is used to
+      //       implement the Substring method.
+      //
+      private static int SubStringTest()
+      {
+          using (northwindEFEntities db = new northwindEFEntities())
+          {
+              try
+              {
+                  bool once = false;
+
+                  var query = db.Customers.Select(
+                      p => "test".Substring(1) != null);
+
+                  foreach (var result in query)
+                  {
+                      if (once)
+                          Console.Write(' ');
+
+                      Console.Write(result);
+
+                      once = true;
+                  }
+
+                  return 0;
+              }
+              catch (Exception e)
+              {
+                  Console.WriteLine(e);
+              }
+          }
+
+          return 1;
       }
 
       //

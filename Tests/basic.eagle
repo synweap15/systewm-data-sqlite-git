@@ -3198,6 +3198,49 @@ rename saveSQLiteConnectionEnvironment ""
 
 ###############################################################################
 
+runTest {test data-1.70 {LINQ w/String.Substring Method} -body {
+  #
+  # NOTE: Re-copy the reference database file used for this unit test to the
+  #       build directory in case it has been changed by a previous test run.
+  #
+  file copy -force $northwindEfDbFile \
+      [file join [getBuildDirectory] [file tail $northwindEfDbFile]]
+
+  set result [list]
+  set output ""
+
+  set code [catch {
+    testClrExec $testLinqExeFile [list -eventflags Wait -directory \
+        [file dirname $testLinqExeFile] -nocarriagereturns -stdout output \
+        -success 0] -substring
+  } error]
+
+  tlog "---- BEGIN STDOUT OUTPUT\n"
+  tlog $output
+  tlog "\n---- END STDOUT OUTPUT\n"
+
+  lappend result $code
+
+  if {$code == 0} then {
+    lappend result [string trim $output]
+  } else {
+    lappend result [string trim $error]
+  }
+
+  set result
+} -cleanup {
+  unset -nocomplain code output error result
+} -constraints {eagle monoToDo SQLite file_System.Data.SQLite.dll testExec\
+file_System.Data.SQLite.Linq.dll file_testlinq.exe file_northwindEF.db} \
+-result {0 {True True True True True True True True True True True True True\
+True True True True True True True True True True True True True True True True\
+True True True True True True True True True True True True True True True True\
+True True True True True True True True True True True True True True True True\
+True True True True True True True True True True True True True True True True\
+True True True True True True True True True True True True True True}}}
+
+###############################################################################
+
 reportSQLiteResources $test_channel
 
 ###############################################################################
