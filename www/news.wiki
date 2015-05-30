@@ -6,6 +6,7 @@
     <b>1.0.98.0 - August XX, 2015 <font color="red">(release scheduled)</font></b>
 </p>
 <ul>
+    <li>Updated to [https://www.sqlite.org/draft/releaselog/3_8_11.html|SQLite 3.8.11].</li>
     <li>Implement the Substring method for LINQ using the &quot;substr&quot; core SQL function.&nbsp;<b>** Potentially Incompatible Change **</b></li>
 </ul>
 <p>
