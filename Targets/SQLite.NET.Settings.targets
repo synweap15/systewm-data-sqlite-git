@@ -377,6 +377,26 @@
     <InteropIncludeCerod Condition="'$(InteropIncludeCerod)' == ''">false</InteropIncludeCerod>
 
     <!--
+        NOTE: Enable including ZIPVFS with the custom built interop DLL (i.e.
+              "SQLite.Interop.dll")?  By default, this is disabled.  If this is
+              enabled, the "zipvfs.c" file will be included from the extensions
+              directory.  If this is enabled, it must also be enabled via the
+              "SQLITE_ENABLE_ZIPVFS=1" preprocessor define being present in the
+              "SQLITE_EXTRA_DEFINES" macro in the build properties file:
+
+                  "SQLite.Interop\props\sqlite3.[vs]props"
+
+              AND via the "INTEROP_INCLUDE_ZIPVFS=1" preprocessor define being
+              present in the "INTEROP_EXTRA_DEFINES" macro in the build
+              properties file:
+
+                  "SQLite.Interop\props\SQLite.Interop.20YY.[vs]props"
+
+              both for the corresponding version(s) of Visual Studio.
+    -->
+    <InteropIncludeZipVfs Condition="'$(InteropIncludeZipVfs)' == ''">false</InteropIncludeZipVfs>
+
+    <!--
         NOTE: Enable including "extra" code with the custom built interop DLL
               (i.e. "SQLite.Interop.dll")?  By default, this is disabled.  If
               this is enabled, the "extra.c" file will be included from the

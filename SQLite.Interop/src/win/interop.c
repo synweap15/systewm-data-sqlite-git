@@ -21,6 +21,10 @@
 #include "../ext/see.c"
 #endif
 
+#if defined(INTEROP_INCLUDE_ZIPVFS)
+#include "../ext/zipvfs.c"
+#endif
+
 #if defined(INTEROP_VIRTUAL_TABLE) && SQLITE_VERSION_NUMBER >= 3004001
 #include "../ext/vtshim.c"
 #endif
@@ -108,6 +112,9 @@ static const char * const azInteropCompileOpt[] = {
 #endif
 #ifdef INTEROP_INCLUDE_SEE
   "INCLUDE_SEE",
+#endif
+#ifdef INTEROP_INCLUDE_ZIPVFS
+  "INCLUDE_ZIPVFS",
 #endif
 #ifdef INTEROP_LEGACY_CLOSE
   "LEGACY_CLOSE",

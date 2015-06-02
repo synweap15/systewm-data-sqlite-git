@@ -173,6 +173,14 @@
   </PropertyGroup>
 
   <!--
+      NOTE: Enable support (in the managed assemblies) for compressed databases
+            (read/write) using ZIPVFS?
+  -->
+  <PropertyGroup Condition="'$(InteropIncludeZipVfs)' != 'false'">
+    <DefineConstants>$(DefineConstants);INTEROP_INCLUDE_ZIPVFS</DefineConstants>
+  </PropertyGroup>
+
+  <!--
       NOTE: Enable support (in the managed assemblies) for whatever "extra"
             code (e.g. "extensions") may be included by the custom built
             interop DLL (i.e. "SQLite.Interop.DLL")?
