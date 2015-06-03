@@ -1063,7 +1063,7 @@ runTest {test data-1.17 {SQLiteConnectionStringBuilder properties} -body {
                      UnixEpoch Utc yyyy-MM-dd sqlite_schema \
                      Memory Serializable False \
                      Default False False 736563726574 String \
-                     TEXT True 20 v3 test]
+                     TEXT True 20 v2 test]
 
     set propertyNames [list null Version SyncMode UseUTF16Encoding Pooling \
                             BinaryGUID DataSource Uri FullUri DefaultTimeout \
