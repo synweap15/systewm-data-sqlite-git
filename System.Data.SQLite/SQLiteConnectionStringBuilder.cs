@@ -183,7 +183,7 @@ namespace System.Data.SQLite
       {
         object value;
         TryGetValue("data source", out value);
-        return value.ToString();
+        return (value != null) ? value.ToString() : null;
       }
       set
       {
@@ -203,7 +203,7 @@ namespace System.Data.SQLite
       {
         object value;
         TryGetValue("uri", out value);
-        return value.ToString();
+        return (value != null) ? value.ToString() : null;
       }
       set
       {
@@ -223,7 +223,7 @@ namespace System.Data.SQLite
       {
         object value;
         TryGetValue("fulluri", out value);
-        return value.ToString();
+        return (value != null) ? value.ToString() : null;
       }
       set
       {
@@ -368,7 +368,7 @@ namespace System.Data.SQLite
       {
         object value;
         TryGetValue("password", out value);
-        return value.ToString();
+        return (value != null) ? value.ToString() : null;
       }
       set
       {
@@ -668,11 +668,31 @@ namespace System.Data.SQLite
         {
             object value;
             TryGetValue("defaulttypename", out value);
-            return value.ToString();
+            return (value != null) ? value.ToString() : null;
         }
         set
         {
             this["defaulttypename"] = value;
+        }
+    }
+
+    /// <summary>
+    /// Gets/sets the VFS name for the connection.
+    /// </summary>
+    [DisplayName("VFS Name")]
+    [Browsable(true)]
+    [DefaultValue(null)]
+    public string VfsName
+    {
+        get
+        {
+            object value;
+            TryGetValue("vfsname", out value);
+            return (value != null) ? value.ToString() : null;
+        }
+        set
+        {
+            this["vfsname"] = value;
         }
     }
 
@@ -693,6 +713,29 @@ namespace System.Data.SQLite
         set
         {
             this["foreign keys"] = value;
+        }
+    }
+
+    /// <summary>
+    /// If non-null, this is the version of ZipVFS to use.  This requires the
+    /// System.Data.SQLite interop assembly -AND- primary managed assembly to
+    /// be compiled with the INTEROP_INCLUDE_ZIPVFS option; otherwise, this
+    /// property does nothing.
+    /// </summary>
+    [DisplayName("ZipVFS Version")]
+    [Browsable(true)]
+    [DefaultValue(null)]
+    public string ZipVfsVersion
+    {
+        get
+        {
+            object value;
+            TryGetValue("zipvfsversion", out value);
+            return (value != null) ? value.ToString() : null;
+        }
+        set
+        {
+            this["zipvfsversion"] = value;
         }
     }
 

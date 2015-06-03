@@ -128,7 +128,7 @@ namespace System.Data.SQLite
         return Marshal.PtrToStringUni(b, nbytelen / 2);
     }
 
-    internal override void Open(string strFilename, SQLiteConnectionFlags connectionFlags, SQLiteOpenFlagsEnum openFlags, int maxPoolSize, bool usePool)
+    internal override void Open(string strFilename, string vfsName, SQLiteConnectionFlags connectionFlags, SQLiteOpenFlagsEnum openFlags, int maxPoolSize, bool usePool)
     {
       //
       // NOTE: If the database connection is currently open, attempt to
@@ -168,10 +168,12 @@ namespace System.Data.SQLite
           IntPtr db = IntPtr.Zero;
           SQLiteErrorCode n;
 
+          int extFuncs = ((connectionFlags & SQLiteConnectionFlags.NoExtensionFunctions) != SQLiteConnectionFlags.NoExtensionFunctions) ? 1 : 0;
+
 #if !SQLITE_STANDARD
-          if ((connectionFlags & SQLiteConnectionFlags.NoExtensionFunctions) != SQLiteConnectionFlags.NoExtensionFunctions)
+          if ((vfsName != null) || (extFuncs != 0))
           {
-            n = UnsafeNativeMethods.sqlite3_open16_interop(ToUTF8(strFilename), openFlags, ref db);
+            n = UnsafeNativeMethods.sqlite3_open16_interop(ToUTF8(strFilename), ToUTF8(vfsName), openFlags, extFuncs, ref db);
           }
           else
 #endif
@@ -184,6 +186,12 @@ namespace System.Data.SQLite
             //
             if (((openFlags & SQLiteOpenFlagsEnum.Create) != SQLiteOpenFlagsEnum.Create) && !File.Exists(strFilename))
               throw new SQLiteException(SQLiteErrorCode.CantOpen, strFilename);
+
+            if (vfsName != null)
+            {
+              throw new SQLiteException(SQLiteErrorCode.CantOpen, String.Format(
+                "cannot open using UTF-16 and VFS \"{0}\": need interop assembly", vfsName));
+            }
 
             n = UnsafeNativeMethods.sqlite3_open16(strFilename, ref db);
           }
@@ -200,7 +208,7 @@ namespace System.Data.SQLite
         SQLiteConnection.OnChanged(null, new ConnectionEventArgs(
             SQLiteConnectionEventType.NewCriticalHandle, null, null,
             null, null, _sql, strFilename, new object[] { strFilename,
-            connectionFlags, openFlags, maxPoolSize, usePool }));
+            vfsName, connectionFlags, openFlags, maxPoolSize, usePool }));
       }
 
       // Bind functions to this connection.  If any previous functions of the same name

@@ -1368,10 +1368,10 @@ namespace System.Data.SQLite
     internal static extern SQLiteErrorCode sqlite3_backup_finish_interop(IntPtr backup);
 
     [DllImport(SQLITE_DLL)]
-    internal static extern SQLiteErrorCode sqlite3_open_interop(byte[] utf8Filename, SQLiteOpenFlagsEnum flags, ref IntPtr db);
+    internal static extern SQLiteErrorCode sqlite3_open_interop(byte[] utf8Filename, byte[] vfsName, SQLiteOpenFlagsEnum flags, int extFuncs, ref IntPtr db);
 
     [DllImport(SQLITE_DLL)]
-    internal static extern SQLiteErrorCode sqlite3_open16_interop(byte[] utf8Filename, SQLiteOpenFlagsEnum flags, ref IntPtr db);
+    internal static extern SQLiteErrorCode sqlite3_open16_interop(byte[] utf8Filename, byte[] vfsName, SQLiteOpenFlagsEnum flags, int extFuncs, ref IntPtr db);
 
     [DllImport(SQLITE_DLL)]
     internal static extern SQLiteErrorCode sqlite3_reset_interop(IntPtr stmt);
@@ -1737,7 +1737,7 @@ namespace System.Data.SQLite
 #else
     [DllImport(SQLITE_DLL)]
 #endif
-    internal static extern SQLiteErrorCode sqlite3_open_v2(byte[] utf8Filename, ref IntPtr db, SQLiteOpenFlagsEnum flags, IntPtr vfs);
+    internal static extern SQLiteErrorCode sqlite3_open_v2(byte[] utf8Filename, ref IntPtr db, SQLiteOpenFlagsEnum flags, byte[] vfsName);
 
 #if !PLATFORM_COMPACTFRAMEWORK
     [DllImport(SQLITE_DLL, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Unicode)]
@@ -2108,6 +2108,22 @@ namespace System.Data.SQLite
     [DllImport(SQLITE_DLL)]
 #endif
     internal static extern SQLiteErrorCode sqlite3_rekey(IntPtr db, byte[] key, int keylen);
+#endif
+
+#if INTEROP_INCLUDE_ZIPVFS
+#if !PLATFORM_COMPACTFRAMEWORK
+    [DllImport(SQLITE_DLL, CallingConvention = CallingConvention.Cdecl)]
+#else
+    [DllImport(SQLITE_DLL)]
+#endif
+    internal static extern void zipvfsInit_v2();
+
+#if !PLATFORM_COMPACTFRAMEWORK
+    [DllImport(SQLITE_DLL, CallingConvention = CallingConvention.Cdecl)]
+#else
+    [DllImport(SQLITE_DLL)]
+#endif
+    internal static extern void zipvfsInit_v3(int regDflt);
 #endif
 
 #if !PLATFORM_COMPACTFRAMEWORK

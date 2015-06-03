@@ -388,6 +388,14 @@ namespace System.Data.SQLite
     private const bool DefaultEnlist = true;
     private const bool DefaultSetDefaults = true;
     internal const int DefaultPrepareRetries = 3;
+    private const string DefaultVfsName = null;
+
+#if INTEROP_INCLUDE_ZIPVFS
+    private const string ZipVfs_V2 = "v2";
+    private const string ZipVfs_V3 = "v3";
+
+    private const string DefaultZipVfsVersion = null;
+#endif
 
     private const int SQLITE_FCNTL_CHUNK_SIZE = 6;
     private const int SQLITE_FCNTL_WIN32_AV_RETRY = 9;
@@ -524,6 +532,11 @@ namespace System.Data.SQLite
     /// flag is set.
     /// </summary>
     private string _defaultTypeName;
+
+    /// <summary>
+    /// The name of the VFS to be used when opening the database connection.
+    /// </summary>
+    private string _vfsName;
 
     /// <summary>
     /// Default command timeout
@@ -680,6 +693,7 @@ namespace System.Data.SQLite
       _flags = SQLiteConnectionFlags.Default;
       _defaultDbType = null;
       _defaultTypeName = null;
+      _vfsName = null;
       _connectionState = ConnectionState.Closed;
       _connectionString = null;
 
@@ -2498,6 +2512,7 @@ namespace System.Data.SQLite
         _defaultDbType = null;
 
       _defaultTypeName = FindKey(opts, "DefaultTypeName", null);
+      _vfsName = FindKey(opts, "VfsName", DefaultVfsName);
 
 #if !NET_COMPACT_20 && TRACE_WARNING
       bool uri = false;
@@ -2507,6 +2522,28 @@ namespace System.Data.SQLite
 
       if (Convert.ToInt32(FindKey(opts, "Version", DefaultVersion.ToString()), CultureInfo.InvariantCulture) != DefaultVersion)
         throw new NotSupportedException(String.Format(CultureInfo.CurrentCulture, "Only SQLite Version {0} is supported at this time", DefaultVersion));
+
+#if INTEROP_INCLUDE_ZIPVFS
+      string zipVfsVersion = FindKey(opts, "ZipVfsVersion", DefaultZipVfsVersion);
+
+      if (zipVfsVersion != null)
+      {
+          if (String.Compare(zipVfsVersion, ZipVfs_V2) == 0)
+          {
+              UnsafeNativeMethods.zipvfsInit_v2();
+          }
+          else if (String.Compare(zipVfsVersion, ZipVfs_V3) == 0)
+          {
+              UnsafeNativeMethods.zipvfsInit_v3(0);
+          }
+          else
+          {
+              throw new NotSupportedException(String.Format(
+                  CultureInfo.CurrentCulture, "Only ZipVFS versions {0} and {1} are supported at this time",
+                  ZipVfs_V2, ZipVfs_V3));
+          }
+      }
+#endif
 
       fileName = FindKey(opts, "Data Source", DefaultDataSource);
 
@@ -2604,7 +2641,7 @@ namespace System.Data.SQLite
         if (fullUri)
             flags |= SQLiteOpenFlagsEnum.Uri;
 
-        _sql.Open(fileName, _flags, flags, maxPoolSize, usePooling);
+        _sql.Open(fileName, _vfsName, _flags, flags, maxPoolSize, usePooling);
 
         _binaryGuid = SQLiteConvert.ToBoolean(FindKey(opts, "BinaryGUID", DefaultBinaryGUID.ToString()));
 
@@ -2837,6 +2874,16 @@ namespace System.Data.SQLite
     {
       get { CheckDisposed(); return _defaultTypeName; }
       set { CheckDisposed(); _defaultTypeName = value; }
+    }
+
+    /// <summary>
+    /// Gets/sets the VFS name for this connection.  This value will only be
+    /// used when opening the database.
+    /// </summary>
+    public string VfsName
+    {
+      get { CheckDisposed(); return _vfsName; }
+      set { CheckDisposed(); _vfsName = value; }
     }
 
     /// <summary>

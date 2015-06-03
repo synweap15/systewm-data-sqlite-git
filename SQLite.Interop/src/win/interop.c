@@ -364,40 +364,40 @@ SQLITE_API const char *WINAPI interop_sourceid(void)
   return INTEROP_SOURCE_ID " " INTEROP_SOURCE_TIMESTAMP;
 }
 
-SQLITE_API int WINAPI sqlite3_open_interop(const char *filename, int flags, sqlite3 **ppdb)
+SQLITE_API int WINAPI sqlite3_open_interop(const char *filename, const char *vfsName, int flags, int extFuncs, sqlite3 **ppdb)
 {
   int ret;
 
 #if defined(INTEROP_DEBUG) && (INTEROP_DEBUG & INTEROP_DEBUG_OPEN)
-  sqlite3InteropDebug("sqlite3_open_interop(): calling sqlite3_open_v2(\"%s\", %d, %p)...\n", filename, flags, ppdb);
+  sqlite3InteropDebug("sqlite3_open_interop(): calling sqlite3_open_v2(\"%s\", \"%s\", %d, %d, %p)...\n", filename, vfsName, flags, extFuncs, ppdb);
 #endif
 
-  ret = sqlite3_open_v2(filename, ppdb, flags, NULL);
+  ret = sqlite3_open_v2(filename, ppdb, flags, vfsName);
 
 #if defined(INTEROP_DEBUG) && (INTEROP_DEBUG & INTEROP_DEBUG_OPEN)
-  sqlite3InteropDebug("sqlite3_open_interop(): sqlite3_open_v2(\"%s\", %d, %p) returned %d.\n", filename, flags, ppdb, ret);
+  sqlite3InteropDebug("sqlite3_open_interop(): sqlite3_open_v2(\"%s\", \"%s\", %d, %d, %p) returned %d.\n", filename, vfsName, flags, extFuncs, ppdb, ret);
 #endif
 
 #if defined(INTEROP_EXTENSION_FUNCTIONS)
-  if ((ret == SQLITE_OK) && ppdb)
+  if ((ret == SQLITE_OK) && ppdb && extFuncs)
     RegisterExtensionFunctions(*ppdb);
 #endif
 
   return ret;
 }
 
-SQLITE_API int WINAPI sqlite3_open16_interop(const char *filename, int flags, sqlite3 **ppdb)
+SQLITE_API int WINAPI sqlite3_open16_interop(const char *filename, const char *vfsName, int flags, int extFuncs, sqlite3 **ppdb)
 {
   int ret;
 
 #if defined(INTEROP_DEBUG) && (INTEROP_DEBUG & INTEROP_DEBUG_OPEN16)
-  sqlite3InteropDebug("sqlite3_open16_interop(): calling sqlite3_open_interop(\"%s\", %d, %p)...\n", filename, flags, ppdb);
+  sqlite3InteropDebug("sqlite3_open16_interop(): calling sqlite3_open_interop(\"%s\", \"%s\", %d, %d, %p)...\n", filename, vfsName, flags, extFuncs, ppdb);
 #endif
 
-  ret = sqlite3_open_interop(filename, flags, ppdb);
+  ret = sqlite3_open_interop(filename, vfsName, flags, extFuncs, ppdb);
 
 #if defined(INTEROP_DEBUG) && (INTEROP_DEBUG & INTEROP_DEBUG_OPEN16)
-  sqlite3InteropDebug("sqlite3_open16_interop(): sqlite3_open_interop(\"%s\", %d, %p) returned %d.\n", filename, flags, ppdb, ret);
+  sqlite3InteropDebug("sqlite3_open16_interop(): sqlite3_open_interop(\"%s\", \"%s\", %d, %d, %p) returned %d.\n", filename, vfsName, flags, extFuncs, ppdb, ret);
 #endif
 
   if ((ret == SQLITE_OK) && ppdb && !DbHasProperty(*ppdb, 0, DB_SchemaLoaded))
