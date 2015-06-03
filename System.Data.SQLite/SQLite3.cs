@@ -692,7 +692,7 @@ namespace System.Data.SQLite
         return (_sql != null) && !_sql.IsInvalid && !_sql.IsClosed;
     }
 
-    internal override void Open(string strFilename, SQLiteConnectionFlags connectionFlags, SQLiteOpenFlagsEnum openFlags, int maxPoolSize, bool usePool)
+    internal override void Open(string strFilename, string vfsName, SQLiteConnectionFlags connectionFlags, SQLiteOpenFlagsEnum openFlags, int maxPoolSize, bool usePool)
     {
       //
       // NOTE: If the database connection is currently open, attempt to
@@ -733,14 +733,16 @@ namespace System.Data.SQLite
           SQLiteErrorCode n;
 
 #if !SQLITE_STANDARD
-          if ((connectionFlags & SQLiteConnectionFlags.NoExtensionFunctions) != SQLiteConnectionFlags.NoExtensionFunctions)
+          int extFuncs = ((connectionFlags & SQLiteConnectionFlags.NoExtensionFunctions) != SQLiteConnectionFlags.NoExtensionFunctions) ? 1 : 0;
+
+          if (extFuncs != 0)
           {
-            n = UnsafeNativeMethods.sqlite3_open_interop(ToUTF8(strFilename), openFlags, ref db);
+            n = UnsafeNativeMethods.sqlite3_open_interop(ToUTF8(strFilename), ToUTF8(vfsName), openFlags, extFuncs, ref db);
           }
           else
 #endif
           {
-            n = UnsafeNativeMethods.sqlite3_open_v2(ToUTF8(strFilename), ref db, openFlags, IntPtr.Zero);
+            n = UnsafeNativeMethods.sqlite3_open_v2(ToUTF8(strFilename), ref db, openFlags, ToUTF8(vfsName));
           }
 
 #if !NET_COMPACT_20 && TRACE_CONNECTION
@@ -755,7 +757,7 @@ namespace System.Data.SQLite
         SQLiteConnection.OnChanged(null, new ConnectionEventArgs(
             SQLiteConnectionEventType.NewCriticalHandle, null, null,
             null, null, _sql, strFilename, new object[] { strFilename,
-            connectionFlags, openFlags, maxPoolSize, usePool }));
+            vfsName, connectionFlags, openFlags, maxPoolSize, usePool }));
       }
 
       // Bind functions to this connection.  If any previous functions of the same name

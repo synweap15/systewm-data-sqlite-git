@@ -143,6 +143,25 @@ namespace System.Data.SQLite
   /// <description></description>
   /// </item>
   /// <item>
+  /// <description>Uri</description>
+  /// <description>
+  /// If specified, this must be a file name that starts with "file://", "file:", or "/".  Any leading
+  /// "file://" or "file:" prefix will be stripped off and the resulting file name will be used to open
+  /// the database.
+  /// </description>
+  /// <description>N</description>
+  /// <description>null</description>
+  /// </item>
+  /// <item>
+  /// <description>FullUri</description>
+  /// <description>
+  /// If specified, this must be a URI in a format recognized by the SQLite core library (starting with
+  /// SQLite 3.7.7).  It will be passed verbatim to the SQLite core library.
+  /// </description>
+  /// <description>N</description>
+  /// <description>null</description>
+  /// </item>
+  /// <item>
   /// <description>Version</description>
   /// <description>3</description>
   /// <description>N</description>
@@ -153,6 +172,58 @@ namespace System.Data.SQLite
   /// <description><b>True</b><br/><b>False</b></description>
   /// <description>N</description>
   /// <description>False</description>
+  /// </item>
+  /// <item>
+  /// <description>DefaultDbType</description>
+  /// <description>
+  /// This is the default <see cref="DbType" /> to use when one cannot be determined based on the
+  /// column metadata and the configured type mappings.
+  /// </description>
+  /// <description>N</description>
+  /// <description>null</description>
+  /// </item>
+  /// <item>
+  /// <description>DefaultTypeName</description>
+  /// <description>
+  /// This is the default type name to use when one cannot be determined based on the column metadata
+  /// and the configured type mappings.
+  /// </description>
+  /// <description>N</description>
+  /// <description>null</description>
+  /// </item>
+  /// <item>
+  /// <description>NoSharedFlags</description>
+  /// <description>
+  /// <b>True</b> - Do not combine the specified (or default) connection flags with the value of the
+  /// <see cref="SharedFlags" /> property.
+  /// <br/>
+  /// <b>False</b> - Combine the specified (or default) connection flags with the value of the
+  /// <see cref="SharedFlags" /> property.
+  /// </description>
+  /// <description>N</description>
+  /// <description>false</description>
+  /// </item>
+  /// <item>
+  /// <description>VfsName</description>
+  /// <description>
+  /// The name of the VFS to use when opening the database connection.
+  /// If this is not specified, the default VFS will be used.
+  /// </description>
+  /// <description>N</description>
+  /// <description>null</description>
+  /// </item>
+  /// <item>
+  /// <description>ZipVfsVersion</description>
+  /// <description>
+  /// If non-null, this is the "version" of ZipVFS to use.  This requires
+  /// the System.Data.SQLite interop assembly -AND- primary managed assembly
+  /// to be compiled with the INTEROP_INCLUDE_ZIPVFS option; otherwise, this
+  /// property does nothing.  The valid values are "v2" and "v3".  Using
+  /// anyother value will cause an exception to be thrown.  Please see the
+  /// ZipVFS documentation for more information on how to use this parameter.
+  /// </description>
+  /// <description>N</description>
+  /// <description>null</description>
   /// </item>
   /// <item>
   /// <description>DateTimeFormat</description>
@@ -388,6 +459,14 @@ namespace System.Data.SQLite
     private const bool DefaultEnlist = true;
     private const bool DefaultSetDefaults = true;
     internal const int DefaultPrepareRetries = 3;
+    private const string DefaultVfsName = null;
+
+#if INTEROP_INCLUDE_ZIPVFS
+    private const string ZipVfs_V2 = "v2";
+    private const string ZipVfs_V3 = "v3";
+
+    private const string DefaultZipVfsVersion = null;
+#endif
 
     private const int SQLITE_FCNTL_CHUNK_SIZE = 6;
     private const int SQLITE_FCNTL_WIN32_AV_RETRY = 9;
@@ -524,6 +603,11 @@ namespace System.Data.SQLite
     /// flag is set.
     /// </summary>
     private string _defaultTypeName;
+
+    /// <summary>
+    /// The name of the VFS to be used when opening the database connection.
+    /// </summary>
+    private string _vfsName;
 
     /// <summary>
     /// Default command timeout
@@ -680,6 +764,7 @@ namespace System.Data.SQLite
       _flags = SQLiteConnectionFlags.Default;
       _defaultDbType = null;
       _defaultTypeName = null;
+      _vfsName = null;
       _connectionState = ConnectionState.Closed;
       _connectionString = null;
 
@@ -2498,6 +2583,7 @@ namespace System.Data.SQLite
         _defaultDbType = null;
 
       _defaultTypeName = FindKey(opts, "DefaultTypeName", null);
+      _vfsName = FindKey(opts, "VfsName", DefaultVfsName);
 
 #if !NET_COMPACT_20 && TRACE_WARNING
       bool uri = false;
@@ -2507,6 +2593,28 @@ namespace System.Data.SQLite
 
       if (Convert.ToInt32(FindKey(opts, "Version", DefaultVersion.ToString()), CultureInfo.InvariantCulture) != DefaultVersion)
         throw new NotSupportedException(String.Format(CultureInfo.CurrentCulture, "Only SQLite Version {0} is supported at this time", DefaultVersion));
+
+#if INTEROP_INCLUDE_ZIPVFS
+      string zipVfsVersion = FindKey(opts, "ZipVfsVersion", DefaultZipVfsVersion);
+
+      if (zipVfsVersion != null)
+      {
+          if (String.Compare(zipVfsVersion, ZipVfs_V2) == 0)
+          {
+              UnsafeNativeMethods.zipvfsInit_v2();
+          }
+          else if (String.Compare(zipVfsVersion, ZipVfs_V3) == 0)
+          {
+              UnsafeNativeMethods.zipvfsInit_v3(0);
+          }
+          else
+          {
+              throw new NotSupportedException(String.Format(
+                  CultureInfo.CurrentCulture, "Only ZipVFS versions {0} and {1} are supported at this time",
+                  ZipVfs_V2, ZipVfs_V3));
+          }
+      }
+#endif
 
       fileName = FindKey(opts, "Data Source", DefaultDataSource);
 
@@ -2604,7 +2712,7 @@ namespace System.Data.SQLite
         if (fullUri)
             flags |= SQLiteOpenFlagsEnum.Uri;
 
-        _sql.Open(fileName, _flags, flags, maxPoolSize, usePooling);
+        _sql.Open(fileName, _vfsName, _flags, flags, maxPoolSize, usePooling);
 
         _binaryGuid = SQLiteConvert.ToBoolean(FindKey(opts, "BinaryGUID", DefaultBinaryGUID.ToString()));
 
@@ -2837,6 +2945,16 @@ namespace System.Data.SQLite
     {
       get { CheckDisposed(); return _defaultTypeName; }
       set { CheckDisposed(); _defaultTypeName = value; }
+    }
+
+    /// <summary>
+    /// Gets/sets the VFS name for this connection.  This value will only be
+    /// used when opening the database.
+    /// </summary>
+    public string VfsName
+    {
+      get { CheckDisposed(); return _vfsName; }
+      set { CheckDisposed(); _vfsName = value; }
     }
 
     /// <summary>

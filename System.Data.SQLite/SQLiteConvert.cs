@@ -156,6 +156,7 @@ namespace System.Data.SQLite
     /// <returns>A byte array containing the converted string plus an extra 0 terminating byte at the end of the array.</returns>
     public static byte[] ToUTF8(string sourceText)
     {
+      if (sourceText == null) return null;
       Byte[] byteArray;
       int nlen = _utf8.GetByteCount(sourceText) + 1;
 

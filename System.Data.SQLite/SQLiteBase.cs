@@ -95,11 +95,12 @@ namespace System.Data.SQLite
     /// to bind all attributed user-defined functions and collating sequences to the new connection.
     /// </remarks>
     /// <param name="strFilename">The filename of the database to open.  SQLite automatically creates it if it doesn't exist.</param>
+    /// <param name="vfsName">The name of the VFS to use -OR- null to use the default VFS.</param>
     /// <param name="connectionFlags">The flags associated with the parent connection object</param>
     /// <param name="openFlags">The open flags to use when creating the connection</param>
     /// <param name="maxPoolSize">The maximum size of the pool for the given filename</param>
     /// <param name="usePool">If true, the connection can be pulled from the connection pool</param>
-    internal abstract void Open(string strFilename, SQLiteConnectionFlags connectionFlags, SQLiteOpenFlagsEnum openFlags, int maxPoolSize, bool usePool);
+    internal abstract void Open(string strFilename, string vfsName, SQLiteConnectionFlags connectionFlags, SQLiteOpenFlagsEnum openFlags, int maxPoolSize, bool usePool);
     /// <summary>
     /// Closes the currently-open database.
     /// </summary>

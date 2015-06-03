@@ -48,6 +48,10 @@ namespace System.Data.SQLite
             "INTEROP_INCLUDE_SEE",
 #endif
 
+#if INTEROP_INCLUDE_ZIPVFS
+            "INTEROP_INCLUDE_ZIPVFS",
+#endif
+
 #if INTEROP_LEGACY_CLOSE
             "INTEROP_LEGACY_CLOSE",
 #endif
