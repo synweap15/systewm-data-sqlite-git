@@ -23,6 +23,7 @@
 
 #if defined(INTEROP_INCLUDE_ZIPVFS)
 #include "../ext/zipvfs.c"
+#include "../ext/algorithms.c"
 #endif
 
 #if defined(INTEROP_VIRTUAL_TABLE) && SQLITE_VERSION_NUMBER >= 3004001
