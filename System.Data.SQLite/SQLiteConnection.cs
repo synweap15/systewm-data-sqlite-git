@@ -143,6 +143,25 @@ namespace System.Data.SQLite
   /// <description></description>
   /// </item>
   /// <item>
+  /// <description>Uri</description>
+  /// <description>
+  /// If specified, this must be a file name that starts with "file://", "file:", or "/".  Any leading
+  /// "file://" or "file:" prefix will be stripped off and the resulting file name will be used to open
+  /// the database.
+  /// </description>
+  /// <description>N</description>
+  /// <description>null</description>
+  /// </item>
+  /// <item>
+  /// <description>FullUri</description>
+  /// <description>
+  /// If specified, this must be a URI in a format recognized by the SQLite core library (starting with
+  /// SQLite 3.7.7).  It will be passed verbatim to the SQLite core library.
+  /// </description>
+  /// <description>N</description>
+  /// <description>null</description>
+  /// </item>
+  /// <item>
   /// <description>Version</description>
   /// <description>3</description>
   /// <description>N</description>
@@ -153,6 +172,58 @@ namespace System.Data.SQLite
   /// <description><b>True</b><br/><b>False</b></description>
   /// <description>N</description>
   /// <description>False</description>
+  /// </item>
+  /// <item>
+  /// <description>DefaultDbType</description>
+  /// <description>
+  /// This is the default <see cref="DbType" /> to use when one cannot be determined based on the
+  /// column metadata and the configured type mappings.
+  /// </description>
+  /// <description>N</description>
+  /// <description>null</description>
+  /// </item>
+  /// <item>
+  /// <description>DefaultTypeName</description>
+  /// <description>
+  /// This is the default type name to use when one cannot be determined based on the column metadata
+  /// and the configured type mappings.
+  /// </description>
+  /// <description>N</description>
+  /// <description>null</description>
+  /// </item>
+  /// <item>
+  /// <description>NoSharedFlags</description>
+  /// <description>
+  /// <b>True</b> - Do not combine the specified (or default) connection flags with the value of the
+  /// <see cref="SharedFlags" /> property.
+  /// <br/>
+  /// <b>False</b> - Combine the specified (or default) connection flags with the value of the
+  /// <see cref="SharedFlags" /> property.
+  /// </description>
+  /// <description>N</description>
+  /// <description>false</description>
+  /// </item>
+  /// <item>
+  /// <description>VfsName</description>
+  /// <description>
+  /// The name of the VFS to use when opening the database connection.
+  /// If this is not specified, the default VFS will be used.
+  /// </description>
+  /// <description>N</description>
+  /// <description>null</description>
+  /// </item>
+  /// <item>
+  /// <description>ZipVfsVersion</description>
+  /// <description>
+  /// If non-null, this is the "version" of ZipVFS to use.  This requires
+  /// the System.Data.SQLite interop assembly -AND- primary managed assembly
+  /// to be compiled with the INTEROP_INCLUDE_ZIPVFS option; otherwise, this
+  /// property does nothing.  The valid values are "v2" and "v3".  Using
+  /// anyother value will cause an exception to be thrown.  Please see the
+  /// ZipVFS documentation for more information on how to use this parameter.
+  /// </description>
+  /// <description>N</description>
+  /// <description>null</description>
   /// </item>
   /// <item>
   /// <description>DateTimeFormat</description>

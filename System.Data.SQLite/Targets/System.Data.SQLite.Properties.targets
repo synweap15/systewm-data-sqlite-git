@@ -174,7 +174,7 @@
 
   <!--
       NOTE: Enable support (in the managed assemblies) for compressed databases
-            (read/write) using ZIPVFS?
+            (read/write) using ZipVFS?
   -->
   <PropertyGroup Condition="'$(InteropIncludeZipVfs)' != 'false'">
     <DefineConstants>$(DefineConstants);INTEROP_INCLUDE_ZIPVFS</DefineConstants>

@@ -377,7 +377,7 @@
     <InteropIncludeCerod Condition="'$(InteropIncludeCerod)' == ''">false</InteropIncludeCerod>
 
     <!--
-        NOTE: Enable including ZIPVFS with the custom built interop DLL (i.e.
+        NOTE: Enable including ZipVFS with the custom built interop DLL (i.e.
               "SQLite.Interop.dll")?  By default, this is disabled.  If this is
               enabled, the "zipvfs.c" file will be included from the extensions
               directory.  If this is enabled, it must also be enabled via the
