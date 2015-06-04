@@ -31,21 +31,21 @@ namespace eval ::Eagle {
         DEBUGGER DEBUGGER_ARGUMENTS DEBUGGER_ENGINE DEBUGGER_EXECUTE \
         DEBUGGER_EXPRESSION DEBUGGER_VARIABLE DEBUG_TRACE DEBUG_WRITE DRAWING \
         DYNAMIC EAGLE EMBEDDED_LIBRARY EMBED_CERTIFICATE EXECUTE_CACHE \
-        EXPRESSION_FLAGS FAST_ERRORCODE FAST_ERRORINFO HAVE_SIZEOF HISTORY \
-        IA64 INTERACTIVE_COMMANDS INTERNALS_VISIBLE_TO ISOLATED_INTERPRETERS \
-        ISOLATED_PLUGINS LIBRARY LICENSING LIST_CACHE MONO MONO_BUILD \
-        MONO_HACKS MONO_LEGACY NATIVE NATIVE_PACKAGE NATIVE_THREAD_ID \
-        NATIVE_UTILITY NATIVE_UTILITY_BSTR NETWORK NET_20 NET_20_FAST_ENUM \
-        NET_20_ONLY NET_20_SP1 NET_20_SP2 NET_30 NET_35 NET_40 NET_45 NET_451 \
-        NET_452 NON_WORKING_CODE NOTIFY NOTIFY_ACTIVE NOTIFY_ARGUMENTS \
-        NOTIFY_EXCEPTION NOTIFY_EXECUTE NOTIFY_EXPRESSION NOTIFY_GLOBAL \
-        NOTIFY_OBJECT OBSOLETE OBFUSCATION OFFICIAL PARSE_CACHE PATCHLEVEL \
-        PLUGIN_COMMANDS POLICY_TRACE PREVIOUS_RESULT RANDOMIZE_ID REMOTING \
-        SAMPLE SECURITY SERIALIZATION SHARED_ID_POOL SHELL SOURCE_ID \
-        SOURCE_TIMESTAMP STATIC TCL TCL_KITS TCL_THREADED TCL_THREADS \
-        TCL_UNICODE TCL_WRAPPER TEST THREADING THROW_ON_DISPOSED TRACE \
-        TYPE_CACHE UNIX USE_NAMESPACES VERBOSE WEB WINDOWS WINFORMS WIX_30 \
-        WIX_35 WIX_36 WIX_37 WIX_38 WIX_39 X64 X86 XML]
+        EXPRESSION_FLAGS FAST_ERRORCODE FAST_ERRORINFO FOR_TEST_USE_ONLY \
+        HAVE_SIZEOF HISTORY IA64 INTERACTIVE_COMMANDS INTERNALS_VISIBLE_TO \
+        ISOLATED_INTERPRETERS ISOLATED_PLUGINS LIBRARY LICENSING LIST_CACHE \
+        MONO MONO_BUILD MONO_HACKS MONO_LEGACY NATIVE NATIVE_PACKAGE \
+        NATIVE_THREAD_ID NATIVE_UTILITY NATIVE_UTILITY_BSTR NETWORK NET_20 \
+        NET_20_FAST_ENUM NET_20_ONLY NET_20_SP1 NET_20_SP2 NET_30 NET_35 \
+        NET_40 NET_45 NET_451 NET_452 NET_46 NON_WORKING_CODE NOTIFY \
+        NOTIFY_ACTIVE NOTIFY_ARGUMENTS NOTIFY_EXCEPTION NOTIFY_EXECUTE \
+        NOTIFY_EXPRESSION NOTIFY_GLOBAL NOTIFY_OBJECT OBSOLETE OBFUSCATION \
+        OFFICIAL PARSE_CACHE PATCHLEVEL PLUGIN_COMMANDS POLICY_TRACE \
+        PREVIOUS_RESULT RANDOMIZE_ID REMOTING SAMPLE SECURITY SERIALIZATION \
+        SHARED_ID_POOL SHELL SOURCE_ID SOURCE_TIMESTAMP STATIC TCL TCL_KITS \
+        TCL_THREADED TCL_THREADS TCL_UNICODE TCL_WRAPPER TEST THREADING \
+        THROW_ON_DISPOSED TRACE TYPE_CACHE UNIX USE_NAMESPACES VERBOSE WEB \
+        WINDOWS WINFORMS WIX_30 WIX_35 WIX_36 WIX_37 WIX_38 WIX_39 X64 X86 XML]
   }
 
   proc getKnownMonoVersions {} {
@@ -1578,6 +1578,7 @@ namespace eval ::Eagle {
     # NOTE: Are we allowed to do time intensive testing?
     #
     if {![info exists ::no(timeIntensive)]} then {
+      addConstraint maybeTimeIntensive
       addConstraint timeIntensive
 
       tputs $channel yes\n
@@ -1662,7 +1663,7 @@ namespace eval ::Eagle {
       # NOTE: Attempt to query the interactive command names from Eagle.
       #
       if {[catch {
-        object invoke Utility GetInteractiveCommandNames $name false
+        object invoke Utility GetInteractiveCommandNames "" $name false
       } names] == 0 && [llength $names] > 0} then {
         #
         # NOTE: Yes, it appears that it is available.
@@ -3262,9 +3263,19 @@ namespace eval ::Eagle {
           #       is installed.  However, if the "release" value is also
           #       greater than or equal to 379893, then the .NET Framework
           #       4.5.2 is installed, which is an in-place upgrade to 4.5.1
-          #       (and 4.5).
+          #       (and 4.5).  If the "release" value is also greater than or
+          #       equal to 393246, then the .NET Framework 4.6 is installed,
+          #       which is an in-place upgrade to 4.5.x.
           #
-          if {$release >= 379893} then {
+          # TODO: Change the value 393246 when the .NET Framework 4.6 goes
+          #       final.
+          #
+          if {$release >= 393246} then {
+            addConstraint dotNet46
+            addConstraint dotNet46OrHigher
+
+            set version 4.6
+          } elseif {$release >= 379893} then {
             addConstraint dotNet452
             addConstraint dotNet452OrHigher
 
@@ -3317,7 +3328,8 @@ namespace eval ::Eagle {
         # NOTE: The versions of Visual Studio that we support.
         #
         set versions [list [list 8.0 2005] [list 9.0 2008] \
-            [list 10.0 2010] [list 11.0 2012] [list 12.0 2013]]
+            [list 10.0 2010] [list 11.0 2012] [list 12.0 2013] \
+            [list 14.0 2015]]
 
         #
         # NOTE: Check each version and keep track of the ones we find.

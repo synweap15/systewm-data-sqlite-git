@@ -521,12 +521,15 @@ if {![info exists no([file tail [info script]])]} then {
             #       to use.
             #
             if {![info exists no(warningForTclShell)] && \
+                ![info exists no(automaticTclShell)] && \
                 ![haveConstraint quiet]} then {
               tputs $test_channel \
                   "==== WARNING: attempting automatic Tcl shell selection...\n"
             }
 
-            set test_tclsh [getTclShellFileName true]
+            set test_tclsh [getTclShellFileName \
+                [expr {![info exists no(automaticTclShell)]}] \
+                [expr {![info exists no(tclKit)]}]]
           } else {
             #
             # NOTE: Skip detection and use the fallback default.
@@ -1376,7 +1379,7 @@ if {![info exists no([file tail [info script]])]} then {
         if {![info exists no(compileTcl)]} then {
           #
           # NOTE: For tests "commands-1.1.*", "excel-2.2", "tclCancel-1.1",
-          #       "tclEncoding-1.*", "tclErrorInfo-1.*", "tclLoad-1.*",
+          #       "tclEncoding-1.*", "tclErrorInfo-1.*", "tclLoad-*.*",
           #       "tclResetCancel-1.1", "tclResetCancel-2.1",
           #       "tclResetCancel-2.2", "tclResetCancel-3.1",
           #       "tclResetCancel-4.1", "tclSet-1.1", and "tclSubst-1.1".
@@ -1432,7 +1435,7 @@ if {![info exists no([file tail [info script]])]} then {
         #
         if {![info exists no(compileTclThreaded)]} then {
           #
-          # NOTE: For tests "tclLoad-1.5" and "tclLoad-1.6".
+          # NOTE: For tests "tclLoad-3.1" and "tclLoad-3.2".
           #
           checkForCompileOption $test_channel TCL_THREADED
         }
@@ -1443,7 +1446,7 @@ if {![info exists no([file tail [info script]])]} then {
         #
         if {![info exists no(compileTclThreads)]} then {
           #
-          # NOTE: For tests "tclLoad-1.5" and "tclLoad-1.6".
+          # NOTE: For tests "tclLoad-3.1" and "tclLoad-3.2".
           #
           checkForCompileOption $test_channel TCL_THREADS
         }
@@ -1524,6 +1527,17 @@ if {![info exists no([file tail [info script]])]} then {
     # NOTE: Has custom test method support been disabled?
     #
     if {![info exists no(core)] && ![info exists no(test)]} then {
+      #
+      # NOTE: Has WriteHeader testing support been disabled?
+      #
+      if {![info exists no(testWriteHeader)]} then {
+        #
+        # NOTE: For test "host-1.5".
+        #
+        checkForObjectMember $test_channel Eagle._Tests.Default \
+            *TestDisposedWriteHeader*
+      }
+
       #
       # NOTE: Has optional parameter testing support been disabled?
       #
@@ -2268,7 +2282,7 @@ if {![info exists no([file tail [info script]])]} then {
         #
         if {![info exists no(compileTest)]} then {
           #
-          # NOTE: For tests "tclLoad-1.17.1" and "tclLoad-1.17.2".
+          # NOTE: For tests "tclLoad-13.1.1" and "tclLoad-13.1.2".
           #
           checkForCompileOption $test_channel TEST
         }

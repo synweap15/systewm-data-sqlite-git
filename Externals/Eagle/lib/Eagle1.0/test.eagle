@@ -40,6 +40,13 @@ namespace eval ::Eagle {
     tlog $string
   }
 
+  #
+  # NOTE: This is a shim designed to act like tclLog.
+  #
+  proc ttclLog { string } {
+    tputs $::test_channel [appendArgs $string \n]
+  }
+
   proc tlog { string } {
     #
     # NOTE: If a test log file was configured, use it; otherwise, ignore the
@@ -556,7 +563,7 @@ namespace eval ::Eagle {
     tlog ""
   }
 
-  proc getTclShellFileName { automatic } {
+  proc getTclShellFileName { automatic kits } {
     #
     # NOTE: Start out with an empty list of candiate Tcl shells.
     #
@@ -610,8 +617,55 @@ namespace eval ::Eagle {
       #
       if {[catch {tcl select -architecture} tcl] == 0} then {
         #
-        # NOTE: Did we find one?  Attempt to grab the index of the
-        #       version field from the returned dictionary value.
+        # NOTE: Should we also consider TclKit shells?  If so, a bit
+        #       more handling is required.
+        #
+        if {$kits} then {
+          #
+          # NOTE: Did we find one?  Attempt to grab the patch
+          #       level field from the returned dictionary value.
+          #
+          set dotPatchLevel [getDictionaryValue $tcl patchLevel]
+
+          #
+          # NOTE: Verify that the patch level we found is valid
+          #       and that it conforms to the pattern we expect.
+          #
+          if {[string length $dotPatchLevel] > 0 && \
+            [regexp -- {^\d+\.\d+\.\d+$} $dotPatchLevel]} then {
+            #
+            # NOTE: Build the candidate TclKit shell executable file
+            #       name with the dot-separated patch level.  This is
+            #       the common naming scheme on Unix.
+            #
+            set dotShell [appendArgs tclkit- $dotPatchLevel]
+
+            #
+            # NOTE: Build the candidate TclKit shell executable file
+            #       name with the patch level, removing the dot.  This
+            #       is the common naming scheme on Windows.
+            #
+            set shell [appendArgs \
+                tclkit- [string map [list . ""] $dotPatchLevel]]
+
+            #
+            # NOTE: Always favor the TclKit shell executable file
+            #       naming scheme for the current operating system
+            #       first.
+            #
+            if {[isWindows]} then {
+              lappend shells $shell
+              lappend shells $dotShell
+            } else {
+              lappend shells $dotShell
+              lappend shells $shell
+            }
+          }
+        }
+
+        #
+        # NOTE: Did we find one?  Attempt to grab the version
+        #       field from the returned dictionary value.
         #
         set dotVersion [getDictionaryValue $tcl version]
 
@@ -1432,6 +1486,7 @@ namespace eval ::Eagle {
     set array(aliases,$index) [llength [interp aliases]]
     set array(interpreters,$index) [llength [interp slaves]]
     set array(environment,$index) [llength [array names env]]
+    set array(loaded,$index) [llength [info loaded]]
 
     ###########################################################################
 
@@ -1523,7 +1578,8 @@ namespace eval ::Eagle {
 
   proc reportTestStatistics { channel fileName statsVarName filesVarName } {
     set statistics [list afters variables commands procedures namespaces \
-        files temporaryFiles channels aliases interpreters environment]
+        files temporaryFiles channels aliases interpreters environment \
+        loaded]
 
     if {[isEagle]} then {
       #
@@ -1789,6 +1845,36 @@ namespace eval ::Eagle {
     }
   }
 
+  proc reportArrayGet { varName } {
+    if {[string length $varName] == 0} then {
+      return [list]
+    }
+
+    upvar 1 $varName array
+
+    if {![info exists ::no(reportArrayGet)]} then {
+      set list(1) [list]
+
+      foreach {name value} [array get array] {
+        lappend list(1) [list $name $value]
+      }
+
+      #
+      # HACK: This assumes that we are dealing with integer values.
+      #
+      set list(2) [lsort -index 1 -integer -decreasing $list(1)]
+      set list(3) [list]
+
+      foreach pair $list(2) {
+        lappend list(3) [lindex $pair 0] [lindex $pair 1]
+      }
+
+      return $list(3)
+    } else {
+      return [array get array]
+    }
+  }
+
   proc reportTestStatisticCounts { channel statsVarName } {
     upvar 1 $statsVarName array
 
@@ -1813,7 +1899,7 @@ namespace eval ::Eagle {
       #       list and then possibly display it (i.e. if it actually contains
       #       any data).
       #
-      set statistics [array get count]
+      set statistics [reportArrayGet count]
 
       if {[llength statistics] > 0} then {
         tputs $channel [appendArgs "---- types of leaks detected: " \
@@ -2661,7 +2747,7 @@ namespace eval ::Eagle {
 
         tputs $channel "Number of tests skipped for each constraint:\n"
 
-        foreach {name value} [array get skippedCounts] {
+        foreach {name value} [reportArrayGet skippedCounts] {
           tputs $channel [appendArgs \
               \t [format [appendArgs % $places s] $value] \t $name \n]
         }
@@ -2746,6 +2832,59 @@ namespace eval ::Eagle {
       }
     }
 
+    proc tclLoadForTest { {varName ""} } {
+      if {[string length $varName] > 0} then {
+        upvar 1 $varName loaded
+      }
+
+      set loaded 0
+
+      if {![tcl ready]} then {
+        uplevel 1 [list tcl load]; set loaded 1
+
+        set module [tcl module]
+        set interp [tcl master]
+
+        tputs $::test_channel [appendArgs \
+            "---- native Tcl loaded, module \"" $module \
+            "\", interpreter \"" $interp \"\n]
+      }
+    }
+
+    proc tclUnloadForTest { {force false} {varName ""} } {
+      set unload false
+
+      if {$force} then {
+        #
+        # NOTE: This cannot check [tcl ready] as some tests actually
+        #       rely upon errors from the [tcl unload] sub-command.
+        #
+        set unload true
+      }
+
+      if {[string length $varName] > 0} then {
+        upvar 1 $varName loaded
+
+        if {$loaded && !$unload} then {
+          set unload true
+        }
+
+        unset -nocomplain loaded
+      }
+
+      if {$unload} then {
+        set module [tcl module]
+        set interp [tcl master]
+
+        uplevel 1 [list tcl unload]
+
+        tputs $::test_channel [appendArgs \
+            "---- native Tcl " [expr {$force ? "forcibly " : ""}] \
+            "unloaded, module \"" $module "\", interpreter \"" \
+            $interp \"\n]
+      }
+    }
+
     proc testExecTclScript { script {shell ""} {verbose false} } {
       try {
         #
@@ -2772,6 +2911,10 @@ namespace eval ::Eagle {
           #
           if {[info exists ::test_tclsh] && \
               [string length $::test_tclsh] > 0} then {
+            #
+            # NOTE: Use the currently configured Tcl shell, which may or
+            #       may not actually exist.
+            #
             set shell $::test_tclsh
           } else {
             #
@@ -3139,10 +3282,10 @@ namespace eval ::Eagle {
     #       namespace as well.
     #
     exportAndImportPackageCommands [namespace current] [list \
-        tputs tlog getSoftwareRegistryKey haveConstraint addConstraint \
-        haveOrAddConstraint getConstraints removeConstraint fixConstraints \
-        calculateBogoCops calculateRelativePerformance formatTimeStamp \
-        formatElapsedTime sourceIfValid processTestArguments \
+        tputs ttclLog tlog getSoftwareRegistryKey haveConstraint \
+        addConstraint haveOrAddConstraint getConstraints removeConstraint \
+        fixConstraints calculateBogoCops calculateRelativePerformance \
+        formatTimeStamp formatElapsedTime sourceIfValid processTestArguments \
         getTclShellFileName getTemporaryPath getFiles getTestFiles \
         getTestRunId getTestLogId getDefaultTestLog getTestLog getLastTestLog \
         getTestSuite getTestMachine getTestPlatform getTestConfiguration \
