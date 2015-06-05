@@ -93,25 +93,31 @@ namespace eval ::Eagle {
       while {[string length $dir] > 0 && \
           [lsearch -exact -nocase -- [file volumes] $dir] == -1} {
         #
+        # NOTE: Set the sub-directory where the package index file should
+        #       be located within the directory to be searched.
+        #
+        set dir2 [file join lib System.Data.SQLite]
+
+        #
         # NOTE: Does this directory have the necessary sub-directory that
         #       contains a package index file?
         #
-        if {[file exists [file join $dir Tests]] && \
-            [file isdirectory [file join $dir Tests]] && \
-            [file exists [file join $dir Tests pkgIndex.eagle]] && \
-            [file isfile [file join $dir Tests pkgIndex.eagle]]} then {
+        if {[file exists [file join $dir $dir2]] && \
+            [file isdirectory [file join $dir $dir2]] && \
+            [file exists [file join $dir $dir2 pkgIndex.eagle]] && \
+            [file isfile [file join $dir $dir2 pkgIndex.eagle]]} then {
           #
           # NOTE: If requested, give our caller access to the name of the
           #       directory we just found.
           #
           if {[string length $varName] > 0} then {
-            upvar 1 $varName dir2
+            upvar 1 $varName dir3
           }
 
           #
           # NOTE: Ok, show the directory we found.
           #
-          set dir2 [file join $dir Tests]
+          set dir3 [file join $dir $dir2]
 
           #
           # NOTE: We found the necessary directory to add to the auto-path;
@@ -122,7 +128,7 @@ namespace eval ::Eagle {
           #       list to be refreshed.
           #
           if {![info exists ::env(EAGLELIBPATH)] || \
-              [lsearch -exact $::env(EAGLELIBPATH) $dir2] == -1} then {
+              [lsearch -exact $::env(EAGLELIBPATH) $dir3] == -1} then {
             #
             # NOTE: If we have NOT been instructed to be quiet, report now.
             #
@@ -130,7 +136,7 @@ namespace eval ::Eagle {
               catch {
                 tqputs $channel [appendArgs \
                     "---- found vendor-specific test package directory \"" \
-                    $dir2 "\", adding...\n"]
+                    $dir3 "\", adding...\n"]
               }
             }
 
@@ -139,7 +145,7 @@ namespace eval ::Eagle {
             #       so that it will get picked up when Eagle actually rebuilds
             #       the auto-path list (below).
             #
-            lappend ::env(EAGLELIBPATH) $dir2
+            lappend ::env(EAGLELIBPATH) $dir3
 
             #
             # NOTE: Attempt to force Eagle to rebuild the auto-path for the

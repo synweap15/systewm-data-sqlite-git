@@ -333,10 +333,10 @@ namespace eval ::Eagle {
       } elseif {[info exists ::common_directory] && \
           [string length $::common_directory] > 0} then {
         #
-        # NOTE: Next, fallback to the parent directory of the one containing
-        #       this file (i.e. "common.eagle"), if available.
+        # NOTE: Next, fallback to the grandparent directory of the one
+        #       containing this file (i.e. "common.eagle"), if available.
         #
-        return [file dirname $::common_directory]
+        return [file dirname [file dirname $::common_directory]]
       } elseif {[info exists ::path] && \
           [string length $::path] > 0} then {
         #

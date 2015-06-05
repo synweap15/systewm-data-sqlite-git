@@ -207,6 +207,10 @@ set sds_manifests(source) {
   Externals/Eagle/lib/Eagle1.0/
   Externals/Eagle/lib/Eagle1.0/vendor.eagle
   Externals/Eagle/lib/Test1.0/
+  lib/
+  lib/System.Data.SQLite/
+  lib/System.Data.SQLite/common.eagle
+  lib/System.Data.SQLite/pkgIndex.eagle
   Keys/
   Keys/System.Data.SQLite.CF.snk
   Keys/System.Data.SQLite.snk
@@ -692,7 +696,6 @@ set sds_manifests(source) {
   Tests/authorizer.eagle
   Tests/backup.eagle
   Tests/basic.eagle
-  Tests/common.eagle
   Tests/data/
   Tests/data/Installer_Test_Vs2005.log
   Tests/data/Installer_Test_Vs2008.log
@@ -710,7 +713,6 @@ set sds_manifests(source) {
   Tests/empty.eagle
   Tests/installer.eagle
   Tests/linq.eagle
-  Tests/pkgIndex.eagle
   Tests/speed.eagle
   Tests/stress.eagle
   Tests/thread.eagle
