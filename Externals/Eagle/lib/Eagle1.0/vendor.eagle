@@ -214,6 +214,84 @@ namespace eval ::Eagle {
       return false
     }
 
+    proc findInterpreterTestPath { channel dir varName quiet } {
+      #
+      # NOTE: Start with the specified directory.
+      #
+      set dir2 $dir
+
+      #
+      # NOTE: Keep going until the directory name is empty OR is actually the
+      #       root of the associated volume.
+      #
+      while {[string length $dir2] > 0 && \
+          [lsearch -exact -nocase -- [file volumes] $dir2] == -1} {
+        #
+        # NOTE: Set the sub-directory where the test suite file should be
+        #       located within the directory to be searched.
+        #
+        set dir3 Tests
+
+        #
+        # NOTE: Does this directory have the necessary sub-directory that
+        #       contains the test suite file?
+        #
+        if {[file exists [file join $dir2 $dir3]] && \
+            [file isdirectory [file join $dir2 $dir3]] && \
+            [file exists [file join $dir2 $dir3 all.eagle]] && \
+            [file isfile [file join $dir2 $dir3 all.eagle]]} then {
+          #
+          # NOTE: If requested, give our caller access to the name of the
+          #       directory we just found.
+          #
+          if {[string length $varName] > 0} then {
+            upvar 1 $varName dir4
+          }
+
+          #
+          # NOTE: Ok, show the directory we found.
+          #
+          set dir4 [file join $dir2 $dir3]
+
+          #
+          # NOTE: If we have NOT been instructed to be quiet, report now.
+          #
+          if {!$quiet} then {
+            catch {
+              tqputs $channel [appendArgs \
+                  "---- found vendor-specific test suite directory \"" \
+                  $dir4 \"\n]
+            }
+          }
+
+          #
+          # NOTE: We are done, return success.
+          #
+          return true
+        }
+
+        #
+        # NOTE: Keep going up the directory tree...
+        #
+        set dir2 [file dirname $dir2]
+      }
+
+      #
+      # NOTE: If we have NOT been instructed to be quiet, report now.
+      #
+      if {!$quiet} then {
+        catch {
+          tqputs $channel \
+              "---- could not find vendor-specific test suite directory\n"
+        }
+      }
+
+      #
+      # NOTE: Directory not found, return failure.
+      #
+      return false
+    }
+
     proc setupInterpreterTestPath { channel dir quiet } {
       if {[llength [info commands debug]] > 0 && \
           [llength [info subcommands debug testpath]] > 0 && \
@@ -263,7 +341,8 @@ namespace eval ::Eagle {
         temporary_directory test_clr test_clr_v2 test_clr_v4 \
         test_configuration test_configurations test_constraints test_machine \
         test_net_fx test_overrides test_platform test_suite test_year \
-        test_years test_year_clr_v2 test_year_clr_v4 vendor_directory]}] false
+        test_years test_year_clr_v2 test_year_clr_v4 vendor_directory \
+        vendor_test_directory]}] false
 
     #
     # NOTE: Set the name of the running test suite, if necessary.
@@ -280,13 +359,25 @@ namespace eval ::Eagle {
       #
       # NOTE: This variable will contain the name of the directory containing
       #       the vendor-specific testing infrastructure.  If the variable does
-      #       not already exist, create it; otherwise, it has been overridden
-      #       and the existing value should be left intact.
+      #       not exist, create it; otherwise, it has been overridden and the
+      #       existing value should be left intact.
       #
       set have_vendor_directory [info exists vendor_directory]
 
       if {!$have_vendor_directory} then {
         set vendor_directory ""
+      }
+
+      #
+      # NOTE: This variable will contain the name of the directory containing
+      #       the vendor-specific test suite.  If the variable does not exist,
+      #       create it; otherwise, it has been overridden and the existing
+      #       value should be left intact.
+      #
+      set have_vendor_test_directory [info exists vendor_test_directory]
+
+      if {!$have_vendor_test_directory} then {
+        set vendor_test_directory ""
       }
 
       #
@@ -297,18 +388,31 @@ namespace eval ::Eagle {
       #       however, this will not be done if the variable was not created
       #       by us.
       #
-      addTestSuiteToAutoPath stdout [expr {$have_vendor_directory ? "" : \
-          "vendor_directory"}] [info exists ::env(quietAddTestSuiteToAutoPath)]
+      addTestSuiteToAutoPath stdout \
+          [expr {$have_vendor_directory ? "" : "vendor_directory"}] \
+          [info exists ::env(quietAddTestSuiteToAutoPath)]
 
       unset have_vendor_directory
+
+      #
+      # NOTE: This procedure will attempt to find the vendor-specific testing
+      #       directory.  Normally, this will also set the variable created
+      #       above to point to the directory; however, this will not be done
+      #       if the variable was not created by us.
+      #
+      findInterpreterTestPath stdout $vendor_directory \
+          [expr {$have_vendor_test_directory ? "" : "vendor_test_directory"}] \
+          [info exists ::env(quietFindInterpreterTestPath)]
+
+      unset have_vendor_test_directory
 
       #
       # NOTE: If we actually found a vendor-specific testing infrastructure
       #       directory then modify the TestPath property of the current
       #       interpreter to point directly to it.
       #
-      if {[string length $vendor_directory] > 0} then {
-        setupInterpreterTestPath stdout $vendor_directory [info exists \
+      if {[string length $vendor_test_directory] > 0} then {
+        setupInterpreterTestPath stdout $vendor_test_directory [info exists \
             ::env(quietSetupInterpreterTestPath)]
       }
     }

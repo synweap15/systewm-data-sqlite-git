@@ -2287,6 +2287,7 @@ namespace eval ::Eagle {
       tputs $channel "---- setting up debugger interrupt callback... "
 
       if {[catch {
+        set ::env(quietFindInterpreterTestPath) 1
         set ::env(quietSetupInterpreterTestPath) 1
 
         try {
@@ -2353,6 +2354,7 @@ namespace eval ::Eagle {
           }}
         } finally {
           catch {unset ::env(quietSetupInterpreterTestPath)}
+          catch {unset ::env(quietFindInterpreterTestPath)}
         }
       } error] == 0} then {
         addConstraint interruptCallback.sqlite3
