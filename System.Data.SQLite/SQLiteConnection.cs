@@ -462,6 +462,7 @@ namespace System.Data.SQLite
     private const string DefaultVfsName = null;
 
 #if INTEROP_INCLUDE_ZIPVFS
+    private const string ZipVfs_Automatic = "automatic";
     private const string ZipVfs_V2 = "v2";
     private const string ZipVfs_V3 = "v3";
 
@@ -2595,17 +2596,24 @@ namespace System.Data.SQLite
         throw new NotSupportedException(String.Format(CultureInfo.CurrentCulture, "Only SQLite Version {0} is supported at this time", DefaultVersion));
 
 #if INTEROP_INCLUDE_ZIPVFS
+      bool useZipVfs = false;
       string zipVfsVersion = FindKey(opts, "ZipVfsVersion", DefaultZipVfsVersion);
 
       if (zipVfsVersion != null)
       {
-          if (String.Compare(zipVfsVersion, ZipVfs_V2) == 0)
+          if (String.Compare(zipVfsVersion, ZipVfs_Automatic) == 0)
+          {
+              useZipVfs = true;
+          }
+          else if (String.Compare(zipVfsVersion, ZipVfs_V2) == 0)
           {
               UnsafeNativeMethods.zipvfsInit_v2();
+              useZipVfs = true;
           }
           else if (String.Compare(zipVfsVersion, ZipVfs_V3) == 0)
           {
               UnsafeNativeMethods.zipvfsInit_v3(0);
+              useZipVfs = true;
           }
           else
           {
@@ -2817,7 +2825,14 @@ namespace System.Data.SQLite
                   enumValue = TryParseEnum(typeof(SQLiteJournalModeEnum), strValue, true);
                   if (!(enumValue is SQLiteJournalModeEnum) || ((SQLiteJournalModeEnum)enumValue != DefaultJournalMode))
                   {
-                      cmd.CommandText = String.Format(CultureInfo.InvariantCulture, "PRAGMA journal_mode={0}", strValue);
+                      string pragmaStr = "PRAGMA journal_mode={0}";
+
+#if INTEROP_INCLUDE_ZIPVFS
+                      if (useZipVfs)
+                          pragmaStr = "PRAGMA zipvfs_journal_mode={0}";
+#endif
+
+                      cmd.CommandText = String.Format(CultureInfo.InvariantCulture, pragmaStr, strValue);
                       cmd.ExecuteNonQuery();
                   }
 
