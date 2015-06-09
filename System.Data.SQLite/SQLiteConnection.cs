@@ -340,6 +340,12 @@ namespace System.Data.SQLite
   /// <description>30</description>
   /// </item>
   /// <item>
+  /// <description>BusyTimeout</description>
+  /// <description>{time in milliseconds}<br/>Sets the busy timeout for the core library.</description>
+  /// <description>N</description>
+  /// <description>0</description>
+  /// </item>
+  /// <item>
   /// <description>Journal Mode</description>
   /// <description><b>Delete</b> - Delete the journal file after a commit<br/><b>Persist</b> - Zero out and leave the journal file on disk after a commit<br/><b>Off</b> - Disable the rollback journal entirely</description>
   /// <description>N</description>
@@ -447,6 +453,7 @@ namespace System.Data.SQLite
     private const int DefaultCacheSize = 2000;
     private const int DefaultMaxPoolSize = 100;
     private const int DefaultConnectionTimeout = 30;
+    private const int DefaultBusyTimeout = 0;
     private const bool DefaultNoSharedFlags = false;
     private const bool DefaultFailIfMissing = false;
     private const bool DefaultReadOnly = false;
@@ -516,10 +523,12 @@ namespace System.Data.SQLite
     /// State of the current connection
     /// </summary>
     private ConnectionState _connectionState;
+
     /// <summary>
     /// The connection string
     /// </summary>
     private string _connectionString;
+
     /// <summary>
     /// Nesting level of the transactions open on the connection
     /// </summary>
@@ -614,6 +623,12 @@ namespace System.Data.SQLite
     /// Default command timeout
     /// </summary>
     private int _defaultTimeout = DefaultConnectionTimeout;
+
+    /// <summary>
+    /// The default busy timeout to use with the SQLite core library.  This is
+    /// only used when opening a connection.
+    /// </summary>
+    private int _busyTimeout = DefaultBusyTimeout;
 
     /// <summary>
     /// The maximum number of retries when preparing SQL to be executed.  This
@@ -2685,6 +2700,7 @@ namespace System.Data.SQLite
         int maxPoolSize = Convert.ToInt32(FindKey(opts, "Max Pool Size", DefaultMaxPoolSize.ToString()), CultureInfo.InvariantCulture);
 
         _defaultTimeout = Convert.ToInt32(FindKey(opts, "Default Timeout", DefaultConnectionTimeout.ToString()), CultureInfo.InvariantCulture);
+        _busyTimeout = Convert.ToInt32(FindKey(opts, "BusyTimeout", DefaultBusyTimeout.ToString()), CultureInfo.InvariantCulture);
         _prepareRetries = Convert.ToInt32(FindKey(opts, "PrepareRetries", DefaultPrepareRetries.ToString()), CultureInfo.InvariantCulture);
 
         enumValue = TryParseEnum(typeof(IsolationLevel), FindKey(opts, "Default IsolationLevel", DefaultIsolationLevel.ToString()), true);
@@ -2776,6 +2792,12 @@ namespace System.Data.SQLite
           {
               using (SQLiteCommand cmd = CreateCommand())
               {
+                  if (_busyTimeout != DefaultBusyTimeout)
+                  {
+                      cmd.CommandText = String.Format(CultureInfo.InvariantCulture, "PRAGMA busy_timeout={0}", _busyTimeout);
+                      cmd.ExecuteNonQuery();
+                  }
+
                   int intValue;
 
                   if (!fullUri && !isMemory)
@@ -2908,6 +2930,16 @@ namespace System.Data.SQLite
     {
       get { CheckDisposed(); return _defaultTimeout; }
       set { CheckDisposed(); _defaultTimeout = value; }
+    }
+
+    /// <summary>
+    /// Gets/sets the default busy timeout to use with the SQLite core library.  This is only used when
+    /// opening a connection.
+    /// </summary>
+    public int BusyTimeout
+    {
+        get { CheckDisposed(); return _busyTimeout; }
+        set { CheckDisposed(); _busyTimeout = value; }
     }
 
     /// <summary>

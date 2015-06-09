@@ -253,6 +253,26 @@ namespace System.Data.SQLite
     }
 
     /// <summary>
+    /// Gets/sets the busy timeout to use with the SQLite core library.
+    /// </summary>
+    [DisplayName("Busy Timeout")]
+    [Browsable(true)]
+    [DefaultValue(0)]
+    public int BusyTimeout
+    {
+      get
+      {
+        object value;
+        TryGetValue("busytimeout", out value);
+        return Convert.ToInt32(value, CultureInfo.CurrentCulture);
+      }
+      set
+      {
+        this["busytimeout"] = value;
+      }
+    }
+
+    /// <summary>
     /// Gets/sets the maximum number of retries when preparing SQL to be executed.
     /// This normally only applies to preparation errors resulting from the database
     /// schema being changed.
