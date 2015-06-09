@@ -2618,8 +2618,8 @@ namespace System.Data.SQLite
           else
           {
               throw new NotSupportedException(String.Format(
-                  CultureInfo.CurrentCulture, "Only ZipVFS versions {0} and {1} are supported at this time",
-                  ZipVfs_V2, ZipVfs_V3));
+                  CultureInfo.CurrentCulture, "Only ZipVFS versions {0}, {1}, and {2} are supported at this time",
+                  ZipVfs_Automatic, ZipVfs_V2, ZipVfs_V3));
           }
       }
 #endif
