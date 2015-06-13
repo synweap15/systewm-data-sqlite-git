@@ -837,7 +837,7 @@ namespace System.Data.SQLite
   }
 
   /// <summary>
-  /// 
+  ///
   /// </summary>
   public interface ISQLiteSchemaExtensions
   {
@@ -1157,6 +1157,8 @@ namespace System.Data.SQLite
     SQLITE_CONFIG_COVERING_INDEX_SCAN = 20, // int
     SQLITE_CONFIG_SQLLOG = 21, // xSqllog, void*
     SQLITE_CONFIG_MMAP_SIZE = 22, // sqlite3_int64, sqlite3_int64
-    SQLITE_CONFIG_WIN32_HEAPSIZE = 23 // int nByte
+    SQLITE_CONFIG_WIN32_HEAPSIZE = 23, // int nByte
+    SQLITE_CONFIG_PCACHE_HDRSZ = 24, // int *psz
+    SQLITE_CONFIG_PMASZ = 25 // unsigned int szPma
   }
 }
