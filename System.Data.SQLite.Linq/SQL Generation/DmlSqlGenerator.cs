@@ -227,7 +227,6 @@ namespace System.Data.SQLite.Linq
         if (translator.MemberValues.TryGetValue(keyMember, out value))
         {
           commandText.Append(value.ParameterName);
-          commandText.AppendLine(";");
         }
         else
         {
@@ -238,10 +237,11 @@ namespace System.Data.SQLite.Linq
             // there can be only one server generated key
             throw new NotSupportedException(string.Format("Server generated keys are only supported for identity columns. More than one key column is marked as server generated in table '{0}'.", table.Name));
           }
-          commandText.AppendLine("last_insert_rowid();");
+          commandText.AppendLine("last_insert_rowid()");
           identity = true;
         }
       }
+      commandText.AppendLine(";");
     }
 
     /// <summary>

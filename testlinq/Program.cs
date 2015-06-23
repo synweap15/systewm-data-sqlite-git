@@ -144,6 +144,10 @@ namespace testlinq
 
                       return EFTransactionTest(value);
                   }
+              case "insert":
+                  {
+                      return InsertTest();
+                  }
               case "update":
                   {
                       return UpdateTest();
@@ -537,6 +541,61 @@ namespace testlinq
                   }
 #endif
               }
+          }
+
+          return 0;
+      }
+
+      //
+      // NOTE: Used to test the INSERT fix (i.e. an extra semi-colon in
+      //       the SQL statement after the actual INSERT statement in
+      //       the follow-up SELECT statement).
+      //
+      private static int InsertTest()
+      {
+          long[] orderIds = new long[] {
+              0
+          };
+
+          using (northwindEFEntities db = new northwindEFEntities())
+          {
+              int[] counts = { 0 };
+
+              //
+              // NOTE: *REQUIRED* This is required so that the
+              //       Entity Framework is prevented from opening
+              //       multiple connections to the underlying SQLite
+              //       database (i.e. which would result in multiple
+              //       IMMEDIATE transactions, thereby failing [later
+              //       on] with locking errors).
+              //
+              db.Connection.Open();
+
+              OrderDetails newOrderDetails = new OrderDetails();
+
+              newOrderDetails.OrderID = 10248;
+              newOrderDetails.ProductID = 1;
+              newOrderDetails.UnitPrice = (decimal)1.23;
+              newOrderDetails.Quantity = 1;
+              newOrderDetails.Discount = 0.0f;
+
+              db.AddObject("OrderDetails", newOrderDetails);
+
+              try
+              {
+                  db.SaveChanges();
+                  counts[0]++;
+              }
+              catch (Exception e)
+              {
+                  Console.WriteLine(e);
+              }
+              finally
+              {
+                  db.AcceptAllChanges();
+              }
+
+              Console.WriteLine("inserted {0}", counts[0]);
           }
 
           return 0;
