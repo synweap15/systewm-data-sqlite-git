@@ -346,11 +346,15 @@ IF NOT DEFINED NOTAG (
 %_VECHO% BuildArgs = '%BUILD_ARGS%'
 %_VECHO% MsBuildArgs = '%MSBUILD_ARGS%'
 
-%__ECHO% "%MSBUILD%" "%SOLUTION%" "/target:%TARGET%" "/property:Configuration=%CONFIGURATION%" "/property:Platform=%PLATFORM%" %LOGGING% %BUILD_ARGS% %MSBUILD_ARGS%
+IF NOT DEFINED NOBUILD (
+  %__ECHO% "%MSBUILD%" "%SOLUTION%" "/target:%TARGET%" "/property:Configuration=%CONFIGURATION%" "/property:Platform=%PLATFORM%" %LOGGING% %BUILD_ARGS% %MSBUILD_ARGS%
 
-IF ERRORLEVEL 1 (
-  ECHO Build failed.
-  GOTO errors
+  IF ERRORLEVEL 1 (
+    ECHO Build failed.
+    GOTO errors
+  )
+) ELSE (
+  ECHO WARNING: Build skipped, disabled via NOBUILD environment variable.
 )
 
 %__ECHO2% POPD
