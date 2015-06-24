@@ -713,6 +713,7 @@ set sds_manifests(source) {
   Tests/empty.eagle
   Tests/installer.eagle
   Tests/linq.eagle
+  Tests/progress.eagle
   Tests/speed.eagle
   Tests/stress.eagle
   Tests/thread.eagle
@@ -757,6 +758,7 @@ set sds_manifests(source) {
   Tests/tkt-94252b9059.eagle
   Tests/tkt-996d13cd87.eagle
   Tests/tkt-9ba9346f75.eagle
+  Tests/tkt-9d353b0bd8.eagle
   Tests/tkt-a4d9c7ee94.eagle
   Tests/tkt-a7d04fb111.eagle
   Tests/tkt-aba4549801.eagle

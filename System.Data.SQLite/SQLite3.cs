@@ -17,6 +17,7 @@ namespace System.Data.SQLite
   using System.Globalization;
   using System.Runtime.InteropServices;
   using System.Text;
+  using System.Threading;
 
   /// <summary>
   /// This is the method signature for the SQLite core library logging callback
@@ -67,6 +68,7 @@ namespace System.Data.SQLite
     protected string _fileName;
     protected bool _usePool;
     protected int _poolVersion;
+    private int _cancelCount;
 
 #if (NET_35 || NET_40 || NET_45 || NET_451) && !PLATFORM_COMPACTFRAMEWORK
     private bool _buildingSchema;
@@ -264,6 +266,45 @@ namespace System.Data.SQLite
     ///////////////////////////////////////////////////////////////////////////////////////////////
 
     /// <summary>
+    /// Returns the number of times the <see cref="Cancel" /> method has been
+    /// called.
+    /// </summary>
+    private int GetCancelCount()
+    {
+        return Interlocked.CompareExchange(ref _cancelCount, 0, 0);
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+
+    /// <summary>
+    /// This method determines whether or not a <see cref="SQLiteException" />
+    /// with a return code of <see cref="SQLiteErrorCode.Interrupt" /> should
+    /// be thrown after making a call into the SQLite core library.
+    /// </summary>
+    /// <returns>
+    /// Non-zero if a <see cref="SQLiteException" /> to be thrown.  This method
+    /// will only return non-zero if the <see cref="Cancel" /> method was called
+    /// one or more times during a call into the SQLite core library (e.g. when
+    /// the sqlite3_prepare*() or sqlite3_step() APIs are used).
+    /// </returns>
+    private bool ShouldThrowForCancel()
+    {
+        return GetCancelCount() > 0;
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+
+    /// <summary>
+    /// Resets the value of the <see cref="_cancelCount" /> field.
+    /// </summary>
+    private int ResetCancelCount()
+    {
+        return Interlocked.CompareExchange(ref _cancelCount, 0, _cancelCount);
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+
+    /// <summary>
     /// Attempts to interrupt the query currently executing on the associated
     /// native database connection.
     /// </summary>
@@ -275,6 +316,7 @@ namespace System.Data.SQLite
       }
       finally /* NOTE: Thread.Abort() protection. */
       {
+        Interlocked.Increment(ref _cancelCount);
         UnsafeNativeMethods.sqlite3_interrupt(_sql);
       }
     }
@@ -808,6 +850,8 @@ namespace System.Data.SQLite
       uint starttick = (uint)Environment.TickCount;
       uint timeout = (uint)(stmt._command._commandTimeout * 1000);
 
+      ResetCancelCount();
+
       while (true)
       {
         try
@@ -819,9 +863,21 @@ namespace System.Data.SQLite
           n = UnsafeNativeMethods.sqlite3_step(stmt._sqlite_stmt);
         }
 
+        if (ShouldThrowForCancel())
+        {
+            if ((n == SQLiteErrorCode.Ok) ||
+                (n == SQLiteErrorCode.Row) ||
+                (n == SQLiteErrorCode.Done))
+            {
+                n = SQLiteErrorCode.Interrupt;
+            }
+
+            throw new SQLiteException(n, null);
+        }
+
+        if (n == SQLiteErrorCode.Interrupt) return false;
         if (n == SQLiteErrorCode.Row) return true;
         if (n == SQLiteErrorCode.Done) return false;
-        if (n == SQLiteErrorCode.Interrupt) return false;
 
         if (n != SQLiteErrorCode.Ok)
         {
@@ -1087,6 +1143,8 @@ namespace System.Data.SQLite
       Random rnd = null;
       uint starttick = (uint)Environment.TickCount;
 
+      ResetCancelCount();
+
       GCHandle handle = GCHandle.Alloc(b, GCHandleType.Pinned);
       IntPtr psql = handle.AddrOfPinnedObject();
       SQLiteStatementHandle statementHandle = null;
@@ -1132,6 +1190,18 @@ namespace System.Data.SQLite
               SQLiteConnectionEventType.NewCriticalHandle, null, null,
               null, null, statementHandle, strSql, new object[] { cnn,
               strSql, previous, timeoutMS }));
+          }
+
+          if (ShouldThrowForCancel())
+          {
+              if ((n == SQLiteErrorCode.Ok) ||
+                  (n == SQLiteErrorCode.Row) ||
+                  (n == SQLiteErrorCode.Done))
+              {
+                  n = SQLiteErrorCode.Interrupt;
+              }
+
+              throw new SQLiteException(n, null);
           }
 
           if (n == SQLiteErrorCode.Interrupt)
@@ -1205,6 +1275,18 @@ namespace System.Data.SQLite
               System.Threading.Thread.Sleep(rnd.Next(1, 150));
             }
           }
+        }
+
+        if (ShouldThrowForCancel())
+        {
+            if ((n == SQLiteErrorCode.Ok) ||
+                (n == SQLiteErrorCode.Row) ||
+                (n == SQLiteErrorCode.Done))
+            {
+                n = SQLiteErrorCode.Interrupt;
+            }
+
+            throw new SQLiteException(n, null);
         }
 
         if (n == SQLiteErrorCode.Interrupt) return null;
