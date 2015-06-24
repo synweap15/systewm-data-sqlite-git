@@ -821,6 +821,7 @@ namespace System.Data.SQLite
 
         if (n == SQLiteErrorCode.Row) return true;
         if (n == SQLiteErrorCode.Done) return false;
+        if (n == SQLiteErrorCode.Interrupt) return false;
 
         if (n != SQLiteErrorCode.Ok)
         {
@@ -957,8 +958,11 @@ namespace System.Data.SQLite
           // Finalize the existing statement
           stmt._sqlite_stmt.Dispose();
           // Reassign a new statement pointer to the old statement and clear the temporary one
-          stmt._sqlite_stmt = tmp._sqlite_stmt;
-          tmp._sqlite_stmt = null;
+          if (tmp != null)
+          {
+            stmt._sqlite_stmt = tmp._sqlite_stmt;
+            tmp._sqlite_stmt = null;
+          }
 
           // Reapply parameters
           stmt.BindParameters();
@@ -1130,7 +1134,9 @@ namespace System.Data.SQLite
               strSql, previous, timeoutMS }));
           }
 
-          if (n == SQLiteErrorCode.Schema)
+          if (n == SQLiteErrorCode.Interrupt)
+            break;
+          else if (n == SQLiteErrorCode.Schema)
             retries++;
           else if (n == SQLiteErrorCode.Error)
           {
@@ -1201,6 +1207,7 @@ namespace System.Data.SQLite
           }
         }
 
+        if (n == SQLiteErrorCode.Interrupt) return null;
         if (n != SQLiteErrorCode.Ok) throw new SQLiteException(n, GetLastError());
 
         strRemain = UTF8ToString(ptr, len);
@@ -2408,6 +2415,11 @@ namespace System.Data.SQLite
       if (n != SQLiteErrorCode.Ok) throw new SQLiteException(n, GetLastError());
     }
 #endif
+
+    internal override void SetProgressHook(int nOps, SQLiteProgressCallback func)
+    {
+        UnsafeNativeMethods.sqlite3_progress_handler(_sql, nOps, func, IntPtr.Zero);
+    }
 
     internal override void SetAuthorizerHook(SQLiteAuthorizerCallback func)
     {

@@ -295,6 +295,29 @@ namespace System.Data.SQLite
     }
 
     /// <summary>
+    /// Gets/sets the approximate number of virtual machine instructions between
+    /// progress events.  In order for progress events to actually fire, the event
+    /// handler must be added to the <see cref="SQLiteConnection.Progress" /> event
+    /// as well.
+    /// </summary>
+    [DisplayName("Progress Ops")]
+    [Browsable(true)]
+    [DefaultValue(0)]
+    public int ProgressOps
+    {
+        get
+        {
+            object value;
+            TryGetValue("progressops", out value);
+            return Convert.ToInt32(value, CultureInfo.CurrentCulture);
+        }
+        set
+        {
+            this["progressops"] = value;
+        }
+    }
+
+    /// <summary>
     /// Determines whether or not the connection will automatically participate
     /// in the current distributed transaction (if one exists)
     /// </summary>

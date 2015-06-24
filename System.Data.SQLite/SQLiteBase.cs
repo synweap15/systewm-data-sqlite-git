@@ -387,6 +387,7 @@ namespace System.Data.SQLite
     internal abstract void ChangePassword(byte[] newPasswordBytes);
 #endif
 
+    internal abstract void SetProgressHook(int nOps, SQLiteProgressCallback func);
     internal abstract void SetAuthorizerHook(SQLiteAuthorizerCallback func);
     internal abstract void SetUpdateHook(SQLiteUpdateCallback func);
     internal abstract void SetCommitHook(SQLiteCommitCallback func);
@@ -866,7 +867,7 @@ namespace System.Data.SQLite
   /// The extra behavioral flags that can be applied to a connection.
   /// </summary>
   [Flags()]
-  public enum SQLiteConnectionFlags
+  public enum SQLiteConnectionFlags : long
   {
       /// <summary>
       /// No extra flags.
@@ -1081,6 +1082,30 @@ namespace System.Data.SQLite
       /// well as that of the associated <see cref="SQLiteConnection" />.
       /// </summary>
       BindDateTimeWithKind = 0x10000000,
+
+      /// <summary>
+      /// If an exception is caught when raising the
+      /// <see cref="SQLiteConnection.Commit" /> event, the transaction
+      /// should be rolled back.  If this is not specified, the transaction
+      /// will continue the commit process instead.
+      /// </summary>
+      RollbackOnException = 0x20000000,
+
+      /// <summary>
+      /// If an exception is caught when raising the
+      /// <see cref="SQLiteConnection.Authorize" /> event, the action should
+      /// should be denied.  If this is not specified, the action will be
+      /// allowed instead.
+      /// </summary>
+      DenyOnException = 0x40000000,
+
+      /// <summary>
+      /// If an exception is caught when raising the
+      /// <see cref="SQLiteConnection.Progress" /> event, the operation
+      /// should be interrupted.  If this is not specified, the operation
+      /// will simply continue.
+      /// </summary>
+      InterruptOnException = 0x80000000,
 
       /// <summary>
       /// When binding parameter values or returning column values, always

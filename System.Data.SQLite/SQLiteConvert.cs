@@ -2617,6 +2617,22 @@ namespace System.Data.SQLite
   }
 
   /// <summary>
+  /// The possible return codes for the progress callback.
+  /// </summary>
+  public enum SQLiteProgressReturnCode /* int */
+  {
+      /// <summary>
+      /// The operation should continue.
+      /// </summary>
+      Continue = 0,
+
+      /// <summary>
+      /// The operation should be interrupted.
+      /// </summary>
+      Interrupt = 1
+  }
+
+  /// <summary>
   /// The return code for the current call into the authorizer.
   /// </summary>
   public enum SQLiteAuthorizerReturnCode

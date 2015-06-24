@@ -409,6 +409,16 @@ namespace System.Data.SQLite
   /// <description>N</description>
   /// <description>3</description>
   /// </item>
+  /// <item>
+  /// <description>ProgressOps</description>
+  /// <description>
+  /// The approximate number of virtual machine instructions between progress
+  /// events.  In order for progress events to actually fire, the event handler
+  /// must be added to the <see cref="Progress" /> event as well.
+  /// </description>
+  /// <description>N</description>
+  /// <description>0</description>
+  /// </item>
   /// </list>
   /// </remarks>
   public sealed partial class SQLiteConnection : DbConnection, ICloneable, IDisposable
@@ -467,6 +477,7 @@ namespace System.Data.SQLite
     private const bool DefaultSetDefaults = true;
     internal const int DefaultPrepareRetries = 3;
     private const string DefaultVfsName = null;
+    private const int DefaultProgressOps = 0;
 
 #if INTEROP_INCLUDE_ZIPVFS
     private const string ZipVfs_Automatic = "automatic";
@@ -638,6 +649,14 @@ namespace System.Data.SQLite
     internal int _prepareRetries = DefaultPrepareRetries;
 
     /// <summary>
+    /// The approximate number of virtual machine instructions between progress
+    /// events.  In order for progress events to actually fire, the event handler
+    /// must be added to the <see cref="SQLiteConnection.Progress" /> event as
+    /// well.  This value will only be used when opening the database.
+    /// </summary>
+    private int _progressOps = DefaultProgressOps;
+
+    /// <summary>
     /// Non-zero if the built-in (i.e. framework provided) connection string
     /// parser should be used when opening the connection.
     /// </summary>
@@ -647,12 +666,14 @@ namespace System.Data.SQLite
 
     internal int _version;
 
+    private event SQLiteProgressEventHandler _progressHandler;
     private event SQLiteAuthorizerEventHandler _authorizerHandler;
     private event SQLiteUpdateEventHandler _updateHandler;
     private event SQLiteCommitHandler _commitHandler;
     private event SQLiteTraceEventHandler _traceHandler;
     private event EventHandler _rollbackHandler;
 
+    private SQLiteProgressCallback _progressCallback;
     private SQLiteAuthorizerCallback _authorizerCallback;
     private SQLiteUpdateCallback _updateCallback;
     private SQLiteCommitCallback _commitCallback;
@@ -2702,6 +2723,7 @@ namespace System.Data.SQLite
         _defaultTimeout = Convert.ToInt32(FindKey(opts, "Default Timeout", DefaultConnectionTimeout.ToString()), CultureInfo.InvariantCulture);
         _busyTimeout = Convert.ToInt32(FindKey(opts, "BusyTimeout", DefaultBusyTimeout.ToString()), CultureInfo.InvariantCulture);
         _prepareRetries = Convert.ToInt32(FindKey(opts, "PrepareRetries", DefaultPrepareRetries.ToString()), CultureInfo.InvariantCulture);
+        _progressOps = Convert.ToInt32(FindKey(opts, "ProgressOps", DefaultProgressOps.ToString()), CultureInfo.InvariantCulture);
 
         enumValue = TryParseEnum(typeof(IsolationLevel), FindKey(opts, "Default IsolationLevel", DefaultIsolationLevel.ToString()), true);
         _defaultIsolation = (enumValue is IsolationLevel) ? (IsolationLevel)enumValue : DefaultIsolationLevel;
@@ -2868,6 +2890,9 @@ namespace System.Data.SQLite
               }
           }
 
+          if (_progressHandler != null)
+              _sql.SetProgressHook(_progressOps, _progressCallback);
+
           if (_authorizerHandler != null)
               _sql.SetAuthorizerHook(_authorizerCallback);
 
@@ -2951,6 +2976,19 @@ namespace System.Data.SQLite
     {
         get { CheckDisposed(); return _prepareRetries; }
         set { CheckDisposed(); _prepareRetries = value; }
+    }
+
+    /// <summary>
+    /// The approximate number of virtual machine instructions between progress
+    /// events.  In order for progress events to actually fire, the event handler
+    /// must be added to the <see cref="SQLiteConnection.Progress" /> event as
+    /// well.  This value will only be used when the underlying native progress
+    /// callback needs to be changed.
+    /// </summary>
+    public int ProgressOps
+    {
+        get { CheckDisposed(); return _progressOps; }
+        set { CheckDisposed(); _progressOps = value; }
     }
 
     /// <summary>
@@ -4899,6 +4937,40 @@ namespace System.Data.SQLite
     }
 
     /// <summary>
+    /// This event is raised periodically during long running queries.  Changing
+    /// the value of the <see cref="ProgressEventArgs.ReturnCode" /> property will
+    /// determine if the operation in progress will continue or be interrupted.
+    /// For the entire duration of the event, the associated connection and
+    /// statement objects must not be modified, either directly or indirectly, by
+    /// the called code.
+    /// </summary>
+    public event SQLiteProgressEventHandler Progress
+    {
+        add
+        {
+            CheckDisposed();
+
+            if (_progressHandler == null)
+            {
+                _progressCallback = new SQLiteProgressCallback(ProgressCallback);
+                if (_sql != null) _sql.SetProgressHook(_progressOps, _progressCallback);
+            }
+            _progressHandler += value;
+        }
+        remove
+        {
+            CheckDisposed();
+
+            _progressHandler -= value;
+            if (_progressHandler == null)
+            {
+                if (_sql != null) _sql.SetProgressHook(0, null);
+                _progressCallback = null;
+            }
+        }
+    }
+
+    /// <summary>
     /// This event is raised whenever SQLite encounters an action covered by the
     /// authorizer during query preparation.  Changing the value of the
     /// <see cref="AuthorizerEventArgs.ReturnCode" /> property will determine if
@@ -4962,32 +5034,140 @@ namespace System.Data.SQLite
       }
     }
 
+    private SQLiteProgressReturnCode ProgressCallback(
+        IntPtr pUserData /* NOT USED: Always IntPtr.Zero. */
+        )
+    {
+        try
+        {
+            ProgressEventArgs eventArgs = new ProgressEventArgs(
+                pUserData, SQLiteProgressReturnCode.Continue);
+
+            if (_progressHandler != null)
+                _progressHandler(this, eventArgs);
+
+            return eventArgs.ReturnCode;
+        }
+        catch (Exception e) /* NOTE: Must catch ALL. */
+        {
+            try
+            {
+                if ((_flags & SQLiteConnectionFlags.LogCallbackException) ==
+                        SQLiteConnectionFlags.LogCallbackException)
+                {
+                    SQLiteLog.LogMessage(SQLiteBase.COR_E_EXCEPTION,
+                        String.Format(CultureInfo.CurrentCulture,
+                        "Caught exception in \"Progress\" method: {1}",
+                        e)); /* throw */
+                }
+            }
+            catch
+            {
+                // do nothing.
+            }
+        }
+
+        //
+        // NOTE: Should throwing an exception interrupt the operation?
+        //
+        if ((_flags & SQLiteConnectionFlags.InterruptOnException) ==
+                SQLiteConnectionFlags.InterruptOnException)
+        {
+            return SQLiteProgressReturnCode.Interrupt;
+        }
+        else
+        {
+            return SQLiteProgressReturnCode.Continue;
+        }
+    }
+
     private SQLiteAuthorizerReturnCode AuthorizerCallback(
-        IntPtr pUserData,
+        IntPtr pUserData, /* NOT USED: Always IntPtr.Zero. */
         SQLiteAuthorizerActionCode actionCode,
         IntPtr pArgument1,
         IntPtr pArgument2,
         IntPtr pDatabase,
         IntPtr pAuthContext)
     {
-        AuthorizerEventArgs eventArgs = new AuthorizerEventArgs(pUserData, actionCode,
-            SQLiteBase.UTF8ToString(pArgument1, -1), SQLiteBase.UTF8ToString(pArgument2, -1),
-            SQLiteBase.UTF8ToString(pDatabase, -1), SQLiteBase.UTF8ToString(pAuthContext, -1),
-            SQLiteAuthorizerReturnCode.Ok);
+        try
+        {
+            AuthorizerEventArgs eventArgs = new AuthorizerEventArgs(pUserData, actionCode,
+                SQLiteBase.UTF8ToString(pArgument1, -1), SQLiteBase.UTF8ToString(pArgument2, -1),
+                SQLiteBase.UTF8ToString(pDatabase, -1), SQLiteBase.UTF8ToString(pAuthContext, -1),
+                SQLiteAuthorizerReturnCode.Ok);
 
-        if (_authorizerHandler != null)
-            _authorizerHandler(this, eventArgs);
+            if (_authorizerHandler != null)
+                _authorizerHandler(this, eventArgs);
 
-        return eventArgs.ReturnCode;
+            return eventArgs.ReturnCode;
+        }
+        catch (Exception e) /* NOTE: Must catch ALL. */
+        {
+            try
+            {
+                if ((_flags & SQLiteConnectionFlags.LogCallbackException) ==
+                        SQLiteConnectionFlags.LogCallbackException)
+                {
+                    SQLiteLog.LogMessage(SQLiteBase.COR_E_EXCEPTION,
+                        String.Format(CultureInfo.CurrentCulture,
+                        "Caught exception in \"Authorize\" method: {1}",
+                        e)); /* throw */
+                }
+            }
+            catch
+            {
+                // do nothing.
+            }
+        }
+
+        //
+        // NOTE: Should throwing an exception deny the action?
+        //
+        if ((_flags & SQLiteConnectionFlags.DenyOnException) ==
+                SQLiteConnectionFlags.DenyOnException)
+        {
+            return SQLiteAuthorizerReturnCode.Deny;
+        }
+        else
+        {
+            return SQLiteAuthorizerReturnCode.Ok;
+        }
     }
 
-    private void UpdateCallback(IntPtr puser, int type, IntPtr database, IntPtr table, Int64 rowid)
+    private void UpdateCallback(
+        IntPtr puser, /* NOT USED */
+        int type,
+        IntPtr database,
+        IntPtr table,
+        Int64 rowid
+        )
     {
-      _updateHandler(this, new UpdateEventArgs(
-        SQLiteBase.UTF8ToString(database, -1),
-        SQLiteBase.UTF8ToString(table, -1),
-        (UpdateEventType)type,
-        rowid));
+        try
+        {
+            _updateHandler(this, new UpdateEventArgs(
+              SQLiteBase.UTF8ToString(database, -1),
+              SQLiteBase.UTF8ToString(table, -1),
+              (UpdateEventType)type,
+              rowid));
+        }
+        catch (Exception e) /* NOTE: Must catch ALL. */
+        {
+            try
+            {
+                if ((_flags & SQLiteConnectionFlags.LogCallbackException) ==
+                        SQLiteConnectionFlags.LogCallbackException)
+                {
+                    SQLiteLog.LogMessage(SQLiteBase.COR_E_EXCEPTION,
+                        String.Format(CultureInfo.CurrentCulture,
+                        "Caught exception in \"Update\" method: {1}",
+                        e)); /* throw */
+                }
+            }
+            catch
+            {
+                // do nothing.
+            }
+        }
     }
 
     /// <summary>
@@ -5050,10 +5230,35 @@ namespace System.Data.SQLite
       }
     }
 
-    private void TraceCallback(IntPtr puser, IntPtr statement)
+    private void TraceCallback(
+        IntPtr puser, /* NOT USED */
+        IntPtr statement
+        )
     {
-      _traceHandler(this, new TraceEventArgs(
-        SQLiteBase.UTF8ToString(statement, -1)));
+        try
+        {
+            if (_traceHandler != null)
+                _traceHandler(this, new TraceEventArgs(
+                  SQLiteBase.UTF8ToString(statement, -1)));
+        }
+        catch (Exception e) /* NOTE: Must catch ALL. */
+        {
+            try
+            {
+                if ((_flags & SQLiteConnectionFlags.LogCallbackException) ==
+                        SQLiteConnectionFlags.LogCallbackException)
+                {
+                    SQLiteLog.LogMessage(SQLiteBase.COR_E_EXCEPTION,
+                        String.Format(CultureInfo.CurrentCulture,
+                        "Caught exception in \"Trace\" method: {1}",
+                        e)); /* throw */
+                }
+            }
+            catch
+            {
+                // do nothing.
+            }
+        }
     }
 
     /// <summary>
@@ -5085,19 +5290,80 @@ namespace System.Data.SQLite
       }
     }
 
-
-    private int CommitCallback(IntPtr parg)
+    private int CommitCallback(
+        IntPtr parg /* NOT USED */
+        )
     {
-      CommitEventArgs e = new CommitEventArgs();
-      _commitHandler(this, e);
-      return (e.AbortTransaction == true) ? 1 : 0;
+        try
+        {
+            CommitEventArgs e = new CommitEventArgs();
+
+            if (_commitHandler != null)
+                _commitHandler(this, e);
+
+            return (e.AbortTransaction == true) ? 1 : 0;
+        }
+        catch (Exception e) /* NOTE: Must catch ALL. */
+        {
+            try
+            {
+                if ((_flags & SQLiteConnectionFlags.LogCallbackException) ==
+                        SQLiteConnectionFlags.LogCallbackException)
+                {
+                    SQLiteLog.LogMessage(SQLiteBase.COR_E_EXCEPTION,
+                        String.Format(CultureInfo.CurrentCulture,
+                        "Caught exception in \"Commit\" method: {1}",
+                        e)); /* throw */
+                }
+            }
+            catch
+            {
+                // do nothing.
+            }
+        }
+
+        //
+        // NOTE: Should throwing an exception rollback the transaction?
+        //
+        if ((_flags & SQLiteConnectionFlags.RollbackOnException) ==
+                SQLiteConnectionFlags.RollbackOnException)
+        {
+            return 1; // rollback
+        }
+        else
+        {
+            return 0; // commit
+        }
     }
 
-    private void RollbackCallback(IntPtr parg)
+    private void RollbackCallback(
+        IntPtr parg /* NOT USED */
+        )
     {
-      _rollbackHandler(this, EventArgs.Empty);
+        try
+        {
+            if (_rollbackHandler != null)
+                _rollbackHandler(this, EventArgs.Empty);
+        }
+        catch (Exception e) /* NOTE: Must catch ALL. */
+        {
+            try
+            {
+                if ((_flags & SQLiteConnectionFlags.LogCallbackException) ==
+                        SQLiteConnectionFlags.LogCallbackException)
+                {
+                    SQLiteLog.LogMessage(SQLiteBase.COR_E_EXCEPTION,
+                        String.Format(CultureInfo.CurrentCulture,
+                        "Caught exception in \"Rollback\" method: {1}",
+                        e)); /* throw */
+                }
+            }
+            catch
+            {
+                // do nothing.
+            }
+        }
     }
-
   }
 
   /// <summary>
@@ -5118,6 +5384,11 @@ namespace System.Data.SQLite
     /// </summary>
     Off = 2,
   }
+
+#if !PLATFORM_COMPACTFRAMEWORK
+  [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+#endif
+  internal delegate SQLiteProgressReturnCode SQLiteProgressCallback(IntPtr pUserData);
 
 #if !PLATFORM_COMPACTFRAMEWORK
   [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -5150,6 +5421,16 @@ namespace System.Data.SQLite
   [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 #endif
   internal delegate void SQLiteRollbackCallback(IntPtr puser);
+
+  /// <summary>
+  /// Raised each time the number of virtual machine instructions is
+  /// approximately equal to the value of the
+  /// <see cref="SQLiteConnection.ProgressOps" /> property.
+  /// </summary>
+  /// <param name="sender">The connection performing the operation.</param>
+  /// <param name="e">A <see cref="ProgressEventArgs" /> that contains the
+  /// event data.</param>
+  public delegate void SQLiteProgressEventHandler(object sender, ProgressEventArgs e);
 
   /// <summary>
   /// Raised when authorization is required to perform an action contained
@@ -5228,6 +5509,50 @@ namespace System.Data.SQLite
     bool retry
   );
   #endregion
+
+  ///////////////////////////////////////////////////////////////////////////////////////////////
+
+  public class ProgressEventArgs : EventArgs
+  {
+      /// <summary>
+      /// The user-defined native data associated with this event.  Currently,
+      /// this will always contain the value of <see cref="IntPtr.Zero" />.
+      /// </summary>
+      public readonly IntPtr UserData;
+
+      /// <summary>
+      /// The return code for the current call into the progress callback.
+      /// </summary>
+      public SQLiteProgressReturnCode ReturnCode;
+
+      /// <summary>
+      /// Constructs an instance of this class with default property values.
+      /// </summary>
+      private ProgressEventArgs()
+      {
+          this.UserData = IntPtr.Zero;
+          this.ReturnCode = SQLiteProgressReturnCode.Continue;
+      }
+
+      /// <summary>
+      /// Constructs an instance of this class with specific property values.
+      /// </summary>
+      /// <param name="pUserData">
+      /// The user-defined native data associated with this event.
+      /// </param>
+      /// <param name="returnCode">
+      /// The progress return code.
+      /// </param>
+      internal ProgressEventArgs(
+          IntPtr pUserData,
+          SQLiteProgressReturnCode returnCode
+          )
+          : this()
+      {
+          this.UserData = pUserData;
+          this.ReturnCode = returnCode;
+      }
+  }
 
   ///////////////////////////////////////////////////////////////////////////////////////////////
 
