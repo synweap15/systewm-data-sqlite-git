@@ -23,7 +23,7 @@
 **
 ** The official C-language API documentation for SQLite is derived
 ** from comments in this file.  This file is the authoritative source
-** on how SQLite interfaces are suppose to operate.
+** on how SQLite interfaces are supposed to operate.
 **
 ** The name of this file under configuration management is "sqlite.h.in".
 ** The makefile makes some minor changes to this file (such as inserting
@@ -113,7 +113,7 @@ extern "C" {
 */
 #define SQLITE_VERSION        "3.8.11"
 #define SQLITE_VERSION_NUMBER 3008011
-#define SQLITE_SOURCE_ID      "2015-05-30 22:05:17 73fc058b3a74c1b018cff990de793f19a602c12f"
+#define SQLITE_SOURCE_ID      "2015-06-26 02:41:31 015302f15e46a087ec92f3644c6741600dbf4306"
 
 /*
 ** CAPI3REF: Run-Time Library Version Numbers
