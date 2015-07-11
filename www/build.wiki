@@ -394,6 +394,7 @@
       Enter the following command to build the managed-only binaries for Mono:
       <br />
       <br />
+      <b>SET NOUSER=1</b>
       <b>build.bat&nbsp;ReleaseManagedOnly</b>
       <br />
       <br />
