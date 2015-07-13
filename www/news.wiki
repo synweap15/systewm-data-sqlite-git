@@ -10,6 +10,7 @@
     <li>Implement the Substring method for LINQ using the &quot;substr&quot; core SQL function.&nbsp;<b>** Potentially Incompatible Change **</b></li>
     <li>Remove errant semi-colons from the SQL used by LINQ to INSERT and then SELECT rows with composite primary keys. Fix for [9d353b0bd8].</li>
     <li>Change the base type for the SQLiteConnectionFlags enumeration to long integer.&nbsp;<b>** Potentially Incompatible Change **</b></li>
+    <li>Add extended return codes to the SQLiteErrorCode enumeration. Pursuant to [71bedaca19].&nbsp;<b>** Potentially Incompatible Change **</b></li>
     <li>Improve exception handling in all native callbacks implemented in the SQLiteConnection class.</li>
     <li>Add Progress event and ProgressOps connection string property to enable raising progress events during long-running queries.</li>
     <li>Add VfsName connection string property to allow a non-default VFS to be used by the SQLite core library.</li>
