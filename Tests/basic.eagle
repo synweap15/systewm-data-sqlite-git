@@ -3246,6 +3246,44 @@ True True True True True True True True True True True True True True}}}
 
 ###############################################################################
 
+runTest {test data-1.71 {fts5 extension} -setup {
+  setupDb [set fileName data-1.71.db]
+} -body {
+  set connection [getDbConnection]
+  set result [list]
+
+  $connection EnableExtensions true
+  $connection LoadExtension [getCoreBinaryFileName] sqlite3_fts5_init
+
+  lappend result [sql execute -execute scalar $db "SELECT fts5_source_id();"]
+
+  lappend result [sql execute -execute scalar $db \
+      "CREATE VIRTUAL TABLE t1 USING fts5(x, prefix=\"1\");"]
+
+  foreach x [list cat dog horse house] {
+    lappend result [sql execute -execute scalar $db \
+        [appendArgs "INSERT INTO t1(x) VALUES('" $x "');"]]
+  }
+
+  lappend result [sql execute -execute reader -format dictionary $db \
+      "SELECT rowid, x FROM t1 WHERE t1 MATCH 'h*';"]
+
+  set result
+} -cleanup {
+  freeDbConnection
+
+  unset -nocomplain x result connection
+
+  cleanupDb $fileName
+
+  unset -nocomplain db fileName
+} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
+System.Data.SQLite} -match regexp -result {^\{fts5: \d{4}-\d{2}-\d{2}\
+\d{2}:\d{2}:\d{2} [0-9a-f]{40}\} \{\} \{\} \{\} \{\} \{\} \{rowid 3 x horse\
+rowid 4 x house\}$}}
+
+###############################################################################
+
 reportSQLiteResources $test_channel
 
 ###############################################################################
