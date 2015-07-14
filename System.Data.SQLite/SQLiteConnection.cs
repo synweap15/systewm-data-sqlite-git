@@ -192,12 +192,24 @@ namespace System.Data.SQLite
   /// <description>null</description>
   /// </item>
   /// <item>
+  /// <description>NoDefaultFlags</description>
+  /// <description>
+  /// <b>True</b> - Do not combine the specified (or existing) connection flags with the value of the
+  /// <see cref="DefaultFlags" /> property.
+  /// <br/>
+  /// <b>False</b> - Combine the specified (or existing) connection flags with the value of the
+  /// <see cref="DefaultFlags" /> property.
+  /// </description>
+  /// <description>N</description>
+  /// <description>false</description>
+  /// </item>
+  /// <item>
   /// <description>NoSharedFlags</description>
   /// <description>
-  /// <b>True</b> - Do not combine the specified (or default) connection flags with the value of the
+  /// <b>True</b> - Do not combine the specified (or existing) connection flags with the value of the
   /// <see cref="SharedFlags" /> property.
   /// <br/>
-  /// <b>False</b> - Combine the specified (or default) connection flags with the value of the
+  /// <b>False</b> - Combine the specified (or existing) connection flags with the value of the
   /// <see cref="SharedFlags" /> property.
   /// </description>
   /// <description>N</description>
@@ -464,6 +476,7 @@ namespace System.Data.SQLite
     private const int DefaultMaxPoolSize = 100;
     private const int DefaultConnectionTimeout = 30;
     private const int DefaultBusyTimeout = 0;
+    private const bool DefaultNoDefaultFlags = false;
     private const bool DefaultNoSharedFlags = false;
     private const bool DefaultFailIfMissing = false;
     private const bool DefaultReadOnly = false;
@@ -798,7 +811,7 @@ namespace System.Data.SQLite
 
       _typeNames = new SQLiteDbTypeMap();
       _parseViaFramework = parseViaFramework;
-      _flags = SQLiteConnectionFlags.Default;
+      _flags = SQLiteConnectionFlags.None;
       _defaultDbType = null;
       _defaultTypeName = null;
       _vfsName = null;
@@ -2235,6 +2248,7 @@ namespace System.Data.SQLite
       if (String.IsNullOrEmpty(key)) return defValue;
       if (items.TryGetValue(key, out ret)) return ret;
       if (items.TryGetValue(key.Replace(" ", String.Empty), out ret)) return ret;
+      if (items.TryGetValue(key.Replace(" ", "_"), out ret)) return ret;
 
       return defValue;
     }
@@ -2600,8 +2614,26 @@ namespace System.Data.SQLite
 
       object enumValue;
 
-      enumValue = TryParseEnum(typeof(SQLiteConnectionFlags), FindKey(opts, "Flags", DefaultFlags.ToString()), true);
-      _flags = (enumValue is SQLiteConnectionFlags) ? (SQLiteConnectionFlags)enumValue : DefaultFlags;
+      enumValue = TryParseEnum(typeof(SQLiteConnectionFlags), FindKey(opts, "Flags", null), true);
+
+      //
+      // BUGFIX: Always preserve the pre-existing instance flags.  This is OK
+      //         because when the connection object is initially created, they
+      //         are "None"; therefore, OR-ing the connection string property
+      //         flags with the instance flags would produce exactly the same
+      //         result.  If the "Flags" connection string property is absent,
+      //         OR-ing the the instance flags with the static DefaultFlags is
+      //         done instead.  This is OK for the same reason as before: when
+      //         the connection object is initially created, they are "None"
+      //         by default.  If they are different now, they must have been
+      //         manually set by the application.
+      //
+      bool noDefaultFlags = SQLiteConvert.ToBoolean(FindKey(opts, "NoDefaultFlags", DefaultNoDefaultFlags.ToString()));
+
+      if (enumValue is SQLiteConnectionFlags)
+          _flags |= (SQLiteConnectionFlags)enumValue;
+      else if (!noDefaultFlags)
+          _flags |= DefaultFlags;
 
       bool noSharedFlags = SQLiteConvert.ToBoolean(FindKey(opts, "NoSharedFlags", DefaultNoSharedFlags.ToString()));
       if (!noSharedFlags) { lock (_syncRoot) { _flags |= _sharedFlags; } }

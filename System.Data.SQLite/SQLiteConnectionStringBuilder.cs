@@ -1,7 +1,7 @@
 /********************************************************
  * ADO.NET 2.0 Data Provider for SQLite Version 3.X
  * Written by Robert Simpson (robert@blackcastlesoft.com)
- * 
+ *
  * Released to the public domain, use at your own risk!
  ********************************************************/
 
@@ -232,7 +232,7 @@ namespace System.Data.SQLite
     }
 
     /// <summary>
-    /// Gets/sets the default command timeout for newly-created commands.  This is especially useful for 
+    /// Gets/sets the default command timeout for newly-created commands.  This is especially useful for
     /// commands used internally such as inside a SQLiteTransaction, where setting the timeout is not possible.
     /// </summary>
     [DisplayName("Default Timeout")]
@@ -848,6 +848,26 @@ namespace System.Data.SQLite
         set
         {
             this["tofullpath"] = value;
+        }
+    }
+
+    /// <summary>
+    /// If enabled, skip using the configured default connection flags.
+    /// </summary>
+    [DisplayName("No Default Flags")]
+    [Browsable(true)]
+    [DefaultValue(false)]
+    public bool NoDefaultFlags
+    {
+        get
+        {
+            object value;
+            TryGetValue("nodefaultflags", out value);
+            return SQLiteConvert.ToBoolean(value);
+        }
+        set
+        {
+            this["nodefaultflags"] = value;
         }
     }
 
