@@ -53,8 +53,8 @@
 
     <tr bgcolor="#fff1c8">
       <td colspan="3" class="importantHeader">
-        <a name="supportNotes"></a>
-        <b>Support Notes</b>
+        <a name="supportNotesDownloadablePackages"></a>
+        <b>Support Notes - Downloadable Packages</b>
       </td>
     </tr>
 
@@ -62,13 +62,23 @@
       <td colspan="3" class="importantNotes">
         This page contains all the downloadable packages (e.g. sources,
         binaries, setups, etc) for the current release version of the official
-        &quot;System.Data.SQLite&quot; project.  This is the <b>only</b>
-        official distribution point for these downloadable packages.  If these
-        packages are obtained elsewhere, it is very important to compare their
-        SHA1 hashes to the corresponding hashes listed below to make sure the
-        contained files are the same.
+        &quot;System.Data.SQLite&quot; project.  This page and the associated
+        <a href="https://www.nuget.org/profiles/mistachkin">NuGet packages</a>
+        are the <b>only</b> official distribution points for these downloadable
+        packages.  If any of the downloadable packages are obtained elsewhere,
+        it is very important to compare their SHA1 hashes to the corresponding
+        hashes listed below in order to make sure the contained files are the
+        same.
       </td>
     </tr>
+
+    <tr bgcolor="#fff1c8">
+      <td colspan="3" class="importantHeader">
+        <a name="supportNotesOtherProjects"></a>
+        <b>Support Notes - Other Projects</b>
+      </td>
+    </tr>
+
     <tr bgcolor="#fff1c8">
       <td colspan="3" class="importantNotes">
         There are several other projects, with widely varying levels of support
@@ -1897,11 +1907,12 @@
 
     <tr bgcolor="#fff1c8">
       <td colspan="4" class="importantNotes">
-        Generally, these NuGet packages should be obtained from the
-        <a href="https://www.nuget.org/">NuGet Gallery</a>; however, they are
-        also included here as &quot;local downloads&quot; for reference.  They
-        should be identical to those listed on the NuGet Gallery with the same
-        name and version.
+        Generally, the official NuGet packages should be obtained from the
+        <a href="https://www.nuget.org/profiles/mistachkin">NuGet Gallery</a>;
+        however, they are also included here as &quot;local downloads&quot; for
+        reference.  They should be absolutely identical to those listed on the
+        NuGet Gallery with the same name and version.  The SHA1 hashes listed
+        below may be used for comparison purposes.
       </td>
     </tr>
 
