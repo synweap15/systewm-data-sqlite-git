@@ -156,7 +156,8 @@ namespace System.Data.SQLite
             SQLiteConnectionEventType.OpenedFromPool, null, null,
             null, null, _sql, strFilename, new object[] {
             typeof(SQLite3_UTF16), strFilename, vfsName,
-            connectionFlags, openFlags, maxPoolSize, usePool }));
+            connectionFlags, openFlags, maxPoolSize, usePool,
+            _poolVersion }));
 
 #if !NET_COMPACT_20 && TRACE_CONNECTION
         Trace.WriteLine(String.Format("Open16 (Pool): {0}", (_sql != null) ? _sql.ToString() : "<null>"));
