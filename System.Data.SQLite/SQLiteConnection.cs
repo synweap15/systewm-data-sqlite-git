@@ -970,8 +970,9 @@ namespace System.Data.SQLite
         if (result != null)
         {
             SQLiteConnection.OnChanged(null, new ConnectionEventArgs(
-                SQLiteConnectionEventType.NewCriticalHandle, null, null,
-                null, null, result, null, new object[] { nativeHandle }));
+                SQLiteConnectionEventType.NewCriticalHandle, null,
+                null, null, null, result, null, new object[] {
+                typeof(SQLiteConnection), nativeHandle }));
         }
 
         return result;

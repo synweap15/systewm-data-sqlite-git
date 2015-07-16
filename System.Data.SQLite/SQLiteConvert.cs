@@ -2212,7 +2212,17 @@ namespace System.Data.SQLite
       /// <summary>
       /// A data reader is being closed.
       /// </summary>
-      ClosingDataReader = 14
+      ClosingDataReader = 14,
+
+      /// <summary>
+      /// A native resource was opened (i.e. obtained) from the pool.
+      /// </summary>
+      OpenedFromPool = 15,
+
+      /// <summary>
+      /// A native resource was closed (i.e. released) to the pool.
+      /// </summary>
+      ClosedToPool = 16
   }
 
   /// <summary>

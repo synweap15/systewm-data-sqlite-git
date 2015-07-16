@@ -152,6 +152,12 @@ namespace System.Data.SQLite
       {
         _sql = SQLiteConnectionPool.Remove(strFilename, maxPoolSize, out _poolVersion);
 
+        SQLiteConnection.OnChanged(null, new ConnectionEventArgs(
+            SQLiteConnectionEventType.OpenedFromPool, null, null,
+            null, null, _sql, strFilename, new object[] {
+            typeof(SQLite3_UTF16), strFilename, vfsName,
+            connectionFlags, openFlags, maxPoolSize, usePool }));
+
 #if !NET_COMPACT_20 && TRACE_CONNECTION
         Trace.WriteLine(String.Format("Open16 (Pool): {0}", (_sql != null) ? _sql.ToString() : "<null>"));
 #endif
@@ -206,9 +212,10 @@ namespace System.Data.SQLite
         lock (_sql) { /* HACK: Force the SyncBlock to be "created" now. */ }
 
         SQLiteConnection.OnChanged(null, new ConnectionEventArgs(
-            SQLiteConnectionEventType.NewCriticalHandle, null, null,
-            null, null, _sql, strFilename, new object[] { strFilename,
-            vfsName, connectionFlags, openFlags, maxPoolSize, usePool }));
+            SQLiteConnectionEventType.NewCriticalHandle, null,
+            null, null, null, _sql, strFilename, new object[] {
+            typeof(SQLite3_UTF16), strFilename, vfsName,
+            connectionFlags, openFlags, maxPoolSize, usePool }));
       }
 
       // Bind functions to this connection.  If any previous functions of the same name

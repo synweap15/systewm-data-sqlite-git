@@ -130,9 +130,10 @@ namespace System.Data.SQLite
             _fileName = fileName;
 
             SQLiteConnection.OnChanged(null, new ConnectionEventArgs(
-                SQLiteConnectionEventType.NewCriticalHandle, null, null,
-                null, null, _sql, fileName, new object[] { fmt, kind,
-                fmtString, db, fileName, ownHandle }));
+                SQLiteConnectionEventType.NewCriticalHandle, null,
+                null, null, null, _sql, fileName, new object[] {
+                typeof(SQLite3), fmt, kind, fmtString, db, fileName,
+                ownHandle }));
         }
     }
 
@@ -243,6 +244,11 @@ namespace System.Data.SQLite
 #endif
 
                   SQLiteConnectionPool.Add(_fileName, _sql, _poolVersion);
+
+                  SQLiteConnection.OnChanged(null, new ConnectionEventArgs(
+                      SQLiteConnectionEventType.ClosedToPool, null, null,
+                      null, null, _sql, _fileName, new object[] {
+                      typeof(SQLite3), canThrow, _fileName, _poolVersion }));
 
 #if !NET_COMPACT_20 && TRACE_CONNECTION
                   Trace.WriteLine(String.Format("Close (Pool) Success: {0}", _sql));
@@ -758,6 +764,12 @@ namespace System.Data.SQLite
       {
         _sql = SQLiteConnectionPool.Remove(strFilename, maxPoolSize, out _poolVersion);
 
+        SQLiteConnection.OnChanged(null, new ConnectionEventArgs(
+            SQLiteConnectionEventType.OpenedFromPool, null, null,
+            null, null, _sql, strFilename, new object[] {
+            typeof(SQLite3), strFilename, vfsName, connectionFlags,
+            openFlags, maxPoolSize, usePool }));
+
 #if !NET_COMPACT_20 && TRACE_CONNECTION
         Trace.WriteLine(String.Format("Open (Pool): {0}", (_sql != null) ? _sql.ToString() : "<null>"));
 #endif
@@ -797,9 +809,10 @@ namespace System.Data.SQLite
         lock (_sql) { /* HACK: Force the SyncBlock to be "created" now. */ }
 
         SQLiteConnection.OnChanged(null, new ConnectionEventArgs(
-            SQLiteConnectionEventType.NewCriticalHandle, null, null,
-            null, null, _sql, strFilename, new object[] { strFilename,
-            vfsName, connectionFlags, openFlags, maxPoolSize, usePool }));
+            SQLiteConnectionEventType.NewCriticalHandle, null,
+            null, null, null, _sql, strFilename, new object[] {
+            typeof(SQLite3), strFilename, vfsName, connectionFlags,
+            openFlags, maxPoolSize, usePool }));
       }
 
       // Bind functions to this connection.  If any previous functions of the same name
@@ -1188,8 +1201,8 @@ namespace System.Data.SQLite
           {
             SQLiteConnection.OnChanged(null, new ConnectionEventArgs(
               SQLiteConnectionEventType.NewCriticalHandle, null, null,
-              null, null, statementHandle, strSql, new object[] { cnn,
-              strSql, previous, timeoutMS }));
+              null, null, statementHandle, strSql, new object[] {
+              typeof(SQLite3), cnn, strSql, previous, timeoutMS }));
           }
 
           if (ShouldThrowForCancel())
@@ -2618,9 +2631,9 @@ namespace System.Data.SQLite
         }
 
         SQLiteConnection.OnChanged(null, new ConnectionEventArgs(
-            SQLiteConnectionEventType.NewCriticalHandle, null, null,
-            null, null, backupHandle, null, new object[] { destCnn,
-            destName, sourceName }));
+            SQLiteConnectionEventType.NewCriticalHandle, null,
+            null, null, null, backupHandle, null, new object[] {
+            typeof(SQLite3), destCnn, destName, sourceName }));
 
         return new SQLiteBackup(
             this, backupHandle, destHandle, zDestName, sourceHandle,
