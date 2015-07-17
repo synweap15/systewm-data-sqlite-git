@@ -1126,6 +1126,12 @@ namespace System.Data.SQLite
       InterruptOnException = 0x80000000,
 
       /// <summary>
+      /// Attempt to unbind all functions provided by other managed assemblies
+      /// when closing the connection.
+      /// </summary>
+      UnbindFunctionsOnClose = 0x100000000,
+
+      /// <summary>
       /// When binding parameter values or returning column values, always
       /// treat them as though they were plain text (i.e. no numeric,
       /// date/time, or other conversions should be attempted).

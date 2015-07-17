@@ -66,6 +66,7 @@ namespace System.Data.SQLite
     /// </summary>
     protected internal SQLiteConnectionHandle _sql;
     protected string _fileName;
+    protected SQLiteConnectionFlags _flags;
     protected bool _usePool;
     protected int _poolVersion;
     private int _cancelCount;
@@ -229,6 +230,12 @@ namespace System.Data.SQLite
     {
       if (_sql != null)
       {
+          if ((_flags & SQLiteConnectionFlags.UnbindFunctionsOnClose) ==
+                SQLiteConnectionFlags.UnbindFunctionsOnClose)
+          {
+              SQLiteFunction.UnbindFunctions(this, _flags, false);
+          }
+
           if (!_sql.OwnHandle)
           {
               _sql = null;
@@ -810,6 +817,7 @@ namespace System.Data.SQLite
 
       _usePool = usePool;
       _fileName = strFilename;
+      _flags = connectionFlags;
 
       if (usePool)
       {

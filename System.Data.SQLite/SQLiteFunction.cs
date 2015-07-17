@@ -787,10 +787,15 @@ namespace System.Data.SQLite
     /// </summary>
     /// <param name="sqlbase">The base object from which the functions are to be unbound.</param>
     /// <param name="flags">The flags associated with the parent connection object.</param>
+    /// <param name="registered">
+    /// Non-zero to unbind all registered (known) functions -OR- zero to unbind all functions
+    /// currently bound to the connection.
+    /// </param>
     /// <returns>Non-zero if all previously bound user-defined functions were unbound.</returns>
     internal static bool UnbindFunctions(
         SQLiteBase sqlbase,
-        SQLiteConnectionFlags flags
+        SQLiteConnectionFlags flags,
+        bool registered
         )
     {
         if (sqlbase == null)
@@ -802,23 +807,52 @@ namespace System.Data.SQLite
         if (lFunctions == null)
             return false;
 
+        //
+        // NOTE: Need to use a copy in this method here because the underlying
+        //       dictionary is modified by the UnbindFunction method.
+        //
+        lFunctions = new Dictionary<SQLiteFunctionAttribute, SQLiteFunction>(
+            lFunctions);
+
         bool result = true;
 
-        foreach (KeyValuePair<SQLiteFunctionAttribute, object> pair
-                in _registeredFunctions)
+        if (registered)
         {
-            SQLiteFunctionAttribute pr = pair.Key;
-
-            if (pr == null)
-                continue;
-
-            SQLiteFunction f;
-
-            if (!lFunctions.TryGetValue(pr, out f) ||
-                (f == null) ||
-                !UnbindFunction(sqlbase, pr, f, flags))
+            foreach (KeyValuePair<SQLiteFunctionAttribute, object> pair
+                    in _registeredFunctions)
             {
-                result = false;
+                SQLiteFunctionAttribute pr = pair.Key;
+
+                if (pr == null)
+                    continue;
+
+                SQLiteFunction f;
+
+                if (!lFunctions.TryGetValue(pr, out f) ||
+                    (f == null) ||
+                    !UnbindFunction(sqlbase, pr, f, flags))
+                {
+                    result = false;
+                }
+            }
+        }
+        else
+        {
+            foreach (KeyValuePair<SQLiteFunctionAttribute, SQLiteFunction> pair
+                    in lFunctions)
+            {
+                SQLiteFunctionAttribute pr = pair.Key;
+
+                if (pr == null)
+                    continue;
+
+                SQLiteFunction f = pair.Value;
+
+                if ((f == null) ||
+                    !UnbindFunction(sqlbase, pr, f, flags))
+                {
+                    result = false;
+                }
             }
         }
 
