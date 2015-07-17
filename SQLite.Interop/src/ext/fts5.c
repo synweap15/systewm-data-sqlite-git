@@ -2863,7 +2863,7 @@ struct Fts5ExprPhrase {
   Fts5ExprNode *pNode;            /* FTS5_STRING node this phrase is part of */
   Fts5Buffer poslist;             /* Current position list */
   int nTerm;                      /* Number of entries in aTerm[] */
-  Fts5ExprTerm aTerm[0];          /* Terms that make up this phrase */
+  Fts5ExprTerm aTerm[1];          /* Terms that make up this phrase */
 };
 
 /*
@@ -2884,7 +2884,7 @@ struct Fts5ExprNearset {
   int nNear;                      /* NEAR parameter */
   Fts5ExprColset *pColset;        /* Columns to search (NULL -> all columns) */
   int nPhrase;                    /* Number of entries in aPhrase[] array */
-  Fts5ExprPhrase *apPhrase[0];    /* Array of phrase pointers */
+  Fts5ExprPhrase *apPhrase[1];    /* Array of phrase pointers */
 };
 
 
@@ -4881,8 +4881,15 @@ struct Fts5HashEntry {
   int iCol;                       /* Column of last value written */
   int iPos;                       /* Position of last value written */
   i64 iRowid;                     /* Rowid of last value written */
-  char zKey[0];                   /* Nul-terminated entry key */
+  char zKey[8];                   /* Nul-terminated entry key */
 };
+
+/*
+** Size of Fts5HashEntry without the zKey[] array.
+*/
+#define FTS5_HASHENTRYSIZE (sizeof(Fts5HashEntry)-8)
+
+
 
 /*
 ** Allocate a new hash table.
@@ -5035,7 +5042,7 @@ static int sqlite3Fts5HashWrite(
 
   /* If an existing hash entry cannot be found, create a new one. */
   if( p==0 ){
-    int nByte = sizeof(Fts5HashEntry) + (nToken+1) + 1 + 64;
+    int nByte = FTS5_HASHENTRYSIZE + (nToken+1) + 1 + 64;
     if( nByte<128 ) nByte = 128;
 
     if( (pHash->nEntry*2)>=pHash->nSlot ){
@@ -5046,13 +5053,13 @@ static int sqlite3Fts5HashWrite(
 
     p = (Fts5HashEntry*)sqlite3_malloc(nByte);
     if( !p ) return SQLITE_NOMEM;
-    memset(p, 0, sizeof(Fts5HashEntry));
+    memset(p, 0, FTS5_HASHENTRYSIZE);
     p->nAlloc = nByte;
     p->zKey[0] = bByte;
     memcpy(&p->zKey[1], pToken, nToken);
     assert( iHash==fts5HashKey(pHash->nSlot, p->zKey, nToken+1) );
     p->zKey[nToken+1] = '\0';
-    p->nData = nToken+1 + 1 + sizeof(Fts5HashEntry);
+    p->nData = nToken+1 + 1 + FTS5_HASHENTRYSIZE;
     p->nData += sqlite3Fts5PutVarint(&((u8*)p)[p->nData], iRowid);
     p->iSzPoslist = p->nData;
     p->nData += 1;
@@ -5232,7 +5239,7 @@ static int sqlite3Fts5HashQuery(
   if( p ){
     fts5HashAddPoslistSize(p);
     *ppDoclist = (const u8*)&p->zKey[nTerm+1];
-    *pnDoclist = p->nData - (sizeof(*p) + nTerm + 1);
+    *pnDoclist = p->nData - (FTS5_HASHENTRYSIZE + nTerm + 1);
   }else{
     *ppDoclist = 0;
     *pnDoclist = 0;
@@ -5269,7 +5276,7 @@ static void sqlite3Fts5HashScanEntry(
     fts5HashAddPoslistSize(p);
     *pzTerm = p->zKey;
     *ppDoclist = (const u8*)&p->zKey[nTerm+1];
-    *pnDoclist = p->nData - (sizeof(*p) + nTerm + 1);
+    *pnDoclist = p->nData - (FTS5_HASHENTRYSIZE + nTerm + 1);
   }else{
     *pzTerm = 0;
     *ppDoclist = 0;
@@ -5648,7 +5655,7 @@ struct Fts5Structure {
   u64 nWriteCounter;              /* Total leaves written to level 0 */
   int nSegment;                   /* Total segments in this structure */
   int nLevel;                     /* Number of levels in this index */
-  Fts5StructureLevel aLevel[0];   /* Array of nLevel level objects */
+  Fts5StructureLevel aLevel[1];   /* Array of nLevel level objects */
 };
 
 /*
@@ -6209,7 +6216,7 @@ static int fts5StructureDecode(
   i += fts5GetVarint32(&pData[i], nSegment);
   nByte = (
       sizeof(Fts5Structure) +                    /* Main structure */
-      sizeof(Fts5StructureLevel) * (nLevel)      /* aLevel[] array */
+      sizeof(Fts5StructureLevel) * (nLevel-1)    /* aLevel[] array */
   );
   pRet = (Fts5Structure*)sqlite3Fts5MallocZero(&rc, nByte);
 
@@ -8350,7 +8357,7 @@ static void fts5ChunkIterate(
 ** returned in this case.
 */
 static int fts5AllocateSegid(Fts5Index *p, Fts5Structure *pStruct){
-  u32 iSegid = 0;
+  int iSegid = 0;
 
   if( p->rc==SQLITE_OK ){
     if( pStruct->nSegment>=FTS5_MAX_SEGMENT ){
@@ -8359,8 +8366,7 @@ static int fts5AllocateSegid(Fts5Index *p, Fts5Structure *pStruct){
       while( iSegid==0 ){
         int iLvl, iSeg;
         sqlite3_randomness(sizeof(u32), (void*)&iSegid);
-        iSegid = (iSegid % ((1 << FTS5_DATA_ID_B) - 2)) + 1;
-        assert( iSegid>0 && iSegid<=65535 );
+        iSegid = iSegid & ((1 << FTS5_DATA_ID_B)-1);
         for(iLvl=0; iLvl<pStruct->nLevel; iLvl++){
           for(iSeg=0; iSeg<pStruct->aLevel[iLvl].nSeg; iSeg++){
             if( iSegid==pStruct->aLevel[iLvl].aSeg[iSeg].iSegid ){
@@ -8372,7 +8378,7 @@ static int fts5AllocateSegid(Fts5Index *p, Fts5Structure *pStruct){
     }
   }
 
-  return (int)iSegid;
+  return iSegid;
 }
 
 /*
@@ -11158,7 +11164,7 @@ struct Fts5Sorter {
   i64 iRowid;                     /* Current rowid */
   const u8 *aPoslist;             /* Position lists for current row */
   int nIdx;                       /* Number of entries in aIdx[] */
-  int aIdx[0];                    /* Offsets into aPoslist for current row */
+  int aIdx[1];                    /* Offsets into aPoslist for current row */
 };
 
 
@@ -11821,7 +11827,7 @@ static int fts5CursorFirstSorted(Fts5Table *pTab, Fts5Cursor *pCsr, int bDesc){
   const char *zRankArgs = pCsr->zRankArgs;
   
   nPhrase = sqlite3Fts5ExprPhraseCount(pCsr->pExpr);
-  nByte = sizeof(Fts5Sorter) + sizeof(int) * nPhrase;
+  nByte = sizeof(Fts5Sorter) + sizeof(int) * (nPhrase-1);
   pSorter = (Fts5Sorter*)sqlite3_malloc(nByte);
   if( pSorter==0 ) return SQLITE_NOMEM;
   memset(pSorter, 0, nByte);
@@ -13242,7 +13248,7 @@ static void fts5SourceIdFunc(
   sqlite3_value **apVal           /* Function arguments */
 ){
   assert( nArg==0 );
-  sqlite3_result_text(pCtx, "fts5: 2015-07-14 21:56:53 b53a95063cf6b8ee8cad77e9fff4c50a356c43bb", -1, SQLITE_TRANSIENT);
+  sqlite3_result_text(pCtx, "fts5: 2015-07-16 20:17:57 e9bf275cd969eca6fb41384d3637528d6a19f819", -1, SQLITE_TRANSIENT);
 }
 
 #ifdef _WIN32
