@@ -807,13 +807,6 @@ namespace System.Data.SQLite
         if (lFunctions == null)
             return false;
 
-        //
-        // NOTE: Need to use a copy in this method here because the underlying
-        //       dictionary is modified by the UnbindFunction method.
-        //
-        lFunctions = new Dictionary<SQLiteFunctionAttribute, SQLiteFunction>(
-            lFunctions);
-
         bool result = true;
 
         if (registered)
@@ -838,6 +831,14 @@ namespace System.Data.SQLite
         }
         else
         {
+            //
+            // NOTE: Need to use a copy of the function dictionary in this method
+            //       because the dictionary is modified within the UnbindFunction
+            //       method, which is called inside the loop.
+            //
+            lFunctions = new Dictionary<SQLiteFunctionAttribute, SQLiteFunction>(
+                lFunctions);
+
             foreach (KeyValuePair<SQLiteFunctionAttribute, SQLiteFunction> pair
                     in lFunctions)
             {
