@@ -1323,6 +1323,30 @@ namespace System.Data.SQLite
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
 
+    /// <summary>
+    /// Attempts to unbind the specified <see cref="SQLiteFunction" /> object
+    /// instance to this connection.
+    /// </summary>
+    /// <param name="functionAttribute">
+    /// The <see cref="SQLiteFunctionAttribute"/> object instance containing
+    /// the metadata for the function to be unbound.
+    /// </param>
+    /// <returns>Non-zero if the function was unbound.</returns>
+    public bool UnbindFunction(
+        SQLiteFunctionAttribute functionAttribute
+        )
+    {
+        CheckDisposed();
+
+        if (_sql == null)
+            throw new InvalidOperationException(
+                "Database connection not valid for unbinding functions.");
+
+        return _sql.UnbindFunction(functionAttribute, _flags);
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+
     [Conditional("CHECK_STATE")]
     internal static void Check(SQLiteConnection connection)
     {

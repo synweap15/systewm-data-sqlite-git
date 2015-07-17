@@ -224,9 +224,13 @@ namespace System.Data.SQLite
       if ((connectionFlags & SQLiteConnectionFlags.NoBindFunctions) != SQLiteConnectionFlags.NoBindFunctions)
       {
           if (_functions == null)
-              _functions = new List<SQLiteFunction>();
+              _functions = new Dictionary<SQLiteFunctionAttribute, SQLiteFunction>();
 
-          _functions.AddRange(new List<SQLiteFunction>(SQLiteFunction.BindFunctions(this, connectionFlags)));
+          foreach (KeyValuePair<SQLiteFunctionAttribute, SQLiteFunction> pair
+                  in SQLiteFunction.BindFunctions(this, connectionFlags))
+          {
+              _functions[pair.Key] = pair.Value;
+          }
       }
 
       SetTimeout(0);

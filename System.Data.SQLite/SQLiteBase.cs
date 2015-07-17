@@ -8,6 +8,7 @@
 namespace System.Data.SQLite
 {
   using System;
+  using System.Collections.Generic;
 
 #if !PLATFORM_COMPACTFRAMEWORK
   using System.Runtime.InteropServices;
@@ -62,6 +63,10 @@ namespace System.Data.SQLite
     /// Returns non-zero if the underlying native connection handle is owned by this instance.
     /// </summary>
     internal abstract bool OwnHandle { get; }
+    /// <summary>
+    /// Returns the logical list of functions associated with this connection.
+    /// </summary>
+    internal abstract IDictionary<SQLiteFunctionAttribute, SQLiteFunction> Functions { get; }
     /// <summary>
     /// Sets the status of the memory usage tracking subsystem in the SQLite core library.  By default, this is enabled.
     /// If this is disabled, memory usage tracking will not be performed.  This is not really a per-connection value, it is
@@ -183,7 +188,7 @@ namespace System.Data.SQLite
     internal abstract void Cancel();
 
     /// <summary>
-    /// This function binds a user-defined functions to the connection.
+    /// This function binds a user-defined function to the connection.
     /// </summary>
     /// <param name="functionAttribute">
     /// The <see cref="SQLiteFunctionAttribute"/> object instance containing
@@ -197,6 +202,19 @@ namespace System.Data.SQLite
     /// The flags associated with the parent connection object.
     /// </param>
     internal abstract void BindFunction(SQLiteFunctionAttribute functionAttribute, SQLiteFunction function, SQLiteConnectionFlags flags);
+
+    /// <summary>
+    /// This function unbinds a user-defined function from the connection.
+    /// </summary>
+    /// <param name="functionAttribute">
+    /// The <see cref="SQLiteFunctionAttribute"/> object instance containing
+    /// the metadata for the function to be unbound.
+    /// </param>
+    /// <param name="flags">
+    /// The flags associated with the parent connection object.
+    /// </param>
+    /// <returns>Non-zero if the function was unbound.</returns>
+    internal abstract bool UnbindFunction(SQLiteFunctionAttribute functionAttribute, SQLiteConnectionFlags flags);
 
     internal abstract void Bind_Double(SQLiteStatement stmt, SQLiteConnectionFlags flags, int index, double value);
     internal abstract void Bind_Int32(SQLiteStatement stmt, SQLiteConnectionFlags flags, int index, Int32 value);
@@ -238,8 +256,8 @@ namespace System.Data.SQLite
     internal abstract DateTime GetDateTime(SQLiteStatement stmt, int index);
     internal abstract bool IsNull(SQLiteStatement stmt, int index);
 
-    internal abstract void CreateCollation(string strCollation, SQLiteCollation func, SQLiteCollation func16);
-    internal abstract void CreateFunction(string strFunction, int nArgs, bool needCollSeq, SQLiteCallback func, SQLiteCallback funcstep, SQLiteFinalCallback funcfinal);
+    internal abstract SQLiteErrorCode CreateCollation(string strCollation, SQLiteCollation func, SQLiteCollation func16, bool @throw);
+    internal abstract SQLiteErrorCode CreateFunction(string strFunction, int nArgs, bool needCollSeq, SQLiteCallback func, SQLiteCallback funcstep, SQLiteFinalCallback funcfinal, bool @throw);
     internal abstract CollationSequence GetCollationSequence(SQLiteFunction func, IntPtr context);
     internal abstract int ContextCollateCompare(CollationEncodingEnum enc, IntPtr context, string s1, string s2);
     internal abstract int ContextCollateCompare(CollationEncodingEnum enc, IntPtr context, char[] c1, char[] c2);

@@ -2532,7 +2532,7 @@ System.Data.SQLite} -result {1 630874007980000000}}
 
 ###############################################################################
 
-runTest {test data-1.54 {bind SQLiteFunction to one SQLiteConnection} -setup {
+runTest {test data-1.54 {bind function to a SQLiteConnection} -setup {
   set fileName data-1.54.db
 } -body {
   set id [object invoke Interpreter.GetActive NextId]
@@ -3281,6 +3281,158 @@ runTest {test data-1.71 {fts5 extension} -setup {
 System.Data.SQLite} -match regexp -result {^\{fts5: \d{4}-\d{2}-\d{2}\
 \d{2}:\d{2}:\d{2} [0-9a-f]{40}\} \{\} \{\} \{\} \{\} \{\} \{rowid 3 x horse\
 rowid 4 x house\}$}}
+
+###############################################################################
+
+runTest {test data-1.72 {unbind function from a SQLiteConnection} -setup {
+  set fileName data-1.72.db
+} -body {
+  set id [object invoke Interpreter.GetActive NextId]
+  set dataSource [file join [getDatabaseDirectory] $fileName]
+
+  set sql { \
+    SELECT MyRandom(); \
+  }
+
+  unset -nocomplain results errors
+
+  set code [compileCSharpWith [subst {
+    using System;
+    using System.Data.SQLite;
+
+    namespace _Dynamic${id}
+    {
+      public class Test${id} : SQLiteFunction
+      {
+        private Random random;
+        private static SQLiteFunctionAttribute functionAttribute;
+        private static SQLiteConnection connection;
+
+        ///////////////////////////////////////////////////////////////////////
+
+        public Test${id}()
+        {
+          random = new Random();
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+
+        public override object Invoke(
+          object\[\] args
+          )
+        {
+          return random.Next();
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+
+        private static void Initialize()
+        {
+          if (functionAttribute == null)
+          {
+            functionAttribute = new SQLiteFunctionAttribute(
+                "MyRandom", 0, FunctionType.Scalar);
+          }
+
+          if (connection == null)
+          {
+            connection = new SQLiteConnection(
+                "Data Source=${dataSource};[getFlagsProperty]");
+
+            connection.Open();
+          }
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+
+        public static void BindFunction()
+        {
+          Initialize();
+
+          connection.BindFunction(functionAttribute, new Test${id}());
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+
+        public static object CallFunction()
+        {
+          Initialize();
+
+          using (SQLiteCommand command = new SQLiteCommand("${sql}",
+              connection))
+          {
+            return command.ExecuteScalar();
+          }
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+
+        public static bool UnbindFunction()
+        {
+          Initialize();
+
+          return connection.UnbindFunction(functionAttribute);
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+
+        public static void Uninitialize()
+        {
+          if (connection != null)
+          {
+            connection.Close();
+            connection = null;
+          }
+
+          if (functionAttribute != null)
+            functionAttribute = null;
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+
+        public static void Main()
+        {
+          // do nothing.
+        }
+      }
+    }
+  }] true true true results errors System.Data.SQLite.dll]
+
+  list $code $results \
+      [expr {[info exists errors] ? $errors : ""}] \
+      [expr {$code eq "Ok" ? [catch {
+        object invoke _Dynamic${id}.Test${id} BindFunction
+      } result] : [set result ""]}] $result \
+      [expr {$code eq "Ok" ? [catch {
+        object invoke _Dynamic${id}.Test${id} CallFunction
+      } result] : [set result ""]}] $result \
+      [expr {$code eq "Ok" ? [catch {
+        object invoke _Dynamic${id}.Test${id} UnbindFunction
+      } result] : [set result ""]}] $result \
+      [expr {$code eq "Ok" ? [catch {
+        object invoke _Dynamic${id}.Test${id} CallFunction
+      } result] : [set result ""]}] $result \
+      [expr {$code eq "Ok" ? [catch {
+        object invoke _Dynamic${id}.Test${id} BindFunction
+      } result] : [set result ""]}] $result \
+      [expr {$code eq "Ok" ? [catch {
+        object invoke _Dynamic${id}.Test${id} CallFunction
+      } result] : [set result ""]}] $result \
+      [expr {$code eq "Ok" ? [catch {
+        object invoke _Dynamic${id}.Test${id} Uninitialize
+      } result] : [set result ""]}] $result
+} -cleanup {
+  cleanupDb $fileName
+
+  unset -nocomplain result code results errors sql dataSource id fileName
+} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
+System.Data.SQLite compileCSharp} -match regexp -result \
+[string map [list \n \r\n] {^Ok System#CodeDom#Compiler#CompilerResults#\d+\
+\{\} 0 \{\} 0 (?:-)?\d+ 0 True 1\
+\{System\.Reflection\.TargetInvocationException: Exception has been thrown by\
+the target of an invocation\. ---> System\.Data\.SQLite\.SQLiteException: SQL\
+logic error or missing database
+no such function: MyRandom.*\} 0 \{\} 0 (?:-)?\d+ 0 \{\}$}]}
 
 ###############################################################################
 

@@ -77,7 +77,7 @@ namespace System.Data.SQLite
     /// <summary>
     /// The user-defined functions registered on this connection
     /// </summary>
-    protected List<SQLiteFunction> _functions;
+    protected Dictionary<SQLiteFunctionAttribute, SQLiteFunction> _functions;
 
 #if INTEROP_VIRTUAL_TABLE
     /// <summary>
@@ -347,12 +347,55 @@ namespace System.Data.SQLite
         SQLiteConnectionFlags flags
         )
     {
+        if (functionAttribute == null)
+            throw new ArgumentNullException("functionAttribute");
+
+        if (function == null)
+            throw new ArgumentNullException("function");
+
         SQLiteFunction.BindFunction(this, functionAttribute, function, flags);
 
         if (_functions == null)
-            _functions = new List<SQLiteFunction>();
+            _functions = new Dictionary<SQLiteFunctionAttribute, SQLiteFunction>();
 
-        _functions.Add(function);
+        _functions[functionAttribute] = function;
+    }
+
+    /// <summary>
+    /// This function binds a user-defined function to the connection.
+    /// </summary>
+    /// <param name="functionAttribute">
+    /// The <see cref="SQLiteFunctionAttribute"/> object instance containing
+    /// the metadata for the function to be unbound.
+    /// </param>
+    /// <param name="flags">
+    /// The flags associated with the parent connection object.
+    /// </param>
+    /// <returns>Non-zero if the function was unbound and removed.</returns>
+    internal override bool UnbindFunction(
+        SQLiteFunctionAttribute functionAttribute,
+        SQLiteConnectionFlags flags
+        )
+    {
+        if (functionAttribute == null)
+            throw new ArgumentNullException("functionAttribute");
+
+        if (_functions == null)
+            return false;
+
+        SQLiteFunction function;
+
+        if (_functions.TryGetValue(functionAttribute, out function))
+        {
+            if (SQLiteFunction.UnbindFunction(
+                    this, functionAttribute, function, flags) &&
+                _functions.Remove(functionAttribute))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     internal override string Version
@@ -589,6 +632,14 @@ namespace System.Data.SQLite
         }
     }
 
+    /// <summary>
+    /// Returns the logical list of functions associated with this connection.
+    /// </summary>
+    internal override IDictionary<SQLiteFunctionAttribute, SQLiteFunction> Functions
+    {
+        get { return _functions; }
+    }
+
     internal override SQLiteErrorCode SetMemoryStatus(bool value)
     {
         return StaticSetMemoryStatus(value);
@@ -820,9 +871,13 @@ namespace System.Data.SQLite
       if ((connectionFlags & SQLiteConnectionFlags.NoBindFunctions) != SQLiteConnectionFlags.NoBindFunctions)
       {
           if (_functions == null)
-              _functions = new List<SQLiteFunction>();
+              _functions = new Dictionary<SQLiteFunctionAttribute, SQLiteFunction>();
 
-          _functions.AddRange(new List<SQLiteFunction>(SQLiteFunction.BindFunctions(this, connectionFlags)));
+          foreach (KeyValuePair<SQLiteFunctionAttribute, SQLiteFunction> pair
+                  in SQLiteFunction.BindFunctions(this, connectionFlags))
+          {
+              _functions[pair.Key] = pair.Value;
+          }
       }
 
       SetTimeout(0);
@@ -1996,7 +2051,7 @@ namespace System.Data.SQLite
       return UnsafeNativeMethods.sqlite3_aggregate_count(context);
     }
 
-    internal override void CreateFunction(string strFunction, int nArgs, bool needCollSeq, SQLiteCallback func, SQLiteCallback funcstep, SQLiteFinalCallback funcfinal)
+    internal override SQLiteErrorCode CreateFunction(string strFunction, int nArgs, bool needCollSeq, SQLiteCallback func, SQLiteCallback funcstep, SQLiteFinalCallback funcfinal, bool canThrow)
     {
       SQLiteErrorCode n;
 
@@ -2007,14 +2062,16 @@ namespace System.Data.SQLite
       n = UnsafeNativeMethods.sqlite3_create_function(_sql, ToUTF8(strFunction), nArgs, 4, IntPtr.Zero, func, funcstep, funcfinal);
       if (n == SQLiteErrorCode.Ok) n = UnsafeNativeMethods.sqlite3_create_function(_sql, ToUTF8(strFunction), nArgs, 1, IntPtr.Zero, func, funcstep, funcfinal);
 #endif
-      if (n != SQLiteErrorCode.Ok) throw new SQLiteException(n, GetLastError());
+      if (canThrow && (n != SQLiteErrorCode.Ok)) throw new SQLiteException(n, GetLastError());
+      return n;
     }
 
-    internal override void CreateCollation(string strCollation, SQLiteCollation func, SQLiteCollation func16)
+    internal override SQLiteErrorCode CreateCollation(string strCollation, SQLiteCollation func, SQLiteCollation func16, bool canThrow)
     {
       SQLiteErrorCode n = UnsafeNativeMethods.sqlite3_create_collation(_sql, ToUTF8(strCollation), 2, IntPtr.Zero, func16);
       if (n == SQLiteErrorCode.Ok) n = UnsafeNativeMethods.sqlite3_create_collation(_sql, ToUTF8(strCollation), 1, IntPtr.Zero, func);
-      if (n != SQLiteErrorCode.Ok) throw new SQLiteException(n, GetLastError());
+      if (canThrow && (n != SQLiteErrorCode.Ok)) throw new SQLiteException(n, GetLastError());
+      return n;
     }
 
     internal override int ContextCollateCompare(CollationEncodingEnum enc, IntPtr context, string s1, string s2)

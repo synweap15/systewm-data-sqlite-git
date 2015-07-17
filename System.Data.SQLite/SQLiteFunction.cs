@@ -79,9 +79,11 @@ namespace System.Data.SQLite
     internal IntPtr _context;
 
     /// <summary>
-    /// This static list contains all the user-defined functions declared using the proper attributes.
+    /// This static dictionary contains all the user-defined functions declared
+    /// using the proper attributes.  The contained dictionary values are always
+    /// null and are not currently used.
     /// </summary>
-    private static List<SQLiteFunctionAttribute> _registeredFunctions;
+    private static IDictionary<SQLiteFunctionAttribute, object> _registeredFunctions;
 
     /// <summary>
     /// Internal constructor, initializes the function's internal variables.
@@ -649,7 +651,7 @@ namespace System.Data.SQLite
 #endif
     static SQLiteFunction()
     {
-      _registeredFunctions = new List<SQLiteFunctionAttribute>();
+      _registeredFunctions = new Dictionary<SQLiteFunctionAttribute, object>();
       try
       {
 #if !PLATFORM_COMPACTFRAMEWORK
@@ -707,7 +709,7 @@ namespace System.Data.SQLite
               if (at != null)
               {
                 at.InstanceType = arTypes[x];
-                _registeredFunctions.Add(at);
+                _registeredFunctions.Add(at, null);
               }
             }
           }
@@ -736,13 +738,13 @@ namespace System.Data.SQLite
         if (at != null)
         {
           at.InstanceType = typ;
-          _registeredFunctions.Add(at);
+          _registeredFunctions.Add(at, null);
         }
       }
     }
 
     /// <summary>
-    /// Called by SQLiteBase derived classes, this function binds all user-defined functions to a connection.
+    /// Called by SQLiteBase derived classes, this function binds all registered user-defined functions to a connection.
     /// It is done this way so that all user-defined functions will access the database using the same encoding scheme
     /// as the connection (UTF-8 or UTF-16).
     /// </summary>
@@ -750,21 +752,77 @@ namespace System.Data.SQLite
     /// The wrapper functions that interop with SQLite will create a unique cookie value, which internally is a pointer to
     /// all the wrapped callback functions.  The interop function uses it to map CDecl callbacks to StdCall callbacks.
     /// </remarks>
-    /// <param name="sqlbase">The base object on which the functions are to bind</param>
-    /// <param name="flags">The flags associated with the parent connection object</param>
+    /// <param name="sqlbase">The base object on which the functions are to bind.</param>
+    /// <param name="flags">The flags associated with the parent connection object.</param>
     /// <returns>Returns a logical list of functions which the connection should retain until it is closed.</returns>
-    internal static IEnumerable<SQLiteFunction> BindFunctions(SQLiteBase sqlbase, SQLiteConnectionFlags flags)
+    internal static IDictionary<SQLiteFunctionAttribute, SQLiteFunction> BindFunctions(
+        SQLiteBase sqlbase,
+        SQLiteConnectionFlags flags
+        )
     {
-        List<SQLiteFunction> lFunctions = new List<SQLiteFunction>();
+        IDictionary<SQLiteFunctionAttribute, SQLiteFunction> lFunctions =
+            new Dictionary<SQLiteFunctionAttribute, SQLiteFunction>();
 
-        foreach (SQLiteFunctionAttribute pr in _registeredFunctions)
+        foreach (KeyValuePair<SQLiteFunctionAttribute, object> pair
+                in _registeredFunctions)
         {
-            SQLiteFunction f = (SQLiteFunction)Activator.CreateInstance(pr.InstanceType);
+            SQLiteFunctionAttribute pr = pair.Key;
+
+            if (pr == null)
+                continue;
+
+            SQLiteFunction f = (SQLiteFunction)Activator.CreateInstance(
+                pr.InstanceType);
+
             BindFunction(sqlbase, pr, f, flags);
-            lFunctions.Add(f);
+            lFunctions[pr] = f;
         }
 
         return lFunctions;
+    }
+
+    /// <summary>
+    /// Called by SQLiteBase derived classes, this function unbinds all previously bound
+    /// user-defined functions from a connection.
+    /// </summary>
+    /// <param name="sqlbase">The base object from which the functions are to be unbound.</param>
+    /// <param name="flags">The flags associated with the parent connection object.</param>
+    /// <returns>Non-zero if all previously bound user-defined functions were unbound.</returns>
+    internal static bool UnbindFunctions(
+        SQLiteBase sqlbase,
+        SQLiteConnectionFlags flags
+        )
+    {
+        if (sqlbase == null)
+            return false;
+
+        IDictionary<SQLiteFunctionAttribute, SQLiteFunction> lFunctions =
+            sqlbase.Functions;
+
+        if (lFunctions == null)
+            return false;
+
+        bool result = true;
+
+        foreach (KeyValuePair<SQLiteFunctionAttribute, object> pair
+                in _registeredFunctions)
+        {
+            SQLiteFunctionAttribute pr = pair.Key;
+
+            if (pr == null)
+                continue;
+
+            SQLiteFunction f;
+
+            if (!lFunctions.TryGetValue(pr, out f) ||
+                (f == null) ||
+                !UnbindFunction(sqlbase, pr, f, flags))
+            {
+                result = false;
+            }
+        }
+
+        return result;
     }
 
     /// <summary>
@@ -830,15 +888,72 @@ namespace System.Data.SQLite
             sqliteBase.CreateFunction(
                 name, functionAttribute.Arguments, needCollSeq,
                 function._InvokeFunc, function._StepFunc,
-                function._FinalFunc);
+                function._FinalFunc, true);
         }
         else
         {
             sqliteBase.CreateCollation(
-                name, function._CompareFunc, function._CompareFunc16);
+                name, function._CompareFunc, function._CompareFunc16,
+                true);
+        }
+    }
+
+    /// <summary>
+    /// This function unbinds a user-defined functions from a connection.
+    /// </summary>
+    /// <param name="sqliteBase">
+    /// The <see cref="SQLiteBase" /> object instance associated with the
+    /// <see cref="SQLiteConnection" /> that the function should be bound to.
+    /// </param>
+    /// <param name="functionAttribute">
+    /// The <see cref="SQLiteFunctionAttribute"/> object instance containing
+    /// the metadata for the function to be bound.
+    /// </param>
+    /// <param name="function">
+    /// The <see cref="SQLiteFunction"/> object instance that implements the
+    /// function to be bound.
+    /// </param>
+    /// <param name="flags">
+    /// The flags associated with the parent connection object.
+    /// </param>
+    /// <returns>Non-zero if the function was unbound.</returns>
+    internal static bool UnbindFunction(
+        SQLiteBase sqliteBase,
+        SQLiteFunctionAttribute functionAttribute,
+        SQLiteFunction function,
+        SQLiteConnectionFlags flags /* NOT USED */
+        )
+    {
+        if (sqliteBase == null)
+            throw new ArgumentNullException("sqliteBase");
+
+        if (functionAttribute == null)
+            throw new ArgumentNullException("functionAttribute");
+
+        if (function == null)
+            throw new ArgumentNullException("function");
+
+        FunctionType functionType = functionAttribute.FuncType;
+        string name = functionAttribute.Name;
+
+        if (functionType != FunctionType.Collation)
+        {
+            bool needCollSeq = (function is SQLiteFunctionEx);
+
+            return sqliteBase.CreateFunction(
+                name, functionAttribute.Arguments, needCollSeq,
+                null, null, null, false) == SQLiteErrorCode.Ok;
+        }
+        else
+        {
+            return sqliteBase.CreateCollation(
+                name, null, null, false) == SQLiteErrorCode.Ok;
         }
     }
   }
+
+
+
 
   /// <summary>
   /// Extends SQLiteFunction and allows an inherited class to obtain the collating sequence associated with a function call.
