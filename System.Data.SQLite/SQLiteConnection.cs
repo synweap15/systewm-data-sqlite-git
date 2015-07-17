@@ -1347,6 +1347,32 @@ namespace System.Data.SQLite
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
 
+    /// <summary>
+    /// This method unbinds all registered (known) functions -OR- all previously
+    /// bound user-defined functions from this connection.
+    /// </summary>
+    /// <param name="registered">
+    /// Non-zero to unbind all registered (known) functions -OR- zero to unbind
+    /// all functions currently bound to the connection.
+    /// </param>
+    /// <returns>
+    /// Non-zero if all the specified user-defined functions were unbound.
+    /// </returns>
+    public bool UnbindAllFunctions(
+        bool registered
+        )
+    {
+        CheckDisposed();
+
+        if (_sql == null)
+            throw new InvalidOperationException(
+                "Database connection not valid for unbinding functions.");
+
+        return SQLiteFunction.UnbindAllFunctions(_sql, _flags, registered);
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+
     [Conditional("CHECK_STATE")]
     internal static void Check(SQLiteConnection connection)
     {

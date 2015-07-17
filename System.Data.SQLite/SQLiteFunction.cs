@@ -79,9 +79,9 @@ namespace System.Data.SQLite
     internal IntPtr _context;
 
     /// <summary>
-    /// This static dictionary contains all the user-defined functions declared
-    /// using the proper attributes.  The contained dictionary values are always
-    /// null and are not currently used.
+    /// This static dictionary contains all the registered (known) user-defined
+    /// functions declared using the proper attributes.  The contained dictionary
+    /// values are always null and are not currently used.
     /// </summary>
     private static IDictionary<SQLiteFunctionAttribute, object> _registeredFunctions;
 
@@ -744,7 +744,7 @@ namespace System.Data.SQLite
     }
 
     /// <summary>
-    /// Called by SQLiteBase derived classes, this function binds all registered user-defined functions to a connection.
+    /// Called by the SQLiteBase derived classes, this method binds all registered (known) user-defined functions to a connection.
     /// It is done this way so that all user-defined functions will access the database using the same encoding scheme
     /// as the connection (UTF-8 or UTF-16).
     /// </summary>
@@ -782,8 +782,8 @@ namespace System.Data.SQLite
     }
 
     /// <summary>
-    /// Called by SQLiteBase derived classes, this function unbinds all previously bound
-    /// user-defined functions from a connection.
+    /// Called by the SQLiteBase derived classes, this method unbinds all registered (known)
+    /// functions -OR- all previously bound user-defined functions from a connection.
     /// </summary>
     /// <param name="sqlbase">The base object from which the functions are to be unbound.</param>
     /// <param name="flags">The flags associated with the parent connection object.</param>
@@ -791,8 +791,8 @@ namespace System.Data.SQLite
     /// Non-zero to unbind all registered (known) functions -OR- zero to unbind all functions
     /// currently bound to the connection.
     /// </param>
-    /// <returns>Non-zero if all previously bound user-defined functions were unbound.</returns>
-    internal static bool UnbindFunctions(
+    /// <returns>Non-zero if all the specified user-defined functions were unbound.</returns>
+    internal static bool UnbindAllFunctions(
         SQLiteBase sqlbase,
         SQLiteConnectionFlags flags,
         bool registered

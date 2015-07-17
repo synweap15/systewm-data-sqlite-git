@@ -245,7 +245,7 @@ namespace System.Data.SQLite
               {
                   if (unbindFunctions)
                   {
-                      if (SQLiteFunction.UnbindFunctions(this, _flags, false))
+                      if (SQLiteFunction.UnbindAllFunctions(this, _flags, false))
                       {
 #if !NET_COMPACT_20 && TRACE_CONNECTION
                           Trace.WriteLine(String.Format(
@@ -297,7 +297,7 @@ namespace System.Data.SQLite
           {
               if (unbindFunctions)
               {
-                  if (SQLiteFunction.UnbindFunctions(this, _flags, false))
+                  if (SQLiteFunction.UnbindAllFunctions(this, _flags, false))
                   {
 #if !NET_COMPACT_20 && TRACE_CONNECTION
                       Trace.WriteLine(String.Format(
