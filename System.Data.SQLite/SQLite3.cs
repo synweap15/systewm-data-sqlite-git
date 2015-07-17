@@ -1,7 +1,7 @@
 /********************************************************
  * ADO.NET 2.0 Data Provider for SQLite Version 3.X
  * Written by Robert Simpson (robert@blackcastlesoft.com)
- * 
+ *
  * Released to the public domain, use at your own risk!
  ********************************************************/
 
@@ -230,22 +230,41 @@ namespace System.Data.SQLite
     {
       if (_sql != null)
       {
-          if ((_flags & SQLiteConnectionFlags.UnbindFunctionsOnClose) ==
-                SQLiteConnectionFlags.UnbindFunctionsOnClose)
-          {
-              SQLiteFunction.UnbindFunctions(this, _flags, false);
-          }
-
           if (!_sql.OwnHandle)
           {
               _sql = null;
               return;
           }
 
+          bool unbindFunctions = ((_flags & SQLiteConnectionFlags.UnbindFunctionsOnClose)
+                == SQLiteConnectionFlags.UnbindFunctionsOnClose);
+
           if (_usePool)
           {
               if (SQLiteBase.ResetConnection(_sql, _sql, canThrow))
               {
+                  if (unbindFunctions)
+                  {
+                      if (SQLiteFunction.UnbindFunctions(this, _flags, false))
+                      {
+#if !NET_COMPACT_20 && TRACE_CONNECTION
+                          Trace.WriteLine(String.Format(
+                              CultureInfo.CurrentCulture,
+                              "UnbindFunctions (Pool) Success: {0}",
+                              HandleToString()));
+#endif
+                      }
+                      else
+                      {
+#if !NET_COMPACT_20 && TRACE_CONNECTION
+                          Trace.WriteLine(String.Format(
+                              CultureInfo.CurrentCulture,
+                              "UnbindFunctions (Pool) Failure: {0}",
+                              HandleToString()));
+#endif
+                      }
+                  }
+
 #if INTEROP_VIRTUAL_TABLE
                   DisposeModules();
 #endif
@@ -258,23 +277,63 @@ namespace System.Data.SQLite
                       typeof(SQLite3), canThrow, _fileName, _poolVersion }));
 
 #if !NET_COMPACT_20 && TRACE_CONNECTION
-                  Trace.WriteLine(String.Format("Close (Pool) Success: {0}", _sql));
+                  Trace.WriteLine(String.Format(
+                      CultureInfo.CurrentCulture,
+                      "Close (Pool) Success: {0}",
+                      HandleToString()));
 #endif
               }
 #if !NET_COMPACT_20 && TRACE_CONNECTION
               else
               {
-                  Trace.WriteLine(String.Format("Close (Pool) Failure: {0}", _sql));
+                  Trace.WriteLine(String.Format(
+                      CultureInfo.CurrentCulture,
+                      "Close (Pool) Failure: {0}",
+                      HandleToString()));
               }
 #endif
           }
           else
           {
+              if (unbindFunctions)
+              {
+                  if (SQLiteFunction.UnbindFunctions(this, _flags, false))
+                  {
+#if !NET_COMPACT_20 && TRACE_CONNECTION
+                      Trace.WriteLine(String.Format(
+                          CultureInfo.CurrentCulture,
+                          "UnbindFunctions Success: {0}",
+                          HandleToString()));
+#endif
+                  }
+                  else
+                  {
+#if !NET_COMPACT_20 && TRACE_CONNECTION
+                      Trace.WriteLine(String.Format(
+                          CultureInfo.CurrentCulture,
+                          "UnbindFunctions Failure: {0}",
+                          HandleToString()));
+#endif
+                  }
+              }
+
               _sql.Dispose();
           }
           _sql = null;
       }
     }
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+
+#if !NET_COMPACT_20 && TRACE_CONNECTION
+    protected string HandleToString()
+    {
+        if (_sql == null)
+            return "<null>";
+
+        return _sql.ToString();
+    }
+#endif
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -830,7 +889,9 @@ namespace System.Data.SQLite
             openFlags, maxPoolSize, usePool, _poolVersion }));
 
 #if !NET_COMPACT_20 && TRACE_CONNECTION
-        Trace.WriteLine(String.Format("Open (Pool): {0}", (_sql != null) ? _sql.ToString() : "<null>"));
+        Trace.WriteLine(String.Format(
+            CultureInfo.CurrentCulture,
+            "Open (Pool): {0}", HandleToString()));
 #endif
       }
 
@@ -859,7 +920,9 @@ namespace System.Data.SQLite
           }
 
 #if !NET_COMPACT_20 && TRACE_CONNECTION
-          Trace.WriteLine(String.Format("Open: {0}", db));
+          Trace.WriteLine(String.Format(
+              CultureInfo.CurrentCulture,
+              "Open: {0}", db));
 #endif
 
           if (n != SQLiteErrorCode.Ok) throw new SQLiteException(n, null);
@@ -1250,7 +1313,9 @@ namespace System.Data.SQLite
 #endif
 
 #if !NET_COMPACT_20 && TRACE_STATEMENT
-            Trace.WriteLine(String.Format("Prepare ({0}): {1}", n, stmt));
+            Trace.WriteLine(String.Format(
+                CultureInfo.CurrentCulture,
+                "Prepare ({0}): {1}", n, stmt));
 #endif
 
             if ((n == SQLiteErrorCode.Ok) && (stmt != IntPtr.Zero))
@@ -2323,7 +2388,10 @@ namespace System.Data.SQLite
                 _usePool = false;
 
 #if !NET_COMPACT_20 && TRACE_CONNECTION
-                Trace.WriteLine(String.Format("CreateModule (Pool) Disabled: {0}", _sql));
+                Trace.WriteLine(String.Format(
+                    CultureInfo.CurrentCulture,
+                    "CreateModule (Pool) Disabled: {0}",
+                    HandleToString()));
 #endif
             }
         }

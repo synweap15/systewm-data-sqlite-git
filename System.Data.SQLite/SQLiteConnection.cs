@@ -1486,7 +1486,8 @@ namespace System.Data.SQLite
         {
             if (_noDispose)
             {
-                System.Diagnostics.Trace.WriteLine(String.Format(CultureInfo.CurrentCulture,
+                System.Diagnostics.Trace.WriteLine(String.Format(
+                    CultureInfo.CurrentCulture,
                     "WARNING: Disposing of connection \"{0}\" with the no-dispose flag set.",
                     _connectionString));
             }
@@ -2748,7 +2749,8 @@ namespace System.Data.SQLite
               fileName.StartsWith("\\", StringComparison.OrdinalIgnoreCase) &&
               !fileName.StartsWith("\\\\", StringComparison.OrdinalIgnoreCase))
           {
-              System.Diagnostics.Trace.WriteLine(String.Format(CultureInfo.CurrentCulture,
+              System.Diagnostics.Trace.WriteLine(String.Format(
+                  CultureInfo.CurrentCulture,
                   "WARNING: Detected a possibly malformed UNC database file name \"{0}\" that " +
                   "may have originally started with two backslashes; however, four leading " +
                   "backslashes may be required, e.g.: \"Data Source=\\\\\\{0};\"",
@@ -3550,7 +3552,9 @@ namespace System.Data.SQLite
 
 #if !NET_COMPACT_20 && TRACE_CONNECTION
         if (rc != SQLiteErrorCode.Ok)
-            System.Diagnostics.Trace.WriteLine(String.Format("Shutdown (Instance) Failed: {0}", rc));
+            System.Diagnostics.Trace.WriteLine(String.Format(
+                CultureInfo.CurrentCulture,
+                "Shutdown (Instance) Failed: {0}", rc));
 #endif
 
         return rc;
@@ -3578,7 +3582,9 @@ namespace System.Data.SQLite
         if (rc != SQLiteErrorCode.Ok)
         {
 #if !NET_COMPACT_20 && TRACE_CONNECTION
-            System.Diagnostics.Trace.WriteLine(String.Format("Shutdown (Static) Failed: {0}", rc));
+            System.Diagnostics.Trace.WriteLine(String.Format(
+                CultureInfo.CurrentCulture,
+                "Shutdown (Static) Failed: {0}", rc));
 #endif
 
             if (!noThrow)

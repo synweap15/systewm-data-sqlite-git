@@ -12,6 +12,7 @@ namespace System.Data.SQLite
 
 #if !NET_COMPACT_20 && TRACE_CONNECTION
   using System.Diagnostics;
+  using System.Globalization;
 #endif
 
   using System.IO;
@@ -161,7 +162,10 @@ namespace System.Data.SQLite
             _poolVersion }));
 
 #if !NET_COMPACT_20 && TRACE_CONNECTION
-        Trace.WriteLine(String.Format("Open16 (Pool): {0}", (_sql != null) ? _sql.ToString() : "<null>"));
+        Trace.WriteLine(String.Format(
+            CultureInfo.CurrentCulture,
+            "Open16 (Pool): {0}",
+            HandleToString()));
 #endif
       }
 
@@ -205,7 +209,9 @@ namespace System.Data.SQLite
           }
 
 #if !NET_COMPACT_20 && TRACE_CONNECTION
-          Trace.WriteLine(String.Format("Open16: {0}", db));
+          Trace.WriteLine(String.Format(
+              CultureInfo.CurrentCulture,
+              "Open16: {0}", db));
 #endif
 
           if (n != SQLiteErrorCode.Ok) throw new SQLiteException(n, null);

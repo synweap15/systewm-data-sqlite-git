@@ -2957,6 +2957,7 @@ namespace System.Data.SQLite
                 try
                 {
                     Trace.WriteLine(String.Format(
+                        CultureInfo.CurrentCulture,
                         "CloseConnection: {0}", localHandle)); /* throw */
                 }
                 catch
@@ -2991,6 +2992,7 @@ namespace System.Data.SQLite
                 try
                 {
                     Trace.WriteLine(String.Format(
+                        CultureInfo.CurrentCulture,
                         "CloseConnection: {0}, exception: {1}",
                         handle, e)); /* throw */
                 }
@@ -3143,6 +3145,7 @@ namespace System.Data.SQLite
                 try
                 {
                     Trace.WriteLine(String.Format(
+                        CultureInfo.CurrentCulture,
                         "FinalizeStatement: {0}", localHandle)); /* throw */
                 }
                 catch
@@ -3177,6 +3180,7 @@ namespace System.Data.SQLite
                 try
                 {
                     Trace.WriteLine(String.Format(
+                        CultureInfo.CurrentCulture,
                         "FinalizeStatement: {0}, exception: {1}",
                         handle, e)); /* throw */
                 }
@@ -3314,6 +3318,7 @@ namespace System.Data.SQLite
                 try
                 {
                     Trace.WriteLine(String.Format(
+                        CultureInfo.CurrentCulture,
                         "FinishBackup: {0}", localHandle)); /* throw */
                 }
                 catch
@@ -3348,6 +3353,7 @@ namespace System.Data.SQLite
                 try
                 {
                     Trace.WriteLine(String.Format(
+                        CultureInfo.CurrentCulture,
                         "FinishBackup: {0}, exception: {1}",
                         handle, e)); /* throw */
                 }
