@@ -12,10 +12,11 @@
   <p>
     You will need a Visual Studio 2005, Visual Studio 2005 SP1, Visual Studio
     2008, Visual Studio 2008 SP1, Visual Studio 2010, Visual Studio 2010 SP1,
-    Visual Studio 2012, or Visual Studio 2013 development environment for this
-    build.  In order to build both the managed (C#) and native projects (C++)
-    for a particular solution together, the &quot;Professional Edition&quot;
-    (or better) of that particular version of Visual Studio is required.
+    Visual Studio 2012, Visual Studio 2013, or Visual Studio 2015 development
+    environment for this build.  In order to build both the managed (C#) and
+    native projects (C++) for a particular solution together, the
+    &quot;Professional Edition&quot; (or better) of that particular version
+    of Visual Studio is required.
   </p>
 
   <p>
@@ -24,15 +25,16 @@
   </p>
 
   <p>
-    In general, all files with 2005, 2008, 2010, 2012, or 2013 in the name (e.g.
-    &quot;SQLite.Interop.2005.vcproj&quot;) are files for Visual Studio 2005,
-    Visual Studio 2008, Visual Studio 2010, Visual Studio 2012, or Visual Studio
-    2013, respectively.  Files ending in &quot;.vsprops&quot; are property files
-    for a Visual Studio 2005 or Visual Studio 2008 project.  Files ending in
-    &quot;.props&quot; are property files for a the Visual Studio 2010, Visual
-    Studio 2012, or Visual Studio 2013 project.  When making changes, they
-    should be made to the corresponding files for all applicable versions of
-    Visual Studio.
+    In general, all files with 2005, 2008, 2010, 2012, 2013, or 2015 in the
+    name (e.g. &quot;SQLite.Interop.2005.vcproj&quot;) are files for Visual
+    Studio 2005, Visual Studio 2008, Visual Studio 2010, Visual Studio 2012,
+    Visual Studio 2013, or Visual Studio 2015, respectively.  Files ending in
+    &quot;.vsprops&quot; are property files for a Visual Studio 2005 or Visual
+    Studio 2008 project.  Files ending in &quot;.props&quot; are property
+    files for a the Visual Studio 2010, Visual Studio 2012, Visual Studio
+    2013, or Visual Studio 2015 project.  When making changes, they should be
+    made to the corresponding files for all applicable versions of Visual
+    Studio.
   </p>
 
   <p>
@@ -92,7 +94,7 @@
 
     <li>
       The string &quot;&lt;year&gt;&quot; represents the version of Visual
-      Studio being used (e.g. 2005, 2008, 2010, 2012, or 2013).
+      Studio being used (e.g. 2005, 2008, 2010, 2012, 2013, or 2015).
     </li>
 
     <li>
@@ -157,6 +159,7 @@
         <li>&lt;root&gt;\SQLite.Interop\props\SQLite.Interop.2010.props</li>
         <li>&lt;root&gt;\SQLite.Interop\props\SQLite.Interop.2012.props</li>
         <li>&lt;root&gt;\SQLite.Interop\props\SQLite.Interop.2013.props</li>
+        <li>&lt;root&gt;\SQLite.Interop\props\SQLite.Interop.2015.props</li>
         <li>&lt;root&gt;\SQLite.Interop\src\win\interop.h</li>
         <li>&lt;root&gt;\System.Data.SQLite\AssemblyInfo.cs</li>
         <li>&lt;root&gt;\System.Data.SQLite\SQLite3.cs</li>
@@ -172,6 +175,8 @@
         <li>&lt;root&gt;\testlinq\2012\LINQ\App.config</li>
         <li>&lt;root&gt;\testlinq\2013\EF6\App.config</li>
         <li>&lt;root&gt;\testlinq\2013\LINQ\App.config</li>
+        <li>&lt;root&gt;\testlinq\2015\EF6\App.config</li>
+        <li>&lt;root&gt;\testlinq\2015\LINQ\App.config</li>
         <li>&lt;root&gt;\testlinq\Properties\AssemblyInfo.cs</li>
         <li>&lt;root&gt;\Tests\version.eagle</li>
         <li>&lt;root&gt;\tools\install\Properties\AssemblyInfo.cs</li>
@@ -230,6 +235,12 @@
         </li>
 
         <li>
+          The &quot;SQLite.NET.2015.sln&quot; file is the top-level solution
+          primarily designed for use with Visual Studio 2015 in the IDE; however,
+          it may also be used from the command line with MSBuild 4.0.
+        </li>
+
+        <li>
           The &quot;SQLite.NET.2005.MSBuild.sln&quot; file is the top-level
           solution primarily designed for use with MSBuild 2.0 on the command
           line; however, it may also be used from the Visual Studio 2005 IDE.
@@ -257,6 +268,12 @@
           The &quot;SQLite.NET.2013.MSBuild.sln&quot; file is the top-level
           solution primarily designed for use with MSBuild 4.0 on the command
           line; however, it may also be used from the Visual Studio 2013 IDE.
+        </li>
+
+        <li>
+          The &quot;SQLite.NET.2015.MSBuild.sln&quot; file is the top-level
+          solution primarily designed for use with MSBuild 4.0 on the command
+          line; however, it may also be used from the Visual Studio 2015 IDE.
         </li>
       </ul>
     </li>
