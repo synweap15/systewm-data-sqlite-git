@@ -7,7 +7,7 @@
  * Released to the public domain, use at your own risk!
  *
 -->
-<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="12.0">
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="14.0">
   <PropertyGroup Label="UserMacros">
     <ConfigurationYear>2015</ConfigurationYear>
     <INTEROP_BUILD_NUMBER>098</INTEROP_BUILD_NUMBER>
