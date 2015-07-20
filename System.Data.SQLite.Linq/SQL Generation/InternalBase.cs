@@ -7,7 +7,7 @@
 
 using System.Text;
 
-#if NET_40 || NET_45 || NET_451
+#if NET_40 || NET_45 || NET_451 || NET_46
 using System.Runtime;
 #endif
 
@@ -20,7 +20,7 @@ namespace System.Data.SQLite.Linq
 	internal abstract class InternalBase
 	{
 		// Methods
-#if NET_40 || NET_45 || NET_451
+#if NET_40 || NET_45 || NET_451 || NET_46
 		[TargetedPatchingOptOut("Performance critical to inline this type of method across NGen image boundaries")]
 #endif
 		protected InternalBase()
@@ -35,7 +35,7 @@ namespace System.Data.SQLite.Linq
 			return builder.ToString();
 		}
 
-#if NET_40 || NET_45 || NET_451
+#if NET_40 || NET_45 || NET_451 || NET_46
 		[TargetedPatchingOptOut("Performance critical to inline this type of method across NGen image boundaries")]
 #endif
 		internal virtual void ToFullString(StringBuilder builder)
