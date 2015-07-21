@@ -69,8 +69,8 @@
       <HintPath>$(VSSDK140Install)VisualStudioIntegration\Common\Assemblies\v2.0\Microsoft.VisualStudio.OLE.Interop.dll</HintPath>
       <SpecificVersion>False</SpecificVersion>
     </Reference>
-    <Reference Include="Microsoft.VisualStudio.Shell.12.0">
-      <HintPath>$(VSSDK140Install)VisualStudioIntegration\Common\Assemblies\v4.0\Microsoft.VisualStudio.Shell.12.0.dll</HintPath>
+    <Reference Include="Microsoft.VisualStudio.Shell.14.0">
+      <HintPath>$(VSSDK140Install)VisualStudioIntegration\Common\Assemblies\v4.0\Microsoft.VisualStudio.Shell.14.0.dll</HintPath>
       <SpecificVersion>False</SpecificVersion>
     </Reference>
     <Reference Include="Microsoft.VisualStudio.Shell.Interop">
@@ -213,7 +213,7 @@
                             !Exists('$(VSSDK140Install)VisualStudioIntegration\Common\Assemblies\v4.0\Microsoft.VisualStudio.Data.dll') Or
                             !Exists('$(VSSDK140Install)VisualStudioIntegration\Common\Assemblies\v4.0\Microsoft.VisualStudio.Data.Services.dll') Or
                             !Exists('$(VSSDK140Install)VisualStudioIntegration\Common\Assemblies\v2.0\Microsoft.VisualStudio.OLE.Interop.dll') Or
-                            !Exists('$(VSSDK140Install)VisualStudioIntegration\Common\Assemblies\v4.0\Microsoft.VisualStudio.Shell.12.0.dll') Or
+                            !Exists('$(VSSDK140Install)VisualStudioIntegration\Common\Assemblies\v4.0\Microsoft.VisualStudio.Shell.14.0.dll') Or
                             !Exists('$(VSSDK140Install)VisualStudioIntegration\Common\Assemblies\v2.0\Microsoft.VisualStudio.Shell.Interop.dll') Or
                             !Exists('$(VSSDK140Install)VisualStudioIntegration\Common\Assemblies\v2.0\Microsoft.VisualStudio.Shell.Interop.8.0.dll') Or
                             !Exists('$(VSSDK140Install)VisualStudioIntegration\Common\Assemblies\v2.0\Microsoft.VisualStudio.Shell.Interop.9.0.dll') Or
