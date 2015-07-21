@@ -42,37 +42,37 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		Targets\SQLite.NET.targets = Targets\SQLite.NET.targets
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "System.Data.SQLite.2013", "System.Data.SQLite\System.Data.SQLite.2013.csproj", "{AC139952-261A-4463-B6FA-AEBC25283A66}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "System.Data.SQLite.2015", "System.Data.SQLite\System.Data.SQLite.2015.csproj", "{AC139952-261A-4463-B6FA-AEBC25283A66}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "System.Data.SQLite.Module.2013", "System.Data.SQLite\System.Data.SQLite.Module.2013.csproj", "{AC139952-261A-4463-B6FA-AEBC25284A66}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "System.Data.SQLite.Module.2015", "System.Data.SQLite\System.Data.SQLite.Module.2015.csproj", "{AC139952-261A-4463-B6FA-AEBC25284A66}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "System.Data.SQLite.Linq.2013", "System.Data.SQLite.Linq\System.Data.SQLite.Linq.2013.csproj", "{E6BF9F74-58E2-413B-A7CE-EA653ECB728D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "System.Data.SQLite.Linq.2015", "System.Data.SQLite.Linq\System.Data.SQLite.Linq.2015.csproj", "{E6BF9F74-58E2-413B-A7CE-EA653ECB728D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "System.Data.SQLite.EF6.2010", "System.Data.SQLite.Linq\System.Data.SQLite.EF6.2013.csproj", "{F1B93C04-C4AE-4D6D-B353-417AEFDCEE7B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "System.Data.SQLite.EF6.2015", "System.Data.SQLite.Linq\System.Data.SQLite.EF6.2015.csproj", "{F1B93C04-C4AE-4D6D-B353-417AEFDCEE7B}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SQLite.Interop.2013", "SQLite.Interop\SQLite.Interop.2013.vcxproj", "{53784BC1-A8BC-4AC8-8A3E-158D6807345A}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SQLite.Interop.2015", "SQLite.Interop\SQLite.Interop.2015.vcxproj", "{53784BC1-A8BC-4AC8-8A3E-158D6807345A}"
 	ProjectSection(ProjectDependencies) = postProject
 		{AC139952-261A-4463-B6FA-AEBC25284A66} = {AC139952-261A-4463-B6FA-AEBC25284A66}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SQLite.Interop.Static.2013", "SQLite.Interop\SQLite.Interop.Static.2013.vcxproj", "{490CBC51-A3B2-4397-89F9-16E858DCB4F8}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SQLite.Interop.Static.2015", "SQLite.Interop\SQLite.Interop.Static.2015.vcxproj", "{490CBC51-A3B2-4397-89F9-16E858DCB4F8}"
 	ProjectSection(ProjectDependencies) = postProject
 		{AC139952-261A-4463-B6FA-AEBC25284A66} = {AC139952-261A-4463-B6FA-AEBC25284A66}
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SQLite.Designer.2013", "SQLite.Designer\SQLite.Designer.2013.csproj", "{9B4A5CF6-5BE5-4926-ACC7-B729A8C05198}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SQLite.Designer.2015", "SQLite.Designer\SQLite.Designer.2015.csproj", "{9B4A5CF6-5BE5-4926-ACC7-B729A8C05198}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Installer.2013", "tools\install\Installer.2013.csproj", "{A41FE2A5-07AD-4CE7-B836-1544634816F5}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Installer.2015", "tools\install\Installer.2015.csproj", "{A41FE2A5-07AD-4CE7-B836-1544634816F5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "test.2013", "test\test.2013.csproj", "{E27B1B1E-19C0-45E8-AA74-B6E1C041A130}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "test.2015", "test\test.2015.csproj", "{E27B1B1E-19C0-45E8-AA74-B6E1C041A130}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "testlinq.2013", "testlinq\testlinq.2013.csproj", "{9D3CF7A6-092A-4B05-B0E4-BEF6944525B3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "testlinq.2015", "testlinq\testlinq.2015.csproj", "{9D3CF7A6-092A-4B05-B0E4-BEF6944525B3}"
 	ProjectSection(ProjectDependencies) = postProject
 		{AC139952-261A-4463-B6FA-AEBC25283A66} = {AC139952-261A-4463-B6FA-AEBC25283A66}
 		{E6BF9F74-58E2-413B-A7CE-EA653ECB728D} = {E6BF9F74-58E2-413B-A7CE-EA653ECB728D}
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "testef6.2013", "testlinq\testef6.2013.csproj", "{2975AE0A-F159-4834-A837-5242C6691886}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "testef6.2015", "testlinq\testef6.2015.csproj", "{2975AE0A-F159-4834-A837-5242C6691886}"
 	ProjectSection(ProjectDependencies) = postProject
 		{AC139952-261A-4463-B6FA-AEBC25283A66} = {AC139952-261A-4463-B6FA-AEBC25283A66}
 		{F1B93C04-C4AE-4D6D-B353-417AEFDCEE7B} = {F1B93C04-C4AE-4D6D-B353-417AEFDCEE7B}
