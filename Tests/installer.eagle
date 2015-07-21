@@ -21,6 +21,12 @@ runSQLiteTestFilesPrologue
 
 ###############################################################################
 
+proc getLineNumber {} {
+  return [incr ::lineNumber]
+}
+
+###############################################################################
+
 runTest {test installer-1.1 {installer tool / Visual Studio 2005} -setup {
   set fileName [file join [getTemporaryPath] [file tail [string map [list \
       .log [appendArgs _ [pid] .log]] $testInstallVs2005LogFile]]]
@@ -45,6 +51,7 @@ runTest {test installer-1.1 {installer tool / Visual Studio 2005} -setup {
   tlog $output
   tlog "\n---- END STDOUT OUTPUT\n"
 
+  set lineNumber 0; # line number
   set is64 [haveConstraint amd64.64bit]
   set wow64 [expr {$is64 ? "\\Wow6432Node" : ""}]
 
@@ -53,7 +60,7 @@ runTest {test installer-1.1 {installer tool / Visual Studio 2005} -setup {
 } -cleanup {
   cleanupFile $fileName
 
-  unset -nocomplain wow64 is64 code output error fileName
+  unset -nocomplain wow64 is64 lineNumber code output error fileName
 } -constraints [fixConstraints {eagle administrator !wow64 buildYear.2005\
 visualStudio2005 System.Data.SQLite.dll_v2.0.50727 file_Installer.exe testExec\
 file_System.Data.SQLite.dll file_SQLite.Designer.dll\
@@ -85,6 +92,7 @@ runTest {test installer-1.2 {uninstaller tool / Visual Studio 2005} -setup {
   tlog $output
   tlog "\n---- END STDOUT OUTPUT\n"
 
+  set lineNumber 0; # line number
   set is64 [haveConstraint amd64.64bit]
   set wow64 [expr {$is64 ? "\\Wow6432Node" : ""}]
 
@@ -93,7 +101,7 @@ runTest {test installer-1.2 {uninstaller tool / Visual Studio 2005} -setup {
 } -cleanup {
   cleanupFile $fileName
 
-  unset -nocomplain wow64 is64 code output error fileName
+  unset -nocomplain wow64 is64 lineNumber code output error fileName
 } -constraints [fixConstraints {eagle administrator !wow64 buildYear.2005\
 visualStudio2005 System.Data.SQLite.dll_v2.0.50727 file_Installer.exe testExec\
 file_System.Data.SQLite.dll file_SQLite.Designer.dll\
@@ -125,6 +133,7 @@ runTest {test installer-1.3 {installer tool / Visual Studio 2008} -setup {
   tlog $output
   tlog "\n---- END STDOUT OUTPUT\n"
 
+  set lineNumber 0; # line number
   set is64 [haveConstraint amd64.64bit]
   set wow64 [expr {$is64 ? "\\Wow6432Node" : ""}]
 
@@ -133,7 +142,7 @@ runTest {test installer-1.3 {installer tool / Visual Studio 2008} -setup {
 } -cleanup {
   cleanupFile $fileName
 
-  unset -nocomplain wow64 is64 code output error fileName
+  unset -nocomplain wow64 is64 lineNumber code output error fileName
 } -constraints [fixConstraints {eagle administrator !wow64 buildYear.2008\
 visualStudio2008 System.Data.SQLite.dll_v2.0.50727 file_Installer.exe testExec\
 file_System.Data.SQLite.dll file_System.Data.SQLite.Linq.dll\
@@ -165,6 +174,7 @@ runTest {test installer-1.4 {uninstaller tool / Visual Studio 2008} -setup {
   tlog $output
   tlog "\n---- END STDOUT OUTPUT\n"
 
+  set lineNumber 0; # line number
   set is64 [haveConstraint amd64.64bit]
   set wow64 [expr {$is64 ? "\\Wow6432Node" : ""}]
 
@@ -173,7 +183,7 @@ runTest {test installer-1.4 {uninstaller tool / Visual Studio 2008} -setup {
 } -cleanup {
   cleanupFile $fileName
 
-  unset -nocomplain wow64 is64 code output error fileName
+  unset -nocomplain wow64 is64 lineNumber code output error fileName
 } -constraints [fixConstraints {eagle administrator !wow64 buildYear.2008\
 visualStudio2008 System.Data.SQLite.dll_v2.0.50727 file_Installer.exe testExec\
 file_System.Data.SQLite.dll file_System.Data.SQLite.Linq.dll\
@@ -205,6 +215,7 @@ runTest {test installer-1.5 {installer tool / Visual Studio 2010} -setup {
   tlog $output
   tlog "\n---- END STDOUT OUTPUT\n"
 
+  set lineNumber 0; # line number
   set is64 [haveConstraint amd64.64bit]
   set wow64 [expr {$is64 ? "\\Wow6432Node" : ""}]
 
@@ -213,7 +224,7 @@ runTest {test installer-1.5 {installer tool / Visual Studio 2010} -setup {
 } -cleanup {
   cleanupFile $fileName
 
-  unset -nocomplain wow64 is64 code output error fileName
+  unset -nocomplain wow64 is64 lineNumber code output error fileName
 } -constraints [fixConstraints {eagle administrator !wow64 buildYear.2010\
 visualStudio2010 System.Data.SQLite.dll_v4.0.30319 file_Installer.exe testExec\
 file_System.Data.SQLite.dll file_System.Data.SQLite.Linq.dll\
@@ -246,6 +257,7 @@ runTest {test installer-1.6 {uninstaller tool / Visual Studio 2010} -setup {
   tlog $output
   tlog "\n---- END STDOUT OUTPUT\n"
 
+  set lineNumber 0; # line number
   set is64 [haveConstraint amd64.64bit]
   set wow64 [expr {$is64 ? "\\Wow6432Node" : ""}]
 
@@ -254,7 +266,7 @@ runTest {test installer-1.6 {uninstaller tool / Visual Studio 2010} -setup {
 } -cleanup {
   cleanupFile $fileName
 
-  unset -nocomplain wow64 is64 code output error fileName
+  unset -nocomplain wow64 is64 lineNumber code output error fileName
 } -constraints [fixConstraints {eagle administrator !wow64 buildYear.2010\
 visualStudio2010 System.Data.SQLite.dll_v4.0.30319 file_Installer.exe testExec\
 file_System.Data.SQLite.dll file_System.Data.SQLite.Linq.dll\
@@ -288,6 +300,7 @@ runTest {test installer-1.7 {installer tool / Visual Studio 2012} -setup {
   tlog $output
   tlog "\n---- END STDOUT OUTPUT\n"
 
+  set lineNumber 0; # line number
   set is64 [haveConstraint amd64.64bit]
   set wow64 [expr {$is64 ? "\\Wow6432Node" : ""}]
 
@@ -296,7 +309,7 @@ runTest {test installer-1.7 {installer tool / Visual Studio 2012} -setup {
 } -cleanup {
   cleanupFile $fileName
 
-  unset -nocomplain wow64 is64 code output error fileName
+  unset -nocomplain wow64 is64 lineNumber code output error fileName
 } -constraints [fixConstraints {eagle administrator !wow64 buildYear.2012\
 visualStudio2012 System.Data.SQLite.dll_v4.0.30319 file_Installer.exe testExec\
 file_System.Data.SQLite.dll file_System.Data.SQLite.Linq.dll\
@@ -330,6 +343,7 @@ runTest {test installer-1.8 {uninstaller tool / Visual Studio 2012} -setup {
   tlog $output
   tlog "\n---- END STDOUT OUTPUT\n"
 
+  set lineNumber 0; # line number
   set is64 [haveConstraint amd64.64bit]
   set wow64 [expr {$is64 ? "\\Wow6432Node" : ""}]
 
@@ -338,7 +352,7 @@ runTest {test installer-1.8 {uninstaller tool / Visual Studio 2012} -setup {
 } -cleanup {
   cleanupFile $fileName
 
-  unset -nocomplain wow64 is64 code output error fileName
+  unset -nocomplain wow64 is64 lineNumber code output error fileName
 } -constraints [fixConstraints {eagle administrator !wow64 buildYear.2012\
 visualStudio2012 System.Data.SQLite.dll_v4.0.30319 file_Installer.exe testExec\
 file_System.Data.SQLite.dll file_System.Data.SQLite.Linq.dll\
@@ -372,6 +386,7 @@ runTest {test installer-1.9 {installer tool / Visual Studio 2013} -setup {
   tlog $output
   tlog "\n---- END STDOUT OUTPUT\n"
 
+  set lineNumber 0; # line number
   set is64 [haveConstraint amd64.64bit]
   set wow64 [expr {$is64 ? "\\Wow6432Node" : ""}]
 
@@ -380,7 +395,7 @@ runTest {test installer-1.9 {installer tool / Visual Studio 2013} -setup {
 } -cleanup {
   cleanupFile $fileName
 
-  unset -nocomplain wow64 is64 code output error fileName
+  unset -nocomplain wow64 is64 lineNumber code output error fileName
 } -constraints [fixConstraints {eagle administrator !wow64 buildYear.2013\
 visualStudio2013 System.Data.SQLite.dll_v4.0.30319 file_Installer.exe testExec\
 file_System.Data.SQLite.dll file_System.Data.SQLite.Linq.dll\
@@ -414,6 +429,7 @@ runTest {test installer-1.10 {uninstaller tool / Visual Studio 2013} -setup {
   tlog $output
   tlog "\n---- END STDOUT OUTPUT\n"
 
+  set lineNumber 0; # line number
   set is64 [haveConstraint amd64.64bit]
   set wow64 [expr {$is64 ? "\\Wow6432Node" : ""}]
 
@@ -422,7 +438,7 @@ runTest {test installer-1.10 {uninstaller tool / Visual Studio 2013} -setup {
 } -cleanup {
   cleanupFile $fileName
 
-  unset -nocomplain wow64 is64 code output error fileName
+  unset -nocomplain wow64 is64 lineNumber code output error fileName
 } -constraints [fixConstraints {eagle administrator !wow64 buildYear.2013\
 visualStudio2013 System.Data.SQLite.dll_v4.0.30319 file_Installer.exe testExec\
 file_System.Data.SQLite.dll file_System.Data.SQLite.Linq.dll\
@@ -456,6 +472,7 @@ runTest {test installer-1.11 {installer tool / Visual Studio 2015} -setup {
   tlog $output
   tlog "\n---- END STDOUT OUTPUT\n"
 
+  set lineNumber 0; # line number
   set is64 [haveConstraint amd64.64bit]
   set wow64 [expr {$is64 ? "\\Wow6432Node" : ""}]
 
@@ -464,7 +481,7 @@ runTest {test installer-1.11 {installer tool / Visual Studio 2015} -setup {
 } -cleanup {
   cleanupFile $fileName
 
-  unset -nocomplain wow64 is64 code output error fileName
+  unset -nocomplain wow64 is64 lineNumber code output error fileName
 } -constraints [fixConstraints {eagle administrator !wow64 buildYear.2015\
 visualStudio2015 System.Data.SQLite.dll_v4.0.30319 file_Installer.exe testExec\
 file_System.Data.SQLite.dll file_System.Data.SQLite.Linq.dll\
@@ -498,6 +515,7 @@ runTest {test installer-1.12 {uninstaller tool / Visual Studio 2015} -setup {
   tlog $output
   tlog "\n---- END STDOUT OUTPUT\n"
 
+  set lineNumber 0; # line number
   set is64 [haveConstraint amd64.64bit]
   set wow64 [expr {$is64 ? "\\Wow6432Node" : ""}]
 
@@ -506,12 +524,16 @@ runTest {test installer-1.12 {uninstaller tool / Visual Studio 2015} -setup {
 } -cleanup {
   cleanupFile $fileName
 
-  unset -nocomplain wow64 is64 code output error fileName
+  unset -nocomplain wow64 is64 lineNumber code output error fileName
 } -constraints [fixConstraints {eagle administrator !wow64 buildYear.2015\
 visualStudio2015 System.Data.SQLite.dll_v4.0.30319 file_Installer.exe testExec\
 file_System.Data.SQLite.dll file_System.Data.SQLite.Linq.dll\
 file_System.Data.SQLite.EF6.dll file_SQLite.Designer.dll\
 file_Uninstaller_Test_Vs2015.log}] -result {0 True}}
+
+###############################################################################
+
+rename getLineNumber ""
 
 ###############################################################################
 
