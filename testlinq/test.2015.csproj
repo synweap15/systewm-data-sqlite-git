@@ -68,7 +68,9 @@
     <Compile Condition="'$(UseEntityFramework6)' == 'false' And
                         ('$(TargetFrameworkVersion)' == 'v4.0' Or
                          '$(TargetFrameworkVersion)' == 'v4.5' Or
-                         '$(TargetFrameworkVersion)' == 'v4.5.1')"
+                         '$(TargetFrameworkVersion)' == 'v4.5.1' Or
+                         '$(TargetFrameworkVersion)' == 'v4.5.2' Or
+                         '$(TargetFrameworkVersion)' == 'v4.6')"
              Include="NorthwindModel.Linq.2015.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -77,7 +79,9 @@
     <Compile Condition="'$(UseEntityFramework6)' != 'false' And
                         ('$(TargetFrameworkVersion)' == 'v4.0' Or
                          '$(TargetFrameworkVersion)' == 'v4.5' Or
-                         '$(TargetFrameworkVersion)' == 'v4.5.1')"
+                         '$(TargetFrameworkVersion)' == 'v4.5.1' Or
+                         '$(TargetFrameworkVersion)' == 'v4.5.2' Or
+                         '$(TargetFrameworkVersion)' == 'v4.6')"
              Include="NorthwindModel.EF6.2015.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -92,12 +96,16 @@
     <None Condition="'$(UseEntityFramework6)' == 'false' And
                      ('$(TargetFrameworkVersion)' == 'v4.0' Or
                       '$(TargetFrameworkVersion)' == 'v4.5' Or
-                      '$(TargetFrameworkVersion)' == 'v4.5.1')"
+                      '$(TargetFrameworkVersion)' == 'v4.5.1' Or
+                      '$(TargetFrameworkVersion)' == 'v4.5.2' Or
+                      '$(TargetFrameworkVersion)' == 'v4.6')"
           Include="2015\LINQ\App.Config" />
     <None Condition="'$(UseEntityFramework6)' != 'false' And
                      ('$(TargetFrameworkVersion)' == 'v4.0' Or
                       '$(TargetFrameworkVersion)' == 'v4.5' Or
-                      '$(TargetFrameworkVersion)' == 'v4.5.1')"
+                      '$(TargetFrameworkVersion)' == 'v4.5.1' Or
+                      '$(TargetFrameworkVersion)' == 'v4.5.2' Or
+                      '$(TargetFrameworkVersion)' == 'v4.6')"
           Include="2015\EF6\App.Config" />
     <None Include="northwindEF.db">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -110,7 +118,9 @@
     <EntityDeploy Condition="'$(UseEntityFramework6)' == 'false' And
                              ('$(TargetFrameworkVersion)' == 'v4.0' Or
                               '$(TargetFrameworkVersion)' == 'v4.5' Or
-                              '$(TargetFrameworkVersion)' == 'v4.5.1')"
+                              '$(TargetFrameworkVersion)' == 'v4.5.1' Or
+                              '$(TargetFrameworkVersion)' == 'v4.5.2' Or
+                              '$(TargetFrameworkVersion)' == 'v4.6')"
                   Include="NorthwindModel.Linq.2015.edmx">
       <Generator>EntityModelCodeGenerator</Generator>
       <LastGenOutput>NorthwindModel.Linq.2015.Designer.cs</LastGenOutput>
@@ -118,7 +128,9 @@
     <EntityDeploy Condition="'$(UseEntityFramework6)' != 'false' And
                              ('$(TargetFrameworkVersion)' == 'v4.0' Or
                               '$(TargetFrameworkVersion)' == 'v4.5' Or
-                              '$(TargetFrameworkVersion)' == 'v4.5.1')"
+                              '$(TargetFrameworkVersion)' == 'v4.5.1' Or
+                              '$(TargetFrameworkVersion)' == 'v4.5.2' Or
+                              '$(TargetFrameworkVersion)' == 'v4.6')"
                   Include="NorthwindModel.EF6.2015.edmx">
       <Generator>EntityModelCodeGenerator</Generator>
       <LastGenOutput>NorthwindModel.EF6.2015.Designer.cs</LastGenOutput>
