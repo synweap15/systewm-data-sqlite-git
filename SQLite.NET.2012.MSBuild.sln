@@ -46,7 +46,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "System.Data.SQLite.Module.2
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "System.Data.SQLite.Linq.2012", "System.Data.SQLite.Linq\System.Data.SQLite.Linq.2012.csproj", "{E6BF9F74-58E2-413B-A7CE-EA653ECB728D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "System.Data.SQLite.EF6.2010", "System.Data.SQLite.Linq\System.Data.SQLite.EF6.2012.csproj", "{F1B93C04-C4AE-4D6D-B353-417AEFDCEE7B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "System.Data.SQLite.EF6.2012", "System.Data.SQLite.Linq\System.Data.SQLite.EF6.2012.csproj", "{F1B93C04-C4AE-4D6D-B353-417AEFDCEE7B}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SQLite.Interop.2012", "SQLite.Interop\SQLite.Interop.2012.vcxproj", "{53784BC1-A8BC-4AC8-8A3E-158D6807345A}"
 	ProjectSection(ProjectDependencies) = postProject

@@ -88,6 +88,10 @@ namespace System.Data.SQLite
             "NET_451",
 #endif
 
+#if NET_46
+            "NET_46",
+#endif
+
 #if NET_COMPACT_20
             "NET_COMPACT_20",
 #endif

@@ -23,9 +23,9 @@ namespace eval ::Eagle {
       # NOTE: See if the "year" setting has been overridden by the user (e.g.
       #       on the command line).  This helps control exactly which set of
       #       binaries we are testing, those produced using the Visual Studio
-      #       2005, 2008, 2010, 2012, or 2013 build systems.  To override this
-      #       value via the command line, enter a command similar to one of
-      #       the following (all on one line):
+      #       2005, 2008, 2010, 2012, 2013, or 2015 build systems.  To override
+      #       this value via the command line, enter a command similar to one
+      #       of the following (all on one line):
       #
       #       EagleShell.exe -anyInitialize "set test_year 2005"
       #         -file .\path\to\all.eagle
@@ -42,6 +42,9 @@ namespace eval ::Eagle {
       #       EagleShell.exe -anyInitialize "set test_year 2013"
       #         -file .\path\to\all.eagle
       #
+      #       EagleShell.exe -anyInitialize "set test_year 2015"
+      #         -file .\path\to\all.eagle
+      #
       #       EagleShell.exe -anyInitialize "unset -nocomplain test_year"
       #         -file .\path\to\all.eagle
       #
@@ -55,14 +58,14 @@ namespace eval ::Eagle {
       } else {
         #
         # NOTE: If Eagle has been compiled against the CLR v4.0, use "2010" by
-        #       default (we could use "2012" or "2013" in that case as well) as
-        #       the test year; otherwise, use "2008" by default (we could use
-        #       "2005" in that case as well).  If another major [incompatible]
-        #       version of the CLR is released, this check will have to be
-        #       changed.  The default test year to use for a particular CLR
-        #       version may be overridden by setting the global variable
-        #       "test_year_clr_v$X", where "$X" may [currently] be either "2"
-        #       or "4".
+        #       default (we could use "2012", "2013", or "2015" in that case as
+        #       well) as the test year; otherwise, use "2008" by default (we
+        #       could use "2005" in that case as well).  If another major
+        #       [incompatible] version of the CLR is released, this check will
+        #       have to be changed.  The default test year to use for a
+        #       particular CLR version may be overridden by setting the global
+        #       variable "test_year_clr_v$X", where "$X" may [currently] be
+        #       either "2" or "4".
         #
         if {[haveConstraint imageRuntime40]} then {
           if {[info exists ::test_year_clr_v4] && \
@@ -159,7 +162,7 @@ namespace eval ::Eagle {
         #
         # NOTE: Use the default list of test years (i.e. all).
         #
-        return [list 2005 2008 2010 2012 2013]
+        return [list 2005 2008 2010 2012 2013 2015]
       }
     }
 
@@ -192,6 +195,10 @@ namespace eval ::Eagle {
           }
           2013 {
             return netFx451
+            # return netFx452
+          }
+          2015 {
+            return netFx46
           }
           default {
             return netFx35; # TODO: Good "fallback" default?
@@ -3014,7 +3021,8 @@ namespace eval ::Eagle {
         #
         set externalFileNames [list \
             [file join EntityFramework lib [string map [list Fx ""] [string \
-            map [list netFx451 netFx45] [getBuildNetFx]]] EntityFramework.dll]]
+            map [list netFx451 netFx45 netFx452 netFx45 netFx46 netFx45] \
+            [getBuildNetFx]]] EntityFramework.dll]]
 
         #
         # NOTE: Build the list of native assembly files that we handle.  The
@@ -3438,7 +3446,7 @@ namespace eval ::Eagle {
             INTEROP_EXTENSION_FUNCTIONS INTEROP_INCLUDE_CEROD \
             INTEROP_INCLUDE_EXTRA INTEROP_INCLUDE_SEE INTEROP_INCLUDE_ZIPVFS \
             INTEROP_LEGACY_CLOSE INTEROP_LOG INTEROP_TEST_EXTENSION \
-            INTEROP_VIRTUAL_TABLE NET_20 NET_35 NET_40 NET_45 NET_451 \
+            INTEROP_VIRTUAL_TABLE NET_20 NET_35 NET_40 NET_45 NET_451 NET_46 \
             NET_COMPACT_20 PLATFORM_COMPACTFRAMEWORK PRELOAD_NATIVE_LIBRARY \
             RETARGETABLE SQLITE_STANDARD THROW_ON_DISPOSED TRACE \
             TRACE_CONNECTION TRACE_DETECTION TRACE_HANDLE TRACE_PRELOAD \
@@ -3692,6 +3700,9 @@ namespace eval ::Eagle {
         set testInstallVs2013LogFile [file nativename [file join \
             [getSQLiteTestDataPath] Installer_Test_Vs2013.log]]
 
+        set testInstallVs2015LogFile [file nativename [file join \
+            [getSQLiteTestDataPath] Installer_Test_Vs2015.log]]
+
         set testUninstallVs2005LogFile [file nativename [file join \
             [getSQLiteTestDataPath] Uninstaller_Test_Vs2005.log]]
 
@@ -3706,6 +3717,9 @@ namespace eval ::Eagle {
 
         set testUninstallVs2013LogFile [file nativename [file join \
             [getSQLiteTestDataPath] Uninstaller_Test_Vs2013.log]]
+
+        set testUninstallVs2015LogFile [file nativename [file join \
+            [getSQLiteTestDataPath] Uninstaller_Test_Vs2015.log]]
 
         #######################################################################
 
@@ -3800,6 +3814,11 @@ namespace eval ::Eagle {
         }
 
         if {![haveConstraint [appendArgs file_ \
+            [file tail $testInstallVs2015LogFile]]]} then {
+          checkForFile $test_channel $testInstallVs2015LogFile
+        }
+
+        if {![haveConstraint [appendArgs file_ \
             [file tail $testUninstallVs2005LogFile]]]} then {
           checkForFile $test_channel $testUninstallVs2005LogFile
         }
@@ -3823,15 +3842,21 @@ namespace eval ::Eagle {
             [file tail $testUninstallVs2013LogFile]]]} then {
           checkForFile $test_channel $testUninstallVs2013LogFile
         }
+
+        if {![haveConstraint [appendArgs file_ \
+            [file tail $testUninstallVs2015LogFile]]]} then {
+          checkForFile $test_channel $testUninstallVs2015LogFile
+        }
       }
     }
 
     proc runSQLiteTestFilesEpilogue {} {
       uplevel 1 {
         unset -nocomplain \
-            testUninstallVs2013LogFile testUninstallVs2012LogFile \
-            testUninstallVs2010LogFile testUninstallVs2008LogFile \
-            testUninstallVs2005LogFile testInstallVs2013LogFile \
+            testUninstallVs2015LogFile testUninstallVs2013LogFile \
+            testUninstallVs2012LogFile testUninstallVs2010LogFile \
+            testUninstallVs2008LogFile testUninstallVs2005LogFile \
+            testInstallVs2015LogFile testInstallVs2013LogFile \
             testInstallVs2012LogFile testInstallVs2010LogFile \
             testInstallVs2008LogFile testInstallVs2005LogFile
 

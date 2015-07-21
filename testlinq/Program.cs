@@ -170,7 +170,7 @@ namespace testlinq
 
                       return BinaryGuidTest(value);
                   }
-#if NET_40 || NET_45 || NET_451
+#if NET_40 || NET_45 || NET_451 || NET_46
               case "binaryguid2":
                   {
                       bool value = false;
@@ -480,7 +480,7 @@ namespace testlinq
 
                       try
                       {
-#if NET_40 || NET_45 || NET_451
+#if NET_40 || NET_45 || NET_451 || NET_46
                           db.SaveChanges(SaveOptions.None);
 #else
                           db.SaveChanges(false);
@@ -503,7 +503,7 @@ namespace testlinq
               using (northwindEFEntities db = new northwindEFEntities())
               {
                   bool once = false;
-#if NET_40 || NET_45 || NET_451
+#if NET_40 || NET_45 || NET_451 || NET_46
                   var query = from t in db.Territories
                     where territoryIds.AsQueryable<long>().Contains<long>(t.TerritoryID)
                     orderby t.TerritoryID
@@ -702,7 +702,7 @@ namespace testlinq
           return 0;
       }
 
-#if NET_40 || NET_45 || NET_451
+#if NET_40 || NET_45 || NET_451 || NET_46
       //
       // NOTE: Used to test the BinaryGUID connection string property with
       //       the Contains() function (ticket [a4d9c7ee94]).  We cannot

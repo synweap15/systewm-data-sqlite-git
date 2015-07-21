@@ -56,6 +56,16 @@
                      ('$(NetFx451Settings)' == '' Or '$(NetFx451Settings)' != 'false') And
                      Exists('$(SQLiteNetDir)\Targets\SQLite.NET.Settings.targets.netFx451')" />
 
+  <Import Project="$(SQLiteNetDir)\Targets\SQLite.NET.Settings.targets.netFx452"
+          Condition="'$(NetFx452)' != '' And '$(NetFx452)' != 'false' And
+                     ('$(NetFx452Settings)' == '' Or '$(NetFx452Settings)' != 'false') And
+                     Exists('$(SQLiteNetDir)\Targets\SQLite.NET.Settings.targets.netFx452')" />
+
+  <Import Project="$(SQLiteNetDir)\Targets\SQLite.NET.Settings.targets.netFx46"
+          Condition="'$(NetFx46)' != '' And '$(NetFx46)' != 'false' And
+                     ('$(NetFx46Settings)' == '' Or '$(NetFx46Settings)' != 'false') And
+                     Exists('$(SQLiteNetDir)\Targets\SQLite.NET.Settings.targets.netFx46')" />
+
   <!--
   ******************************************************************************
   **                       [Fairly] Generic Properties                        **
@@ -145,6 +155,24 @@
     <NetFx451 Condition="'$(NetFx451)' == ''">false</NetFx451>
 
     <!--
+        NOTE: Only use functionality available in the .NET Framework 4.5.2?  By
+              default, this is disabled.  This must be enabled to successfully
+              build the project using Visual Studio 2013 and/or the .NET
+              Framework 4.5.2 (if necessary, it will typically be enabled from
+              within the project file itself).
+    -->
+    <NetFx452 Condition="'$(NetFx452)' == ''">false</NetFx452>
+
+    <!--
+        NOTE: Only use functionality available in the .NET Framework 4.6?  By
+              default, this is disabled.  This must be enabled to successfully
+              build the project using Visual Studio 2015 and/or the .NET
+              Framework 4.6 (if necessary, it will typically be enabled from
+              within the project file itself).
+    -->
+    <NetFx46 Condition="'$(NetFx46)' == ''">false</NetFx46>
+
+    <!--
         NOTE: Load the version-specific settings for the .NET Framework 2.0?
               By default, this is disabled.  If this is enabled when compiling
               for the .NET Framework 2.0, the version-specific settings file
@@ -193,6 +221,26 @@
               processed.
     -->
     <NetFx451Settings Condition="'$(NetFx451Settings)' == ''">false</NetFx451Settings>
+
+    <!--
+        NOTE: Load the version-specific settings for the .NET Framework 4.5.2?
+              By default, this is disabled.  If this is enabled when compiling
+              for the .NET Framework 4.5.2, the version-specific settings file
+              "SQLite.NET.Settings.targets.netFx452" will be loaded if it is
+              actually present, before any other settings in this file are
+              processed.
+    -->
+    <NetFx452Settings Condition="'$(NetFx452Settings)' == ''">false</NetFx452Settings>
+
+    <!--
+        NOTE: Load the version-specific settings for the .NET Framework 4.6?
+              By default, this is disabled.  If this is enabled when compiling
+              for the .NET Framework 4.6, the version-specific settings file
+              "SQLite.NET.Settings.targets.netFx46" will be loaded if it is
+              actually present, before any other settings in this file are
+              processed.
+    -->
+    <NetFx46Settings Condition="'$(NetFx46Settings)' == ''">false</NetFx46Settings>
   </PropertyGroup>
 
   <!--
