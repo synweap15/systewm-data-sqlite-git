@@ -195,6 +195,7 @@ namespace eval ::Eagle {
           }
           2013 {
             return netFx451
+            # return netFx452
           }
           2015 {
             return netFx46
@@ -3020,8 +3021,8 @@ namespace eval ::Eagle {
         #
         set externalFileNames [list \
             [file join EntityFramework lib [string map [list Fx ""] [string \
-            map [list netFx451 netFx45 netFx46 netFx45] [getBuildNetFx]]] \
-            EntityFramework.dll]]
+            map [list netFx451 netFx45 netFx452 netFx45 netFx46 netFx45] \
+            [getBuildNetFx]]] EntityFramework.dll]]
 
         #
         # NOTE: Build the list of native assembly files that we handle.  The

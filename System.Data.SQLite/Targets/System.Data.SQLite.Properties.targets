@@ -63,6 +63,17 @@
   </PropertyGroup>
 
   <!--
+      NOTE: Only use functionality available in the .NET Framework 4.5.2?  By
+            default, this is disabled.  This must be enabled to successfully
+            build the project using Visual Studio 2013 and/or the .NET
+            Framework 4.5.2 (if necessary, it will typically be enabled from
+            within the project file itself).
+  -->
+  <PropertyGroup Condition="'$(NetFx452)' != 'false'">
+    <DefineConstants>$(DefineConstants);NET_452</DefineConstants>
+  </PropertyGroup>
+
+  <!--
       NOTE: Only use functionality available in the .NET Framework 4.6?  By
             default, this is disabled.  This must be enabled to successfully
             build the project using Visual Studio 2015 and/or the .NET
