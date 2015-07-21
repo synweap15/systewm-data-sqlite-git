@@ -3020,7 +3020,8 @@ namespace eval ::Eagle {
         #
         set externalFileNames [list \
             [file join EntityFramework lib [string map [list Fx ""] [string \
-            map [list netFx451 netFx45] [getBuildNetFx]]] EntityFramework.dll]]
+            map [list netFx451 netFx45 netFx46 netFx45] [getBuildNetFx]]] \
+            EntityFramework.dll]]
 
         #
         # NOTE: Build the list of native assembly files that we handle.  The
