@@ -179,29 +179,43 @@ namespace eval ::Eagle {
         return $::test_net_fx
       } else {
         set year [getBuildYear]
+        set yearVarName [appendArgs ::test_net_fx_ $year]
 
-        switch -exact -- $year {
-          2005 {
-            return netFx20
-          }
-          2008 {
-            return netFx35
-          }
-          2010 {
-            return netFx40
-          }
-          2012 {
-            return netFx45
-          }
-          2013 {
-            return netFx451
-            # return netFx452
-          }
-          2015 {
-            return netFx46
-          }
-          default {
-            return netFx35; # TODO: Good "fallback" default?
+        if {[info exists $yearVarName] && \
+            [string length [set $yearVarName]] > 0} then {
+          #
+          # NOTE: Use the specified test .NET Framework, based on the build
+          #       year.
+          #
+          return [set $yearVarName]
+        } else {
+          #
+          # NOTE: Fallback to the "well known" .NET Framework version that
+          #       is most closely associated with a particular version of
+          #       Visual Studio.
+          #
+          switch -exact -- $year {
+            2005 {
+              return netFx20
+            }
+            2008 {
+              return netFx35
+            }
+            2010 {
+              return netFx40
+            }
+            2012 {
+              return netFx45
+            }
+            2013 {
+              return netFx451; # TODO: Or "netFx452"?
+            }
+            2015 {
+              return netFx46
+            }
+            default {
+              return netFx35; # TODO: Good "fallback" default?
+            }
           }
         }
       }
