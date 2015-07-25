@@ -760,6 +760,26 @@ namespace System.Data.SQLite
     }
 
     /// <summary>
+    /// Enable or disable the recursive trigger capability.
+    /// </summary>
+    [DisplayName("Recursive Triggers")]
+    [Browsable(true)]
+    [DefaultValue(false)]
+    public bool RecursiveTriggers
+    {
+        get
+        {
+            object value;
+            TryGetValue("recursive triggers", out value);
+            return SQLiteConvert.ToBoolean(value);
+        }
+        set
+        {
+            this["recursive triggers"] = value;
+        }
+    }
+
+    /// <summary>
     /// If non-null, this is the version of ZipVFS to use.  This requires the
     /// System.Data.SQLite interop assembly -AND- primary managed assembly to
     /// be compiled with the INTEROP_INCLUDE_ZIPVFS option; otherwise, this

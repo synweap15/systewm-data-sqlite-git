@@ -504,6 +504,15 @@ namespace System.Data.SQLite
   /// <description>N</description>
   /// <description>0</description>
   /// </item>
+  /// <item>
+  /// <description>Recursive Triggers</description>
+  /// <description>
+  /// <b>True</b> - Enable the recursive trigger capability.
+  /// <b>False</b> - Disable the recursive trigger capability.
+  /// </description>
+  /// <description>N</description>
+  /// <description>False</description>
+  /// </item>
   /// </list>
   /// </remarks>
   public sealed partial class SQLiteConnection : DbConnection, ICloneable, IDisposable
@@ -559,6 +568,7 @@ namespace System.Data.SQLite
     private const bool DefaultPooling = false; // TODO: Maybe promote this to static property?
     private const bool DefaultLegacyFormat = false;
     private const bool DefaultForeignKeys = false;
+    private const bool DefaultRecursiveTriggers = false;
     private const bool DefaultEnlist = true;
     private const bool DefaultSetDefaults = true;
     internal const int DefaultPrepareRetries = 3;
@@ -2836,6 +2846,14 @@ namespace System.Data.SQLite
                   if (boolValue != DefaultForeignKeys)
                   {
                       cmd.CommandText = String.Format(CultureInfo.InvariantCulture, "PRAGMA foreign_keys={0}", boolValue ? "ON" : "OFF");
+                      cmd.ExecuteNonQuery();
+                  }
+
+                  strValue = FindKey(opts, "Recursive Triggers", DefaultRecursiveTriggers.ToString());
+                  boolValue = SQLiteConvert.ToBoolean(strValue);
+                  if (boolValue != DefaultRecursiveTriggers)
+                  {
+                      cmd.CommandText = String.Format(CultureInfo.InvariantCulture, "PRAGMA recursive_triggers={0}", boolValue ? "ON" : "OFF");
                       cmd.ExecuteNonQuery();
                   }
               }

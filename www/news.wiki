@@ -15,6 +15,7 @@
     <li>Add extended return codes to the SQLiteErrorCode enumeration. Pursuant to [71bedaca19].&nbsp;<b>** Potentially Incompatible Change **</b></li>
     <li>Improve exception handling in all native callbacks implemented in the SQLiteConnection class.</li>
     <li>Add Progress event and ProgressOps connection string property to enable raising progress events during long-running queries.</li>
+    <li>Add &quot;Recursive Triggers&quot; connection string property to enable or disable the recursive trigger capability. Pursuant to [3a82ee635b].</li>
     <li>Add NoDefaultFlags connection string property to prevent the default connection flags from being used. Pursuant to [964063da16].</li>
     <li>Add VfsName connection string property to allow a non-default VFS to be used by the SQLite core library.</li>
     <li>Add BusyTimeout connection string property to set the busy timeout to be used by the SQLite core library.</li>
