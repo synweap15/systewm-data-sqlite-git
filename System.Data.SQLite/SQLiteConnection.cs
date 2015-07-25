@@ -408,11 +408,25 @@ namespace System.Data.SQLite
   /// <item>
   /// <description>Journal Mode</description>
   /// <description>
-  /// <b>Delete</b> - Delete the journal file after a commit
+  /// <b>Delete</b> - Delete the journal file after a commit.
   /// <br/>
-  /// <b>Persist</b> - Zero out and leave the journal file on disk after a commit
+  /// <b>Persist</b> - Zero out and leave the journal file on disk after a
+  /// commit.
   /// <br/>
-  /// <b>Off</b> - Disable the rollback journal entirely
+  /// <b>Off</b> - Disable the rollback journal entirely.  This saves disk I/O
+  /// but at the expense of database safety and integrity.  If the application
+  /// using SQLite crashes in the middle of a transaction when this journaling
+  /// mode is set, then the database file will very likely go corrupt.
+  /// <br/>
+  /// <b>Truncate</b> - Truncate the journal file to zero-length instead of
+  /// deleting it.
+  /// <br/>
+  /// <b>Memory</b> - Store the journal in volatile RAM.  This saves disk I/O
+  /// but at the expense of database safety and integrity.  If the application
+  /// using SQLite crashes in the middle of a transaction when this journaling
+  /// mode is set, then the database file will very likely go corrupt.
+  /// <br/>
+  /// <b>Wal</b> - Use a write-ahead log instead of a rollback journal.
   /// </description>
   /// <description>N</description>
   /// <description>Delete</description>
