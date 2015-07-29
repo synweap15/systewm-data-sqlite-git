@@ -2961,6 +2961,7 @@ namespace System.Data.SQLite.Linq
 
     /// <summary>
     /// Round(numericExpression) -> Round(numericExpression, 0);
+    /// Round(numericExpression, N) -> Round(numericExpression, N);
     /// </summary>
     /// <param name="sqlgen"></param>
     /// <param name="e"></param>
@@ -2971,10 +2972,19 @@ namespace System.Data.SQLite.Linq
 
       result.Append("ROUND(");
 
-      Debug.Assert(e.Arguments.Count == 1, "Round should have one argument");
+      Debug.Assert(e.Arguments.Count == 1 || e.Arguments.Count == 2, "Round should have one or two arguments");
       result.Append(e.Arguments[0].Accept(sqlgen));
 
-      result.Append(", 0)");
+      if (e.Arguments.Count == 2)
+      {
+        result.Append(", ");
+        result.Append(e.Arguments[1].Accept(sqlgen));
+        result.Append(")");
+      }
+      else
+      {
+        result.Append(", 0)");
+      }
 
       return result;
     }
