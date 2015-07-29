@@ -140,8 +140,13 @@ runTest {test stress-1.1 {multithreaded stress testing} -setup {
 
   #############################################################################
 
-  proc delayTest { {extra 0} } {
-    after [expr {int((rand() * 1000) + $extra)}]
+  proc delayTest { base extra } {
+    if {$base < 0} then {
+      set base 1000
+    }
+    if {$base > 0 || $extra > 0} then {
+      after [expr {int((rand() * $base) + $extra)}]
+    }
   }
 
   #############################################################################
@@ -156,9 +161,15 @@ runTest {test stress-1.1 {multithreaded stress testing} -setup {
   #############################################################################
 
   proc showTest { indicator } {
+    showTestWithDelay $indicator -1 $::count(2)
+  }
+
+  #############################################################################
+
+  proc showTestWithDelay { indicator base extra } {
     tputs $::test_channel $indicator
     append ::indicators $indicator
-    delayTest $::count(2)
+    delayTest $base $extra
   }
 
   #############################################################################
@@ -201,7 +212,7 @@ runTest {test stress-1.1 {multithreaded stress testing} -setup {
       }
 
       incr ::failures($indicator)
-      delayTest $::count(2)
+      delayTest -1 $::count(2)
     }
   }
 
@@ -267,6 +278,18 @@ runTest {test stress-1.1 {multithreaded stress testing} -setup {
 
   #############################################################################
 
+  proc releaseMem { size } {
+    set nFree 0; set resetOk false; set nLargest 0
+
+    set code [object invoke \
+        System.Data.SQLite.SQLiteConnection ReleaseMemory \
+        $size true true nFree resetOk nLargest]
+
+    return [list $code $nFree $resetOk $nLargest]
+  }
+
+  #############################################################################
+
   proc setupLogging { fileName } {
     if {![info exists ::logListener]} then {
       set ::logListener [object create -alias \
@@ -312,11 +335,14 @@ runTest {test stress-1.1 {multithreaded stress testing} -setup {
   #       all, or none of these may be overriden via the command line.
   #
   set count(0) 3;         # Workload repeat count (i.e. total full runs).
-  set count(1) 5;         # Workload iteration count (i.e. within a run).
-  set count(2) 200;       # Workload iteration delay, in milliseconds.
+  set count(1) 5;         # Workload iteration count (within a run).
+  set count(2) 200;       # Workload iteration delay (milliseconds).
   set count(3) 57;        # Workload "small" data chunk size, in bytes.
   set count(4) 10000;     # Workload "big" data chunk size, in bytes.
   set count(5) 209715200; # Maximum heap memory to exclude at one time.
+  set count(6) 15;        # Workload auxiliary iteration count (within a run).
+  set count(7) 100;       # Workload auxiliary iteration delay (milliseconds).
+  set count(8) 5000;      # Workload auxiliary data value (for use by run).
   set noWorkload [list];  # Workloads to be omitted from the run, by index.
   set priorities [list];  # Dictionary of workload thread priorities.
   set exitOnFail false;   # Halt testing and exit process on test failure?
@@ -339,6 +365,9 @@ runTest {test stress-1.1 {multithreaded stress testing} -setup {
         [list null MustHaveIntegerValue -1 -1 -count3 $count(3)] \
         [list null MustHaveIntegerValue -1 -1 -count4 $count(4)] \
         [list null MustHaveIntegerValue -1 -1 -count5 $count(5)] \
+        [list null MustHaveIntegerValue -1 -1 -count6 $count(6)] \
+        [list null MustHaveIntegerValue -1 -1 -count7 $count(7)] \
+        [list null MustHaveIntegerValue -1 -1 -count8 $count(8)] \
         [list null MustHaveListValue -1 -1 -noWorkload $noWorkload] \
         [list null MustHaveListValue -1 -1 -priorities $priorities] \
         [list null MustHaveBooleanValue -1 -1 -exitOnFail $exitOnFail] \
@@ -351,6 +380,9 @@ runTest {test stress-1.1 {multithreaded stress testing} -setup {
     set count(3) $options(-count3,value)
     set count(4) $options(-count4,value)
     set count(5) $options(-count5,value)
+    set count(6) $options(-count6,value)
+    set count(7) $options(-count7,value)
+    set count(8) $options(-count8,value)
     set noWorkload $options(-noWorkload,value)
     set priorities $options(-priorities,value)
     set exitOnFail $options(-exitOnFail,value)
@@ -431,6 +463,18 @@ runTest {test stress-1.1 {multithreaded stress testing} -setup {
 
   tputs $test_channel [appendArgs \
       "---- maximum excluded heap memory is " $count(5) " byte(s)\n"]
+
+  tputs $test_channel [appendArgs \
+      "---- workloads will have an auxiliary iteration count of " \
+      $count(6) \n]
+
+  tputs $test_channel [appendArgs \
+      "---- workloads will have an auxiliary iteration delay of " \
+      $count(7) " millisecond(s)\n"]
+
+  tputs $test_channel [appendArgs \
+      "---- workloads will have an auxiliary data value of " \
+      $count(8) \n]
 
   tputs $test_channel [appendArgs \
       "---- workloads to be skipped... " \
@@ -1126,7 +1170,7 @@ runTest {test stress-1.1 {multithreaded stress testing} -setup {
           if {[catch {
             set size [expr {int(min($maxSize, abs($count3 * $index * 5.0)))}]
             set ptr [allocMem $size]; # throw
-            useMem $ptr $size; delayTest $count2
+            useMem $ptr $size; delayTest -1 $count2
             freeMem $ptr; unset -nocomplain ptr
             showTest P
           } error]} then {
@@ -1335,6 +1379,66 @@ runTest {test stress-1.1 {multithreaded stress testing} -setup {
       doneTest T
     }] 0]
   }]
+
+  #############################################################################
+  #                              WORKLOAD #21 (U)                             #
+  #############################################################################
+
+  set workload(21) [list \
+      [list srcFileName dstFileName table count1 count2 count3] {
+    #
+    # NOTE: Workload #21, rapidly try to release all non-essential memory.
+    #
+    waitTest U
+    lappend ::times(21) [lindex [time {
+      initTest U
+      for {set index 1} {$index <= $::count(6)} {incr index} {
+        if {[catch {
+          releaseMem -1
+          showTestWithDelay U 0 $::count(7)
+        } error]} then {
+          if {[isExpectedError $error]} then {
+            showTest u
+          } else {
+            failTest u $error
+          }
+        }
+      }
+      doneTest U
+    }] 0]
+  }]
+
+  #############################################################################
+  #                              WORKLOAD #22 (V)                             #
+  #############################################################################
+
+  set workload(22) [list \
+      [list srcFileName dstFileName table count1 count2 count3] {
+    #
+    # NOTE: Workload #22, rapidly try to change the default cache size.
+    #
+    waitTest V
+    lappend ::times(22) [lindex [time {
+      initTest V
+      setupWorkloadFileDb $dstFileName db
+      for {set index 1} {$index <= $::count(6)} {incr index} {
+        if {[catch {
+          sql execute $db [appendArgs \
+              "PRAGMA default_cache_size=" \
+              [expr {int(rand() * $::count(8))}] \;]
+          showTestWithDelay V 0 $::count(7)
+        } error]} then {
+          if {[isExpectedError $error]} then {
+            showTest v
+          } else {
+            failTest v $error
+          }
+        }
+      }
+      cleanupDb $dstFileName db false true false
+      doneTest V
+    }] 0]
+  }]
 } -body {
   set workloadNames(all) [array names workload]
 
@@ -1496,11 +1600,13 @@ runTest {test stress-1.1 {multithreaded stress testing} -setup {
     }
   }
 
+  rename releaseMem ""
   rename freeMem ""
   rename useMem ""
   rename allocMem ""
   rename failTest ""
   rename doneTest ""
+  rename showTestWithDelay ""
   rename showTest ""
   rename waitTest ""
   rename delayTest ""
