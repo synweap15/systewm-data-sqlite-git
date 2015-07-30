@@ -225,6 +225,7 @@ pragmas for which the database name is meaningful are shown with a
 <li><a href="#pragma_cache_size">cache_size</a>
 <li><a href="#pragma_cache_spill">cache_spill</a>
 <li><a href="#pragma_case_sensitive_like">case_sensitive_like</a>
+<li><a href="#pragma_cell_size_check">cell_size_check</a>
 <li><a href="#pragma_checkpoint_fullfsync">checkpoint_fullfsync</a>
 <li><a href="#pragma_collation_list">collation_list</a>
 <li><a href="#pragma_compile_options">compile_options</a>
@@ -261,8 +262,8 @@ pragmas for which the database name is meaningful are shown with a
 <li><a href="#pragma_query_only">query_only</a>
 <li><a href="#pragma_quick_check">quick_check</a>
 <li><a href="#pragma_read_uncommitted">read_uncommitted</a>
-</ul></td><td valign="top" align="left"><ul>
 <li><a href="#pragma_recursive_triggers">recursive_triggers</a>
+</ul></td><td valign="top" align="left"><ul>
 <li><a href="#pragma_reverse_unordered_selects">reverse_unordered_selects</a>
 <li><a href="#pragma_schema_version">schema_version</a>
 <li><a href="#pragma_secure_delete">secure_delete</a>
@@ -451,6 +452,16 @@ for use in application programs.</ol></p>
     <p>This pragma uses <a href="c3ref/create_function.html">sqlite3_create_function()</a> to overload the
     LIKE and GLOB functions, which may override previous implementations
     of LIKE and GLOB registered by the application.</p>
+<a name="pragma_cell_size_check"></a>
+<hr>
+    <p><b>PRAGMA cell_size_check
+       <br>PRAGMA cell_size_check = </b><i>boolean</i><b>;</b></p>
+    <p>The cell_size_check pragma enables or disables additional sanity
+    checking on database b-tree pages as they are initially read from disk.
+    With cell size checking enabled, database corruption is detected earlier
+    and is less likely to "spread".  However, there is a small performance
+    hit for doing the extra checks and so cell size checking is turned off
+    by default.
 <a name="pragma_checkpoint_fullfsync"></a>
 <hr>
     <p><b>PRAGMA checkpoint_fullfsync
