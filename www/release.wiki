@@ -30,6 +30,11 @@
     <br />
     <b>build_all.bat</b>
   </li>
+
+  <li>
+    Make sure everything succeeds with no errors; the console output may be
+    checked if any errors should occur.
+  </li>
 </ol>
 
 <a name="testBinaries"></a>
@@ -54,6 +59,11 @@
     <b>SET TEST_DEBUG=1</b>
     <br />
     <b>test_all.bat</b>
+  </li>
+
+  <li>
+    Make sure everything succeeds with no errors; the console output may be
+    checked if any errors should occur.
   </li>
 
   <li>
@@ -95,6 +105,11 @@
     edition or &quot;better&quot; and the Windows Embedded Compact 2013 Toolkit
     are installed.</i>
   </li>
+
+  <li>
+    Make sure everything succeeds with no errors; the console output may be
+    checked if any errors should occur.
+  </li>
 </ol>
 
 <a name="testCeBinariesAutomated"></a>
@@ -117,6 +132,11 @@
     <br />
     <br />
     <b>test_ce_200x.bat</b>
+  </li>
+
+  <li>
+    Make sure everything succeeds with no errors; the console output may be
+    checked if any errors should occur.
   </li>
 </ol>
 
@@ -217,6 +237,11 @@
     and [http://ndoc3.sourceforge.net/ | NDoc3] have all been installed using
     the default settings.</i>
   </li>
+
+  <li>
+    Make sure everything succeeds with no errors; the console output may be
+    checked if any errors should occur.
+  </li>
 </ol>
 
 <a name="buildSetupPackages"></a>
@@ -234,6 +259,11 @@
     <b>SET BAKE_DEBUG=1</b>
     <br />
     <b>bake_all.bat</b>
+  </li>
+
+  <li>
+    Make sure everything succeeds with no errors; the console output may be
+    checked if any errors should occur.
   </li>
 </ol>
 
@@ -254,6 +284,11 @@
     <br />
     <b>release_all.bat</b>
   </li>
+
+  <li>
+    Make sure everything succeeds with no errors; the console output may be
+    checked if any errors should occur.
+  </li>
 </ol>
 
 <a name="buildStaticBinaryPackages"></a>
@@ -272,6 +307,11 @@
     <b>SET RELEASE_DEBUG=1</b>
     <br />
     <b>release_static.bat</b>
+  </li>
+
+  <li>
+    Make sure everything succeeds with no errors; the console output may be
+    checked if any errors should occur.
   </li>
 </ol>
 
@@ -302,6 +342,11 @@
     <br />
     <b>release_ce_2013.bat</b>
   </li>
+
+  <li>
+    Make sure everything succeeds with no errors; the console output may be
+    checked if any errors should occur.
+  </li>
 </ol>
 
 <a name="buildSourcePackages"></a>
@@ -317,6 +362,11 @@
     <br />
     <br />
     <b>archive.bat</b>
+  </li>
+
+  <li>
+    Make sure everything succeeds with no errors; the console output may be
+    checked if any errors should occur.
   </li>
 </ol>
 
@@ -342,6 +392,11 @@
     locations specified via the &quot;FossilTool&quot;,
     &quot;InnoUnpackTool&quot;, &quot;UnRARTool&quot;, and &quot;UnZipTool&quot;
     environment variables, respectively.</i>
+  </li>
+
+  <li>
+    Make sure everything succeeds with no errors; the console output may be
+    checked if any errors should occur.
     <br />
     <br />
     <i>If errors are generated, the file
@@ -369,6 +424,11 @@
     <i>This assumes that the NuGet binary is available somewhere along the
     [https://en.wikipedia.org/wiki/PATH_%28variable%29 | PATH].<br />Please refer
     to [https://docs.nuget.org/ | NuGet Documentation] for further details.</i>
+  </li>
+
+  <li>
+    Make sure everything succeeds with no errors; the console output may be
+    checked if any errors should occur.
   </li>
 </ol>
 
@@ -399,6 +459,11 @@
     the Fossil binary is available somewhere along the
     [https://en.wikipedia.org/wiki/PATH_%28variable%29 | PATH] (i.e. for
     calculating the SHA1 hashes).</i>
+  </li>
+
+  <li>
+    Make sure everything succeeds with no errors; the console output may be
+    checked if any errors should occur.
   </li>
 </ol>
 
