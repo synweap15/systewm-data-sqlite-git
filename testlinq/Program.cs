@@ -190,6 +190,12 @@ namespace testlinq
                       return BinaryGuidTest2(value);
                   }
 #endif
+#if NET_40 || NET_45 || NET_451 || NET_46
+              case "round":
+                  {
+                      return RoundTest();
+                  }
+#endif
               default:
                   {
                       Console.WriteLine("unknown test \"{0}\"", arg);
@@ -788,6 +794,49 @@ namespace testlinq
           Environment.SetEnvironmentVariable("SQLite_ForceLogPrepare", null);
           Trace.Listeners.Remove(listener);
       }
+
+#if NET_40 || NET_45 || NET_451 || NET_46
+      //
+      // NOTE: Used to test the ROUND fix (i.e. being able to properly handle
+      //       the two argument form).
+      //
+      private static int RoundTest()
+      {
+            using (northwindEFEntities db = new northwindEFEntities())
+            {
+                bool once = false;
+
+                foreach (int[] i in new int[][] {
+                        new int[] { 10503, 65 },
+                        new int[] { 10503, 14 },
+                        new int[] { 10635, 5 }
+                    })
+                {
+                    for (int j = 0; j < 3; j++)
+                    {
+                        int oid = i[0];
+                        int pid = i[1];
+
+                        var query = from o in db.OrderDetails
+                                    where o.OrderID == oid && o.ProductID == pid
+                                    select new { NewUnitPrice = Math.Round(o.UnitPrice, j) };
+
+                        foreach (object o in query)
+                        {
+                            if (once)
+                                Console.Write(' ');
+
+                            Console.Write("{0}", o);
+
+                            once = true;
+                        }
+                    }
+                }
+            }
+
+            return 0;
+      }
+#endif
 
     private static int OldTests()
     {

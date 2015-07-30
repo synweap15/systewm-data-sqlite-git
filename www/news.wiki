@@ -6,15 +6,17 @@
     <b>1.0.98.0 - August XX, 2015 <font color="red">(release scheduled)</font></b>
 </p>
 <ul>
-    <li>Updated to [https://www.sqlite.org/draft/releaselog/3_8_11.html|SQLite 3.8.11].</li>
+    <li>Updated to [https://www.sqlite.org/releaselog/3_8_11_1.html|SQLite 3.8.11.1].</li>
     <li>Add full support for Visual Studio 2015 and the .NET Framework 4.6.</li>
     <li>Implement the Substring method for LINQ using the &quot;substr&quot; core SQL function.&nbsp;<b>** Potentially Incompatible Change **</b></li>
+    <li>Honor the second argument to Math.Round when using LINQ.&nbsp;<b>** Potentially Incompatible Change **</b></li>
     <li>Honor the pre-existing flags for connections during the Open method. Fix for [964063da16].&nbsp;<b>** Potentially Incompatible Change **</b></li>
     <li>Remove errant semi-colons from the SQL used by LINQ to INSERT and then SELECT rows with composite primary keys. Fix for [9d353b0bd8].</li>
     <li>Change the base type for the SQLiteConnectionFlags enumeration to long integer.&nbsp;<b>** Potentially Incompatible Change **</b></li>
     <li>Add extended return codes to the SQLiteErrorCode enumeration. Pursuant to [71bedaca19].&nbsp;<b>** Potentially Incompatible Change **</b></li>
     <li>Improve exception handling in all native callbacks implemented in the SQLiteConnection class.</li>
     <li>Add Progress event and ProgressOps connection string property to enable raising progress events during long-running queries.</li>
+    <li>Add &quot;Recursive Triggers&quot; connection string property to enable or disable the recursive trigger capability. Pursuant to [3a82ee635b].</li>
     <li>Add NoDefaultFlags connection string property to prevent the default connection flags from being used. Pursuant to [964063da16].</li>
     <li>Add VfsName connection string property to allow a non-default VFS to be used by the SQLite core library.</li>
     <li>Add BusyTimeout connection string property to set the busy timeout to be used by the SQLite core library.</li>

@@ -169,7 +169,11 @@ namespace System.Data.SQLite
   /// </item>
   /// <item>
   /// <description>UseUTF16Encoding</description>
-  /// <description><b>True</b><br/><b>False</b></description>
+  /// <description>
+  /// <b>True</b> - The UTF-16 encoding should be used.
+  /// <br/>
+  /// <b>False</b> - The UTF-8 encoding should be used.
+  /// </description>
   /// <description>N</description>
   /// <description>False</description>
   /// </item>
@@ -201,7 +205,7 @@ namespace System.Data.SQLite
   /// <see cref="DefaultFlags" /> property.
   /// </description>
   /// <description>N</description>
-  /// <description>false</description>
+  /// <description>False</description>
   /// </item>
   /// <item>
   /// <description>NoSharedFlags</description>
@@ -213,7 +217,7 @@ namespace System.Data.SQLite
   /// <see cref="SharedFlags" /> property.
   /// </description>
   /// <description>N</description>
-  /// <description>false</description>
+  /// <description>False</description>
   /// </item>
   /// <item>
   /// <description>VfsName</description>
@@ -252,29 +256,43 @@ namespace System.Data.SQLite
   /// </item>
   /// <item>
   /// <description>DateTimeKind</description>
-  /// <description><b>Unspecified</b> - Not specified as either UTC or local time.<br/><b>Utc</b> - The time represented is UTC.<br/><b>Local</b> - The time represented is local time.</description>
+  /// <description>
+  /// <b>Unspecified</b> - Not specified as either UTC or local time.
+  /// <br/>
+  /// <b>Utc</b> - The time represented is UTC.
+  /// <br/>
+  /// <b>Local</b> - The time represented is local time.
+  /// </description>
   /// <description>N</description>
   /// <description>Unspecified</description>
   /// </item>
   /// <item>
   /// <description>DateTimeFormatString</description>
-  /// <description>The exact DateTime format string to use for all formatting and parsing of all DateTime
-  /// values for this connection.</description>
+  /// <description>
+  /// The exact DateTime format string to use for all formatting and parsing of all DateTime
+  /// values for this connection.
+  /// </description>
   /// <description>N</description>
   /// <description>null</description>
   /// </item>
   /// <item>
   /// <description>BaseSchemaName</description>
-  /// <description>Some base data classes in the framework (e.g. those that build SQL queries dynamically)
+  /// <description>
+  /// Some base data classes in the framework (e.g. those that build SQL queries dynamically)
   /// assume that an ADO.NET provider cannot support an alternate catalog (i.e. database) without supporting
   /// alternate schemas as well; however, SQLite does not fit into this model.  Therefore, this value is used
-  /// as a placeholder and removed prior to preparing any SQL statements that may contain it.</description>
+  /// as a placeholder and removed prior to preparing any SQL statements that may contain it.
+  /// </description>
   /// <description>N</description>
   /// <description>sqlite_default_schema</description>
   /// </item>
   /// <item>
   /// <description>BinaryGUID</description>
-  /// <description><b>True</b> - Store GUID columns in binary form<br/><b>False</b> - Store GUID columns as text</description>
+  /// <description>
+  /// <b>True</b> - Store GUID columns in binary form
+  /// <br/>
+  /// <b>False</b> - Store GUID columns as text
+  /// </description>
   /// <description>N</description>
   /// <description>True</description>
   /// </item>
@@ -286,7 +304,13 @@ namespace System.Data.SQLite
   /// </item>
   /// <item>
   /// <description>Synchronous</description>
-  /// <description><b>Normal</b> - Normal file flushing behavior<br/><b>Full</b> - Full flushing after all writes<br/><b>Off</b> - Underlying OS flushes I/O's</description>
+  /// <description>
+  /// <b>Normal</b> - Normal file flushing behavior
+  /// <br/>
+  /// <b>Full</b> - Full flushing after all writes
+  /// <br/>
+  /// <b>Off</b> - Underlying OS flushes I/O's
+  /// </description>
   /// <description>N</description>
   /// <description>Full</description>
   /// </item>
@@ -298,19 +322,35 @@ namespace System.Data.SQLite
   /// </item>
   /// <item>
   /// <description>Password</description>
-  /// <description>{password} - Using this parameter requires that the CryptoAPI based codec be enabled at compile-time for both the native interop assembly and the core managed assemblies; otherwise, using this parameter may result in an exception being thrown when attempting to open the connection.</description>
+  /// <description>
+  /// {password} - Using this parameter requires that the CryptoAPI based codec
+  /// be enabled at compile-time for both the native interop assembly and the
+  /// core managed assemblies; otherwise, using this parameter may result in an
+  /// exception being thrown when attempting to open the connection.
+  /// </description>
   /// <description>N</description>
   /// <description></description>
   /// </item>
   /// <item>
   /// <description>HexPassword</description>
-  /// <description>{hexPassword} - Must contain a sequence of zero or more hexadecimal encoded byte values without a leading "0x" prefix.  Using this parameter requires that the CryptoAPI based codec be enabled at compile-time for both the native interop assembly and the core managed assemblies; otherwise, using this parameter may result in an exception being thrown when attempting to open the connection.</description>
+  /// <description>
+  /// {hexPassword} - Must contain a sequence of zero or more hexadecimal encoded
+  /// byte values without a leading "0x" prefix.  Using this parameter requires
+  /// that the CryptoAPI based codec be enabled at compile-time for both the native
+  /// interop assembly and the core managed assemblies; otherwise, using this
+  /// parameter may result in an exception being thrown when attempting to open
+  /// the connection.
+  /// </description>
   /// <description>N</description>
   /// <description></description>
   /// </item>
   /// <item>
   /// <description>Enlist</description>
-  /// <description><b>Y</b> - Automatically enlist in distributed transactions<br/><b>N</b> - No automatic enlistment</description>
+  /// <description>
+  /// <b>Y</b> - Automatically enlist in distributed transactions
+  /// <br/>
+  /// <b>N</b> - No automatic enlistment
+  /// </description>
   /// <description>N</description>
   /// <description>Y</description>
   /// </item>
@@ -329,7 +369,11 @@ namespace System.Data.SQLite
   /// </item>
   /// <item>
   /// <description>FailIfMissing</description>
-  /// <description><b>True</b> - Don't create the database if it does not exist, throw an error instead<br/><b>False</b> - Automatically create the database if it does not exist</description>
+  /// <description>
+  /// <b>True</b> - Don't create the database if it does not exist, throw an error instead
+  /// <br/>
+  /// <b>False</b> - Automatically create the database if it does not exist
+  /// </description>
   /// <description>N</description>
   /// <description>False</description>
   /// </item>
@@ -341,7 +385,11 @@ namespace System.Data.SQLite
   /// </item>
   /// <item>
   /// <description>Legacy Format</description>
-  /// <description><b>True</b> - Use the more compatible legacy 3.x database format<br/><b>False</b> - Use the newer 3.3x database format which compresses numbers more effectively</description>
+  /// <description>
+  /// <b>True</b> - Use the more compatible legacy 3.x database format
+  /// <br/>
+  /// <b>False</b> - Use the newer 3.3x database format which compresses numbers more effectively
+  /// </description>
   /// <description>N</description>
   /// <description>False</description>
   /// </item>
@@ -359,13 +407,37 @@ namespace System.Data.SQLite
   /// </item>
   /// <item>
   /// <description>Journal Mode</description>
-  /// <description><b>Delete</b> - Delete the journal file after a commit<br/><b>Persist</b> - Zero out and leave the journal file on disk after a commit<br/><b>Off</b> - Disable the rollback journal entirely</description>
+  /// <description>
+  /// <b>Delete</b> - Delete the journal file after a commit.
+  /// <br/>
+  /// <b>Persist</b> - Zero out and leave the journal file on disk after a
+  /// commit.
+  /// <br/>
+  /// <b>Off</b> - Disable the rollback journal entirely.  This saves disk I/O
+  /// but at the expense of database safety and integrity.  If the application
+  /// using SQLite crashes in the middle of a transaction when this journaling
+  /// mode is set, then the database file will very likely go corrupt.
+  /// <br/>
+  /// <b>Truncate</b> - Truncate the journal file to zero-length instead of
+  /// deleting it.
+  /// <br/>
+  /// <b>Memory</b> - Store the journal in volatile RAM.  This saves disk I/O
+  /// but at the expense of database safety and integrity.  If the application
+  /// using SQLite crashes in the middle of a transaction when this journaling
+  /// mode is set, then the database file will very likely go corrupt.
+  /// <br/>
+  /// <b>Wal</b> - Use a write-ahead log instead of a rollback journal.
+  /// </description>
   /// <description>N</description>
   /// <description>Delete</description>
   /// </item>
   /// <item>
   /// <description>Read Only</description>
-  /// <description><b>True</b> - Open the database for read only access<br/><b>False</b> - Open the database for normal read/write access</description>
+  /// <description>
+  /// <b>True</b> - Open the database for read only access
+  /// <br/>
+  /// <b>False</b> - Open the database for normal read/write access
+  /// </description>
   /// <description>N</description>
   /// <description>False</description>
   /// </item>
@@ -405,7 +477,8 @@ namespace System.Data.SQLite
   /// <item>
   /// <description>ToFullPath</description>
   /// <description>
-  /// <b>True</b> - Attempt to expand the data source file name to a fully qualified path before opening.<br/>
+  /// <b>True</b> - Attempt to expand the data source file name to a fully qualified path before opening.
+  /// <br/>
   /// <b>False</b> - Skip attempting to expand the data source file name to a fully qualified path before opening.
   /// </description>
   /// <description>N</description>
@@ -430,6 +503,15 @@ namespace System.Data.SQLite
   /// </description>
   /// <description>N</description>
   /// <description>0</description>
+  /// </item>
+  /// <item>
+  /// <description>Recursive Triggers</description>
+  /// <description>
+  /// <b>True</b> - Enable the recursive trigger capability.
+  /// <b>False</b> - Disable the recursive trigger capability.
+  /// </description>
+  /// <description>N</description>
+  /// <description>False</description>
   /// </item>
   /// </list>
   /// </remarks>
@@ -486,6 +568,7 @@ namespace System.Data.SQLite
     private const bool DefaultPooling = false; // TODO: Maybe promote this to static property?
     private const bool DefaultLegacyFormat = false;
     private const bool DefaultForeignKeys = false;
+    private const bool DefaultRecursiveTriggers = false;
     private const bool DefaultEnlist = true;
     private const bool DefaultSetDefaults = true;
     internal const int DefaultPrepareRetries = 3;
@@ -1829,215 +1912,8 @@ namespace System.Data.SQLite
     /// The connection string containing the parameters for the connection
     /// </summary>
     /// <remarks>
-    /// <list type="table">
-    /// <listheader>
-    /// <term>Parameter</term>
-    /// <term>Values</term>
-    /// <term>Required</term>
-    /// <term>Default</term>
-    /// </listheader>
-    /// <item>
-    /// <description>Data Source</description>
-    /// <description>
-    /// This may be a file name, the string ":memory:", or any supported URI (starting with SQLite 3.7.7).
-    /// Starting with release 1.0.86.0, in order to use more than one consecutive backslash (e.g. for a
-    /// UNC path), each of the adjoining backslash characters must be doubled (e.g. "\\Network\Share\test.db"
-    /// would become "\\\\Network\Share\test.db").
-    /// </description>
-    /// <description>Y</description>
-    /// <description></description>
-    /// </item>
-    /// <item>
-    /// <description>Version</description>
-    /// <description>3</description>
-    /// <description>N</description>
-    /// <description>3</description>
-    /// </item>
-    /// <item>
-    /// <description>UseUTF16Encoding</description>
-    /// <description><b>True</b><br/><b>False</b></description>
-    /// <description>N</description>
-    /// <description>False</description>
-    /// </item>
-    /// <item>
-    /// <description>DateTimeFormat</description>
-    /// <description>
-    /// <b>Ticks</b> - Use the value of DateTime.Ticks.<br/>
-    /// <b>ISO8601</b> - Use the ISO-8601 format.  Uses the "yyyy-MM-dd HH:mm:ss.FFFFFFFK" format for UTC
-    /// DateTime values and "yyyy-MM-dd HH:mm:ss.FFFFFFF" format for local DateTime values).<br/>
-    /// <b>JulianDay</b> - The interval of time in days and fractions of a day since January 1, 4713 BC.<br/>
-    /// <b>UnixEpoch</b> - The whole number of seconds since the Unix epoch (January 1, 1970).<br/>
-    /// <b>InvariantCulture</b> - Any culture-independent string value that the .NET Framework can interpret as a valid DateTime.<br/>
-    /// <b>CurrentCulture</b> - Any string value that the .NET Framework can interpret as a valid DateTime using the current culture.</description>
-    /// <description>N</description>
-    /// <description>ISO8601</description>
-    /// </item>
-    /// <item>
-    /// <description>DateTimeKind</description>
-    /// <description><b>Unspecified</b> - Not specified as either UTC or local time.<br/><b>Utc</b> - The time represented is UTC.<br/><b>Local</b> - The time represented is local time.</description>
-    /// <description>N</description>
-    /// <description>Unspecified</description>
-    /// </item>
-    /// <item>
-    /// <description>DateTimeFormatString</description>
-    /// <description>The exact DateTime format string to use for all formatting and parsing of all DateTime
-    /// values for this connection.</description>
-    /// <description>N</description>
-    /// <description>null</description>
-    /// </item>
-    /// <item>
-    /// <description>BaseSchemaName</description>
-    /// <description>Some base data classes in the framework (e.g. those that build SQL queries dynamically)
-    /// assume that an ADO.NET provider cannot support an alternate catalog (i.e. database) without supporting
-    /// alternate schemas as well; however, SQLite does not fit into this model.  Therefore, this value is used
-    /// as a placeholder and removed prior to preparing any SQL statements that may contain it.</description>
-    /// <description>N</description>
-    /// <description>sqlite_default_schema</description>
-    /// </item>
-    /// <item>
-    /// <description>BinaryGUID</description>
-    /// <description><b>True</b> - Store GUID columns in binary form<br/><b>False</b> - Store GUID columns as text</description>
-    /// <description>N</description>
-    /// <description>True</description>
-    /// </item>
-    /// <item>
-    /// <description>Cache Size</description>
-    /// <description>{size in bytes}</description>
-    /// <description>N</description>
-    /// <description>2000</description>
-    /// </item>
-    /// <item>
-    /// <description>Synchronous</description>
-    /// <description><b>Normal</b> - Normal file flushing behavior<br/><b>Full</b> - Full flushing after all writes<br/><b>Off</b> - Underlying OS flushes I/O's</description>
-    /// <description>N</description>
-    /// <description>Full</description>
-    /// </item>
-    /// <item>
-    /// <description>Page Size</description>
-    /// <description>{size in bytes}</description>
-    /// <description>N</description>
-    /// <description>1024</description>
-    /// </item>
-    /// <item>
-    /// <description>Password</description>
-    /// <description>{password} - Using this parameter requires that the CryptoAPI based codec be enabled at compile-time for both the native interop assembly and the core managed assemblies; otherwise, using this parameter may result in an exception being thrown when attempting to open the connection.</description>
-    /// <description>N</description>
-    /// <description></description>
-    /// </item>
-    /// <item>
-    /// <description>HexPassword</description>
-    /// <description>{hexPassword} - Must contain a sequence of zero or more hexadecimal encoded byte values without a leading "0x" prefix.  Using this parameter requires that the CryptoAPI based codec be enabled at compile-time for both the native interop assembly and the core managed assemblies; otherwise, using this parameter may result in an exception being thrown when attempting to open the connection.</description>
-    /// <description>N</description>
-    /// <description></description>
-    /// </item>
-    /// <item>
-    /// <description>Enlist</description>
-    /// <description><b>Y</b> - Automatically enlist in distributed transactions<br/><b>N</b> - No automatic enlistment</description>
-    /// <description>N</description>
-    /// <description>Y</description>
-    /// </item>
-    /// <item>
-    /// <description>Pooling</description>
-    /// <description>
-    /// <b>True</b> - Use connection pooling.<br/>
-    /// <b>False</b> - Do not use connection pooling.<br/><br/>
-    /// <b>WARNING:</b> When using the default connection pool implementation,
-    /// setting this property to True should be avoided by applications that
-    /// make use of COM (either directly or indirectly) due to possible
-    /// deadlocks that can occur during the finalization of some COM objects.
-    /// </description>
-    /// <description>N</description>
-    /// <description>False</description>
-    /// </item>
-    /// <item>
-    /// <description>FailIfMissing</description>
-    /// <description><b>True</b> - Don't create the database if it does not exist, throw an error instead<br/><b>False</b> - Automatically create the database if it does not exist</description>
-    /// <description>N</description>
-    /// <description>False</description>
-    /// </item>
-    /// <item>
-    /// <description>Max Page Count</description>
-    /// <description>{size in pages} - Limits the maximum number of pages (limits the size) of the database</description>
-    /// <description>N</description>
-    /// <description>0</description>
-    /// </item>
-    /// <item>
-    /// <description>Legacy Format</description>
-    /// <description><b>True</b> - Use the more compatible legacy 3.x database format<br/><b>False</b> - Use the newer 3.3x database format which compresses numbers more effectively</description>
-    /// <description>N</description>
-    /// <description>False</description>
-    /// </item>
-    /// <item>
-    /// <description>Default Timeout</description>
-    /// <description>{time in seconds}<br/>The default command timeout</description>
-    /// <description>N</description>
-    /// <description>30</description>
-    /// </item>
-    /// <item>
-    /// <description>Journal Mode</description>
-    /// <description><b>Delete</b> - Delete the journal file after a commit<br/><b>Persist</b> - Zero out and leave the journal file on disk after a commit<br/><b>Off</b> - Disable the rollback journal entirely</description>
-    /// <description>N</description>
-    /// <description>Delete</description>
-    /// </item>
-    /// <item>
-    /// <description>Read Only</description>
-    /// <description><b>True</b> - Open the database for read only access<br/><b>False</b> - Open the database for normal read/write access</description>
-    /// <description>N</description>
-    /// <description>False</description>
-    /// </item>
-    /// <item>
-    /// <description>Max Pool Size</description>
-    /// <description>The maximum number of connections for the given connection string that can be in the connection pool</description>
-    /// <description>N</description>
-    /// <description>100</description>
-    /// </item>
-    /// <item>
-    /// <description>Default IsolationLevel</description>
-    /// <description>The default transaciton isolation level</description>
-    /// <description>N</description>
-    /// <description>Serializable</description>
-    /// </item>
-    /// <item>
-    /// <description>Foreign Keys</description>
-    /// <description>Enable foreign key constraints</description>
-    /// <description>N</description>
-    /// <description>False</description>
-    /// </item>
-    /// <item>
-    /// <description>Flags</description>
-    /// <description>Extra behavioral flags for the connection.  See the <see cref="SQLiteConnectionFlags" /> enumeration for possible values.</description>
-    /// <description>N</description>
-    /// <description>Default</description>
-    /// </item>
-    /// <item>
-    /// <description>SetDefaults</description>
-    /// <description>
-    /// <b>True</b> - Apply the default connection settings to the opened database.<br/>
-    /// <b>False</b> - Skip applying the default connection settings to the opened database.
-    /// </description>
-    /// <description>N</description>
-    /// <description>True</description>
-    /// </item>
-    /// <item>
-    /// <description>ToFullPath</description>
-    /// <description>
-    /// <b>True</b> - Attempt to expand the data source file name to a fully qualified path before opening.<br/>
-    /// <b>False</b> - Skip attempting to expand the data source file name to a fully qualified path before opening.
-    /// </description>
-    /// <description>N</description>
-    /// <description>True</description>
-    /// </item>
-    /// <item>
-    /// <description>PrepareRetries</description>
-    /// <description>
-    /// The maximum number of retries when preparing SQL to be executed.  This
-    /// normally only applies to preparation errors resulting from the database
-    /// schema being changed.
-    /// </description>
-    /// <description>N</description>
-    /// <description>3</description>
-    /// </item>
-    /// </list>
+    /// For the complete list of supported connection string properties,
+    /// please see <see cref="SQLiteConnection" />.
     /// </remarks>
 #if !PLATFORM_COMPACTFRAMEWORK
     [RefreshProperties(RefreshProperties.All), DefaultValue("")]
@@ -2970,6 +2846,14 @@ namespace System.Data.SQLite
                   if (boolValue != DefaultForeignKeys)
                   {
                       cmd.CommandText = String.Format(CultureInfo.InvariantCulture, "PRAGMA foreign_keys={0}", boolValue ? "ON" : "OFF");
+                      cmd.ExecuteNonQuery();
+                  }
+
+                  strValue = FindKey(opts, "Recursive Triggers", DefaultRecursiveTriggers.ToString());
+                  boolValue = SQLiteConvert.ToBoolean(strValue);
+                  if (boolValue != DefaultRecursiveTriggers)
+                  {
+                      cmd.CommandText = String.Format(CultureInfo.InvariantCulture, "PRAGMA recursive_triggers={0}", boolValue ? "ON" : "OFF");
                       cmd.ExecuteNonQuery();
                   }
               }
