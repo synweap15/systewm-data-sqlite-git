@@ -101,6 +101,7 @@ set pattern2 {<a\
 
 set pattern3 {href="/downloads/(.*?)"}
 set pattern4 {\(sha1: ([0-9A-F]{40})\)}
+set pattern5 {\((\d+?\.\d+?) MiB\)}
 
 #
 # NOTE: Grab all the data from the file to be updated.
@@ -188,7 +189,8 @@ foreach pattern [list $pattern1 $pattern2] {
 #       associated with it on the page.
 #
 foreach {dummy3 fileName} [regexp -all -inline -nocase -- $pattern3 $data] \
-        {dummy4 fileHash} [regexp -all -inline -nocase -- $pattern4 $data] {
+        {dummy4 fileHash} [regexp -all -inline -nocase -- $pattern4 $data] \
+        {dummy5 fileSize} [regexp -all -inline -nocase -- $pattern5 $data] {
   #
   # NOTE: Get the fully qualified file name based on the configured
   #       directory.
@@ -205,6 +207,14 @@ foreach {dummy3 fileName} [regexp -all -inline -nocase -- $pattern3 $data] \
     puts stdout "ERROR: SHA1 hash mismatch for\
         file \"$fullFileName\", have \"$fileHash\" (from data),\
         need \"$fullFileHash\" (calculated)."
+  }
+
+  set fullFileSize [getFileSize $fullFileName]
+
+  if {$fileSize ne $fullFileSize} then {
+    puts stdout "ERROR: Byte size mismatch for\
+        file \"$fullFileName\", have \"$fileSize\" (from data),\
+        need \"$fullFileSize\" (calculated)."
   }
 }
 
