@@ -61,7 +61,10 @@ set root [file normalize [file dirname $path]]
 #
 if {[info exists argv] && [llength $argv] > 0} then {
   set updateFileName [lindex $argv 0]
-} else {
+}
+
+if {![info exists updateFileName] || \
+    [string length $updateFileName] == 0} then {
   set updateFileName [file join $root www downloads.wiki]
 }
 
@@ -71,9 +74,12 @@ if {[info exists argv] && [llength $argv] > 0} then {
 #       the default (i.e. "./Output").
 #
 if {[info exists argv] && [llength $argv] > 1} then {
-  set directory [lindex $argv 1]
-} else {
-  set directory [file join $path Output]
+  set outputDirectory [lindex $argv 1]
+}
+
+if {![info exists outputDirectory] || \
+    [string length $outputDirectory] == 0} then {
+  set outputDirectory [file join $path Output]
 }
 
 #
@@ -117,7 +123,7 @@ foreach pattern [list $pattern1 $pattern2] {
     # NOTE: Get the fully qualified file name based on the configured
     #       directory.
     #
-    set fullFileName [file join $directory [file tail $fileName]]
+    set fullFileName [file join $outputDirectory [file tail $fileName]]
 
     #
     # NOTE: If the file does not exist, issue a warning and skip it.
