@@ -988,13 +988,12 @@
         <br />
         <br />
         However, if you do not require the design-time components, please
-        consider downloading the associated
-        <a href="/downloads/1.0.97.0/sqlite-netFx46-binary-bundle-Win32-2015-1.0.97.0.zip">Precompiled Binaries</a>
-        instead.
+        consider downloading the associated &quot;Precompiled Binaries&quot;
+        instead.</b></big>
         <br />
         <br />
-        Using Entity Framework 6 design-time support may require installing the
-        Visual Studio 2015 &quot;flavor&quot; of the
+        <big><b>Using Entity Framework 6 design-time support may require
+        installing the Visual Studio 2015 &quot;flavor&quot; of the
         <a href="https://www.microsoft.com/en-us/download/details.aspx?id=40762">
         Entity Framework 6 Tools for Visual Studio 2012 &amp; 2015</a>.</b></big>
         <br />
