@@ -83,10 +83,10 @@ if {![info exists outputDirectory] || \
 }
 
 #
-# NOTE: Setup the regular expression pattern with the necessary captures.  This
-#       pattern is mostly non-greedy; however, at the end we need to match
-#       exactly 40 hexadecimal characters.  In theory, in Tcl, this could have
-#       an undefined result due to the mixing of greedy and non-greedy
+# NOTE: Setup the regular expression patterns with the necessary captures.
+#       These patterns are mostly non-greedy; however, at the end we need to
+#       match exactly 40 hexadecimal characters.  In theory, in Tcl, this could
+#       have an undefined result due to the mixing of greedy and non-greedy
 #       quantifiers; however, in practice, this seems to work properly.  Also,
 #       this pattern assumes a particular structure for the [HTML] file to be
 #       updated.
@@ -98,6 +98,9 @@ set pattern1 {<a\
 set pattern2 {<a\
     href=".*?/package/.*?/\d+\.\d+\.\d+\.\d+">(.*?)</a>.*?\((\d+?\.\d+?)\
     MiB\).*?sha1: ([0-9A-F]{40})}
+
+set pattern3 {href="/downloads/(.*?)"}
+set pattern4 {\(sha1: ([0-9A-F]{40})\)}
 
 #
 # NOTE: Grab all the data from the file to be updated.
@@ -177,6 +180,31 @@ foreach pattern [list $pattern1 $pattern2] {
 
       incr start [string length $fileHash]
     }
+  }
+}
+
+#
+# NOTE: Attempt to verify that each file name now has the correct SHA1 hash
+#       associated with it on the page.
+#
+foreach {dummy3 fileName} [regexp -all -inline -nocase -- $pattern3 $data] \
+        {dummy4 fileHash} [regexp -all -inline -nocase -- $pattern4 $data] {
+  #
+  # NOTE: Get the fully qualified file name based on the configured
+  #       directory.
+  #
+  set fullFileName [file join $outputDirectory [file tail $fileName]]
+
+  #
+  # NOTE: Make sure the file hash from the [modified] data matches the
+  #       calculated hash for the file.  If not, fail.
+  #
+  set fullFileHash [getFileHash $fullFileName]
+
+  if {$fileHash ne $fullFileHash} then {
+    puts stdout "ERROR: SHA1 hash mismatch for\
+        file \"$fullFileName\", have \"$fileHash\" (from data),\
+        need \"$fullFileHash\" (calculated)."
   }
 }
 

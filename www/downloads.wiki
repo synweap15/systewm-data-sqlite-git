@@ -483,8 +483,7 @@
         <br />
         <br />
         However, if you do not require the design-time components, please
-        consider downloading the associated
-        <a href="/downloads/1.0.97.0/sqlite-netFx20-binary-bundle-Win32-2005-1.0.97.0.zip">Precompiled Binaries</a>
+        consider downloading the associated &quot;Precompiled Binaries&quot;
         instead.</b></big>
         <br />
         <br />
@@ -583,8 +582,7 @@
         <br />
         <br />
         However, if you do not require the design-time components, please
-        consider downloading the associated
-        <a href="/downloads/1.0.97.0/sqlite-netFx35-binary-bundle-Win32-2008-1.0.97.0.zip">Precompiled Binaries</a>
+        consider downloading the associated &quot;Precompiled Binaries&quot;
         instead.</b></big>
         <br />
         <br />
@@ -682,9 +680,8 @@
         <br />
         <br />
         However, if you do not require the design-time components, please
-        consider downloading the associated
-        <a href="/downloads/1.0.97.0/sqlite-netFx40-binary-bundle-Win32-2010-1.0.97.0.zip">Precompiled Binaries</a>
-        instead.</b></big></b></big>
+        consider downloading the associated &quot;Precompiled Binaries&quot;
+        instead.</b></big>
         <br />
         <br />
         (sha1: 182ae1db5c4747a4d24a8498a0c8ab14dfea3a55)
@@ -781,13 +778,12 @@
         <br />
         <br />
         However, if you do not require the design-time components, please
-        consider downloading the associated
-        <a href="/downloads/1.0.97.0/sqlite-netFx45-binary-bundle-Win32-2012-1.0.97.0.zip">Precompiled Binaries</a>
-        instead.
+        consider downloading the associated &quot;Precompiled Binaries&quot;
+        instead.</b></big>
         <br />
         <br />
-        Using Entity Framework 6 design-time support may require installing the
-        Visual Studio 2012 &quot;flavor&quot; of the
+        <big><b>Using Entity Framework 6 design-time support may require
+        installing the Visual Studio 2012 &quot;flavor&quot; of the
         <a href="https://www.microsoft.com/en-us/download/details.aspx?id=40762">
         Entity Framework 6 Tools for Visual Studio 2012 &amp; 2013</a>.</b></big>
         <br />
@@ -887,13 +883,12 @@
         <br />
         <br />
         However, if you do not require the design-time components, please
-        consider downloading the associated
-        <a href="/downloads/1.0.97.0/sqlite-netFx451-binary-bundle-Win32-2013-1.0.97.0.zip">Precompiled Binaries</a>
-        instead.
+        consider downloading the associated &quot;Precompiled Binaries&quot;
+        instead.</b></big>
         <br />
         <br />
-        Using Entity Framework 6 design-time support may require installing the
-        Visual Studio 2013 &quot;flavor&quot; of the
+        <big><b>Using Entity Framework 6 design-time support may require
+        installing the Visual Studio 2013 &quot;flavor&quot; of the
         <a href="https://www.microsoft.com/en-us/download/details.aspx?id=40762">
         Entity Framework 6 Tools for Visual Studio 2012 &amp; 2013</a>.</b></big>
         <br />
@@ -1236,7 +1231,7 @@
         <a name="sqlite-netFx45-binary-bundle-Win32-2012"></a>
         <a href="/downloads/1.0.97.0/sqlite-netFx45-binary-bundle-Win32-2012-1.0.97.0.zip">sqlite-netFx45-binary-bundle-Win32-2012-1.0.97.0.zip</a>
         <br />
-        (2.09 MiB)
+        (2.08 MiB)
       </td>
       <td width="5"></td>
       <td valign="top">
@@ -1322,7 +1317,7 @@
         <a name="sqlite-netFx451-binary-bundle-Win32-2013"></a>
         <a href="/downloads/1.0.97.0/sqlite-netFx451-binary-bundle-Win32-2013-1.0.97.0.zip">sqlite-netFx451-binary-bundle-Win32-2013-1.0.97.0.zip</a>
         <br />
-        (2.08 MiB)
+        (2.09 MiB)
       </td>
       <td width="5"></td>
       <td valign="top">
