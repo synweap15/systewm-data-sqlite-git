@@ -2405,8 +2405,6 @@
       <td width="10">&nbsp;</td>
       <td width="30%" valign="top" align="right">
         <a href="http://www.sourceforge.net/projects/sqlite-dotnet2/files/SQLite%20for%20ADO.NET%202.0/1.0.66.0/SQLite-1.0.66.0-setup.exe/download">SQLite-1.0.66.0-setup.exe</a>
-        <br />
-        (0.00 MiB)
       </td>
       <td width="5"></td>
       <td valign="top">
