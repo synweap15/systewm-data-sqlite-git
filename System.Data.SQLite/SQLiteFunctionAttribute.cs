@@ -1,7 +1,7 @@
 /********************************************************
  * ADO.NET 2.0 Data Provider for SQLite Version 3.X
  * Written by Robert Simpson (robert@blackcastlesoft.com)
- * 
+ *
  * Released to the public domain, use at your own risk!
  ********************************************************/
 
@@ -20,6 +20,7 @@ namespace System.Data.SQLite
     private int          _argumentCount;
     private FunctionType _functionType;
     private Type         _instanceType;
+    private Delegate     _callback;
 
     /// <summary>
     /// Default constructor, initializes the internal variables for the function.
@@ -53,6 +54,7 @@ namespace System.Data.SQLite
         _argumentCount = argumentCount;
         _functionType = functionType;
         _instanceType = null;
+        _callback = null;
     }
 
     /// <summary>
@@ -84,12 +86,25 @@ namespace System.Data.SQLite
 
     /// <summary>
     /// The <see cref="System.Type" /> object instance that describes the class
-    /// containing the implementation for the associated function.
+    /// containing the implementation for the associated function.  The value of
+    /// this property will not be used if the <see cref="Callback" /> property
+    /// value is set to non-null.
     /// </summary>
     internal Type InstanceType
     {
         get { return _instanceType; }
         set { _instanceType = value; }
+    }
+
+    /// <summary>
+    /// The <see cref="Delegate" /> that refers to the implementation for the
+    /// associated function.  If this property value is set to non-null, it will
+    /// be used instead of the <see cref="InstanceType" /> property value.
+    /// </summary>
+    internal Delegate Callback
+    {
+        get { return _callback; }
+        set { _callback = value; }
     }
   }
 }
