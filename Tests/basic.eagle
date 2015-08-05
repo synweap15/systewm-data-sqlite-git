@@ -3592,6 +3592,160 @@ no such function: MyRandom.*\} 0 \{\} 0 (?:-)?\d+ 0 \{\}$}]}
 
 ###############################################################################
 
+runTest {test data-1.74 {bind functions using delegate} -setup {
+  proc getMyFuncArgs { argumentCount } {
+    set result [list]
+
+    for {set index 0} {$index < $argumentCount} {incr index} {
+      lappend result [appendArgs 'myFuncArg [expr {$index + 1}] ']
+    }
+
+    return $result
+  }
+
+  proc myFuncCallback { args } {
+    if {[llength $args] == 0} then {
+      error "no function arguments"
+    }
+
+    set name [lindex $args 0]
+
+    switch -exact -- $name {
+      Invoke {
+        return $args
+      }
+      Step {
+        set ctx [lindex $args 1]
+
+        if {[string length $ctx] == 0} then {
+          error "invalid aggregate context"
+        }
+
+        global aggregateData
+
+        if {[info exists aggregateData($ctx)]} then {
+          incr aggregateData($ctx)
+        } else {
+          set aggregateData($ctx) 1
+        }
+      }
+      Final {
+        set ctx [lindex $args 1]
+
+        if {[string length $ctx] == 0} then {
+          error "invalid aggregate context"
+        }
+
+        global aggregateData
+
+        if {[info exists aggregateData($ctx)]} then {
+          return $aggregateData($ctx)
+        } else {
+          error "missing aggregate context data"
+        }
+      }
+      Compare {
+        return [string compare -nocase [lindex $args 1] [lindex $args 2]]
+      }
+      default {
+        error [appendArgs "unknown function callback \"" $name \"]
+      }
+    }
+  }
+
+  setupDb [set fileName data-1.74.db]
+} -body {
+  sql execute $db "CREATE TABLE t1(x INTEGER);"
+  sql execute $db "INSERT INTO t1 (x) VALUES(1);"
+  sql execute $db "INSERT INTO t1 (x) VALUES(2);"
+  sql execute $db "INSERT INTO t1 (x) VALUES(3);"
+  sql execute $db "INSERT INTO t1 (x) VALUES('A');"
+  sql execute $db "INSERT INTO t1 (x) VALUES('a');"
+  sql execute $db "INSERT INTO t1 (x) VALUES('M');"
+  sql execute $db "INSERT INTO t1 (x) VALUES('m');"
+  sql execute $db "INSERT INTO t1 (x) VALUES('Z');"
+  sql execute $db "INSERT INTO t1 (x) VALUES('z');"
+
+  set connection [getDbConnection]
+
+  for {set argumentCount 0} {$argumentCount < 3} {incr argumentCount} {
+    set attribute(1,$argumentCount) [object create \
+        System.Data.SQLite.SQLiteFunctionAttribute [appendArgs \
+        myFunc1_74_1_ $argumentCount] $argumentCount Scalar]
+
+    $connection BindFunction $attribute(1,$argumentCount) myFuncCallback
+
+    set attribute(2,$argumentCount) [object create \
+        System.Data.SQLite.SQLiteFunctionAttribute [appendArgs \
+        myFunc1_74_2_ $argumentCount] $argumentCount Aggregate]
+
+    $connection BindFunction $attribute(2,$argumentCount) myFuncCallback
+  }
+
+  set attribute(3,0) [object create \
+      System.Data.SQLite.SQLiteFunctionAttribute myFunc1_74_3 0 Collation]
+
+  $connection BindFunction $attribute(3,0) myFuncCallback
+
+  for {set argumentCount 0} {$argumentCount < 3} {incr argumentCount} {
+    lappend result [catch {
+      sql execute $db [appendArgs \
+          "SELECT " myFunc1_74_1_ $argumentCount ( \
+          [join [getMyFuncArgs $argumentCount] ,] )\;]
+    } error] $error
+
+    lappend result [catch {
+      sql execute $db [appendArgs \
+          "SELECT " myFunc1_74_2_ $argumentCount ( \
+          [join [getMyFuncArgs $argumentCount] ,] )\;]
+    } error] $error
+  }
+
+  lappend result [catch {
+    sql execute $db "SELECT x FROM t1 ORDER BY x COLLATE myFunc1_74_3;"
+  } error] $error
+
+  lappend result [$connection UnbindAllFunctions false]
+
+  for {set argumentCount 0} {$argumentCount < 3} {incr argumentCount} {
+    lappend result [catch {
+      sql execute $db [appendArgs \
+          "SELECT " myFunc1_74_1_ $argumentCount ( \
+          [join [getMyFuncArgs $argumentCount] ,] )\;]
+    } error] [expr {[string first [appendArgs \
+        "no such function: myFunc1_74_1_" $argumentCount] $error] != -1}]
+
+    lappend result [catch {
+      sql execute $db [appendArgs \
+          "SELECT " myFunc1_74_2_ $argumentCount ( \
+          [join [getMyFuncArgs $argumentCount] ,] )\;]
+    } error] [expr {[string first [appendArgs \
+        "no such function: myFunc1_74_2_" $argumentCount] $error] != -1}]
+  }
+
+  lappend result [catch {
+    sql execute $db "SELECT x FROM t1 ORDER BY x COLLATE myFunc1_74_3;"
+  } error] [expr {[string first "no such collation sequence: myFunc1_74_3" \
+      $error] != -1}]
+
+  set result
+} -cleanup {
+  cleanupDb $fileName
+
+  freeDbConnection
+
+  catch {object removecallback myFuncCallback}
+
+  unset -nocomplain result error aggregateData argumentCount attribute \
+      connection db fileName
+
+  rename myFuncCallback ""
+  rename getMyFuncArgs ""
+} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
+System.Data.SQLite} -result {}}
+
+###############################################################################
+
 reportSQLiteResources $test_channel
 
 ###############################################################################
