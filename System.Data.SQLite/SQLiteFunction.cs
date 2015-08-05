@@ -1164,11 +1164,12 @@ namespace System.Data.SQLite
           if (args == null)
               return new object[] { "Invoke" };
 
-          object[] newArgs = new object[args.Length + 1];
+          int length = args.Length;
+          object[] newArgs = new object[length + 1];
 
           newArgs[0] = "Invoke";
 
-          for (int index = 0; index < args.Length; index++)
+          for (int index = 0; index < length; index++)
               newArgs[index + 1] = args[index];
 
           return newArgs;
@@ -1201,17 +1202,18 @@ namespace System.Data.SQLite
           object contextData
           ) /* CANNOT RETURN NULL */
       {
-          int newLength = 3; /* "Step", stepNumber, contextData */
+          int length = 0;
 
           if (args != null)
-              newLength += args.Length;
+              length = args.Length;
 
+          int newLength = length + 3; /* "Step", stepNumber, contextData */
           object[] newArgs = new object[newLength];
 
           newArgs[0] = "Step";
 
           if (args != null)
-              for (int index = 0; index < args.Length; index++)
+              for (int index = 0; index < length; index++)
                   newArgs[index + 1] = args[index];
 
           newArgs[newLength - 2] = stepNumber;
