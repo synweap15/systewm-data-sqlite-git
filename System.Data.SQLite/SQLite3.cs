@@ -2635,12 +2635,14 @@ namespace System.Data.SQLite
     {
       SQLiteErrorCode n = UnsafeNativeMethods.sqlite3_key(_sql, passwordBytes, passwordBytes.Length);
       if (n != SQLiteErrorCode.Ok) throw new SQLiteException(n, GetLastError());
+      _usePool = false;
     }
 
     internal override void ChangePassword(byte[] newPasswordBytes)
     {
       SQLiteErrorCode n = UnsafeNativeMethods.sqlite3_rekey(_sql, newPasswordBytes, (newPasswordBytes == null) ? 0 : newPasswordBytes.Length);
       if (n != SQLiteErrorCode.Ok) throw new SQLiteException(n, GetLastError());
+      _usePool = false;
     }
 #endif
 
