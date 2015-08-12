@@ -1523,11 +1523,21 @@ namespace eval ::Eagle {
         }
 
         #
-        # NOTE: Yes, the SQLite interop assembly appears to be available.
+        # NOTE: Before actually adding the test constraint, make sure the
+        #       version is valid (i.e. not just that we could query it).
         #
-        addConstraint SQLiteInterop
+        if {$version ne "null"} then {
+          #
+          # NOTE: Yes, the SQLite interop assembly appears to be available.
+          #
+          addConstraint SQLiteInterop
 
-        tputs $channel [appendArgs "yes (" $version " " $sourceId ")\n"]
+          set answer yes
+        } else {
+          set answer no
+        }
+
+        tputs $channel [appendArgs $answer " (" $version " " $sourceId ")\n"]
       } else {
         tputs $channel no\n
       }
