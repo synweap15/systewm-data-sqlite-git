@@ -6858,7 +6858,7 @@ namespace System.Data.SQLite
             )
         {
             return UnsafeNativeMethods.StringFormat(
-                CultureInfo.CurrentCulture,
+                CultureInfo.InvariantCulture,
                 "{0}:{1}", argumentCount, name);
         }
         #endregion

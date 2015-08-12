@@ -25,7 +25,7 @@ namespace System.Data.SQLite
         /// </summary>
         private static readonly string declareSql =
             UnsafeNativeMethods.StringFormat(
-                CultureInfo.CurrentCulture, "CREATE TABLE {0}(x);",
+                CultureInfo.InvariantCulture, "CREATE TABLE {0}(x);",
                 typeof(SQLiteModuleCommon).Name);
         #endregion
 

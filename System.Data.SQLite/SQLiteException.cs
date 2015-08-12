@@ -184,7 +184,7 @@ namespace System.Data.SQLite
         )
     {
         return UnsafeNativeMethods.StringFormat(
-            CultureInfo.InvariantCulture,
+            CultureInfo.CurrentCulture,
             "{0}{1}{2}",
             GetErrorString(errorCode),
 #if !NET_COMPACT_20

@@ -132,7 +132,7 @@ namespace System.Data.SQLite
       /// <summary>
       /// Keeps track of whether we are running on Mono.  Initially null, it is
       /// set by the <see cref="IsMono" /> method on its first call.  Later, it
-      /// is returned verbatim.
+      /// is returned verbatim by the <see cref="IsMono" /> method.
       /// </summary>
       private static bool? isMono = null;
 
