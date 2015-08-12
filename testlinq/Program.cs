@@ -94,10 +94,12 @@ namespace testlinq
                   {
                       return SubStringTest();
                   }
+#if USE_INTEROP_DLL && INTEROP_EXTENSION_FUNCTIONS
               case "unionall":
                   {
                       return UnionAllTest();
                   }
+#endif
               case "endswith":
                   {
                       string value = null;
@@ -368,6 +370,7 @@ namespace testlinq
           return 0;
       }
 
+#if USE_INTEROP_DLL && INTEROP_EXTENSION_FUNCTIONS
       //
       // NOTE: Used to test the fix for ticket [0a32885109].
       //
@@ -438,6 +441,7 @@ namespace testlinq
 
           return 0;
       }
+#endif
 
       //
       // NOTE: Used to test the fix for ticket [ccfa69fc32].
@@ -559,10 +563,6 @@ namespace testlinq
       //
       private static int InsertTest()
       {
-          long[] orderIds = new long[] {
-              0
-          };
-
           using (northwindEFEntities db = new northwindEFEntities())
           {
               int[] counts = { 0 };

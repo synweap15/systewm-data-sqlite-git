@@ -1532,13 +1532,13 @@ namespace System.Data.SQLite
 
 #if !PLATFORM_COMPACTFRAMEWORK
         SQLiteErrorCode n = UnsafeNativeMethods.sqlite3_bind_double(handle, index, value);
+        if (n != SQLiteErrorCode.Ok) throw new SQLiteException(n, GetLastError());
 #elif !SQLITE_STANDARD
         SQLiteErrorCode n = UnsafeNativeMethods.sqlite3_bind_double_interop(handle, index, ref value);
+        if (n != SQLiteErrorCode.Ok) throw new SQLiteException(n, GetLastError());
 #else
-        SQLiteErrorCode n = SQLiteErrorCode.Ok;
         throw new NotImplementedException();
 #endif
-        if (n != SQLiteErrorCode.Ok) throw new SQLiteException(n, GetLastError());
     }
 
     internal override void Bind_Int32(SQLiteStatement stmt, SQLiteConnectionFlags flags, int index, int value)
@@ -1597,13 +1597,13 @@ namespace System.Data.SQLite
         }
 
         SQLiteErrorCode n = UnsafeNativeMethods.sqlite3_bind_int64(handle, index, value);
+        if (n != SQLiteErrorCode.Ok) throw new SQLiteException(n, GetLastError());
 #elif !SQLITE_STANDARD
         SQLiteErrorCode n = UnsafeNativeMethods.sqlite3_bind_int64_interop(handle, index, ref value);
+        if (n != SQLiteErrorCode.Ok) throw new SQLiteException(n, GetLastError());
 #else
-        SQLiteErrorCode n = SQLiteErrorCode.Ok;
         throw new NotImplementedException();
 #endif
-        if (n != SQLiteErrorCode.Ok) throw new SQLiteException(n, GetLastError());
     }
 
     internal override void Bind_UInt64(SQLiteStatement stmt, SQLiteConnectionFlags flags, int index, ulong value)
@@ -1617,13 +1617,13 @@ namespace System.Data.SQLite
         }
 
         SQLiteErrorCode n = UnsafeNativeMethods.sqlite3_bind_uint64(handle, index, value);
+        if (n != SQLiteErrorCode.Ok) throw new SQLiteException(n, GetLastError());
 #elif !SQLITE_STANDARD
         SQLiteErrorCode n = UnsafeNativeMethods.sqlite3_bind_uint64_interop(handle, index, ref value);
+        if (n != SQLiteErrorCode.Ok) throw new SQLiteException(n, GetLastError());
 #else
-        SQLiteErrorCode n = SQLiteErrorCode.Ok;
         throw new NotImplementedException();
 #endif
-        if (n != SQLiteErrorCode.Ok) throw new SQLiteException(n, GetLastError());
     }
 
     internal override void Bind_Text(SQLiteStatement stmt, SQLiteConnectionFlags flags, int index, string value)
@@ -1687,14 +1687,15 @@ namespace System.Data.SQLite
                     }
 
                     SQLiteErrorCode n = UnsafeNativeMethods.sqlite3_bind_int64(handle, index, value);
-#elif !SQLITE_STANDARD
-                    SQLiteErrorCode n = UnsafeNativeMethods.sqlite3_bind_int64_interop(handle, index, ref value);
-#else
-                    SQLiteErrorCode n = SQLiteErrorCode.Ok;
-                    throw new NotImplementedException();
-#endif
                     if (n != SQLiteErrorCode.Ok) throw new SQLiteException(n, GetLastError());
                     break;
+#elif !SQLITE_STANDARD
+                    SQLiteErrorCode n = UnsafeNativeMethods.sqlite3_bind_int64_interop(handle, index, ref value);
+                    if (n != SQLiteErrorCode.Ok) throw new SQLiteException(n, GetLastError());
+                    break;
+#else
+                    throw new NotImplementedException();
+#endif
                 }
             case SQLiteDateFormats.JulianDay:
                 {
@@ -1707,14 +1708,15 @@ namespace System.Data.SQLite
                     }
 
                     SQLiteErrorCode n = UnsafeNativeMethods.sqlite3_bind_double(handle, index, value);
-#elif !SQLITE_STANDARD
-                    SQLiteErrorCode n = UnsafeNativeMethods.sqlite3_bind_double_interop(handle, index, ref value);
-#else
-                    SQLiteErrorCode n = SQLiteErrorCode.Ok;
-                    throw new NotImplementedException();
-#endif
                     if (n != SQLiteErrorCode.Ok) throw new SQLiteException(n, GetLastError());
                     break;
+#elif !SQLITE_STANDARD
+                    SQLiteErrorCode n = UnsafeNativeMethods.sqlite3_bind_double_interop(handle, index, ref value);
+                    if (n != SQLiteErrorCode.Ok) throw new SQLiteException(n, GetLastError());
+                    break;
+#else
+                    throw new NotImplementedException();
+#endif
                 }
             case SQLiteDateFormats.UnixEpoch:
                 {
@@ -1727,14 +1729,15 @@ namespace System.Data.SQLite
                     }
 
                     SQLiteErrorCode n = UnsafeNativeMethods.sqlite3_bind_int64(handle, index, value);
-#elif !SQLITE_STANDARD
-                    SQLiteErrorCode n = UnsafeNativeMethods.sqlite3_bind_int64_interop(handle, index, ref value);
-#else
-                    SQLiteErrorCode n = SQLiteErrorCode.Ok;
-                    throw new NotImplementedException();
-#endif
                     if (n != SQLiteErrorCode.Ok) throw new SQLiteException(n, GetLastError());
                     break;
+#elif !SQLITE_STANDARD
+                    SQLiteErrorCode n = UnsafeNativeMethods.sqlite3_bind_int64_interop(handle, index, ref value);
+                    if (n != SQLiteErrorCode.Ok) throw new SQLiteException(n, GetLastError());
+                    break;
+#else
+                    throw new NotImplementedException();
+#endif
                 }
             default:
                 {
@@ -1984,16 +1987,15 @@ namespace System.Data.SQLite
 
     internal override double GetDouble(SQLiteStatement stmt, int index)
     {
-      double value;
 #if !PLATFORM_COMPACTFRAMEWORK
-      value = UnsafeNativeMethods.sqlite3_column_double(stmt._sqlite_stmt, index);
+      return UnsafeNativeMethods.sqlite3_column_double(stmt._sqlite_stmt, index);
 #elif !SQLITE_STANDARD
-      value = 0.0;
+      double value = 0.0;
       UnsafeNativeMethods.sqlite3_column_double_interop(stmt._sqlite_stmt, index, ref value);
+      return value;
 #else
       throw new NotImplementedException();
 #endif
-      return value;
     }
 
     internal override sbyte GetSByte(SQLiteStatement stmt, int index)
@@ -2028,16 +2030,15 @@ namespace System.Data.SQLite
 
     internal override long GetInt64(SQLiteStatement stmt, int index)
     {
-      long value;
 #if !PLATFORM_COMPACTFRAMEWORK
-      value = UnsafeNativeMethods.sqlite3_column_int64(stmt._sqlite_stmt, index);
+      return UnsafeNativeMethods.sqlite3_column_int64(stmt._sqlite_stmt, index);
 #elif !SQLITE_STANDARD
-      value = 0;
+      long value = 0;
       UnsafeNativeMethods.sqlite3_column_int64_interop(stmt._sqlite_stmt, index, ref value);
+      return value;
 #else
       throw new NotImplementedException();
 #endif
-      return value;
     }
 
     internal override ulong GetUInt64(SQLiteStatement stmt, int index)
@@ -2259,16 +2260,15 @@ namespace System.Data.SQLite
 
     internal override double GetParamValueDouble(IntPtr ptr)
     {
-      double value;
 #if !PLATFORM_COMPACTFRAMEWORK
-      value = UnsafeNativeMethods.sqlite3_value_double(ptr);
+      return UnsafeNativeMethods.sqlite3_value_double(ptr);
 #elif !SQLITE_STANDARD
-      value = 0.0;
+      double value = 0.0;
       UnsafeNativeMethods.sqlite3_value_double_interop(ptr, ref value);
+      return value;
 #else
       throw new NotImplementedException();
 #endif
-      return value;
     }
 
     internal override int GetParamValueInt32(IntPtr ptr)
@@ -2278,16 +2278,15 @@ namespace System.Data.SQLite
 
     internal override long GetParamValueInt64(IntPtr ptr)
     {
-      Int64 value;
 #if !PLATFORM_COMPACTFRAMEWORK
-      value = UnsafeNativeMethods.sqlite3_value_int64(ptr);
+      return UnsafeNativeMethods.sqlite3_value_int64(ptr);
 #elif !SQLITE_STANDARD
-      value = 0;
+      Int64 value = 0;
       UnsafeNativeMethods.sqlite3_value_int64_interop(ptr, ref value);
+      return value;
 #else
       throw new NotImplementedException();
 #endif
-      return value;
     }
 
     internal override string GetParamValueText(IntPtr ptr)

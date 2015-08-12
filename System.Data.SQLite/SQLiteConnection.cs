@@ -807,6 +807,7 @@ namespace System.Data.SQLite
         // do nothing.
     }
 
+#if INTEROP_VIRTUAL_TABLE
     /// <summary>
     /// Initializes the connection with a pre-existing native connection handle.
     /// This constructor overload is intended to be used only by the private
@@ -836,6 +837,7 @@ namespace System.Data.SQLite
 
         _connectionString = null; /* unknown */
     }
+#endif
 
     /// <summary>
     /// Initializes the connection with the specified connection string.

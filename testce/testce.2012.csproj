@@ -90,6 +90,7 @@
       <Name>System.Data.SQLite.Compact.2012</Name>
     </ProjectReference>
   </ItemGroup>
+  <Import Project="$(SQLiteNetDir)\System.Data.SQLite\Targets\System.Data.SQLite.Properties.targets" />
   <Import Condition="'$(TargetFrameworkVersion)' == 'v1.0'" Project="$(MSBuildBinPath)\Microsoft.CompactFramework.CSharp.v1.targets" />
   <Import Condition="'$(TargetFrameworkVersion)' == 'v2.0'" Project="$(MSBuildBinPath)\Microsoft.CompactFramework.CSharp.targets" />
   <Import Condition="'$(TargetFrameworkVersion)' == 'v3.5'" Project="$(MSBuildBinPath)\Microsoft.CompactFramework.CSharp.targets" />

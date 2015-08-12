@@ -292,9 +292,11 @@ namespace test
       try { Int64Properties(cnn); frm.WriteLine("SUCCESS - Int64Properties"); passed++; }
       catch (Exception) { frm.WriteLine("FAIL - Int64Properties"); failed++; }
 
+#if INTEROP_VIRTUAL_TABLE
       total++;
       try { ManagedVirtualTable(cnn); frm.WriteLine("SUCCESS - ManagedVirtualTable"); passed++; }
       catch (Exception) { frm.WriteLine("FAIL - ManagedVirtualTable"); failed++; }
+#endif
 
       total++;
       try { MultipleThreadStress(cnn); frm.WriteLine("SUCCESS - MultipleThreadStress"); passed++; }
@@ -1039,6 +1041,7 @@ namespace test
         throw new NotSupportedException("not a SQLite connection");
     }
 
+#if INTEROP_VIRTUAL_TABLE
     // Make sure that managed virtual table support works on the .NET Compact Framework.
     internal void ManagedVirtualTable(DbConnection cnn)
     {
@@ -1099,6 +1102,7 @@ namespace test
 
         throw new NotSupportedException("not a SQLite connection");
     }
+#endif
 
     private int nextId = 0;
     private const int MAX_THREADS = 3;
