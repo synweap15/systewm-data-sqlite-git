@@ -427,7 +427,7 @@ namespace System.Data.SQLite
         s = p.ParameterName;
         if (s == null)
         {
-          s = String.Format(CultureInfo.InvariantCulture, ";{0}", nUnnamed);
+          s = UnsafeNativeMethods.StringFormat(CultureInfo.InvariantCulture, ";{0}", nUnnamed);
           nUnnamed++;
         }
 
@@ -456,7 +456,7 @@ namespace System.Data.SQLite
         // the parameter by its index in the collection
         if (isMapped == false)
         {
-          s = String.Format(CultureInfo.InvariantCulture, ";{0}", y);
+          s = UnsafeNativeMethods.StringFormat(CultureInfo.InvariantCulture, ";{0}", y);
 
           stmt = activeStatement;
           for (n = 0; n < x; n++)

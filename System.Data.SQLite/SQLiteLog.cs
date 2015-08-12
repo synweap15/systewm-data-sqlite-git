@@ -559,13 +559,13 @@ namespace System.Data.SQLite
             if ((errorCode != null) &&
                 !Object.ReferenceEquals(errorCode, String.Empty))
             {
-                Trace.WriteLine(String.Format(
+                Trace.WriteLine(UnsafeNativeMethods.StringFormat(
                     CultureInfo.CurrentCulture, "SQLite {0} ({1}): {2}",
                     type, errorCode, message));
             }
             else
             {
-                Trace.WriteLine(String.Format(
+                Trace.WriteLine(UnsafeNativeMethods.StringFormat(
                     CultureInfo.CurrentCulture, "SQLite {0}: {1}",
                     type, message));
             }

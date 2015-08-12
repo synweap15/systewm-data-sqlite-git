@@ -931,7 +931,7 @@ namespace System.Data.SQLite
             {
               using (SQLiteCommand cmd = CreateCommand())
               {
-                cmd.CommandText = String.Format(CultureInfo.InvariantCulture, "ATTACH DATABASE '{0}' AS [{1}]", row[1], row[0]);
+                cmd.CommandText = UnsafeNativeMethods.StringFormat(CultureInfo.InvariantCulture, "ATTACH DATABASE '{0}' AS [{1}]", row[1], row[0]);
                 cmd.ExecuteNonQuery();
               }
             }
@@ -1164,7 +1164,7 @@ namespace System.Data.SQLite
         {
             if ((_flags & SQLiteConnectionFlags.LogBackup) == SQLiteConnectionFlags.LogBackup)
             {
-                SQLiteLog.LogMessage(String.Format(
+                SQLiteLog.LogMessage(UnsafeNativeMethods.StringFormat(
                     CultureInfo.CurrentCulture,
                     "Caught exception while backing up database: {0}", e));
             }
@@ -1597,7 +1597,7 @@ namespace System.Data.SQLite
         {
             if (_noDispose)
             {
-                System.Diagnostics.Trace.WriteLine(String.Format(
+                System.Diagnostics.Trace.WriteLine(UnsafeNativeMethods.StringFormat(
                     CultureInfo.CurrentCulture,
                     "WARNING: Disposing of connection \"{0}\" with the no-dispose flag set.",
                     _connectionString));
@@ -2038,7 +2038,8 @@ namespace System.Data.SQLite
 
       if (arParts == null)
       {
-          throw new ArgumentException(String.Format(CultureInfo.CurrentCulture,
+          throw new ArgumentException(UnsafeNativeMethods.StringFormat(
+              CultureInfo.CurrentCulture,
               "Invalid ConnectionString format, cannot parse: {0}", (error != null) ?
               error : "could not split connection string into properties"));
       }
@@ -2062,7 +2063,7 @@ namespace System.Data.SQLite
         else if (allowNameOnly)
           ls.Add(UnwrapString(arParts[n].Trim()), String.Empty);
         else
-          throw new ArgumentException(String.Format(CultureInfo.CurrentCulture, "Invalid ConnectionString format for part \"{0}\", no equal sign found", arParts[n]));
+          throw new ArgumentException(UnsafeNativeMethods.StringFormat(CultureInfo.CurrentCulture, "Invalid ConnectionString format for part \"{0}\", no equal sign found", arParts[n]));
       }
       return ls;
     }
@@ -2262,7 +2263,7 @@ namespace System.Data.SQLite
         CheckDisposed();
 
         if (_sql == null)
-            throw new InvalidOperationException(String.Format(
+            throw new InvalidOperationException(UnsafeNativeMethods.StringFormat(
                 CultureInfo.CurrentCulture,
                 "Database connection not valid for {0} extensions.",
                 enable ? "enabling" : "disabling"));
@@ -2385,7 +2386,7 @@ namespace System.Data.SQLite
 
         for (int index = 0; index < length; index++)
 #if NET_COMPACT_20
-            result.Append(String.Format("{0:x2}", array[index]));
+            result.Append(UnsafeNativeMethods.StringFormat("{0:x2}", array[index]));
 #else
             result.AppendFormat("{0:x2}", array[index]);
 #endif
@@ -2435,7 +2436,7 @@ namespace System.Data.SQLite
             if (!TryParseByte(value,
                     NumberStyles.HexNumber, out result[index / 2]))
             {
-                error = String.Format(
+                error = UnsafeNativeMethods.StringFormat(
                     CultureInfo.CurrentCulture,
                     "string contains \"{0}\", which cannot be converted to a byte value",
                     value);
@@ -2591,7 +2592,7 @@ namespace System.Data.SQLite
       string fileName;
 
       if (Convert.ToInt32(FindKey(opts, "Version", DefaultVersion.ToString()), CultureInfo.InvariantCulture) != DefaultVersion)
-        throw new NotSupportedException(String.Format(CultureInfo.CurrentCulture, "Only SQLite Version {0} is supported at this time", DefaultVersion));
+        throw new NotSupportedException(UnsafeNativeMethods.StringFormat(CultureInfo.CurrentCulture, "Only SQLite Version {0} is supported at this time", DefaultVersion));
 
 #if INTEROP_INCLUDE_ZIPVFS
       bool useZipVfs = false;
@@ -2615,7 +2616,7 @@ namespace System.Data.SQLite
           }
           else
           {
-              throw new NotSupportedException(String.Format(
+              throw new NotSupportedException(UnsafeNativeMethods.StringFormat(
                   CultureInfo.CurrentCulture, "Only ZipVFS versions {0}, {1}, and {2} are supported at this time",
                   ZipVfs_Automatic, ZipVfs_V2, ZipVfs_V3));
           }
@@ -2631,7 +2632,7 @@ namespace System.Data.SQLite
         {
           fileName = FindKey(opts, "FullUri", DefaultFullUri);
           if (String.IsNullOrEmpty(fileName))
-            throw new ArgumentException(String.Format(CultureInfo.CurrentCulture, "Data Source cannot be empty.  Use {0} to open an in-memory database", MemoryFileName));
+            throw new ArgumentException(UnsafeNativeMethods.StringFormat(CultureInfo.CurrentCulture, "Data Source cannot be empty.  Use {0} to open an in-memory database", MemoryFileName));
           else
             fullUri = true;
         }
@@ -2653,7 +2654,7 @@ namespace System.Data.SQLite
               fileName.StartsWith("\\", StringComparison.OrdinalIgnoreCase) &&
               !fileName.StartsWith("\\\\", StringComparison.OrdinalIgnoreCase))
           {
-              System.Diagnostics.Trace.WriteLine(String.Format(
+              System.Diagnostics.Trace.WriteLine(UnsafeNativeMethods.StringFormat(
                   CultureInfo.CurrentCulture,
                   "WARNING: Detected a possibly malformed UNC database file name \"{0}\" that " +
                   "may have originally started with two backslashes; however, four leading " +
@@ -2735,7 +2736,7 @@ namespace System.Data.SQLite
 
             if (hexPasswordBytes == null)
             {
-                throw new FormatException(String.Format(
+                throw new FormatException(UnsafeNativeMethods.StringFormat(
                     CultureInfo.CurrentCulture,
                     "Cannot parse 'HexPassword' property value into byte values: {0}",
                     error));
@@ -2779,7 +2780,7 @@ namespace System.Data.SQLite
               {
                   if (_busyTimeout != DefaultBusyTimeout)
                   {
-                      cmd.CommandText = String.Format(CultureInfo.InvariantCulture, "PRAGMA busy_timeout={0}", _busyTimeout);
+                      cmd.CommandText = UnsafeNativeMethods.StringFormat(CultureInfo.InvariantCulture, "PRAGMA busy_timeout={0}", _busyTimeout);
                       cmd.ExecuteNonQuery();
                   }
 
@@ -2791,7 +2792,7 @@ namespace System.Data.SQLite
                       intValue = Convert.ToInt32(strValue, CultureInfo.InvariantCulture);
                       if (intValue != DefaultPageSize)
                       {
-                          cmd.CommandText = String.Format(CultureInfo.InvariantCulture, "PRAGMA page_size={0}", intValue);
+                          cmd.CommandText = UnsafeNativeMethods.StringFormat(CultureInfo.InvariantCulture, "PRAGMA page_size={0}", intValue);
                           cmd.ExecuteNonQuery();
                       }
                   }
@@ -2800,7 +2801,7 @@ namespace System.Data.SQLite
                   intValue = Convert.ToInt32(strValue, CultureInfo.InvariantCulture);
                   if (intValue != DefaultMaxPageCount)
                   {
-                      cmd.CommandText = String.Format(CultureInfo.InvariantCulture, "PRAGMA max_page_count={0}", intValue);
+                      cmd.CommandText = UnsafeNativeMethods.StringFormat(CultureInfo.InvariantCulture, "PRAGMA max_page_count={0}", intValue);
                       cmd.ExecuteNonQuery();
                   }
 
@@ -2808,7 +2809,7 @@ namespace System.Data.SQLite
                   boolValue = SQLiteConvert.ToBoolean(strValue);
                   if (boolValue != DefaultLegacyFormat)
                   {
-                      cmd.CommandText = String.Format(CultureInfo.InvariantCulture, "PRAGMA legacy_file_format={0}", boolValue ? "ON" : "OFF");
+                      cmd.CommandText = UnsafeNativeMethods.StringFormat(CultureInfo.InvariantCulture, "PRAGMA legacy_file_format={0}", boolValue ? "ON" : "OFF");
                       cmd.ExecuteNonQuery();
                   }
 
@@ -2816,7 +2817,7 @@ namespace System.Data.SQLite
                   enumValue = TryParseEnum(typeof(SQLiteSynchronousEnum), strValue, true);
                   if (!(enumValue is SQLiteSynchronousEnum) || ((SQLiteSynchronousEnum)enumValue != DefaultSynchronous))
                   {
-                      cmd.CommandText = String.Format(CultureInfo.InvariantCulture, "PRAGMA synchronous={0}", strValue);
+                      cmd.CommandText = UnsafeNativeMethods.StringFormat(CultureInfo.InvariantCulture, "PRAGMA synchronous={0}", strValue);
                       cmd.ExecuteNonQuery();
                   }
 
@@ -2824,7 +2825,7 @@ namespace System.Data.SQLite
                   intValue = Convert.ToInt32(strValue, CultureInfo.InvariantCulture);
                   if (intValue != DefaultCacheSize)
                   {
-                      cmd.CommandText = String.Format(CultureInfo.InvariantCulture, "PRAGMA cache_size={0}", intValue);
+                      cmd.CommandText = UnsafeNativeMethods.StringFormat(CultureInfo.InvariantCulture, "PRAGMA cache_size={0}", intValue);
                       cmd.ExecuteNonQuery();
                   }
 
@@ -2839,7 +2840,7 @@ namespace System.Data.SQLite
                           pragmaStr = "PRAGMA zipvfs_journal_mode={0}";
 #endif
 
-                      cmd.CommandText = String.Format(CultureInfo.InvariantCulture, pragmaStr, strValue);
+                      cmd.CommandText = UnsafeNativeMethods.StringFormat(CultureInfo.InvariantCulture, pragmaStr, strValue);
                       cmd.ExecuteNonQuery();
                   }
 
@@ -2847,7 +2848,7 @@ namespace System.Data.SQLite
                   boolValue = SQLiteConvert.ToBoolean(strValue);
                   if (boolValue != DefaultForeignKeys)
                   {
-                      cmd.CommandText = String.Format(CultureInfo.InvariantCulture, "PRAGMA foreign_keys={0}", boolValue ? "ON" : "OFF");
+                      cmd.CommandText = UnsafeNativeMethods.StringFormat(CultureInfo.InvariantCulture, "PRAGMA foreign_keys={0}", boolValue ? "ON" : "OFF");
                       cmd.ExecuteNonQuery();
                   }
 
@@ -2855,7 +2856,7 @@ namespace System.Data.SQLite
                   boolValue = SQLiteConvert.ToBoolean(strValue);
                   if (boolValue != DefaultRecursiveTriggers)
                   {
-                      cmd.CommandText = String.Format(CultureInfo.InvariantCulture, "PRAGMA recursive_triggers={0}", boolValue ? "ON" : "OFF");
+                      cmd.CommandText = UnsafeNativeMethods.StringFormat(CultureInfo.InvariantCulture, "PRAGMA recursive_triggers={0}", boolValue ? "ON" : "OFF");
                       cmd.ExecuteNonQuery();
                   }
               }
@@ -3390,7 +3391,9 @@ namespace System.Data.SQLite
                 if (sourceTimeStamp == null)
                     sourceTimeStamp = "0000-00-00 00:00:00 UTC";
 
-                return String.Format("{0} {1}", sourceId, sourceTimeStamp);
+                return UnsafeNativeMethods.StringFormat(
+                    CultureInfo.InvariantCulture,
+                    "{0} {1}", sourceId, sourceTimeStamp);
             }
             else
             {
@@ -3464,7 +3467,7 @@ namespace System.Data.SQLite
 
 #if !NET_COMPACT_20 && TRACE_CONNECTION
         if (rc != SQLiteErrorCode.Ok)
-            System.Diagnostics.Trace.WriteLine(String.Format(
+            System.Diagnostics.Trace.WriteLine(UnsafeNativeMethods.StringFormat(
                 CultureInfo.CurrentCulture,
                 "Shutdown (Instance) Failed: {0}", rc));
 #endif
@@ -3494,7 +3497,7 @@ namespace System.Data.SQLite
         if (rc != SQLiteErrorCode.Ok)
         {
 #if !NET_COMPACT_20 && TRACE_CONNECTION
-            System.Diagnostics.Trace.WriteLine(String.Format(
+            System.Diagnostics.Trace.WriteLine(UnsafeNativeMethods.StringFormat(
                 CultureInfo.CurrentCulture,
                 "Shutdown (Static) Failed: {0}", rc));
 #endif
@@ -4078,7 +4081,7 @@ namespace System.Data.SQLite
 
       string master = (String.Compare(strCatalog, "temp", StringComparison.OrdinalIgnoreCase) == 0) ? _tempmasterdb : _masterdb;
 
-      using (SQLiteCommand cmdTables = new SQLiteCommand(String.Format(CultureInfo.InvariantCulture, "SELECT * FROM [{0}].[{1}] WHERE [type] LIKE 'table' OR [type] LIKE 'view'", strCatalog, master), this))
+      using (SQLiteCommand cmdTables = new SQLiteCommand(UnsafeNativeMethods.StringFormat(CultureInfo.InvariantCulture, "SELECT * FROM [{0}].[{1}] WHERE [type] LIKE 'table' OR [type] LIKE 'view'", strCatalog, master), this))
       using (SQLiteDataReader rdTables = cmdTables.ExecuteReader())
       {
         while (rdTables.Read())
@@ -4087,7 +4090,7 @@ namespace System.Data.SQLite
           {
             try
             {
-              using (SQLiteCommand cmd = new SQLiteCommand(String.Format(CultureInfo.InvariantCulture, "SELECT * FROM [{0}].[{1}]", strCatalog, rdTables.GetString(2)), this))
+              using (SQLiteCommand cmd = new SQLiteCommand(UnsafeNativeMethods.StringFormat(CultureInfo.InvariantCulture, "SELECT * FROM [{0}].[{1}]", strCatalog, rdTables.GetString(2)), this))
               using (SQLiteDataReader rd = (SQLiteDataReader)cmd.ExecuteReader(CommandBehavior.SchemaOnly))
               using (DataTable tblSchema = rd.GetSchemaTable(true, true))
               {
@@ -4181,7 +4184,7 @@ namespace System.Data.SQLite
 
       string master = (String.Compare(strCatalog, "temp", StringComparison.OrdinalIgnoreCase) == 0) ? _tempmasterdb : _masterdb;
 
-      using (SQLiteCommand cmdTables = new SQLiteCommand(String.Format(CultureInfo.InvariantCulture, "SELECT * FROM [{0}].[{1}] WHERE [type] LIKE 'table'", strCatalog, master), this))
+      using (SQLiteCommand cmdTables = new SQLiteCommand(UnsafeNativeMethods.StringFormat(CultureInfo.InvariantCulture, "SELECT * FROM [{0}].[{1}] WHERE [type] LIKE 'table'", strCatalog, master), this))
       using (SQLiteDataReader rdTables = cmdTables.ExecuteReader())
       {
         while (rdTables.Read())
@@ -4194,7 +4197,7 @@ namespace System.Data.SQLite
             // Such indexes are not listed in the indexes list but count as indexes just the same.
             try
             {
-              using (SQLiteCommand cmdTable = new SQLiteCommand(String.Format(CultureInfo.InvariantCulture, "PRAGMA [{0}].table_info([{1}])", strCatalog, rdTables.GetString(2)), this))
+              using (SQLiteCommand cmdTable = new SQLiteCommand(UnsafeNativeMethods.StringFormat(CultureInfo.InvariantCulture, "PRAGMA [{0}].table_info([{1}])", strCatalog, rdTables.GetString(2)), this))
               using (SQLiteDataReader rdTable = cmdTable.ExecuteReader())
               {
                 while (rdTable.Read())
@@ -4221,7 +4224,7 @@ namespace System.Data.SQLite
               row["TABLE_NAME"] = rdTables.GetString(2);
               row["INDEX_CATALOG"] = strCatalog;
               row["PRIMARY_KEY"] = true;
-              row["INDEX_NAME"] = String.Format(CultureInfo.InvariantCulture, "{1}_PK_{0}", rdTables.GetString(2), master);
+              row["INDEX_NAME"] = UnsafeNativeMethods.StringFormat(CultureInfo.InvariantCulture, "{1}_PK_{0}", rdTables.GetString(2), master);
               row["UNIQUE"] = true;
 
               if (String.Compare((string)row["INDEX_NAME"], strIndex, StringComparison.OrdinalIgnoreCase) == 0
@@ -4236,7 +4239,7 @@ namespace System.Data.SQLite
             // Now fetch all the rest of the indexes.
             try
             {
-              using (SQLiteCommand cmd = new SQLiteCommand(String.Format(CultureInfo.InvariantCulture, "PRAGMA [{0}].index_list([{1}])", strCatalog, rdTables.GetString(2)), this))
+              using (SQLiteCommand cmd = new SQLiteCommand(UnsafeNativeMethods.StringFormat(CultureInfo.InvariantCulture, "PRAGMA [{0}].index_list([{1}])", strCatalog, rdTables.GetString(2)), this))
               using (SQLiteDataReader rd = (SQLiteDataReader)cmd.ExecuteReader())
               {
                 while (rd.Read())
@@ -4254,7 +4257,7 @@ namespace System.Data.SQLite
                     row["PRIMARY_KEY"] = false;
 
                     // get the index definition
-                    using (SQLiteCommand cmdIndexes = new SQLiteCommand(String.Format(CultureInfo.InvariantCulture, "SELECT * FROM [{0}].[{2}] WHERE [type] LIKE 'index' AND [name] LIKE '{1}'", strCatalog, rd.GetString(1).Replace("'", "''"), master), this))
+                    using (SQLiteCommand cmdIndexes = new SQLiteCommand(UnsafeNativeMethods.StringFormat(CultureInfo.InvariantCulture, "SELECT * FROM [{0}].[{2}] WHERE [type] LIKE 'index' AND [name] LIKE '{1}'", strCatalog, rd.GetString(1).Replace("'", "''"), master), this))
                     using (SQLiteDataReader rdIndexes = cmdIndexes.ExecuteReader())
                     {
                       while (rdIndexes.Read())
@@ -4270,7 +4273,7 @@ namespace System.Data.SQLite
                     // primary key, and all the columns in the given index match the primary key columns
                     if (primaryKeys.Count > 0 && rd.GetString(1).StartsWith("sqlite_autoindex_" + rdTables.GetString(2), StringComparison.InvariantCultureIgnoreCase) == true)
                     {
-                      using (SQLiteCommand cmdDetails = new SQLiteCommand(String.Format(CultureInfo.InvariantCulture, "PRAGMA [{0}].index_info([{1}])", strCatalog, rd.GetString(1)), this))
+                      using (SQLiteCommand cmdDetails = new SQLiteCommand(UnsafeNativeMethods.StringFormat(CultureInfo.InvariantCulture, "PRAGMA [{0}].index_info([{1}])", strCatalog, rd.GetString(1)), this))
                       using (SQLiteDataReader rdDetails = cmdDetails.ExecuteReader())
                       {
                         int nMatches = 0;
@@ -4327,7 +4330,7 @@ namespace System.Data.SQLite
       if (String.IsNullOrEmpty(catalog)) catalog = "main";
       string master = (String.Compare(catalog, "temp", StringComparison.OrdinalIgnoreCase) == 0) ? _tempmasterdb : _masterdb;
 
-      using (SQLiteCommand cmd = new SQLiteCommand(String.Format(CultureInfo.InvariantCulture, "SELECT [type], [name], [tbl_name], [rootpage], [sql], [rowid] FROM [{0}].[{1}] WHERE [type] LIKE 'trigger'", catalog, master), this))
+      using (SQLiteCommand cmd = new SQLiteCommand(UnsafeNativeMethods.StringFormat(CultureInfo.InvariantCulture, "SELECT [type], [name], [tbl_name], [rootpage], [sql], [rowid] FROM [{0}].[{1}] WHERE [type] LIKE 'trigger'", catalog, master), this))
       using (SQLiteDataReader rd = (SQLiteDataReader)cmd.ExecuteReader())
       {
         while (rd.Read())
@@ -4382,7 +4385,7 @@ namespace System.Data.SQLite
 
       string master = (String.Compare(strCatalog, "temp", StringComparison.OrdinalIgnoreCase) == 0) ? _tempmasterdb : _masterdb;
 
-      using (SQLiteCommand cmd = new SQLiteCommand(String.Format(CultureInfo.InvariantCulture, "SELECT [type], [name], [tbl_name], [rootpage], [sql], [rowid] FROM [{0}].[{1}] WHERE [type] LIKE 'table'", strCatalog, master), this))
+      using (SQLiteCommand cmd = new SQLiteCommand(UnsafeNativeMethods.StringFormat(CultureInfo.InvariantCulture, "SELECT [type], [name], [tbl_name], [rootpage], [sql], [rowid] FROM [{0}].[{1}] WHERE [type] LIKE 'table'", strCatalog, master), this))
       using (SQLiteDataReader rd = (SQLiteDataReader)cmd.ExecuteReader())
       {
         while (rd.Read())
@@ -4448,7 +4451,7 @@ namespace System.Data.SQLite
 
       string master = (String.Compare(strCatalog, "temp", StringComparison.OrdinalIgnoreCase) == 0) ? _tempmasterdb : _masterdb;
 
-      using (SQLiteCommand cmd = new SQLiteCommand(String.Format(CultureInfo.InvariantCulture, "SELECT * FROM [{0}].[{1}] WHERE [type] LIKE 'view'", strCatalog, master), this))
+      using (SQLiteCommand cmd = new SQLiteCommand(UnsafeNativeMethods.StringFormat(CultureInfo.InvariantCulture, "SELECT * FROM [{0}].[{1}] WHERE [type] LIKE 'view'", strCatalog, master), this))
       using (SQLiteDataReader rd = (SQLiteDataReader)cmd.ExecuteReader())
       {
         while (rd.Read())
@@ -4597,7 +4600,7 @@ namespace System.Data.SQLite
 
       tbl.BeginLoadData();
 
-      using (SQLiteCommand cmdTables = new SQLiteCommand(String.Format(CultureInfo.InvariantCulture, "SELECT * FROM [{0}].[{1}] WHERE [type] LIKE 'table'", strCatalog, master), this))
+      using (SQLiteCommand cmdTables = new SQLiteCommand(UnsafeNativeMethods.StringFormat(CultureInfo.InvariantCulture, "SELECT * FROM [{0}].[{1}] WHERE [type] LIKE 'table'", strCatalog, master), this))
       using (SQLiteDataReader rdTables = cmdTables.ExecuteReader())
       {
         while (rdTables.Read())
@@ -4608,7 +4611,7 @@ namespace System.Data.SQLite
           {
             try
             {
-              using (SQLiteCommand cmdTable = new SQLiteCommand(String.Format(CultureInfo.InvariantCulture, "PRAGMA [{0}].table_info([{1}])", strCatalog, rdTables.GetString(2)), this))
+              using (SQLiteCommand cmdTable = new SQLiteCommand(UnsafeNativeMethods.StringFormat(CultureInfo.InvariantCulture, "PRAGMA [{0}].table_info([{1}])", strCatalog, rdTables.GetString(2)), this))
               using (SQLiteDataReader rdTable = cmdTable.ExecuteReader())
               {
                 while (rdTable.Read())
@@ -4631,7 +4634,7 @@ namespace System.Data.SQLite
             {
               row = tbl.NewRow();
               row["CONSTRAINT_CATALOG"] = strCatalog;
-              row["CONSTRAINT_NAME"] = String.Format(CultureInfo.InvariantCulture, "{1}_PK_{0}", rdTables.GetString(2), master);
+              row["CONSTRAINT_NAME"] = UnsafeNativeMethods.StringFormat(CultureInfo.InvariantCulture, "{1}_PK_{0}", rdTables.GetString(2), master);
               row["TABLE_CATALOG"] = strCatalog;
               row["TABLE_NAME"] = rdTables.GetString(2);
               row["COLUMN_NAME"] = primaryKeys[0].Value;
@@ -4645,7 +4648,7 @@ namespace System.Data.SQLite
                 tbl.Rows.Add(row);
             }
 
-            using (SQLiteCommand cmdIndexes = new SQLiteCommand(String.Format(CultureInfo.InvariantCulture, "SELECT * FROM [{0}].[{2}] WHERE [type] LIKE 'index' AND [tbl_name] LIKE '{1}'", strCatalog, rdTables.GetString(2).Replace("'", "''"), master), this))
+            using (SQLiteCommand cmdIndexes = new SQLiteCommand(UnsafeNativeMethods.StringFormat(CultureInfo.InvariantCulture, "SELECT * FROM [{0}].[{2}] WHERE [type] LIKE 'index' AND [tbl_name] LIKE '{1}'", strCatalog, rdTables.GetString(2).Replace("'", "''"), master), this))
             using (SQLiteDataReader rdIndexes = cmdIndexes.ExecuteReader())
             {
               while (rdIndexes.Read())
@@ -4655,7 +4658,7 @@ namespace System.Data.SQLite
                 {
                   try
                   {
-                    using (SQLiteCommand cmdIndex = new SQLiteCommand(String.Format(CultureInfo.InvariantCulture, "PRAGMA [{0}].index_info([{1}])", strCatalog, rdIndexes.GetString(1)), this))
+                    using (SQLiteCommand cmdIndex = new SQLiteCommand(UnsafeNativeMethods.StringFormat(CultureInfo.InvariantCulture, "PRAGMA [{0}].index_info([{1}])", strCatalog, rdIndexes.GetString(1)), this))
                     using (SQLiteDataReader rdIndex = cmdIndex.ExecuteReader())
                     {
                       while (rdIndex.Read())
@@ -4755,14 +4758,14 @@ namespace System.Data.SQLite
 
       tbl.BeginLoadData();
 
-      using (SQLiteCommand cmdViews = new SQLiteCommand(String.Format(CultureInfo.InvariantCulture, "SELECT * FROM [{0}].[{1}] WHERE [type] LIKE 'view'", strCatalog, master), this))
+      using (SQLiteCommand cmdViews = new SQLiteCommand(UnsafeNativeMethods.StringFormat(CultureInfo.InvariantCulture, "SELECT * FROM [{0}].[{1}] WHERE [type] LIKE 'view'", strCatalog, master), this))
       using (SQLiteDataReader rdViews = cmdViews.ExecuteReader())
       {
         while (rdViews.Read())
         {
           if (String.IsNullOrEmpty(strView) || String.Compare(strView, rdViews.GetString(2), StringComparison.OrdinalIgnoreCase) == 0)
           {
-            using (SQLiteCommand cmdViewSelect = new SQLiteCommand(String.Format(CultureInfo.InvariantCulture, "SELECT * FROM [{0}].[{1}]", strCatalog, rdViews.GetString(2)), this))
+            using (SQLiteCommand cmdViewSelect = new SQLiteCommand(UnsafeNativeMethods.StringFormat(CultureInfo.InvariantCulture, "SELECT * FROM [{0}].[{1}]", strCatalog, rdViews.GetString(2)), this))
             {
               strSql = rdViews.GetString(4).Replace('\r', ' ').Replace('\n', ' ').Replace('\t', ' ');
               n = CultureInfo.InvariantCulture.CompareInfo.IndexOf(strSql, " AS ", CompareOptions.IgnoreCase);
@@ -4860,7 +4863,7 @@ namespace System.Data.SQLite
 
       tbl.BeginLoadData();
 
-      using (SQLiteCommand cmdTables = new SQLiteCommand(String.Format(CultureInfo.InvariantCulture, "SELECT * FROM [{0}].[{1}] WHERE [type] LIKE 'table'", strCatalog, master), this))
+      using (SQLiteCommand cmdTables = new SQLiteCommand(UnsafeNativeMethods.StringFormat(CultureInfo.InvariantCulture, "SELECT * FROM [{0}].[{1}] WHERE [type] LIKE 'table'", strCatalog, master), this))
       using (SQLiteDataReader rdTables = cmdTables.ExecuteReader())
       {
         while (rdTables.Read())
@@ -4870,14 +4873,14 @@ namespace System.Data.SQLite
             try
             {
               using (SQLiteCommandBuilder builder = new SQLiteCommandBuilder())
-              using (SQLiteCommand cmdKey = new SQLiteCommand(String.Format(CultureInfo.InvariantCulture, "PRAGMA [{0}].foreign_key_list([{1}])", strCatalog, rdTables.GetString(2)), this))
+              using (SQLiteCommand cmdKey = new SQLiteCommand(UnsafeNativeMethods.StringFormat(CultureInfo.InvariantCulture, "PRAGMA [{0}].foreign_key_list([{1}])", strCatalog, rdTables.GetString(2)), this))
               using (SQLiteDataReader rdKey = cmdKey.ExecuteReader())
               {
                 while (rdKey.Read())
                 {
                   row = tbl.NewRow();
                   row["CONSTRAINT_CATALOG"] = strCatalog;
-                  row["CONSTRAINT_NAME"] = String.Format(CultureInfo.InvariantCulture, "FK_{0}_{1}_{2}", rdTables[2], rdKey.GetInt32(0), rdKey.GetInt32(1));
+                  row["CONSTRAINT_NAME"] = UnsafeNativeMethods.StringFormat(CultureInfo.InvariantCulture, "FK_{0}_{1}_{2}", rdTables[2], rdKey.GetInt32(0), rdKey.GetInt32(1));
                   row["TABLE_CATALOG"] = strCatalog;
                   row["TABLE_NAME"] = builder.UnquoteIdentifier(rdTables.GetString(2));
                   row["CONSTRAINT_TYPE"] = "FOREIGN KEY";
@@ -5031,7 +5034,7 @@ namespace System.Data.SQLite
                         SQLiteConnectionFlags.LogCallbackException)
                 {
                     SQLiteLog.LogMessage(SQLiteBase.COR_E_EXCEPTION,
-                        String.Format(CultureInfo.CurrentCulture,
+                        UnsafeNativeMethods.StringFormat(CultureInfo.CurrentCulture,
                         "Caught exception in \"Progress\" method: {1}",
                         e)); /* throw */
                 }
@@ -5084,7 +5087,7 @@ namespace System.Data.SQLite
                         SQLiteConnectionFlags.LogCallbackException)
                 {
                     SQLiteLog.LogMessage(SQLiteBase.COR_E_EXCEPTION,
-                        String.Format(CultureInfo.CurrentCulture,
+                        UnsafeNativeMethods.StringFormat(CultureInfo.CurrentCulture,
                         "Caught exception in \"Authorize\" method: {1}",
                         e)); /* throw */
                 }
@@ -5133,7 +5136,7 @@ namespace System.Data.SQLite
                         SQLiteConnectionFlags.LogCallbackException)
                 {
                     SQLiteLog.LogMessage(SQLiteBase.COR_E_EXCEPTION,
-                        String.Format(CultureInfo.CurrentCulture,
+                        UnsafeNativeMethods.StringFormat(CultureInfo.CurrentCulture,
                         "Caught exception in \"Update\" method: {1}",
                         e)); /* throw */
                 }
@@ -5224,7 +5227,7 @@ namespace System.Data.SQLite
                         SQLiteConnectionFlags.LogCallbackException)
                 {
                     SQLiteLog.LogMessage(SQLiteBase.COR_E_EXCEPTION,
-                        String.Format(CultureInfo.CurrentCulture,
+                        UnsafeNativeMethods.StringFormat(CultureInfo.CurrentCulture,
                         "Caught exception in \"Trace\" method: {1}",
                         e)); /* throw */
                 }
@@ -5286,7 +5289,7 @@ namespace System.Data.SQLite
                         SQLiteConnectionFlags.LogCallbackException)
                 {
                     SQLiteLog.LogMessage(SQLiteBase.COR_E_EXCEPTION,
-                        String.Format(CultureInfo.CurrentCulture,
+                        UnsafeNativeMethods.StringFormat(CultureInfo.CurrentCulture,
                         "Caught exception in \"Commit\" method: {1}",
                         e)); /* throw */
                 }
@@ -5328,7 +5331,7 @@ namespace System.Data.SQLite
                         SQLiteConnectionFlags.LogCallbackException)
                 {
                     SQLiteLog.LogMessage(SQLiteBase.COR_E_EXCEPTION,
-                        String.Format(CultureInfo.CurrentCulture,
+                        UnsafeNativeMethods.StringFormat(CultureInfo.CurrentCulture,
                         "Caught exception in \"Rollback\" method: {1}",
                         e)); /* throw */
                 }

@@ -90,12 +90,12 @@ namespace System.Data.SQLite
 
             if (typeName != null)
             {
-                typeName = String.Format(
+                typeName = UnsafeNativeMethods.StringFormat(
                     CultureInfo.InvariantCulture, typeName, version);
             }
             else
             {
-                typeName = String.Format(
+                typeName = UnsafeNativeMethods.StringFormat(
                     CultureInfo.InvariantCulture, DefaultTypeName, version);
             }
 

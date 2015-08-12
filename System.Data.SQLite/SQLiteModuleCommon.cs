@@ -23,9 +23,10 @@ namespace System.Data.SQLite
         /// The CREATE TABLE statement used to declare the schema for the
         /// virtual table.
         /// </summary>
-        private static readonly string declareSql = String.Format(
-            CultureInfo.CurrentCulture, "CREATE TABLE {0}(x);",
-            typeof(SQLiteModuleCommon).Name);
+        private static readonly string declareSql =
+            UnsafeNativeMethods.StringFormat(
+                CultureInfo.CurrentCulture, "CREATE TABLE {0}(x);",
+                typeof(SQLiteModuleCommon).Name);
         #endregion
 
         ///////////////////////////////////////////////////////////////////////
@@ -118,8 +119,9 @@ namespace System.Data.SQLite
         {
             if (type != null)
             {
-                SetCursorError(cursor,
-                    String.Format("not a \"{0}\" cursor", type));
+                SetCursorError(cursor, UnsafeNativeMethods.StringFormat(
+                    CultureInfo.CurrentCulture, "not a \"{0}\" cursor",
+                    type));
             }
             else
             {
