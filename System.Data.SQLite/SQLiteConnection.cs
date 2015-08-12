@@ -2386,7 +2386,9 @@ namespace System.Data.SQLite
 
         for (int index = 0; index < length; index++)
 #if NET_COMPACT_20
-            result.Append(UnsafeNativeMethods.StringFormat("{0:x2}", array[index]));
+            result.Append(UnsafeNativeMethods.StringFormat(
+                CultureInfo.InvariantCulture,
+                "{0:x2}", array[index]));
 #else
             result.AppendFormat("{0:x2}", array[index]);
 #endif
