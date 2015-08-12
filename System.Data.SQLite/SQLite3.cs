@@ -1535,6 +1535,7 @@ namespace System.Data.SQLite
 #elif !SQLITE_STANDARD
         SQLiteErrorCode n = UnsafeNativeMethods.sqlite3_bind_double_interop(handle, index, ref value);
 #else
+        SQLiteErrorCode n = SQLiteErrorCode.Ok;
         throw new NotImplementedException();
 #endif
         if (n != SQLiteErrorCode.Ok) throw new SQLiteException(n, GetLastError());
@@ -1599,6 +1600,7 @@ namespace System.Data.SQLite
 #elif !SQLITE_STANDARD
         SQLiteErrorCode n = UnsafeNativeMethods.sqlite3_bind_int64_interop(handle, index, ref value);
 #else
+        SQLiteErrorCode n = SQLiteErrorCode.Ok;
         throw new NotImplementedException();
 #endif
         if (n != SQLiteErrorCode.Ok) throw new SQLiteException(n, GetLastError());
@@ -1618,6 +1620,7 @@ namespace System.Data.SQLite
 #elif !SQLITE_STANDARD
         SQLiteErrorCode n = UnsafeNativeMethods.sqlite3_bind_uint64_interop(handle, index, ref value);
 #else
+        SQLiteErrorCode n = SQLiteErrorCode.Ok;
         throw new NotImplementedException();
 #endif
         if (n != SQLiteErrorCode.Ok) throw new SQLiteException(n, GetLastError());
@@ -1687,6 +1690,7 @@ namespace System.Data.SQLite
 #elif !SQLITE_STANDARD
                     SQLiteErrorCode n = UnsafeNativeMethods.sqlite3_bind_int64_interop(handle, index, ref value);
 #else
+                    SQLiteErrorCode n = SQLiteErrorCode.Ok;
                     throw new NotImplementedException();
 #endif
                     if (n != SQLiteErrorCode.Ok) throw new SQLiteException(n, GetLastError());
@@ -1706,6 +1710,7 @@ namespace System.Data.SQLite
 #elif !SQLITE_STANDARD
                     SQLiteErrorCode n = UnsafeNativeMethods.sqlite3_bind_double_interop(handle, index, ref value);
 #else
+                    SQLiteErrorCode n = SQLiteErrorCode.Ok;
                     throw new NotImplementedException();
 #endif
                     if (n != SQLiteErrorCode.Ok) throw new SQLiteException(n, GetLastError());
@@ -1725,6 +1730,7 @@ namespace System.Data.SQLite
 #elif !SQLITE_STANDARD
                     SQLiteErrorCode n = UnsafeNativeMethods.sqlite3_bind_int64_interop(handle, index, ref value);
 #else
+                    SQLiteErrorCode n = SQLiteErrorCode.Ok;
                     throw new NotImplementedException();
 #endif
                     if (n != SQLiteErrorCode.Ok) throw new SQLiteException(n, GetLastError());

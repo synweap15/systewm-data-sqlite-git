@@ -881,7 +881,7 @@ namespace System.Data.SQLite
       }
 #endif
 
-#if INTEROP_LOG
+#if USE_INTEROP_DLL && INTEROP_LOG
       if (UnsafeNativeMethods.sqlite3_config_log_interop() == SQLiteErrorCode.Ok)
       {
           UnsafeNativeMethods.sqlite3_log(
