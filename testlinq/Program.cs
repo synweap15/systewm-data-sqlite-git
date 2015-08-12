@@ -146,10 +146,12 @@ namespace testlinq
 
                       return EFTransactionTest(value);
                   }
+#if NET_40 || NET_45 || NET_451 || NET_46
               case "insert":
                   {
                       return InsertTest();
                   }
+#endif
               case "update":
                   {
                       return UpdateTest();
@@ -556,6 +558,7 @@ namespace testlinq
           return 0;
       }
 
+#if NET_40 || NET_45 || NET_451 || NET_46
       //
       // NOTE: Used to test the INSERT fix (i.e. an extra semi-colon in
       //       the SQL statement after the actual INSERT statement in
@@ -606,6 +609,7 @@ namespace testlinq
 
           return 0;
       }
+#endif
 
       //
       // NOTE: Used to test the UPDATE fix (i.e. the missing semi-colon

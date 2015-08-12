@@ -29,8 +29,8 @@ runTest {test tkt-964063da16-1.1 {pre-existing connection flags} -body {
   $connection Flags
 } -cleanup {
   unset -nocomplain connection
-} -constraints {eagle command.object SQLite System.Data.SQLite} -result \
-{Default}}
+} -constraints {eagle command.object SQLite System.Data.SQLite} -match regexp \
+-result {^Default|LogCallbackException$}}
 
 ###############################################################################
 
@@ -58,7 +58,8 @@ runTest {test tkt-964063da16-1.3 {pre-existing connection flags} -body {
 } -cleanup {
   unset -nocomplain connection
 } -constraints {eagle command.object SQLite System.Data.SQLite} -match regexp \
--result {^(?:Default, NoExtensionFunctions|NoExtensionFunctions, Default)$}}
+-result {^Default, NoExtensionFunctions|NoExtensionFunctions,\
+Default|LogCallbackException, NoExtensionFunctions$}}
 
 ###############################################################################
 

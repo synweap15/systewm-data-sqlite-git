@@ -1574,7 +1574,7 @@ runTest {test data-1.29 {LINQ ISQLiteSchemaExtensions.BuildTempSchema} -setup {
   freeDbConnection
 
   unset -nocomplain providerServices connection db fileName
-} -constraints {eagle command.object SQLite System.Data.SQLite\
+} -constraints {eagle monoToDo command.object SQLite System.Data.SQLite\
 System.Data.SQLite.Linq} -result {}}
 
 ###############################################################################
@@ -1596,7 +1596,7 @@ runTest {test data-1.30 {EF6 ISQLiteSchemaExtensions.BuildTempSchema} -setup {
   freeDbConnection
 
   unset -nocomplain providerServices connection db fileName
-} -constraints {eagle command.object SQLite System.Data.SQLite\
+} -constraints {eagle monoToDo command.object SQLite System.Data.SQLite\
 System.Data.SQLite.EF6} -result {}}
 
 ###############################################################################
@@ -3173,7 +3173,8 @@ runTest {test data-1.68 {unset env(DefaultFlags_SQLiteConnection)} -setup {
 
   unset -nocomplain connection db fileName
 } -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
-System.Data.SQLite} -result {Default Default}}
+System.Data.SQLite} -match regexp -result \
+{^Default Default|LogCallbackException LogCallbackException$}}
 
 ###############################################################################
 

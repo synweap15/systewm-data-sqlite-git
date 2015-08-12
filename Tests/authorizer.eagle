@@ -124,7 +124,8 @@ runTest {test authorizer-1.1 {SQLiteConnection Authorize event} -setup {
   }
   lappend results [isTableInDb tDeny]
 
-  set results
+  string map \
+      [list "SQLiteException (0x80004005):" "SQLiteException:"] $results
 } -cleanup {
   catch {object invoke $connection remove_Authorize $callback}
   catch {object removecallback $callback}
@@ -161,7 +162,7 @@ BEGIN s1 {} {}} {0 Savepoint RELEASE s1 {} {}}} 0 -1} {Attach {{0 Attach\
 :memory: {} {} {}}} 0 -1} {Detach {{0 Detach d1 {} {} {}}} 0 -1} {CreateVtable\
 {{0 CreateVtable t3 fts4 main {}}} 0 0} {DropVtable {{0 DropVtable t3 fts4 main\
 {}}} 0 0} {CreateTable {{0 CreateTable tDeny {} main {}}} 1\
-{System.Data.SQLite.SQLiteException (0x80004005): authorization denied}} False}}
+{System.Data.SQLite.SQLiteException: authorization denied}} False}}
 
 ###############################################################################
 
