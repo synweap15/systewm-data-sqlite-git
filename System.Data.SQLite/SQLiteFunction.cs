@@ -279,9 +279,9 @@ namespace System.Data.SQLite
     /// <summary>
     /// User-defined collating sequences override this method to provide a custom string sorting algorithm.
     /// </summary>
-    /// <param name="param1">The first string to compare</param>
-    /// <param name="param2">The second strnig to compare</param>
-    /// <returns>1 if param1 is greater than param2, 0 if they are equal, or -1 if param1 is less than param2</returns>
+    /// <param name="param1">The first string to compare.</param>
+    /// <param name="param2">The second strnig to compare.</param>
+    /// <returns>1 if param1 is greater than param2, 0 if they are equal, or -1 if param1 is less than param2.</returns>
     public virtual int Compare(string param1, string param2)
     {
       CheckDisposed();
@@ -1081,7 +1081,101 @@ namespace System.Data.SQLite
     }
   }
 
+  /////////////////////////////////////////////////////////////////////////////
 
+  /// <summary>
+  /// This <see cref="Delegate" /> type is used with the
+  /// <see cref="SQLiteDelegateFunction.Invoke" /> method.
+  /// </summary>
+  /// <param name="param0">
+  /// This is always the string literal "Invoke".
+  /// </param>
+  /// <param name="args">
+  /// The arguments for the scalar function.
+  /// </param>
+  /// <returns>
+  /// The result of the scalar function.
+  /// </returns>
+  public delegate object SQLiteInvokeDelegate(
+    string param0,
+    object[] args
+  );
+
+  /////////////////////////////////////////////////////////////////////////////
+
+  /// <summary>
+  /// This <see cref="Delegate" /> type is used with the
+  /// <see cref="SQLiteDelegateFunction.Step" /> method.
+  /// </summary>
+  /// <param name="param0">
+  /// This is always the string literal "Step".
+  /// </param>
+  /// <param name="args">
+  /// The arguments for the aggregate function.
+  /// </param>
+  /// <param name="stepNumber">
+  /// The step number (one based).  This is incrememted each time the
+  /// <see cref="SQLiteDelegateFunction.Step" /> method is called.
+  /// </param>
+  /// <param name="contextData">
+  /// A placeholder for implementers to store contextual data pertaining
+  /// to the current context.
+  /// </param>
+  public delegate void SQLiteStepDelegate(
+    string param0,
+    object[] args,
+    int stepNumber,
+    ref object contextData
+  );
+
+  /////////////////////////////////////////////////////////////////////////////
+
+  /// <summary>
+  /// This <see cref="Delegate" /> type is used with the
+  /// <see cref="SQLiteDelegateFunction.Final" /> method.
+  /// </summary>
+  /// <param name="param0">
+  /// This is always the string literal "Final".
+  /// </param>
+  /// <param name="contextData">
+  /// A placeholder for implementers to store contextual data pertaining
+  /// to the current context.
+  /// </param>
+  /// <returns>
+  /// The result of the aggregate function.
+  /// </returns>
+  public delegate object SQLiteFinalDelegate(
+    string param0,
+    object contextData
+  );
+
+  /////////////////////////////////////////////////////////////////////////////
+
+  /// <summary>
+  /// This <see cref="Delegate" /> type is used with the
+  /// <see cref="SQLiteDelegateFunction.Compare" /> method.
+  /// </summary>
+  /// <param name="param0">
+  /// This is always the string literal "Compare".
+  /// </param>
+  /// <param name="param1">
+  /// The first string to compare.
+  /// </param>
+  /// <param name="param2">
+  /// The second strnig to compare.
+  /// </param>
+  /// <returns>
+  /// A positive integer if the <paramref name="param1" /> parameter is
+  /// greater than the <paramref name="param2" /> parameter, a negative
+  /// integer if the <paramref name="param1" /> parameter is less than
+  /// the <paramref name="param2" /> parameter, or zero if they are
+  /// equal.
+  /// </returns>
+  public delegate int SQLiteCompareDelegate(
+    string param0,
+    string param1,
+    string param2
+  );
 
   /////////////////////////////////////////////////////////////////////////////
 
@@ -1154,23 +1248,22 @@ namespace System.Data.SQLite
       /// <param name="args">
       /// The original arguments received by the <see cref="Invoke" /> method.
       /// </param>
+      /// <param name="earlyBound">
+      /// Non-zero if the returned arguments are going to be used with the
+      /// <see cref="SQLiteInvokeDelegate" /> type; otherwise, zero.
+      /// </param>
       /// <returns>
       /// The arguments to pass to the configured <see cref="Delegate" />.
       /// </returns>
       protected virtual object[] GetInvokeArgs(
-          object[] args
+          object[] args,
+          bool earlyBound
           ) /* CANNOT RETURN NULL */
       {
-          if (args == null)
-              return new object[] { "Invoke" };
+          object[] newArgs = new object[] { "Invoke", args };
 
-          int length = args.Length;
-          object[] newArgs = new object[length + 1];
-
-          newArgs[0] = "Invoke";
-
-          for (int index = 0; index < length; index++)
-              newArgs[index + 1] = args[index];
+          if (!earlyBound)
+              newArgs = new object[] { newArgs }; // WRAP
 
           return newArgs;
       }
@@ -1193,33 +1286,69 @@ namespace System.Data.SQLite
       /// A placeholder for implementers to store contextual data pertaining
       /// to the current context.
       /// </param>
+      /// <param name="earlyBound">
+      /// Non-zero if the returned arguments are going to be used with the
+      /// <see cref="SQLiteStepDelegate" /> type; otherwise, zero.
+      /// </param>
       /// <returns>
       /// The arguments to pass to the configured <see cref="Delegate" />.
       /// </returns>
       protected virtual object[] GetStepArgs(
           object[] args,
           int stepNumber,
-          object contextData
+          object contextData,
+          bool earlyBound
           ) /* CANNOT RETURN NULL */
       {
-          int length = 0;
+          object[] newArgs = new object[] {
+              "Step", args, stepNumber, contextData
+          };
 
-          if (args != null)
-              length = args.Length;
-
-          int newLength = length + 3; /* "Step", stepNumber, contextData */
-          object[] newArgs = new object[newLength];
-
-          newArgs[0] = "Step";
-
-          if (args != null)
-              for (int index = 0; index < length; index++)
-                  newArgs[index + 1] = args[index];
-
-          newArgs[newLength - 2] = stepNumber;
-          newArgs[newLength - 1] = contextData;
+          if (!earlyBound)
+              newArgs = new object[] { newArgs }; // WRAP
 
           return newArgs;
+      }
+
+      /////////////////////////////////////////////////////////////////////////
+
+      /// <summary>
+      /// Updates the output arguments for the <see cref="Step" /> method,
+      /// using an <see cref="Array" /> of <see cref="Object" />.  The first
+      /// argument is always the literal string "Step".  Currently, only the
+      /// <paramref name="contextData" /> parameter is updated.
+      /// </summary>
+      /// <param name="args">
+      /// The original arguments received by the <see cref="Step" /> method.
+      /// </param>
+      /// <param name="contextData">
+      /// A placeholder for implementers to store contextual data pertaining
+      /// to the current context.
+      /// </param>
+      /// <param name="earlyBound">
+      /// Non-zero if the returned arguments are going to be used with the
+      /// <see cref="SQLiteStepDelegate" /> type; otherwise, zero.
+      /// </param>
+      /// <returns>
+      /// The arguments to pass to the configured <see cref="Delegate" />.
+      /// </returns>
+      protected virtual void UpdateStepArgs(
+          object[] args,
+          ref object contextData,
+          bool earlyBound
+          ) /* CANNOT RETURN NULL */
+      {
+          object[] newArgs;
+
+          if (earlyBound)
+              newArgs = args;
+          else
+              newArgs = args[0] as object[];
+
+          if (newArgs == null)
+              return;
+
+          contextData = newArgs[newArgs.Length - 1];
       }
 
       /////////////////////////////////////////////////////////////////////////
@@ -1233,14 +1362,24 @@ namespace System.Data.SQLite
       /// A placeholder for implementers to store contextual data pertaining
       /// to the current context.
       /// </param>
+      /// <param name="earlyBound">
+      /// Non-zero if the returned arguments are going to be used with the
+      /// <see cref="SQLiteFinalDelegate" /> type; otherwise, zero.
+      /// </param>
       /// <returns>
       /// The arguments to pass to the configured <see cref="Delegate" />.
       /// </returns>
       protected virtual object[] GetFinalArgs(
-          object contextData
+          object contextData,
+          bool earlyBound
           ) /* CANNOT RETURN NULL */
       {
-          return new object[] { "Final", contextData };
+          object[] newArgs = new object[] { "Final", contextData };
+
+          if (!earlyBound)
+              newArgs = new object[] { newArgs }; // WRAP
+
+          return newArgs;
       }
 
       /////////////////////////////////////////////////////////////////////////
@@ -1256,15 +1395,25 @@ namespace System.Data.SQLite
       /// <param name="param2">
       /// The second strnig to compare.
       /// </param>
+      /// <param name="earlyBound">
+      /// Non-zero if the returned arguments are going to be used with the
+      /// <see cref="SQLiteCompareDelegate" /> type; otherwise, zero.
+      /// </param>
       /// <returns>
       /// The arguments to pass to the configured <see cref="Delegate" />.
       /// </returns>
       protected virtual object[] GetCompareArgs(
           string param1,
-          string param2
+          string param2,
+          bool earlyBound
           ) /* CANNOT RETURN NULL */
       {
-          return new object[] { "Compare", param1, param2 };
+          object[] newArgs = new object[] { "Compare", param1, param2 };
+
+          if (!earlyBound)
+              newArgs = new object[] { newArgs }; // WRAP
+
+          return newArgs;
       }
       #endregion
 
@@ -1293,9 +1442,7 @@ namespace System.Data.SQLite
       /// details.
       /// </summary>
       /// <param name="args">
-      /// The arguments for the scalar function.  The first argument is always
-      /// the literal string "Invoke".  The remaining arguments, if any, are
-      /// passed exactly as they are received.
+      /// The arguments for the scalar function.
       /// </param>
       /// <returns>
       /// The result of the scalar function.
@@ -1307,7 +1454,18 @@ namespace System.Data.SQLite
           if (callback == null)
               throw new InvalidOperationException(NoCallbackError);
 
-          return callback.DynamicInvoke(GetInvokeArgs(args)); /* throw */
+          SQLiteInvokeDelegate invokeDelegate =
+              callback as SQLiteInvokeDelegate;
+
+          if (invokeDelegate != null)
+          {
+              return invokeDelegate.Invoke("Invoke", args); /* throw */
+          }
+          else
+          {
+              return callback.DynamicInvoke(
+                  GetInvokeArgs(args, false)); /* throw */
+          }
       }
 
       /////////////////////////////////////////////////////////////////////////
@@ -1318,9 +1476,7 @@ namespace System.Data.SQLite
       /// for more details.
       /// </summary>
       /// <param name="args">
-      /// The arguments for the aggregate function.  The first argument is
-      /// always the literal string "Step".  The remaining arguments, if
-      /// any, are passed exactly as they are received.
+      /// The arguments for the aggregate function.
       /// </param>
       /// <param name="stepNumber">
       /// The step number (one based).  This is incrememted each time the
@@ -1339,12 +1495,23 @@ namespace System.Data.SQLite
           if (callback == null)
               throw new InvalidOperationException(NoCallbackError);
 
-          object[] newArgs = GetStepArgs(args, stepNumber, contextData);
+          SQLiteStepDelegate stepDelegate = callback as SQLiteStepDelegate;
 
-          /* IGNORED */
-          callback.DynamicInvoke(newArgs); /* throw */
+          if (stepDelegate != null)
+          {
+              stepDelegate.Invoke(
+                  "Step", args, stepNumber, ref contextData); /* throw */
+          }
+          else
+          {
+              object[] newArgs = GetStepArgs(
+                  args, stepNumber, contextData, false);
 
-          contextData = newArgs[newArgs.Length - 1]; /* out */
+              /* IGNORED */
+              callback.DynamicInvoke(newArgs); /* throw */
+
+              UpdateStepArgs(newArgs, ref contextData, false);
+          }
       }
 
       /////////////////////////////////////////////////////////////////////////
@@ -1368,7 +1535,17 @@ namespace System.Data.SQLite
           if (callback == null)
               throw new InvalidOperationException(NoCallbackError);
 
-          return callback.DynamicInvoke(GetFinalArgs(contextData)); /* throw */
+          SQLiteFinalDelegate finalDelegate = callback as SQLiteFinalDelegate;
+
+          if (finalDelegate != null)
+          {
+              return finalDelegate.Invoke("Final", contextData);
+          }
+          else
+          {
+              return callback.DynamicInvoke(GetFinalArgs(
+                  contextData, callback is SQLiteFinalDelegate)); /* throw */
+          }
       }
 
       /////////////////////////////////////////////////////////////////////////
@@ -1399,14 +1576,24 @@ namespace System.Data.SQLite
           if (callback == null)
               throw new InvalidOperationException(NoCallbackError);
 
-          object[] newArgs = GetCompareArgs(param1, param2);
-          object result = callback.DynamicInvoke(newArgs); /* throw */
+          SQLiteCompareDelegate compareDelegate =
+              callback as SQLiteCompareDelegate;
 
-          if (result is int)
-              return (int)result;
+          if (compareDelegate != null)
+          {
+              return compareDelegate.Invoke("Compare", param1, param2);
+          }
+          else
+          {
+              object result = callback.DynamicInvoke(GetCompareArgs(
+                  param1, param2, false)); /* throw */
 
-          throw new InvalidOperationException(String.Format(
-              ResultInt32Error, newArgs[0]));
+              if (result is int)
+                  return (int)result;
+
+              throw new InvalidOperationException(String.Format(
+                  ResultInt32Error, "Compare"));
+          }
       }
       #endregion
   }
