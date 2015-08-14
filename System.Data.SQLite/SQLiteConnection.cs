@@ -298,7 +298,14 @@ namespace System.Data.SQLite
   /// </item>
   /// <item>
   /// <description>Cache Size</description>
-  /// <description>{size in bytes}</description>
+  /// <description>
+  /// If the argument N is positive then the suggested cache size is set to N.
+  /// If the argument N is negative, then the number of cache pages is adjusted
+  /// to use approximately abs(N*1024) bytes of memory. Backwards compatibility
+  /// note: The behavior of cache_size with a negative N was different in SQLite
+  /// versions prior to 3.7.10. In version 3.7.9 and earlier, the number of
+  /// pages in the cache was set to the absolute value of N.
+  /// </description>
   /// <description>N</description>
   /// <description>2000</description>
   /// </item>
