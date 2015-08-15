@@ -30,6 +30,9 @@ namespace System.Data.SQLite
     ///////////////////////////////////////////////////////////////////////////////////////////////
 
     #region IDisposable Members
+    /// <summary>
+    /// Cleans up resources (native and managed) associated with the current instance.
+    /// </summary>
     public void Dispose()
     {
         Dispose(true);
@@ -74,6 +77,9 @@ namespace System.Data.SQLite
     ///////////////////////////////////////////////////////////////////////////////////////////////
 
     #region Destructor
+    /// <summary>
+    /// Cleans up resources associated with the current instance.
+    /// </summary>
     ~SQLiteFactory()
     {
         Dispose(false);

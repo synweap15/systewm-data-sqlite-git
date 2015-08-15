@@ -201,6 +201,9 @@ namespace System.Data.SQLite
     ///////////////////////////////////////////////////////////////////////////////////////////////
 
     #region Destructor
+    /// <summary>
+    /// Cleans up resources associated with the current instance.
+    /// </summary>
     ~SQLiteFunction()
     {
         Dispose(false);
@@ -1021,6 +1024,12 @@ namespace System.Data.SQLite
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
 
+    /// <summary>
+    /// Cleans up resources (native and managed) associated with the current instance.
+    /// </summary>
+    /// <param name="disposing">
+    /// Zero when being disposed via garbage collection; otherwise, non-zero.
+    /// </param>
     protected override void Dispose(bool disposing)
     {
         try

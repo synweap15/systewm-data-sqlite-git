@@ -60,7 +60,7 @@ namespace System.Data.SQLite
             "3.5.0.0";
 #endif
 
-        _dbProviderServicesType = Type.GetType(String.Format(CultureInfo.InvariantCulture, "System.Data.Common.DbProviderServices, System.Data.Entity, Version={0}, Culture=neutral, PublicKeyToken=b77a5c561934e089", version), false);
+        _dbProviderServicesType = Type.GetType(UnsafeNativeMethods.StringFormat(CultureInfo.InvariantCulture, "System.Data.Common.DbProviderServices, System.Data.Entity, Version={0}, Culture=neutral, PublicKeyToken=b77a5c561934e089", version), false);
     }
 
     /// <summary>
