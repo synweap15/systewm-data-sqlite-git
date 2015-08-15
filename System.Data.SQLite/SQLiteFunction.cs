@@ -1277,7 +1277,7 @@ namespace System.Data.SQLite
       protected virtual object[] GetInvokeArgs(
           object[] args,
           bool earlyBound
-          ) /* CANNOT RETURN NULL */
+          )
       {
           object[] newArgs = new object[] { "Invoke", args };
 
@@ -1317,7 +1317,7 @@ namespace System.Data.SQLite
           int stepNumber,
           object contextData,
           bool earlyBound
-          ) /* CANNOT RETURN NULL */
+          )
       {
           object[] newArgs = new object[] {
               "Step", args, stepNumber, contextData
@@ -1355,7 +1355,7 @@ namespace System.Data.SQLite
           object[] args,
           ref object contextData,
           bool earlyBound
-          ) /* CANNOT RETURN NULL */
+          )
       {
           object[] newArgs;
 
@@ -1391,7 +1391,7 @@ namespace System.Data.SQLite
       protected virtual object[] GetFinalArgs(
           object contextData,
           bool earlyBound
-          ) /* CANNOT RETURN NULL */
+          )
       {
           object[] newArgs = new object[] { "Final", contextData };
 
@@ -1425,7 +1425,7 @@ namespace System.Data.SQLite
           string param1,
           string param2,
           bool earlyBound
-          ) /* CANNOT RETURN NULL */
+          )
       {
           object[] newArgs = new object[] { "Compare", param1, param2 };
 
