@@ -1392,11 +1392,11 @@ namespace System.Data.SQLite
     /// instance to this connection.
     /// </summary>
     /// <param name="functionAttribute">
-    /// The <see cref="SQLiteFunctionAttribute"/> object instance containing
+    /// The <see cref="SQLiteFunctionAttribute" /> object instance containing
     /// the metadata for the function to be bound.
     /// </param>
     /// <param name="function">
-    /// The <see cref="SQLiteFunction"/> object instance that implements the
+    /// The <see cref="SQLiteFunction" /> object instance that implements the
     /// function to be bound.
     /// </param>
     public void BindFunction(
@@ -1420,7 +1420,7 @@ namespace System.Data.SQLite
     /// instance to this connection.
     /// </summary>
     /// <param name="functionAttribute">
-    /// The <see cref="SQLiteFunctionAttribute"/> object instance containing
+    /// The <see cref="SQLiteFunctionAttribute" /> object instance containing
     /// the metadata for the function to be unbound.
     /// </param>
     /// <returns>Non-zero if the function was unbound.</returns>

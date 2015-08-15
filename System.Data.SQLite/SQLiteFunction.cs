@@ -67,7 +67,7 @@ namespace System.Data.SQLite
     /// </summary>
     private SQLiteFinalCallback  _FinalFunc;
     /// <summary>
-    /// Holds a reference to the callback function for collation sequences
+    /// Holds a reference to the callback function for collating sequences
     /// </summary>
     private SQLiteCollation _CompareFunc;
 
@@ -277,11 +277,11 @@ namespace System.Data.SQLite
     }
 
     /// <summary>
-    /// User-defined collation sequences override this method to provide a custom string sorting algorithm.
+    /// User-defined collating sequences override this method to provide a custom string sorting algorithm.
     /// </summary>
-    /// <param name="param1">The first string to compare</param>
-    /// <param name="param2">The second strnig to compare</param>
-    /// <returns>1 if param1 is greater than param2, 0 if they are equal, or -1 if param1 is less than param2</returns>
+    /// <param name="param1">The first string to compare.</param>
+    /// <param name="param2">The second strnig to compare.</param>
+    /// <returns>1 if param1 is greater than param2, 0 if they are equal, or -1 if param1 is less than param2.</returns>
     public virtual int Compare(string param1, string param2)
     {
       CheckDisposed();
@@ -430,7 +430,7 @@ namespace System.Data.SQLite
     }
 
     /// <summary>
-    /// Internal collation sequence function, which wraps up the raw string pointers and executes the Compare() virtual function.
+    /// Internal collating sequence function, which wraps up the raw string pointers and executes the Compare() virtual function.
     /// WARNING: Must not throw exceptions.
     /// </summary>
     /// <param name="ptr">Not used</param>
@@ -477,7 +477,7 @@ namespace System.Data.SQLite
     }
 
     /// <summary>
-    /// Internal collation sequence function, which wraps up the raw string pointers and executes the Compare() virtual function.
+    /// Internal collating sequence function, which wraps up the raw string pointers and executes the Compare() virtual function.
     /// WARNING: Must not throw exceptions.
     /// </summary>
     /// <param name="ptr">Not used</param>
@@ -728,19 +728,19 @@ namespace System.Data.SQLite
     /// <param name="typ">The type of the function to register</param>
     public static void RegisterFunction(Type typ)
     {
-      object[] arAtt = typ.GetCustomAttributes(typeof(SQLiteFunctionAttribute), false);
-      int u = arAtt.Length;
-      SQLiteFunctionAttribute at;
+        object[] arAtt = typ.GetCustomAttributes(
+            typeof(SQLiteFunctionAttribute), false);
 
-      for (int y = 0; y < u; y++)
-      {
-        at = arAtt[y] as SQLiteFunctionAttribute;
-        if (at != null)
+        for (int y = 0; y < arAtt.Length; y++)
         {
-          at.InstanceType = typ;
-          _registeredFunctions.Add(at, null);
+            SQLiteFunctionAttribute at = arAtt[y] as SQLiteFunctionAttribute;
+
+            if (at == null)
+                continue;
+
+            at.InstanceType = typ;
+            _registeredFunctions.Add(at, null);
         }
-      }
     }
 
     /// <summary>
@@ -861,7 +861,7 @@ namespace System.Data.SQLite
     }
 
     /// <summary>
-    /// This function binds a user-defined functions to a connection.
+    /// This function binds a user-defined function to a connection.
     /// </summary>
     /// <param name="sqliteBase">
     /// The <see cref="SQLiteBase" /> object instance associated with the
@@ -1067,7 +1067,7 @@ namespace System.Data.SQLite
     /// </summary>
     Aggregate = 1,
     /// <summary>
-    /// Collation sequences are used to sort textual data in a custom manner, and appear in an ORDER BY clause.  Typically text in an ORDER BY is
+    /// Collating sequences are used to sort textual data in a custom manner, and appear in an ORDER BY clause.  Typically text in an ORDER BY is
     /// sorted using a straight case-insensitive comparison function.  Custom collating sequences can be used to alter the behavior of text sorting
     /// in a user-defined manner.
     /// </summary>
@@ -1093,7 +1093,7 @@ namespace System.Data.SQLite
 #endif
   internal delegate void SQLiteFinalCallback(IntPtr context);
   /// <summary>
-  /// Internal callback delegate for implementing collation sequences
+  /// Internal callback delegate for implementing collating sequences
   /// </summary>
   /// <param name="puser">Not used</param>
   /// <param name="len1">Length of the string pv1</param>
