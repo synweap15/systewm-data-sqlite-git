@@ -3030,7 +3030,7 @@ namespace System.Data.SQLite
 #if !NET_COMPACT_20 && TRACE_HANDLE
                 try
                 {
-                    Trace.WriteLine(StringFormat(
+                    Trace.WriteLine(UnsafeNativeMethods.StringFormat(
                         CultureInfo.CurrentCulture,
                         "CloseConnection: {0}", localHandle)); /* throw */
                 }
@@ -3065,7 +3065,7 @@ namespace System.Data.SQLite
 #if !NET_COMPACT_20 && TRACE_HANDLE
                 try
                 {
-                    Trace.WriteLine(StringFormat(
+                    Trace.WriteLine(UnsafeNativeMethods.StringFormat(
                         CultureInfo.CurrentCulture,
                         "CloseConnection: {0}, exception: {1}",
                         handle, e)); /* throw */
@@ -3218,7 +3218,7 @@ namespace System.Data.SQLite
 #if !NET_COMPACT_20 && TRACE_HANDLE
                 try
                 {
-                    Trace.WriteLine(StringFormat(
+                    Trace.WriteLine(UnsafeNativeMethods.StringFormat(
                         CultureInfo.CurrentCulture,
                         "FinalizeStatement: {0}", localHandle)); /* throw */
                 }
@@ -3253,7 +3253,7 @@ namespace System.Data.SQLite
 #if !NET_COMPACT_20 && TRACE_HANDLE
                 try
                 {
-                    Trace.WriteLine(StringFormat(
+                    Trace.WriteLine(UnsafeNativeMethods.StringFormat(
                         CultureInfo.CurrentCulture,
                         "FinalizeStatement: {0}, exception: {1}",
                         handle, e)); /* throw */
@@ -3391,7 +3391,7 @@ namespace System.Data.SQLite
 #if !NET_COMPACT_20 && TRACE_HANDLE
                 try
                 {
-                    Trace.WriteLine(StringFormat(
+                    Trace.WriteLine(UnsafeNativeMethods.StringFormat(
                         CultureInfo.CurrentCulture,
                         "FinishBackup: {0}", localHandle)); /* throw */
                 }
@@ -3426,7 +3426,7 @@ namespace System.Data.SQLite
 #if !NET_COMPACT_20 && TRACE_HANDLE
                 try
                 {
-                    Trace.WriteLine(StringFormat(
+                    Trace.WriteLine(UnsafeNativeMethods.StringFormat(
                         CultureInfo.CurrentCulture,
                         "FinishBackup: {0}, exception: {1}",
                         handle, e)); /* throw */
