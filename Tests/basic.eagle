@@ -1574,7 +1574,7 @@ runTest {test data-1.29 {LINQ ISQLiteSchemaExtensions.BuildTempSchema} -setup {
   freeDbConnection
 
   unset -nocomplain providerServices connection db fileName
-} -constraints {eagle command.object SQLite System.Data.SQLite\
+} -constraints {eagle monoToDo command.object SQLite System.Data.SQLite\
 System.Data.SQLite.Linq} -result {}}
 
 ###############################################################################
@@ -1596,7 +1596,7 @@ runTest {test data-1.30 {EF6 ISQLiteSchemaExtensions.BuildTempSchema} -setup {
   freeDbConnection
 
   unset -nocomplain providerServices connection db fileName
-} -constraints {eagle command.object SQLite System.Data.SQLite\
+} -constraints {eagle monoToDo command.object SQLite System.Data.SQLite\
 System.Data.SQLite.EF6} -result {}}
 
 ###############################################################################
@@ -2383,10 +2383,11 @@ runTest {test data-1.49 {NoExtensionFunctions connection flag} -setup {
   cleanupDb $fileName
 
   unset -nocomplain output result db fileName
-} -constraints \
-{eagle monoBug28 command.sql compile.DATA SQLite System.Data.SQLite} -match \
-regexp -result {^0 12341234 1 \{System\.Data\.SQLite\.SQLiteException\
-\(0x80004005\): SQL logic error or missing database.*?\} 0 1234123412341234$}}
+} -constraints {eagle monoBug28 command.sql compile.DATA SQLite\
+System.Data.SQLite SQLiteInterop\
+defineConstant.System.Data.SQLite.INTEROP_EXTENSION_FUNCTIONS} -match regexp \
+-result {^0 12341234 1 \{System\.Data\.SQLite\.SQLiteException \(0x80004005\):\
+SQL logic error or missing database.*?\} 0 1234123412341234$}}
 
 ###############################################################################
 
@@ -2698,7 +2699,7 @@ runTest {test data-1.56 {totype extension} -setup {
 
   unset -nocomplain db fileName
 } -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
-System.Data.SQLite} -result {1 {} 1.01 {}}}
+System.Data.SQLite SQLiteInterop} -result {1 {} 1.01 {}}}
 
 ###############################################################################
 
@@ -2758,8 +2759,8 @@ runTest {test data-1.57 {regexp extension} -setup {
 
   unset -nocomplain db fileName
 } -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
-System.Data.SQLite} -result {0 1 1 {unmatched '('} 0 1 1 {unmatched '('} 0 0 1\
-{unmatched '('} 0 0 1 {unmatched '('}}}
+System.Data.SQLite SQLiteInterop} -result {0 1 1 {unmatched '('} 0 1 1\
+{unmatched '('} 0 0 1 {unmatched '('} 0 0 1 {unmatched '('}}}
 
 ###############################################################################
 
@@ -2840,7 +2841,7 @@ runTest {test data-1.59 {percentile extension} -setup {
 
   unset -nocomplain db fileName
 } -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
-System.Data.SQLite} -result {0 4 -1 1.75}}
+System.Data.SQLite SQLiteInterop} -result {0 4 -1 1.75}}
 
 ###############################################################################
 
@@ -3172,7 +3173,8 @@ runTest {test data-1.68 {unset env(DefaultFlags_SQLiteConnection)} -setup {
 
   unset -nocomplain connection db fileName
 } -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
-System.Data.SQLite} -result {Default Default}}
+System.Data.SQLite} -match regexp -result \
+{^Default Default|LogCallbackException LogCallbackException$}}
 
 ###############################################################################
 
@@ -3280,9 +3282,9 @@ runTest {test data-1.71 {fts5 extension} -setup {
 
   unset -nocomplain db fileName
 } -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
-System.Data.SQLite} -match regexp -result {^\{fts5: \d{4}-\d{2}-\d{2}\
-\d{2}:\d{2}:\d{2} [0-9a-f]{40}\} \{\} \{\} \{\} \{\} \{\} \{rowid 3 x horse\
-rowid 4 x house\}$}}
+System.Data.SQLite SQLiteInterop} -match regexp -result \
+{^\{fts5: \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} [0-9a-f]{40}\} \{\} \{\} \{\}\
+\{\} \{\} \{rowid 3 x horse rowid 4 x house\}$}}
 
 ###############################################################################
 

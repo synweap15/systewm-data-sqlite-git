@@ -398,22 +398,10 @@
     <li>Change the current directory to &quot;&lt;root&gt;\Setup&quot;.</li>
 
     <li>
-      Enter the following command to set the environment variable used to pass
-      the necessary extra arguments to MSBuild:
-      <br />
-      <br />
-      <b>SET&nbsp;MSBUILD_ARGS=/property:UseInteropDll=false&nbsp;/property:UseSqliteStandard=true</b>
-      <br />
-      <br />
-    </li>
-
-    <li>
       Enter the following command to build the managed-only binaries for Mono:
       <br />
       <br />
-      <b>SET NOUSER=1</b>
-      <br />
-      <b>build.bat&nbsp;ReleaseManagedOnly</b>
+      <b>build_mono.bat</b>
       <br />
       <br />
     </li>

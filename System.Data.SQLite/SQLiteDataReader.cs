@@ -1080,7 +1080,7 @@ namespace System.Data.SQLite
           if (wantDefaultValue)
           {
             // Determine the default value for the column, which sucks because we have to query the schema for each column
-            using (SQLiteCommand cmdTable = new SQLiteCommand(String.Format(CultureInfo.InvariantCulture, "PRAGMA [{0}].TABLE_INFO([{1}])",
+            using (SQLiteCommand cmdTable = new SQLiteCommand(UnsafeNativeMethods.StringFormat(CultureInfo.InvariantCulture, "PRAGMA [{0}].TABLE_INFO([{1}])",
               row[SchemaTableOptionalColumn.BaseCatalogName],
               row[SchemaTableColumn.BaseTableName]
               ), _command.Connection))

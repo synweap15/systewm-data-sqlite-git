@@ -176,7 +176,7 @@ runTest {test speed-1.2 {SQLiteDataReader speed testing} -setup {
   cleanupDb $fileName
 
   unset -nocomplain time sql table column result char db fileName
-} -time true -constraints {eagle monoBug28 command.sql compile.DATA SQLite\
+} -time true -constraints {eagle monoBug40 command.sql compile.DATA SQLite\
 System.Data.SQLite} -result {3 3 3 3}}
 
 ###############################################################################

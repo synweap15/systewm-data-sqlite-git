@@ -23,8 +23,8 @@ if {![info exists no([file tail [info script]])]} then {
   # NOTE: Make sure all the variables used by this prologue are unset.
   #
   unset -nocomplain pkg_dir pattern dummy directory name value exec encoding \
-      host memory stack drive publicKeyToken expr server database timeout \
-      user password percent checkout timeStamp loaded
+      host memory stack drive server database timeout user password percent \
+      checkout timeStamp loaded
 
   #
   # NOTE: Indicate that the test suite is currently running.
@@ -34,10 +34,18 @@ if {![info exists no([file tail [info script]])]} then {
   }
 
   #
+  # NOTE: Set the location of the test suite package, if necessary.
+  #
+  if {![info exists test_all_path]} then {
+    set test_all_path [file normalize [file dirname [info script]]]
+  }
+
+  #
   # NOTE: Set the location of the test suite, if necessary.
   #
   if {![info exists test_path]} then {
-    set test_path [file normalize [file dirname [info script]]]
+    set test_path [file normalize [file join \
+        [file dirname [file dirname $test_all_path]] Library Tests]]
   }
 
   #
@@ -181,7 +189,15 @@ if {![info exists no([file tail [info script]])]} then {
   }
 
   #
-  # NOTE: Make sure our test package path is part of the auto-path.
+  # NOTE: Make sure the test suite package is part of the auto-path.
+  #
+  if {[lsearch -exact $auto_path $test_all_path] == -1} then {
+    lappend auto_path $test_all_path
+  }
+
+  #
+  # NOTE: Make sure the test suite is part of the auto-path.  This is
+  #       now done for legacy compatibility only.
   #
   if {[lsearch -exact $auto_path $test_path] == -1} then {
     lappend auto_path $test_path
@@ -220,17 +236,15 @@ if {![info exists no([file tail [info script]])]} then {
   #       This block requires the "Eagle.Library" package.
   #
   if {[isEagle] && [llength [info commands object]] > 0} then {
-    catch {
-      #
-      # NOTE: Check the name of the current call frame against the one
-      #       that should be used for evaluating this script file.
-      #
-      if {[object invoke -flags +NonPublic \
-              Interpreter.GetActive.CurrentFrame Name] ne \
-          [list source [file normalize [info script]]]} then {
-        unset -nocomplain test_suite_running
-        error "cannot run, current frame is not for this script"
-      }
+    #
+    # NOTE: Check the name of the current call frame against the one
+    #       that should be used for evaluating this script file.
+    #
+    if {[object invoke -flags +NonPublic \
+            Interpreter.GetActive.CurrentFrame Name] ne \
+        [list source [file normalize [info script]]]} then {
+      unset -nocomplain test_suite_running
+      error "cannot run prologue, current frame not for this script"
     }
   }
 
@@ -309,12 +323,14 @@ if {![info exists no([file tail [info script]])]} then {
   set test_flags(-preWait) ""; # default to not waiting.
   set test_flags(-postWait) ""; # default to not waiting.
   set test_flags(-tclsh) ""; # Tcl shell, default to empty.
+  set test_flags(-bad) [list]; # these are the unrecognized arguments.
+  set test_flags(-no) [list]; # default to not having any restrictions.
 
   #
   # NOTE: Check for and process any command line arguments.
   #
   if {[info exists argv]} then {
-    eval processTestArguments test_flags $argv
+    set test_flags(-bad) [eval processTestArguments test_flags false $argv]
 
     if {[info exists test_flags(-no)] && \
         [string length $test_flags(-no)] > 0} then {
@@ -733,6 +749,11 @@ if {![info exists no([file tail [info script]])]} then {
       [expr {[info exists argv] && [string length $argv] > 0 ? \
           $argv : "<none>"}] \n]
 
+  tputs $test_channel [appendArgs "---- unrecognized arguments: " \
+      [expr {[info exists test_flags(-bad)] && \
+          [string length $test_flags(-bad)] > 0 ? \
+              $test_flags(-bad) : "<none>"}] \n]
+
   tputs $test_channel [appendArgs "---- logging to: " \
       [expr {[info exists test_log] && [string length $test_log] > 0 ? \
           [appendArgs \" $test_log \"] : "<none>"}] \n]
@@ -885,74 +906,6 @@ if {![info exists no([file tail [info script]])]} then {
     }
 
     #
-    # NOTE: Has strong name key detection been disabled?
-    #
-    if {![info exists no(strongNameKey)]} then {
-      catch {info engine PublicKeyToken} publicKeyToken
-
-      if {[string length $publicKeyToken] == 0} then {
-        #
-        # NOTE: The Eagle core library is not signed with a strong name key.
-        #       This is not an error, per se; however, it may cause selected
-        #       tests to fail and it should be reported to the user and noted
-        #       in the test suite log file.
-        #
-        addConstraint strongName.none
-
-        if {![info exists no(warningForStrongNameKey)] && \
-            ![haveConstraint quiet]} then {
-          tputs $test_channel \
-              "==== WARNING: no Eagle strong name signature detected...\n"
-        }
-      } else {
-        #
-        # NOTE: Add a test constraint for this specific strong name key.
-        #
-        addConstraint [appendArgs strongName. $publicKeyToken]
-
-        #
-        # BUGBUG: Tcl 8.4 does not seem to like this expression because it
-        #         contains the "ni" operator added in Tcl 8.5 (and Tcl 8.4
-        #         tries to compile it even though it will only be evaluated
-        #         in Eagle).
-        #
-        set expr {$publicKeyToken ni \
-            "29c6297630be05eb 1e22ec67879739a2 358030063a832bc3"}
-
-        if {[expr $expr]} then {
-          #
-          # NOTE: The Eagle core library is strong name signed with a key that
-          #       is not official.  This is also not an error, per se; however,
-          #       it may cause some tests to fail and it should be reported to
-          #       the user and noted in the test suite log file.
-          #
-          addConstraint strongName.unofficial
-
-          if {![info exists no(warningForStrongNameKey)] && \
-              ![haveConstraint quiet]} then {
-            tputs $test_channel [appendArgs \
-                "==== WARNING: unofficial Eagle strong name signature " \
-                "detected: " $publicKeyToken \n]
-          }
-        } else {
-          #
-          # NOTE: Several tests require one of the official strong name keys to
-          #       be used in order for them to pass.
-          #
-          addConstraint strongName.official
-
-          tputs $test_channel [appendArgs \
-              "---- official Eagle strong name signature detected: " \
-              $publicKeyToken \n]
-        }
-
-        unset expr
-      }
-
-      unset publicKeyToken
-    }
-
-    #
     # NOTE: Has administrator detection support been disabled?  We do
     #       this check [nearly] first as it may [eventually] be used
     #       to help determine if other constraints should be skipped.
@@ -1044,6 +997,13 @@ if {![info exists no([file tail [info script]])]} then {
     }
 
     #
+    # NOTE: Has test suite call stack probing been disabled?
+    #
+    if {![info exists no(testCallStack)]} then {
+      checkForTestCallStack $test_channel
+    }
+
+    #
     # NOTE: Has culture detection support been disabled?
     #
     if {![info exists no(culture)]} then {
@@ -1069,6 +1029,13 @@ if {![info exists no([file tail [info script]])]} then {
     #
     if {![info exists no(strongName)]} then {
       checkForStrongName $test_channel
+    }
+
+    #
+    # NOTE: Has strong name key detection been disabled?
+    #
+    if {![info exists no(strongNameKey)]} then {
+      checkForStrongNameKey $test_channel
     }
 
     #
@@ -1617,6 +1584,41 @@ if {![info exists no([file tail [info script]])]} then {
             *TestPermute*
       }
 
+      if {![info exists no(testDynamicCallback)]} then {
+        #
+        # NOTE: For tests "object-8.1??".
+        #
+        checkForObjectMember $test_channel Eagle._Tests.Default \
+            *TestCallDynamicCallback0*
+
+        checkForObjectMember $test_channel Eagle._Tests.Default \
+            *TestCallDynamicCallback1*
+
+        checkForObjectMember $test_channel Eagle._Tests.Default \
+            *TestCallDynamicCallback2*
+
+        checkForObjectMember $test_channel Eagle._Tests.Default \
+            *TestCallDynamicCallback3*
+
+        checkForObjectMember $test_channel Eagle._Tests.Default \
+            *TestGetDynamicCallbacks*
+
+        checkForObjectMember $test_channel Eagle._Tests.Default \
+            *TestCallStaticDynamicCallback0*
+
+        checkForObjectMember $test_channel Eagle._Tests.Default \
+            *TestCallStaticDynamicCallback1*
+
+        checkForObjectMember $test_channel Eagle._Tests.Default \
+            *TestCallStaticDynamicCallback2*
+
+        checkForObjectMember $test_channel Eagle._Tests.Default \
+            *TestCallStaticDynamicCallback3*
+
+        checkForObjectMember $test_channel Eagle._Tests.Default \
+            *TestGetStaticDynamicCallbacks*
+      }
+
       #
       # NOTE: Has DateTime testing support been disabled?
       #
@@ -2119,13 +2121,13 @@ if {![info exists no([file tail [info script]])]} then {
     }
 
     #
-    # NOTE: Has .NET Framework 4.5 testing support been disabled?
+    # NOTE: Has .NET Framework 4.x testing support been disabled?
     #
-    if {![info exists no(netFx45)]} then {
+    if {![info exists no(netFx4x)]} then {
       #
       # NOTE: For test "object-12.1.*".
       #
-      checkForNetFx45 $test_channel
+      checkForNetFx4x $test_channel
     }
 
     #
@@ -2356,6 +2358,13 @@ if {![info exists no([file tail [info script]])]} then {
     }
 
     #
+    # NOTE: For test "benchmark-1.42".
+    #
+    if {![info exists no(pngDump.txt)]} then {
+      checkForFile $test_channel [file join $test_data_path pngDump.txt]
+    }
+
+    #
     # NOTE: For test "garuda-1.1".
     #
     if {![info exists no(pkgAll.tcl)]} then {
@@ -2368,6 +2377,13 @@ if {![info exists no([file tail [info script]])]} then {
     #
     if {![info exists no(bad_subst.txt)]} then {
       checkForFile $test_channel [file join $test_data_path bad_subst.txt]
+    }
+
+    #
+    # NOTE: For test "processIsolation-1.1".
+    #
+    if {![info exists no(isolated.eagle)]} then {
+      checkForFile $test_channel [file join $test_data_path isolated.eagle]
     }
 
     #
@@ -2622,6 +2638,10 @@ if {![info exists no([file tail [info script]])]} then {
 
   if {![info exists no(checkForTimeIntensive)]} then {
     checkForTimeIntensive $test_channel
+  }
+
+  if {![info exists no(checkForFullTest)]} then {
+    checkForFullTest $test_channel
   }
 
   if {![info exists no(checkForMemoryIntensive)]} then {

@@ -2037,7 +2037,7 @@ namespace eval ::Eagle {
       upvar 1 $a array
 
       if {![array exists array]} {
-        error "\"$a\" isn't an array"
+        error [appendArgs \" $a "\" isn't an array"]
       }
 
       set names [lsort [eval array names array $args]]
@@ -2159,14 +2159,151 @@ namespace eval ::Eagle {
       return [uplevel 1 [list $command $name $description] $args]
     }
 
+    proc isObjectHandle { value } {
+      set pattern [string map [list \\ \\\\ \[ \\\[ \] \\\]] $value]
+      set objects [info objects $pattern]
+
+      if {[llength $objects] == 1 && [lindex $objects 0] eq $value} then {
+        return true
+      }
+
+      return false
+    }
+
+    proc isManagedType { name } {
+      if {[llength [info commands object]] > 0} then {
+        if {![isObjectHandle $name]} then {
+          if {[catch {
+            object members -matchnameonly -nameonly -pattern Equals $name
+          } result] == 0 && $result eq "Equals"} then {
+            return true
+          }
+        }
+      }
+
+      return false
+    }
+
+    proc canGetManagedType { name {varName ""} } {
+      if {[llength [info commands object]] > 0} then {
+        if {![isObjectHandle $name]} then {
+          set cultureInfo [object invoke Interpreter.GetActive CultureInfo]
+          set type null
+
+          set code [object invoke -create -alias -flags +NonPublic \
+              Value GetType "" $name null null None $cultureInfo type]
+
+          if {[$code ToString] eq "Ok"} then {
+            if {[string length $varName] > 0} then {
+              upvar 1 $varName typeName
+            }
+
+            set typeName [$type AssemblyQualifiedName]
+
+            if {[isManagedType $typeName]} then {
+              return true
+            }
+          }
+        }
+      }
+
+      return false
+    }
+
+    proc unknownObjectInvoke { level name args } {
+      #
+      # NOTE: This is an [unknown] procedure that attempts to lookup the
+      #       name as a CLR type and then attempts to use [object invoke]
+      #       with it, merging options and arguments as necessary.
+      #
+      if {[llength [info commands object]] > 0 && \
+          ([isManagedType $name] || [canGetManagedType $name name])} then {
+        #
+        # NOTE: Get possible options for the [object invoke] sub-command.
+        #
+        set options [object invoke Utility GetInvokeOptions Invoke]
+
+        #
+        # NOTE: Create argument list for the artificial [object invoke]
+        #       alias.  This always has two arguments.
+        #
+        set arguments1 [object create ArgumentList object invoke]
+
+        #
+        # NOTE: Create argument list for the entire command being handled.
+        #       There may be options right after the command name itself.
+        #
+        set arguments2 [eval \
+            object create ArgumentList [concat [list $name] $args]]
+
+        #
+        # NOTE: Setup output arguments needed for the MergeArguments method.
+        #
+        set arguments3 null; set error null
+
+        #
+        # NOTE: Attempt to merge the option and non-option arguments into a
+        #       single list of arguments.
+        #
+        set code [object invoke -alias -flags +NonPublic \
+            Interpreter.GetActive MergeArguments $options $arguments1 \
+            $arguments2 2 1 false false arguments3 error]
+
+        #
+        # NOTE: Was the argument merging process successful?
+        #
+        if {$code eq "Ok"} then {
+          #
+          # NOTE: Jump up from our call frame (and optionally that of our
+          #       caller) and attempt to invoke the specified static object
+          #       method with the final list of merged arguments.
+          #
+          return [uplevel [expr {$level + 1}] [$arguments3 ToString]]
+        } else {
+          #
+          # NOTE: Failed to merge the arguments, raise an error.
+          #
+          error [$error ToString]
+        }
+      }
+
+      continue; # NOTE: Not handled.
+    }
+
     proc unknown { name args } {
       #
-      # NOTE: This is a stub unknown procedure that simply produces an
-      #       appropriate error message.
+      # NOTE: This is an [unknown] procedure that normally produces an
+      #       appropriate error message; however, it can optionally try
+      #       to invoke a static object method.
       #
       # TODO: Add support for auto-loading packages here in the future?
       #
-      return -code error "invalid command name \"$name\""
+      if {[hasRuntimeOption unknownObjectInvoke] && \
+          [llength [info commands object]] > 0} then {
+        #
+        # NOTE: In the context of the caller, attempt to invoke a static
+        #       object method using the specified arguments (which may
+        #       contain variable names).
+        #
+        if {[catch {
+          eval unknownObjectInvoke 1 [list $name] $args
+        } result] == 0} then {
+          #
+          # NOTE: The static object method was invoked successfully.
+          #       Return its result.
+          #
+          return -code ok $result
+        } elseif {[string length $result] > 0} then {
+          #
+          # NOTE: Attempting to invoke the static object method raised
+          #       an error.  Re-raise it now.  If no error message was
+          #       provided, fallback on the default (below).
+          #
+          return -code error $result
+        }
+      }
+
+      return -code error [appendArgs "invalid command name \"" $name \"]
     }
 
     namespace eval ::tcl::tm {
@@ -2196,6 +2333,16 @@ namespace eval ::Eagle {
       # NOTE: This should work properly in both Tcl and Eagle.
       #
       catch {puts stderr $string}
+    }
+
+    proc makeProcedureFast { name fast } {
+      #
+      # NOTE: This should work properly in Eagle only.
+      #
+      catch {
+        uplevel 1 [list object invoke -flags +NonPublic \
+            Interpreter.GetActive MakeProcedureFast $name $fast]
+      }
     }
 
     proc makeVariableFast { name fast } {
@@ -2242,6 +2389,54 @@ namespace eval ::Eagle {
 
       foreach dir [split [exec -unicode $::env(ComSpec) /u /c dir \
           /ahd /b [appendArgs \" [file nativename $pattern] \"]] \n] {
+        set dir [string trim $dir]
+
+        if {[string length $dir] > 0} then {
+          set dir [getDirResultPath $pattern $dir]
+
+          if {[lsearch -variable -exact -nocase result $dir] == -1} then {
+            lappend result $dir
+          }
+        }
+      }
+
+      return $result
+    }
+
+    proc findDirectoriesRecursive { pattern } {
+      #
+      # NOTE: Block non-Windows platforms since this is Windows specific.
+      #
+      if {![isWindows]} then {
+        error "not supported on this operating system"
+      }
+
+      #
+      # NOTE: This should work properly in Eagle only.
+      #
+      set dir ""; set result [list]
+
+      #
+      # HACK: Optimize the variable access in this procedure to be
+      #       as fast as possible.
+      #
+      makeVariableFast dir true; makeVariableFast result true
+
+      foreach dir [split [exec -unicode $::env(ComSpec) /u /c dir \
+          /ad /s /b [appendArgs \" [file nativename $pattern] \"]] \n] {
+        set dir [string trim $dir]
+
+        if {[string length $dir] > 0} then {
+          set dir [getDirResultPath $pattern $dir]
+
+          if {[lsearch -variable -exact -nocase result $dir] == -1} then {
+            lappend result $dir
+          }
+        }
+      }
+
+      foreach dir [split [exec -unicode $::env(ComSpec) /u /c dir \
+          /ahd /s /b [appendArgs \" [file nativename $pattern] \"]] \n] {
         set dir [string trim $dir]
 
         if {[string length $dir] > 0} then {
@@ -2398,6 +2593,74 @@ namespace eval ::Eagle {
       return $result
     }
 
+    proc findDirectoriesRecursive { pattern } {
+      #
+      # NOTE: Block non-Windows platforms since this is Windows specific.
+      #
+      if {![isWindows]} then {
+        error "not supported on this operating system"
+      }
+
+      #
+      # NOTE: This should work properly in Tcl only.
+      #
+      set result [list]
+
+      catch {
+        foreach dir [split [exec $::env(ComSpec) /c dir /ad /s /b \
+            [file nativename $pattern]] \n] {
+          set dir [string trim $dir]
+
+          if {[string length $dir] > 0} then {
+            set dir [getDirResultPath $pattern $dir]
+
+            #
+            # HACK: The -nocase option to [lsearch] is only available
+            #       starting with Tcl 8.5.
+            #
+            if {$::tcl_version >= 8.5} then {
+              if {[lsearch -exact -nocase $result $dir] == -1} then {
+                lappend result $dir
+              }
+            } else {
+              if {[lsearch -exact [string tolower $result] \
+                  [string tolower $dir]] == -1} then {
+                lappend result $dir
+              }
+            }
+          }
+        }
+      }
+
+      catch {
+        foreach dir [split [exec $::env(ComSpec) /c dir /ahd /s /b \
+            [file nativename $pattern]] \n] {
+          set dir [string trim $dir]
+
+          if {[string length $dir] > 0} then {
+            set dir [getDirResultPath $pattern $dir]
+
+            #
+            # HACK: The -nocase option to [lsearch] is only available
+            #       starting with Tcl 8.5.
+            #
+            if {$::tcl_version >= 8.5} then {
+              if {[lsearch -exact -nocase $result $dir] == -1} then {
+                lappend result $dir
+              }
+            } else {
+              if {[lsearch -exact [string tolower $result] \
+                  [string tolower $dir]] == -1} then {
+                lappend result $dir
+              }
+            }
+          }
+        }
+      }
+
+      return $result
+    }
+
     proc findFiles { pattern } {
       #
       # NOTE: This should work properly in Tcl only.
@@ -2432,8 +2695,19 @@ namespace eval ::Eagle {
           if {[string length $fileName] > 0} then {
             set fileName [getDirResultPath $pattern $fileName]
 
-            if {[lsearch -exact -nocase $result $fileName] == -1} then {
-              lappend result $fileName
+            #
+            # HACK: The -nocase option to [lsearch] is only available
+            #       starting with Tcl 8.5.
+            #
+            if {$::tcl_version >= 8.5} then {
+              if {[lsearch -exact -nocase $result $fileName] == -1} then {
+                lappend result $fileName
+              }
+            } else {
+              if {[lsearch -exact [string tolower $result] \
+                  [string tolower $fileName]] == -1} then {
+                lappend result $fileName
+              }
             }
           }
         }
@@ -2447,8 +2721,19 @@ namespace eval ::Eagle {
           if {[string length $fileName] > 0} then {
             set fileName [getDirResultPath $pattern $fileName]
 
-            if {[lsearch -exact -nocase $result $fileName] == -1} then {
-              lappend result $fileName
+            #
+            # HACK: The -nocase option to [lsearch] is only available
+            #       starting with Tcl 8.5.
+            #
+            if {$::tcl_version >= 8.5} then {
+              if {[lsearch -exact -nocase $result $fileName] == -1} then {
+                lappend result $fileName
+              }
+            } else {
+              if {[lsearch -exact [string tolower $result] \
+                  [string tolower $fileName]] == -1} then {
+                lappend result $fileName
+              }
             }
           }
         }
@@ -2514,8 +2799,9 @@ namespace eval ::Eagle {
         appendSharedFile appendSharedLogFile readAsciiFile writeAsciiFile \
         readUnicodeFile writeUnicodeFile getDirResultPath addToPath \
         removeFromPath execShell lshuffle ldifference filter map reduce \
-        getLengthModifier debug findDirectories findFiles findFilesRecursive \
-        exportAndImportPackageCommands] false false
+        getLengthModifier debug findDirectories findDirectoriesRecursive \
+        findFiles findFilesRecursive exportAndImportPackageCommands] false \
+        false
 
     ###########################################################################
     ############################## END Tcl ONLY ###############################

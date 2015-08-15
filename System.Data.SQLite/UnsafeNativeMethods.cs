@@ -123,6 +123,78 @@ namespace System.Data.SQLite
       }
 
       /////////////////////////////////////////////////////////////////////////
+
+      /// <summary>
+      /// This type is only present when running on Mono.
+      /// </summary>
+      private static readonly string MonoRuntimeType = "Mono.Runtime";
+
+      /// <summary>
+      /// Keeps track of whether we are running on Mono.  Initially null, it is
+      /// set by the <see cref="IsMono" /> method on its first call.  Later, it
+      /// is returned verbatim by the <see cref="IsMono" /> method.
+      /// </summary>
+      private static bool? isMono = null;
+
+      /// <summary>
+      /// Determines whether or not this assembly is running on Mono.
+      /// </summary>
+      /// <returns>
+      /// Non-zero if this assembly is running on Mono.
+      /// </returns>
+      private static bool IsMono()
+      {
+          try
+          {
+              lock (staticSyncRoot)
+              {
+                  if (isMono == null)
+                      isMono = (Type.GetType(MonoRuntimeType) != null);
+
+                  return (bool)isMono;
+              }
+          }
+          catch
+          {
+              // do nothing.
+          }
+
+          return false;
+      }
+
+      /////////////////////////////////////////////////////////////////////////
+
+      /// <summary>
+      /// This is a wrapper around the
+      /// <see cref="String.Format(IFormatProvider,String,Object[])" /> method.
+      /// On Mono, it has to call the method overload without the
+      /// <see cref="IFormatProvider" /> parameter, due to a bug in Mono.
+      /// </summary>
+      /// <param name="provider">
+      /// This is used for culture-specific formatting.
+      /// </param>
+      /// <param name="format">
+      /// The format string.
+      /// </param>
+      /// <param name="args">
+      /// An array the objects to format.
+      /// </param>
+      /// <returns>
+      /// The resulting string.
+      /// </returns>
+      internal static string StringFormat(
+          IFormatProvider provider,
+          string format,
+          params object[] args
+          )
+      {
+          if (IsMono())
+              return String.Format(format, args);
+          else
+              return String.Format(provider, format, args);
+      }
+
+      /////////////////////////////////////////////////////////////////////////
       /// <summary>
       /// Attempts to initialize this class by pre-loading the native SQLite
       /// library for the processor architecture of the current process.
@@ -301,8 +373,9 @@ namespace System.Data.SQLite
           {
               expand = false;
           }
-          else if (Environment.GetEnvironmentVariable(String.Format(
-                  "No_Expand_{0}", name)) != null)
+          else if (Environment.GetEnvironmentVariable(StringFormat(
+                  CultureInfo.InvariantCulture, "No_Expand_{0}",
+                  name)) != null)
           {
               expand = false;
           }
@@ -327,7 +400,8 @@ namespace System.Data.SQLite
 
               document.Load(fileName);
 
-              XmlElement element = document.SelectSingleNode(String.Format(
+              XmlElement element = document.SelectSingleNode(StringFormat(
+                  CultureInfo.InvariantCulture,
                   "/configuration/appSettings/add[@key='{0}']", name)) as
                   XmlElement;
 
@@ -354,7 +428,7 @@ namespace System.Data.SQLite
 #if !NET_COMPACT_20 && TRACE_SHARED
               try
               {
-                  Trace.WriteLine(String.Format(
+                  Trace.WriteLine(StringFormat(
                       CultureInfo.CurrentCulture,
                       "Native library pre-loader failed to get setting " +
                       "\"{0}\" value: {1}", name, e)); /* throw */
@@ -470,7 +544,7 @@ namespace System.Data.SQLite
 #if !NET_COMPACT_20 && TRACE_DETECTION
                   try
                   {
-                      Trace.WriteLine(String.Format(
+                      Trace.WriteLine(StringFormat(
                           CultureInfo.CurrentCulture,
                           "Native library pre-loader found XML configuration file " +
                           "via code base for currently executing assembly: \"{0}\"",
@@ -493,7 +567,7 @@ namespace System.Data.SQLite
 #if !NET_COMPACT_20 && TRACE_DETECTION
                   try
                   {
-                      Trace.WriteLine(String.Format(
+                      Trace.WriteLine(StringFormat(
                           CultureInfo.CurrentCulture,
                           "Native library pre-loader found native sub-directories " +
                           "via code base for currently executing assembly: \"{0}\"",
@@ -520,7 +594,7 @@ namespace System.Data.SQLite
 #if !NET_COMPACT_20 && TRACE_SHARED
               try
               {
-                  Trace.WriteLine(String.Format(
+                  Trace.WriteLine(StringFormat(
                       CultureInfo.CurrentCulture,
                       "Native library pre-loader failed to check code base " +
                       "for currently executing assembly: {0}", e)); /* throw */
@@ -587,7 +661,7 @@ namespace System.Data.SQLite
 #if !NET_COMPACT_20 && TRACE_SHARED
               try
               {
-                  Trace.WriteLine(String.Format(
+                  Trace.WriteLine(StringFormat(
                       CultureInfo.CurrentCulture,
                       "Native library pre-loader failed to get directory " +
                       "for currently executing assembly: {0}", e)); /* throw */
@@ -957,7 +1031,7 @@ namespace System.Data.SQLite
                   // NOTE: Show that we hit a fairly unusual situation (i.e.
                   //       the "wrong" processor architecture was detected).
                   //
-                  Trace.WriteLine(String.Format(
+                  Trace.WriteLine(StringFormat(
                       CultureInfo.CurrentCulture,
                       "Native library pre-loader detected {0}-bit pointer " +
                       "size with processor architecture \"{1}\", using " +
@@ -1176,7 +1250,7 @@ namespace System.Data.SQLite
                   // NOTE: Show exactly where we are trying to load the native
                   //       SQLite library from.
                   //
-                  Trace.WriteLine(String.Format(
+                  Trace.WriteLine(StringFormat(
                       CultureInfo.CurrentCulture,
                       "Native library pre-loader is trying to load native " +
                       "SQLite library \"{0}\"...", fileName)); /* throw */
@@ -1216,7 +1290,7 @@ namespace System.Data.SQLite
                   //       library from along with the Win32 error code and
                   //       exception information.
                   //
-                  Trace.WriteLine(String.Format(
+                  Trace.WriteLine(StringFormat(
                       CultureInfo.CurrentCulture,
                       "Native library pre-loader failed to load native " +
                       "SQLite library \"{0}\" (getLastError = {1}): {2}",
@@ -2956,7 +3030,7 @@ namespace System.Data.SQLite
 #if !NET_COMPACT_20 && TRACE_HANDLE
                 try
                 {
-                    Trace.WriteLine(String.Format(
+                    Trace.WriteLine(UnsafeNativeMethods.StringFormat(
                         CultureInfo.CurrentCulture,
                         "CloseConnection: {0}", localHandle)); /* throw */
                 }
@@ -2991,7 +3065,7 @@ namespace System.Data.SQLite
 #if !NET_COMPACT_20 && TRACE_HANDLE
                 try
                 {
-                    Trace.WriteLine(String.Format(
+                    Trace.WriteLine(UnsafeNativeMethods.StringFormat(
                         CultureInfo.CurrentCulture,
                         "CloseConnection: {0}, exception: {1}",
                         handle, e)); /* throw */
@@ -3144,7 +3218,7 @@ namespace System.Data.SQLite
 #if !NET_COMPACT_20 && TRACE_HANDLE
                 try
                 {
-                    Trace.WriteLine(String.Format(
+                    Trace.WriteLine(UnsafeNativeMethods.StringFormat(
                         CultureInfo.CurrentCulture,
                         "FinalizeStatement: {0}", localHandle)); /* throw */
                 }
@@ -3179,7 +3253,7 @@ namespace System.Data.SQLite
 #if !NET_COMPACT_20 && TRACE_HANDLE
                 try
                 {
-                    Trace.WriteLine(String.Format(
+                    Trace.WriteLine(UnsafeNativeMethods.StringFormat(
                         CultureInfo.CurrentCulture,
                         "FinalizeStatement: {0}, exception: {1}",
                         handle, e)); /* throw */
@@ -3317,7 +3391,7 @@ namespace System.Data.SQLite
 #if !NET_COMPACT_20 && TRACE_HANDLE
                 try
                 {
-                    Trace.WriteLine(String.Format(
+                    Trace.WriteLine(UnsafeNativeMethods.StringFormat(
                         CultureInfo.CurrentCulture,
                         "FinishBackup: {0}", localHandle)); /* throw */
                 }
@@ -3352,7 +3426,7 @@ namespace System.Data.SQLite
 #if !NET_COMPACT_20 && TRACE_HANDLE
                 try
                 {
-                    Trace.WriteLine(String.Format(
+                    Trace.WriteLine(UnsafeNativeMethods.StringFormat(
                         CultureInfo.CurrentCulture,
                         "FinishBackup: {0}, exception: {1}",
                         handle, e)); /* throw */

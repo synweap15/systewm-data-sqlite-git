@@ -43,7 +43,7 @@ namespace System.Data.SQLite
         UnsafeNativeMethods.Initialize();
 #endif
 
-#if INTEROP_LOG
+#if USE_INTEROP_DLL && INTEROP_LOG
         if (UnsafeNativeMethods.sqlite3_config_log_interop() == SQLiteErrorCode.Ok)
         {
             UnsafeNativeMethods.sqlite3_log(
@@ -90,12 +90,12 @@ namespace System.Data.SQLite
 
             if (typeName != null)
             {
-                typeName = String.Format(
+                typeName = UnsafeNativeMethods.StringFormat(
                     CultureInfo.InvariantCulture, typeName, version);
             }
             else
             {
-                typeName = String.Format(
+                typeName = UnsafeNativeMethods.StringFormat(
                     CultureInfo.InvariantCulture, DefaultTypeName, version);
             }
 

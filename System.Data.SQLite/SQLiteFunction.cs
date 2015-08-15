@@ -417,7 +417,7 @@ namespace System.Data.SQLite
                         SQLiteConnectionFlags.LogCallbackException)
                 {
                     SQLiteLog.LogMessage(SQLiteBase.COR_E_EXCEPTION,
-                        String.Format(CultureInfo.CurrentCulture,
+                        UnsafeNativeMethods.StringFormat(CultureInfo.CurrentCulture,
                         "Caught exception in \"Invoke\" method: {0}",
                         e)); /* throw */
                 }
@@ -455,7 +455,7 @@ namespace System.Data.SQLite
                         SQLiteConnectionFlags.LogCallbackException)
                 {
                     SQLiteLog.LogMessage(SQLiteBase.COR_E_EXCEPTION,
-                        String.Format(CultureInfo.CurrentCulture,
+                        UnsafeNativeMethods.StringFormat(CultureInfo.CurrentCulture,
                         "Caught exception in \"Compare\" (UTF8) method: {0}",
                         e)); /* throw */
                 }
@@ -502,7 +502,7 @@ namespace System.Data.SQLite
                         SQLiteConnectionFlags.LogCallbackException)
                 {
                     SQLiteLog.LogMessage(SQLiteBase.COR_E_EXCEPTION,
-                        String.Format(CultureInfo.CurrentCulture,
+                        UnsafeNativeMethods.StringFormat(CultureInfo.CurrentCulture,
                         "Caught exception in \"Compare\" (UTF16) method: {0}",
                         e)); /* throw */
                 }
@@ -575,7 +575,7 @@ namespace System.Data.SQLite
                         SQLiteConnectionFlags.LogCallbackException)
                 {
                     SQLiteLog.LogMessage(SQLiteBase.COR_E_EXCEPTION,
-                        String.Format(CultureInfo.CurrentCulture,
+                        UnsafeNativeMethods.StringFormat(CultureInfo.CurrentCulture,
                         "Caught exception in \"Step\" method: {1}",
                         e)); /* throw */
                 }
@@ -630,7 +630,7 @@ namespace System.Data.SQLite
                         SQLiteConnectionFlags.LogCallbackException)
                 {
                     SQLiteLog.LogMessage(SQLiteBase.COR_E_EXCEPTION,
-                        String.Format(CultureInfo.CurrentCulture,
+                        UnsafeNativeMethods.StringFormat(CultureInfo.CurrentCulture,
                         "Caught exception in \"Final\" method: {1}",
                         e)); /* throw */
                 }

@@ -23,7 +23,7 @@ namespace test
     private List<string> droptables = new List<string>();
     private List<string> maydroptable = new List<string>();
 
-#if !INTEROP_LOG
+#if !USE_INTEROP_DLL || !INTEROP_LOG
     private long logevents = 0;
 #endif
 
@@ -1640,7 +1640,7 @@ INSERT INTO B (ID, MYVAL) VALUES(1,'TEST');
       }
     }
 
-#if !INTEROP_LOG
+#if !USE_INTEROP_DLL || !INTEROP_LOG
     //Logging EventHandler
     public void OnLogEvent(object sender, LogEventArgs logEvent)
     {

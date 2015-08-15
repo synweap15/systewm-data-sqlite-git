@@ -237,6 +237,10 @@ namespace eval ::Eagle {
     #
     # NOTE: Returns the results of [array get] in a well-defined order.
     #
+    if {[string length $varName] == 0} then {
+      return [list]
+    }
+
     upvar 1 $varName array
 
     #
@@ -481,21 +485,29 @@ namespace eval ::Eagle {
     }
   }
 
-  proc processTestArguments { varName args } {
+  proc processTestArguments { varName strict args } {
+    #
+    # NOTE: Initially, there are no unknown (i.e. unprocessed) arguments.
+    #
+    set result [list]
+
     #
     # NOTE: We are going to place the configured options in the variable
     #       identified by the name provided by the caller.
     #
-    upvar 1 $varName array
+    if {[string length $varName] > 0} then {
+      upvar 1 $varName array
+    }
 
     #
-    # TODO: Add more support for standard tcltest options here.
+    # TODO: Add more support for standard "tcltest" options here.
     #
     set options [list \
-        -breakOnLeak -configuration -constraints -exitOnComplete -file \
-        -logFile -machine -match -no -notFile -platform -postTest -preTest \
-        -postWait -preWait -randomOrder -skip -startFile -stopFile \
-        -stopOnFailure -stopOnLeak -suffix -suite -tclsh -threshold]
+        -breakOnLeak -configuration -constraints -exitOnComplete \
+        -file -logFile -machine -match -no -notFile -platform \
+        -postTest -preTest -postWait -preWait -randomOrder -skip \
+        -startFile -stopFile -stopOnFailure -stopOnLeak -suffix \
+        -suite -tclsh -threshold]
 
     set length [llength $args]
 
@@ -539,21 +551,62 @@ namespace eval ::Eagle {
         if {$index + 1 < $length} then {
           incr index; set value [lindex $args $index]
 
-          tqputs $::test_channel [appendArgs \
-              "---- unknown test option \"" $name "\" with value \"" \
-              $value "\" ignored\n"]
+          if {!$strict && [lsearch -exact $options $value] != -1} then {
+            incr index -1; # HACK: Resynchronize with valid test option.
+            lappend result [list $name]
+
+            tqputs $::test_channel [appendArgs \
+                "---- no value for unknown test option \"" $name \
+                "\", ignored, backing up one for test option \"" \
+                $value \"...\n]
+          } else {
+            lappend result [list $name $value]
+
+            tqputs $::test_channel [appendArgs \
+                "---- unknown test option \"" $name "\" with value \"" \
+                $value "\", ignored\n"]
+          }
         } else {
+          lappend result [list $name]
+
           tqputs $::test_channel [appendArgs \
               "---- no value for unknown test option \"" $name \
-              "\" ignored\n"]
+              "\", ignored\n"]
         }
       } else {
         #
-        # NOTE: This is not an option of *any* kind that we know about.
-        #       Ignore it and issue a warning.
+        # NOTE: Is there another list element available for the value?  If
+        #       not, it does not conform to the standard command line name
+        #       and value pattern.
         #
-        tqputs $::test_channel [appendArgs \
-            "---- unknown argument \"" $name "\" ignored\n"]
+        if {$index + 1 < $length} then {
+          incr index; set value [lindex $args $index]
+
+          if {!$strict && [lsearch -exact $options $value] != -1} then {
+            incr index -1; # HACK: Resynchronize with valid test argument.
+            lappend result [list $name]
+
+            tqputs $::test_channel [appendArgs \
+                "---- no value for unknown argument \"" $name \
+                "\", ignored, backing up one for test option \"" \
+                $value \"...\n]
+          } else {
+            lappend result [list $name $value]
+
+            tqputs $::test_channel [appendArgs \
+                "---- unknown argument \"" $name "\" with value \"" \
+                $value "\", ignored\n"]
+          }
+        } else {
+          #
+          # NOTE: This is not an option of *any* kind that we know about.
+          #       Ignore it and issue a warning.
+          #
+          lappend result [list $name]
+
+          tqputs $::test_channel [appendArgs \
+              "---- unknown argument \"" $name "\", ignored\n"]
+        }
       }
     }
 
@@ -561,6 +614,12 @@ namespace eval ::Eagle {
     # NOTE: Now, attempt to flush the test log queue, if available.
     #
     tlog ""
+
+    #
+    # NOTE: Return the nested list of unknown arguments, formatted as
+    #       name/value pairs, to the caller.
+    #
+    return $result
   }
 
   proc getTclShellFileName { automatic kits } {
@@ -573,7 +632,7 @@ namespace eval ::Eagle {
     # NOTE: Check all environment variables we know about that
     #       may contain the path where the Tcl shell is located.
     #
-    foreach name [list Eagle_Tcl_Shell Tcl_Shell] {
+    foreach name [list Eagle_Tcl_Shell Tcl_Shell EAGLE_TCLSH TCLSH] {
       set value [getEnvironmentVariable $name]
 
       #
@@ -1296,8 +1355,8 @@ namespace eval ::Eagle {
 
   proc hookPuts {} {
     #
-    # NOTE: This code was stolen from tcltest and heavily modified to work
-    #       with Eagle.
+    # NOTE: This code was stolen from "tcltest" and heavily modified to
+    #       work with Eagle.
     #
     proc [namespace current]::testPuts { args } {
       switch [llength $args] {
@@ -2318,7 +2377,255 @@ namespace eval ::Eagle {
         $::test_suite_running}]
   }
 
+  proc getTestChannelOrDefault {} {
+    if {[info exists ::test_channel]} then {
+      return $::test_channel
+    }
+
+    return stdout; # TODO: Good default?
+  }
+
+  proc checkForAndSetTestPath { whatIf {quiet false} } {
+    #
+    # NOTE: Everything in this procedure requires access to the file system;
+    #       therefore, it cannot be used in a stock "safe" interpreter.
+    #
+    if {![interp issafe] && ![info exists ::test_path]} then {
+      #
+      # NOTE: Grab the name of the current script file.  If this is an empty
+      #       string, many test path checks will have to be skipped.
+      #
+      set script [info script]
+
+      #
+      # NOTE: Eagle and native Tcl have different requirements and possible
+      #       locations for the test path; therefore, handle them separately.
+      #
+      if {[isEagle]} then {
+        #
+        # NOTE: Grab the base directory and the library directory.  Without
+        #       these, several test path checks will be skipped.
+        #
+        set library [getTestLibraryDirectory]; set base [info base]
+
+        if {[string length $library] > 0} then {
+          #
+          # NOTE: Try the source release directory structure.  For this
+          #       case, the final test path would be:
+          #
+          #           $library/../../Library/Tests
+          #
+          set ::test_path [file normalize [file join [file dirname [file \
+              dirname $library]] Library Tests]]
+
+          if {!$quiet} then {
+            tqputs [getTestChannelOrDefault] [appendArgs \
+                "---- checking #1 for Eagle test path at \"" \
+                $::test_path \"...\n]
+          }
+        }
+
+        if {[string length $base] > 0 && ($whatIf || \
+            ![info exists ::test_path] || ![file exists $::test_path] || \
+            ![file isdirectory $::test_path])} then {
+          #
+          # NOTE: Try the source release directory structure again; this
+          #       time, assume only the embedded script library was used.
+          #       For this case, the final test path would be:
+          #
+          #           $base/Library/Tests
+          #
+          set ::test_path [file normalize [file join $base Library Tests]]
+
+          if {!$quiet} then {
+            tqputs [getTestChannelOrDefault] [appendArgs \
+                "---- checking #2 for Eagle test path at \"" \
+                $::test_path \"...\n]
+          }
+        }
+
+        if {[string length $script] > 0 && ($whatIf || \
+            ![info exists ::test_path] || ![file exists $::test_path] || \
+            ![file isdirectory $::test_path])} then {
+          #
+          # NOTE: Try for the test package directory.  For this case, the
+          #       final test path would be:
+          #
+          #           $script/../Test1.0
+          #
+          set ::test_path [file normalize [file join [file dirname [file \
+              dirname $script]] [appendArgs Test [info engine Version]]]]
+
+          if {!$quiet} then {
+            tqputs [getTestChannelOrDefault] [appendArgs \
+                "---- checking #3 for Eagle test path at \"" \
+                $::test_path \"...\n]
+          }
+        }
+
+        if {[string length $base] > 0 && ($whatIf || \
+            ![info exists ::test_path] || ![file exists $::test_path] || \
+            ![file isdirectory $::test_path])} then {
+          #
+          # NOTE: Try for the test package directory again; this time, use
+          #       the base path and assume the source release directory
+          #       structure.  For this case, the final test path would be:
+          #
+          #           $base/lib/Test1.0
+          #
+          set ::test_path [file normalize [file join $base lib [appendArgs \
+              Test [info engine Version]]]]
+
+          if {!$quiet} then {
+            tqputs [getTestChannelOrDefault] [appendArgs \
+                "---- checking #4 for Eagle test path at \"" \
+                $::test_path \"...\n]
+          }
+        }
+
+        if {[string length $base] > 0 && ($whatIf || \
+            ![info exists ::test_path] || ![file exists $::test_path] || \
+            ![file isdirectory $::test_path])} then {
+          #
+          # NOTE: Try for the test package directory again; this time, use
+          #       the base path.  For this case, the final test path would
+          #       be:
+          #
+          #           $base/Test1.0
+          #
+          set ::test_path [file normalize [file join $base [appendArgs \
+              Test [info engine Version]]]]
+
+          if {!$quiet} then {
+            tqputs [getTestChannelOrDefault] [appendArgs \
+                "---- checking #5 for Eagle test path at \"" \
+                $::test_path \"...\n]
+          }
+        }
+
+        if {[string length $library] > 0 && ($whatIf || \
+            ![info exists ::test_path] || ![file exists $::test_path] || \
+            ![file isdirectory $::test_path])} then {
+          #
+          # NOTE: This must be a binary release, no "Library" directory
+          #       then.  Also, binary releases have an upper-case "Tests"
+          #       directory name that originates from the "update.bat"
+          #       tool.  This must match the casing used in "update.bat".
+          #       For this case, the final test path would be:
+          #
+          #           $library/../../Tests
+          #
+          set ::test_path [file normalize [file join [file dirname [file \
+              dirname $library]] Tests]]
+
+          if {!$quiet} then {
+            tqputs [getTestChannelOrDefault] [appendArgs \
+                "---- checking #6 for Eagle test path at \"" \
+                $::test_path \"...\n]
+          }
+        }
+
+        if {[string length $base] > 0 && ($whatIf || \
+            ![info exists ::test_path] || ![file exists $::test_path] || \
+            ![file isdirectory $::test_path])} then {
+          #
+          # NOTE: Fallback to using the base directory and checking for a
+          #       "Tests" directory beneath it.  For this case, the final
+          #       test path would be:
+          #
+          #           $base/Tests
+          #
+          set ::test_path [file normalize [file join $base Tests]]
+
+          if {!$quiet} then {
+            tqputs [getTestChannelOrDefault] [appendArgs \
+                "---- checking #7 for Eagle test path at \"" \
+                $::test_path \"...\n]
+          }
+        }
+
+        if {!$quiet} then {
+          tqputs [getTestChannelOrDefault] [appendArgs \
+              "---- final Eagle test path is \"" \
+              [expr {[info exists ::test_path] ? \
+              $::test_path : "<none>"}] \"\n]
+        }
+      } else {
+        if {[string length $script] > 0} then {
+          #
+          # NOTE: Try the source release directory structure.  For this
+          #       case, the final test path would be:
+          #
+          #           $script/../../Library/Tests
+          #
+          set ::test_path [file normalize [file join [file dirname [file \
+              dirname [file dirname $script]]] Library Tests]]
+
+          if {!$quiet} then {
+            tqputs [getTestChannelOrDefault] [appendArgs \
+                "---- checking #1 for Tcl test path at \"" \
+                $::test_path \"...\n]
+          }
+        }
+
+        if {[string length $script] > 0 && ($whatIf || \
+            ![info exists ::test_path] || ![file exists $::test_path] || \
+            ![file isdirectory $::test_path])} then {
+          #
+          # NOTE: Try for the test package directory.  For this case, the
+          #       final test path would be:
+          #
+          #           $script/../Test1.0
+          #
+          set ::test_path [file normalize [file join [file dirname [file \
+              dirname $script]] Test1.0]]
+
+          if {!$quiet} then {
+            tqputs [getTestChannelOrDefault] [appendArgs \
+                "---- checking #2 for Tcl test path at \"" \
+                $::test_path \"...\n]
+          }
+        }
+
+        if {[string length $script] > 0 && ($whatIf || \
+            ![info exists ::test_path] || ![file exists $::test_path] || \
+            ![file isdirectory $::test_path])} then {
+          #
+          # NOTE: This must be a binary release, no "Library" directory
+          #       then.  Also, binary releases have an upper-case "Tests"
+          #       directory name that originates from the "update.bat"
+          #       tool.  This must match the casing used in "update.bat".
+          #       For this case, the final test path would be:
+          #
+          #           $script/../../Tests
+          #
+          set ::test_path [file normalize [file join [file dirname [file \
+              dirname [file dirname $script]]] Tests]]
+
+          if {!$quiet} then {
+            tqputs [getTestChannelOrDefault] [appendArgs \
+                "---- checking #3 for Tcl test path at \"" \
+                $::test_path \"...\n]
+          }
+        }
+
+        if {!$quiet} then {
+          tqputs [getTestChannelOrDefault] [appendArgs \
+              "---- final Tcl test path is \"" \
+              [expr {[info exists ::test_path] ? \
+              $::test_path : "<none>"}] \"\n]
+        }
+      }
+    }
+  }
+
   proc configureTcltest { match skip constraints imports force } {
+    #
+    # NOTE: Eagle and native Tcl have different configuration requirements
+    #       for the "tcltest" package.  For Eagle, the necessary testing
+    #       functionality is built-in.  In native Tcl, the package must be
+    #       loaded now and that cannot be done in a "safe" interpreter.
+    #
     if {[isEagle]} then {
       #
       # HACK: Flag the "test" and "runTest" script library procedures so
@@ -2337,22 +2644,22 @@ namespace eval ::Eagle {
       setupTestShims true [expr {![isTestSuiteRunning]}]
 
       #
-      # NOTE: Fake having the tcltest package.
+      # NOTE: Fake having the package as the functionality is built-in.
       #
       package provide tcltest 2.2.10; # Tcl 8.4
-    } else {
+    } elseif {![interp issafe]} then {
       #
-      # NOTE: Attempt to detect if the tcltest package is already loaded.
+      # NOTE: Attempt to detect if the package is already loaded.
       #
       set loaded [expr {[catch {package present tcltest}] == 0}]
 
       #
-      # NOTE: Always attempt to load the tcltest package.
+      # NOTE: Always attempt to load the package.
       #
       package require tcltest
 
       #
-      # NOTE: Configure tcltest for our use (only when it was not loaded).
+      # NOTE: Configure it for our use (only when it was not loaded).
       #
       if {!$loaded} then {
         ::tcltest::configure -verbose bpste
@@ -2529,14 +2836,6 @@ namespace eval ::Eagle {
             eval lappend eagle_tests(Constraints) $test_flags(-constraints)
         }
       }
-    }
-
-    proc getTestChannelOrDefault {} {
-      if {[info exists ::test_channel]} then {
-        return $::test_channel
-      }
-
-      return stdout; # TODO: Good default?
     }
 
     proc setupTestShims { setup {quiet false} } {
@@ -3092,118 +3391,39 @@ namespace eval ::Eagle {
 
     proc getTestLibraryDirectory {} {
       #
-      # NOTE: First, query the location of the script library.
+      # NOTE: First, query the location of the script library.  This will
+      #       not work right in a "safe" interpreter.
       #
-      set result [info library]
+      if {[catch {info library} result] == 0} then {
+        #
+        # NOTE: Next, If the script library is embedded within the core
+        #       library itself (i.e. the script library location refers
+        #       to a file, not a directory), strip off the file name.
+        #
+        if {[file exists $result] && [file isfile $result]} then {
+          set result [file dirname $result]
+        }
 
-      #
-      # NOTE: Next, If the script library is embedded within the core
-      #       library itself (i.e. the script library location refers
-      #       to a file, not a directory), strip off the file name.
-      #
-      if {[file exists $result] && [file isfile $result]} then {
-        set result [file dirname $result]
+        #
+        # NOTE: Finally, return the resulting script library directory.
+        #
+        return $result
       }
 
-      #
-      # NOTE: Finally, return the resulting script library directory.
-      #
-      return $result
+      return ""
     }
 
     #
-    # NOTE: Setup the test path relative to the library path.
+    # NOTE: Check for the test path in the various well-known locations
+    #       and set the associated variable.
     #
-    if {![interp issafe] && ![info exists ::test_path]} then {
-      #
-      # NOTE: Try the source release directory structure.  For this case,
-      #       the final test path would be:
-      #
-      #           $library/../../Library/Tests
-      #
-      set ::test_path [file join [file normalize [file dirname \
-          [file dirname [getTestLibraryDirectory]]]] Library Tests]
-
-      if {![file exists $::test_path] || \
-          ![file isdirectory $::test_path]} then {
-        #
-        # NOTE: Try the source release directory structure again; this time,
-        #       assume only the embedded script library was used.  For this
-        #       case, the final test path would be:
-        #
-        #           $base/Library/Tests
-        #
-        set ::test_path [file join [info base] Library Tests]
-      }
-
-      if {![file exists $::test_path] || \
-          ![file isdirectory $::test_path]} then {
-        #
-        # NOTE: Try for the test package directory.  For this case, the final
-        #       test path would be:
-        #
-        #           $script/../Test1.0
-        #
-        set ::test_path [file join [file normalize [file dirname \
-            [file dirname [info script]]]] [appendArgs Test \
-            [info engine Version]]]
-      }
-
-      if {![file exists $::test_path] || \
-          ![file isdirectory $::test_path]} then {
-        #
-        # NOTE: Try for the test package directory again; this time, use the
-        #       base path and assume the source release directory structure.
-        #       For this case, the final test path would be:
-        #
-        #           $base/lib/Test1.0
-        #
-        set ::test_path [file join [info base] lib [appendArgs Test \
-            [info engine Version]]]
-      }
-
-      if {![file exists $::test_path] || \
-          ![file isdirectory $::test_path]} then {
-        #
-        # NOTE: Try for the test package directory again; this time, use the
-        #       base path.  For this case, the final test path would be:
-        #
-        #           $base/Test1.0
-        #
-        set ::test_path [file join [info base] [appendArgs Test \
-            [info engine Version]]]
-      }
-
-      if {![file exists $::test_path] || \
-          ![file isdirectory $::test_path]} then {
-        #
-        # NOTE: This must be a binary release, no "Library" directory then.
-        #       Also, binary releases have an upper-case "Tests" directory
-        #       name that originates from the "update.bat" tool.  This must
-        #       match the casing used in "update.bat".  For this case, the
-        #       final test path would be:
-        #
-        #           $library/../../Tests
-        #
-        set ::test_path [file join [file normalize [file dirname \
-            [file dirname [getTestLibraryDirectory]]]] Tests]
-      }
-
-      if {![file exists $::test_path] || \
-          ![file isdirectory $::test_path]} then {
-        #
-        # NOTE: Fallback to using the base directory and checking for a
-        #       "Tests" directory beneath it.  For this case, the final
-        #       test path would be:
-        #
-        #           $base/Tests
-        #
-        set ::test_path [file join [info base] Tests]
-      }
+    if {![info exists ::no(checkForAndSetTestPath)]} then {
+      checkForAndSetTestPath false [expr {![isTestSuiteRunning]}]
     }
 
     #
-    # NOTE: Fake having the tcltest package unless we are prevented.
+    # NOTE: Fake loading and configuring the "tcltest" package unless we
+    #       are prevented.
     #
     if {![info exists ::no(configureTcltest)]} then {
       configureTcltest [list] [list] [list] [list] false
@@ -3239,41 +3459,17 @@ namespace eval ::Eagle {
     }
 
     #
-    # NOTE: Setup the test path relative to the path of this file.
+    # NOTE: Check for the test path in the various well-known locations
+    #       and set the associated variable.
     #
-    if {![interp issafe] && ![info exists ::test_path]} then {
-      #
-      # NOTE: Try the source release directory structure.
-      #
-      set ::test_path [file join [file normalize [file dirname \
-          [file dirname [file dirname [info script]]]]] Library Tests]
-
-      if {![file exists $::test_path] || \
-          ![file isdirectory $::test_path]} then {
-        #
-        # NOTE: Try for the test package directory.
-        #
-        set ::test_path [file join [file normalize [file dirname \
-            [file dirname [info script]]]] Test1.0]
-      }
-
-      if {![file exists $::test_path] || \
-          ![file isdirectory $::test_path]} then {
-        #
-        # NOTE: This must be a binary release, no "Library" directory then.
-        #       Also, binary releases have an upper-case "Tests" directory
-        #       name that originates from the "update.bat" tool.  This must
-        #       match the casing used in "update.bat".
-        #
-        set ::test_path [file join [file normalize [file dirname \
-            [file dirname [file dirname [info script]]]]] Tests]
-      }
+    if {![info exists ::no(checkForAndSetTestPath)]} then {
+      checkForAndSetTestPath false [expr {![isTestSuiteRunning]}]
     }
 
     #
-    # NOTE: Load and configure the tcltest package unless we are prevented.
+    # NOTE: Load and configure the "tcltest" package unless we are prevented.
     #
-    if {![interp issafe] && ![info exists ::no(configureTcltest)]} then {
+    if {![info exists ::no(configureTcltest)]} then {
       configureTcltest [list] [list] [list] [list test testConstraint] false
     }
 
@@ -3296,8 +3492,8 @@ namespace eval ::Eagle {
         recordTestStatistics reportTestStatistics formatList formatListAsDict \
         pathToRegexp inverseLsearchGlob removePathFromFileNames formatDecimal \
         clearTestPercent reportTestPercent runAllTests isTestSuiteRunning \
-        configureTcltest machineToPlatform getPassPercentage \
-        getSkipPercentage] false false
+        getTestChannelOrDefault checkForAndSetTestPath configureTcltest \
+        machineToPlatform getPassPercentage getSkipPercentage] false false
 
     ###########################################################################
     ############################## END Tcl ONLY ###############################

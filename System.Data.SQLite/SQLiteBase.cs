@@ -951,11 +951,13 @@ namespace System.Data.SQLite
       /// </summary>
       NoLoadExtension = 0x200,
 
+#if INTEROP_VIRTUAL_TABLE
       /// <summary>
       /// Prevent this <see cref="SQLiteConnection" /> object instance from
       /// creating virtual table modules.
       /// </summary>
       NoCreateModule = 0x400,
+#endif
 
       /// <summary>
       /// Skip binding any functions provided by other managed assemblies when
@@ -963,6 +965,7 @@ namespace System.Data.SQLite
       /// </summary>
       NoBindFunctions = 0x800,
 
+#if INTEROP_VIRTUAL_TABLE
       /// <summary>
       /// Skip setting the logging related properties of the
       /// <see cref="SQLiteModule" /> object instance that was passed to
@@ -981,6 +984,7 @@ namespace System.Data.SQLite
       /// be easily discovered via other means.
       /// </summary>
       LogModuleException = 0x4000,
+#endif
 
       /// <summary>
       /// Enable tracing of potentially important [non-fatal] error conditions
@@ -1165,14 +1169,23 @@ namespace System.Data.SQLite
       /// <summary>
       /// Enable all logging.
       /// </summary>
+#if INTEROP_VIRTUAL_TABLE
       LogAll = LogPrepare | LogPreBind | LogBind |
                LogCallbackException | LogBackup | LogModuleError |
                LogModuleException,
+#else
+      LogAll = LogPrepare | LogPreBind | LogBind |
+               LogCallbackException | LogBackup,
+#endif
 
       /// <summary>
       /// The default extra flags for new connections.
       /// </summary>
+#if INTEROP_VIRTUAL_TABLE
       Default = LogCallbackException | LogModuleException,
+#else
+      Default = LogCallbackException,
+#endif
 
       /// <summary>
       /// The default extra flags for new connections with all logging enabled.

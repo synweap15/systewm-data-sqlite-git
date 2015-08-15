@@ -56,7 +56,8 @@ namespace eval ::Eagle {
     return [list \
         [list 2 0] [list 2 2] [list 2 4] [list 2 6] [list 2 8] [list 2 10] \
         [list 2 11] [list 2 12] [list 3 0] [list 3 1] [list 3 2] [list 3 3] \
-        [list 3 4] [list 3 5] [list 3 6] [list 3 8] [list 3 10] [list 3 12]]
+        [list 3 4] [list 3 5] [list 3 6] [list 3 8] [list 3 10] [list 3 12] \
+        [list 4 0]]
   }
 
   #
@@ -103,7 +104,7 @@ namespace eval ::Eagle {
     #       return true.
     #
     return [expr {
-      [catch {interp readylimit {}} readylimit] != 0 || $readylimit == 0
+      [catch {interp readylimit {}} readylimit] || $readylimit == 0
     }]
   }
 
@@ -315,6 +316,34 @@ namespace eval ::Eagle {
           lappend fileNames $fileName
         }
       }
+
+      #
+      # TODO: If additional test suite files are added within the base
+      #       package path, add them here as well.
+      #
+      foreach fileNameOnly [list \
+          all.eagle constraints.eagle epilogue.eagle pkgIndex.eagle \
+          pkgIndex.tcl prologue.eagle] {
+        #
+        # NOTE: First, check if the file resides in the Eagle-specific
+        #       package sub-directory.  Failing that, fallback to using
+        #       the base package path itself.
+        #
+        set fileName [file join \
+            $::test_package_path Test1.0 $fileNameOnly]
+
+        if {![file exists $fileName]} then {
+          set fileName [file join $::test_package_path $fileNameOnly]
+        }
+
+        #
+        # NOTE: If the test suite file exists, add it to the list of file
+        #       names to process.
+        #
+        if {[file exists $fileName]} then {
+          lappend fileNames $fileName
+        }
+      }
     }
 
     #
@@ -325,9 +354,7 @@ namespace eval ::Eagle {
       # TODO: If additional test suite files are added within the test
       #       package path, add them here as well.
       #
-      foreach fileNameOnly [list \
-          all.eagle constraints.eagle epilogue.eagle pkgIndex.eagle \
-          pkgIndex.tcl prologue.eagle] {
+      foreach fileNameOnly [list all.eagle epilogue.eagle prologue.eagle] {
         #
         # NOTE: Check if the file resides in the test package directory.
         #
@@ -1587,6 +1614,22 @@ namespace eval ::Eagle {
     }
   }
 
+  proc checkForFullTest { channel } {
+    tputs $channel "---- checking for full testing... "
+
+    #
+    # NOTE: Are we allowed to do full testing (i.e. to run rarely
+    #       needed tests)?
+    #
+    if {![info exists ::no(fullTest)]} then {
+      addConstraint fullTest
+
+      tputs $channel yes\n
+    } else {
+      tputs $channel no\n
+    }
+  }
+
   proc checkForMemoryIntensive { channel } {
     tputs $channel "---- checking for memory intensive testing... "
 
@@ -1950,6 +1993,84 @@ namespace eval ::Eagle {
       }
     }
 
+    proc checkForStrongNameKey { channel } {
+      tputs $channel "---- checking for strong name key... "
+
+      if {[catch {info engine PublicKeyToken} publicKeyToken] == 0 && \
+          [string length $publicKeyToken] > 0} then {
+        #
+        # NOTE: Add a test constraint for this specific strong name key.
+        #
+        addConstraint [appendArgs strongName. $publicKeyToken]
+
+        #
+        # NOTE: Show the strong name key that we found.
+        #
+        tputs $channel [appendArgs "yes (" $publicKeyToken ")\n"]
+
+        #
+        # BUGBUG: Tcl 8.4 does not seem to like this expression because it
+        #         contains the "ni" operator added in Tcl 8.5 (and Tcl 8.4
+        #         tries to compile it even though it will only be evaluated
+        #         in Eagle).
+        #
+        set expr {$publicKeyToken ni \
+            "29c6297630be05eb 1e22ec67879739a2 358030063a832bc3"}
+
+        if {[expr $expr]} then {
+          #
+          # NOTE: The Eagle core library is strong name signed with a key that
+          #       is not official.  This is also not an error, per se; however,
+          #       it may cause some tests to fail and it should be reported to
+          #       the user and noted in the test suite log file.
+          #
+          addConstraint strongName.unofficial
+
+          #
+          # NOTE: Unless forbidden, issue and log a warning.
+          #
+          if {![info exists no(warningForStrongNameKey)] && \
+              ![haveConstraint quiet]} then {
+            tputs $channel [appendArgs \
+                "==== WARNING: unofficial Eagle strong name signature " \
+                "detected: " $publicKeyToken \n]
+          }
+        } else {
+          #
+          # NOTE: Several tests require one of the official strong name keys to
+          #       be used in order for them to pass.
+          #
+          addConstraint strongName.official
+
+          tputs $channel [appendArgs \
+              "---- official Eagle strong name signature detected: " \
+              $publicKeyToken \n]
+        }
+      } else {
+        #
+        # NOTE: The Eagle core library is not signed with a strong name key.
+        #       This is not an error, per se; however, it may cause selected
+        #       tests to fail and it should be reported to the user and noted
+        #       in the test suite log file.
+        #
+        addConstraint strongName.none
+
+        #
+        # NOTE: Show that we did not find a strong name key.
+        #
+        tputs $channel no\n
+
+        #
+        # NOTE: Unless forbidden, issue and log a warning.
+        #
+        if {![info exists no(warningForStrongNameKey)] && \
+            ![haveConstraint quiet]} then {
+          tputs $channel \
+              "==== WARNING: no Eagle strong name signature detected...\n"
+        }
+      }
+    }
+
     proc checkForCertificate { channel } {
       tputs $channel "---- checking for certificate... "
 
@@ -1967,7 +2088,7 @@ namespace eval ::Eagle {
         #
         if {[catch {
           object invoke $certificate Subject
-        } subject] != 0 || [string length $subject] == 0} then {
+        } subject] || [string length $subject] == 0} then {
           #
           # TODO: No certificate subject, better handling here?
           #
@@ -2069,11 +2190,11 @@ namespace eval ::Eagle {
       } appDomain] == 0 && [string length $appDomain] > 0} then {
         if {[catch {
           object invoke $appDomain IsDefaultAppDomain
-        } default] != 0 || [string length $default] == 0} then {
+        } default] || [string length $default] == 0} then {
           set default false
         }
 
-        if {[catch {object invoke $appDomain Id} id] != 0 || \
+        if {[catch {object invoke $appDomain Id} id] || \
             [string length $id] == 0} then {
           set id unknown
         }
@@ -2375,6 +2496,53 @@ namespace eval ::Eagle {
       } else {
         tputs $channel "no, unknown\n"
       }
+    }
+
+    proc checkForTestCallStack { channel } {
+      tputs $channel "---- checking for test call stack... "
+
+      #
+      # NOTE: Search for a call frame with associated arguments.
+      #       At this point, there must be at least one such call
+      #       frame (this one).  Therefore, this loop will always
+      #       terminate.
+      #
+      set index 0; set arguments [list]
+      set script {info level [info level]}
+
+      while {1} {
+        set level [appendArgs ## $index]
+
+        if {[catch {uplevel $level $script} arguments] == 0} then {
+          break
+        }
+
+        incr index
+      }
+
+      #
+      # NOTE: Grab the command name from the arguments, if any.
+      #
+      set command [expr {
+        [llength $arguments] > 0 ? [lindex $arguments 0] : ""
+      }]
+
+      #
+      # HACK: Make sure the call stack does not end up confusing
+      #       the tests that rely on absolute call frames.
+      #
+      if {$command in [list checkForTestCallStack]} then {
+        addConstraint testCallStack
+
+        tputs $channel [appendArgs "yes (\"" $command "\")\n"]
+
+        #
+        # NOTE: We are done here, return now.
+        #
+        return
+      }
+
+      tputs $channel [appendArgs "no (\"" $command "\")\n"]
     }
 
     proc checkForGarudaDll { channel } {
@@ -3222,8 +3390,25 @@ namespace eval ::Eagle {
       tputs $channel no\n
     }
 
-    proc checkForNetFx45 { channel } {
-      tputs $channel "---- checking for .NET Framework 4.5... "
+    proc getFrameworkSetup46Value {} {
+      #
+      # NOTE: Check if we are running on Windows 10 or later.
+      #
+      if {[isWindows] && $::tcl_platform(osVersion) >= 10.0} then {
+        #
+        # NOTE: We are running on Windows 10, return the special value.
+        #
+        return 393295
+      }
+
+      #
+      # NOTE: We are not running on Windows 10, return the normal value.
+      #
+      return 393297
+    }
+
+    proc checkForNetFx4x { channel } {
+      tputs $channel "---- checking for .NET Framework 4.x... "
 
       #
       # NOTE: Platform must be Windows for this constraint to even be
@@ -3264,18 +3449,19 @@ namespace eval ::Eagle {
           #       greater than or equal to 379893, then the .NET Framework
           #       4.5.2 is installed, which is an in-place upgrade to 4.5.1
           #       (and 4.5).  If the "release" value is also greater than or
-          #       equal to 393246, then the .NET Framework 4.6 is installed,
-          #       which is an in-place upgrade to 4.5.x.
+          #       equal to 393297 (393295 on Windows 10), then the .NET
+          #       Framework 4.6 is installed, which is an in-place upgrade
+          #       to 4.5.x.
           #
-          # TODO: Change the value 393246 when the .NET Framework 4.6 goes
-          #       final.
-          #
-          if {$release >= 393246} then {
+          if {$release >= [getFrameworkSetup46Value]} then {
+            addConstraint dotNet451OrHigher
+            addConstraint dotNet452OrHigher
             addConstraint dotNet46
             addConstraint dotNet46OrHigher
 
             set version 4.6
           } elseif {$release >= 379893} then {
+            addConstraint dotNet451OrHigher
             addConstraint dotNet452
             addConstraint dotNet452OrHigher
 
@@ -3524,10 +3710,10 @@ namespace eval ::Eagle {
         checkForTip127 checkForTip194 checkForTip207 checkForTip241 \
         checkForTip285 checkForTip405 checkForTip426 checkForTip429 \
         checkForTiming checkForPerformance checkForBigLists \
-        checkForTimeIntensive checkForMemoryIntensive checkForStackIntensive \
-        checkForInteractive checkForInteractiveCommand checkForUserInteraction \
-        checkForNetwork checkForCompileOption checkForKnownCompileOptions] \
-        false false
+        checkForTimeIntensive checkForFullTest checkForMemoryIntensive \
+        checkForStackIntensive checkForInteractive checkForInteractiveCommand \
+        checkForUserInteraction checkForNetwork checkForCompileOption \
+        checkForKnownCompileOptions] false false
 
     ###########################################################################
     ############################## END Tcl ONLY ###############################

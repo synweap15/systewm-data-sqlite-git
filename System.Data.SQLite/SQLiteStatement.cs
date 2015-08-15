@@ -1,7 +1,7 @@
 /********************************************************
  * ADO.NET 2.0 Data Provider for SQLite Version 3.X
  * Written by Robert Simpson (robert@blackcastlesoft.com)
- * 
+ *
  * Released to the public domain, use at your own risk!
  ********************************************************/
 
@@ -85,7 +85,7 @@ namespace System.Data.SQLite
           s = _sql.Bind_ParamName(this, _flags, x + 1);
           if (String.IsNullOrEmpty(s))
           {
-            s = String.Format(CultureInfo.InvariantCulture, ";{0}", nCmdStart);
+            s = UnsafeNativeMethods.StringFormat(CultureInfo.InvariantCulture, ";{0}", nCmdStart);
             nCmdStart++;
             _unnamedParameters++;
           }
@@ -204,7 +204,7 @@ namespace System.Data.SQLite
     internal bool MapParameter(string s, SQLiteParameter p)
     {
       if (_paramNames == null) return false;
-      
+
       int startAt = 0;
       if (s.Length > 0)
       {
@@ -258,7 +258,8 @@ namespace System.Data.SQLite
       {
           IntPtr handle = _sqlite_stmt;
 
-          SQLiteLog.LogMessage(String.Format(
+          SQLiteLog.LogMessage(UnsafeNativeMethods.StringFormat(
+              CultureInfo.CurrentCulture,
               "Binding statement {0} paramter #{1} with database type {2} and raw value {{{3}}}...",
               handle, index, objType, obj));
       }
