@@ -3603,6 +3603,44 @@ runTest {test data-1.74 {bind functions using delegate} -setup {
     return $result
   }
 
+  proc getHashCode { value } {
+    if {[isObjectHandle $value]} then {
+      if {$value eq "null"} then {
+        return 0
+      } else {
+        return [object invoke $value GetHashCode]
+      }
+    } else {
+      if {[string length $value] == 0} then {
+        return 0
+      } else {
+        set string [object create String $value]
+
+        return [object invoke $string GetHashCode]
+      }
+    }
+  }
+
+  proc hashManagedArray { array } {
+    set data ""
+
+    if {[isObjectHandle $array] && $array ne "null"} then {
+      if {[object invoke $array GetType.IsArray]} then {
+        for {set index 0} {$index < [$array Length]} {incr index} {
+          set element [$array -create -alias GetValue $index]
+
+          if {[string length $element] > 0} then {
+            append data [$element ToString]
+          } else {
+            append data null
+          }
+        }
+      }
+    }
+
+    return [getHashCode [hash normal sha1 $data]]
+  }
+
   proc myFuncCallback { args } {
     if {[llength $args] == 0} then {
       error "no function arguments"
@@ -3610,42 +3648,57 @@ runTest {test data-1.74 {bind functions using delegate} -setup {
 
     set name [lindex $args 0]
 
+    if {[isObjectHandle $name] && $name ne "null"} then {
+      set name [object invoke $name ToString]
+    }
+
     switch -exact -- $name {
       Invoke {
-        return $args
+        return [hashManagedArray [lindex $args end]]
       }
       Step {
-        set ctx [lindex $args 1]
+        set varName [lindex $args end]
 
-        if {[string length $ctx] == 0} then {
-          error "invalid aggregate context"
+        if {[string length $varName] == 0} then {
+          error "invalid aggregate context variable name"
         }
 
-        global aggregateData
+        upvar 1 $varName ctx
 
-        if {[info exists aggregateData($ctx)]} then {
-          incr aggregateData($ctx)
+        if {![info exists ctx] || [string length $ctx] == 0} then {
+          set ctx [pid]
+        }
+
+        set hashCtx [getHashCode $ctx]
+        set hashArgs [hashManagedArray [lindex $args end-2]]
+
+        if {[info exists ::aggregateData($hashCtx)]} then {
+          incr ::aggregateData($hashCtx) $hashArgs
         } else {
-          set aggregateData($ctx) 1
+          set ::aggregateData($hashCtx) $hashArgs
         }
       }
       Final {
-        set ctx [lindex $args 1]
+        set ctx [lindex $args end]
 
         if {[string length $ctx] == 0} then {
           error "invalid aggregate context"
         }
 
-        global aggregateData
+        set hashCtx [getHashCode $ctx]
 
-        if {[info exists aggregateData($ctx)]} then {
-          return $aggregateData($ctx)
+        if {[info exists ::aggregateData($hashCtx)]} then {
+          return $::aggregateData($hashCtx)
         } else {
           error "missing aggregate context data"
         }
       }
       Compare {
-        return [string compare -nocase [lindex $args 1] [lindex $args 2]]
+        lappend ::compareResults [object invoke -create \
+            Int32 Parse [string compare -nocase [lindex \
+            $args 1] [lindex $args 2]]]
+
+        return [lindex $::compareResults end]
       }
       default {
         error [appendArgs "unknown function callback \"" $name \"]
@@ -3653,9 +3706,26 @@ runTest {test data-1.74 {bind functions using delegate} -setup {
     }
   }
 
+  proc myFuncInvokeCallback { param0 objs } {
+    return [myFuncCallback $param0 $objs]
+  }
+
+  proc myFuncStepCallback { param0 objs stepNumber contextDataVarName } {
+    upvar 1 $contextDataVarName $contextDataVarName
+    return [myFuncCallback $param0 $objs $stepNumber $contextDataVarName]
+  }
+
+  proc myFuncFinalCallback { param0 contextData } {
+    return [myFuncCallback $param0 $contextData ]
+  }
+
+  proc myFuncCompareCallback { param0 param1 param2 } {
+    return [myFuncCallback $param0 $param1 $param2]
+  }
+
   setupDb [set fileName data-1.74.db]
 } -body {
-  sql execute $db "CREATE TABLE t1(x INTEGER);"
+  sql execute $db "CREATE TABLE t1(x);"
   sql execute $db "INSERT INTO t1 (x) VALUES(1);"
   sql execute $db "INSERT INTO t1 (x) VALUES(2);"
   sql execute $db "INSERT INTO t1 (x) VALUES(3);"
@@ -3673,19 +3743,36 @@ runTest {test data-1.74 {bind functions using delegate} -setup {
         System.Data.SQLite.SQLiteFunctionAttribute [appendArgs \
         myFunc1_74_1_ $argumentCount] $argumentCount Scalar]
 
-    $connection BindFunction $attribute(1,$argumentCount) myFuncCallback
+    $connection -marshalflags \
+        {-StrictMatchType +DynamicCallback ForceParameterType} \
+        -parametertypes [list System.Data.SQLite.SQLiteFunctionAttribute \
+            System.Data.SQLite.SQLiteInvokeDelegate Delegate] \
+        BindFunction $attribute(1,$argumentCount) \
+        myFuncInvokeCallback null
 
     set attribute(2,$argumentCount) [object create \
         System.Data.SQLite.SQLiteFunctionAttribute [appendArgs \
         myFunc1_74_2_ $argumentCount] $argumentCount Aggregate]
 
-    $connection BindFunction $attribute(2,$argumentCount) myFuncCallback
+    $connection -marshalflags \
+        {-StrictMatchType +DynamicCallback ForceParameterType} \
+        -parametertypes [list System.Data.SQLite.SQLiteFunctionAttribute \
+            System.Data.SQLite.SQLiteStepDelegate \
+            System.Data.SQLite.SQLiteFinalDelegate] \
+        BindFunction $attribute(2,$argumentCount) \
+        myFuncStepCallback myFuncFinalCallback
   }
 
   set attribute(3,0) [object create \
-      System.Data.SQLite.SQLiteFunctionAttribute myFunc1_74_3 0 Collation]
+      System.Data.SQLite.SQLiteFunctionAttribute myFunc1_74_3 0 \
+      Collation]
 
-  $connection BindFunction $attribute(3,0) myFuncCallback
+  $connection -marshalflags \
+      {-StrictMatchType +DynamicCallback ForceParameterType} \
+      -parametertypes [list System.Data.SQLite.SQLiteFunctionAttribute \
+          System.Data.SQLite.SQLiteCompareDelegate Delegate] \
+      BindFunction $attribute(3,0) \
+      myFuncCompareCallback null
 
   for {set argumentCount 0} {$argumentCount < 3} {incr argumentCount} {
     lappend result [catch {
@@ -3702,7 +3789,8 @@ runTest {test data-1.74 {bind functions using delegate} -setup {
   }
 
   lappend result [catch {
-    sql execute $db "SELECT x FROM t1 ORDER BY x COLLATE myFunc1_74_3;"
+    sql execute -execute reader -format list $db \
+        "SELECT x FROM t1 ORDER BY x COLLATE myFunc1_74_3;"
   } error] $error
 
   lappend result [$connection UnbindAllFunctions false]
@@ -3724,9 +3812,13 @@ runTest {test data-1.74 {bind functions using delegate} -setup {
   }
 
   lappend result [catch {
-    sql execute $db "SELECT x FROM t1 ORDER BY x COLLATE myFunc1_74_3;"
+    sql execute -execute reader -format list $db \
+        "SELECT x FROM t1 ORDER BY x COLLATE myFunc1_74_3;"
   } error] [expr {[string first "no such collation sequence: myFunc1_74_3" \
       $error] != -1}]
+
+  lappend result [array size aggregateData]
+  lappend result [testArrayGet aggregateData]
 
   set result
 } -cleanup {
@@ -3734,15 +3826,32 @@ runTest {test data-1.74 {bind functions using delegate} -setup {
 
   freeDbConnection
 
-  catch {object removecallback myFuncCallback}
+  catch {object removecallback myFuncCompareCallback}
+  catch {object removecallback myFuncFinalCallback}
+  catch {object removecallback myFuncStepCallback}
+  catch {object removecallback myFuncInvokeCallback}
 
-  unset -nocomplain result error aggregateData argumentCount attribute \
-      connection db fileName
+  catch {
+    foreach compareResult $compareResults {
+      catch {object dispose $compareResult}
+    }
+  }
 
+  unset -nocomplain result error compareResult compareResults \
+      aggregateData argumentCount attribute connection db fileName
+
+  rename myFuncCompareCallback ""
+  rename myFuncFinalCallback ""
+  rename myFuncStepCallback ""
+  rename myFuncInvokeCallback ""
   rename myFuncCallback ""
+  rename hashManagedArray ""
+  rename getHashCode ""
   rename getMyFuncArgs ""
 } -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
-System.Data.SQLite} -result {}}
+System.Data.SQLite} -match regexp -result {^0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 \{1\
+2 3 A a M m Z z\} True 1 True 1 True 1 True 1 True 1 True 1 True 1 True 1\
+\{(?:-)?\d+ (?:-)?\d+\}$}}
 
 ###############################################################################
 

@@ -740,7 +740,7 @@ namespace System.Data.SQLite
 
             RegisterFunction(
                 at.Name, at.Arguments, at.FuncType, at.InstanceType,
-                at.Callback);
+                at.Callback1, at.Callback2);
         }
     }
 
@@ -761,27 +761,34 @@ namespace System.Data.SQLite
     /// </param>
     /// <param name="instanceType">
     /// The <see cref="Type" /> that actually implements the function.
-    /// This will only be used if the <paramref name="callback" />
-    /// parameter is null.
+    /// This will only be used if the <paramref name="callback1" />
+    /// and <paramref name="callback2" /> parameters are null.
     /// </param>
-    /// <param name="callback">
-    /// The <see cref="Delegate" /> that implements the function.  If
-    /// this is non-null, the <paramref name="instanceType" /> parameter
-    /// will be ignored when the function is invoked.
+    /// <param name="callback1">
+    /// The <see cref="Delegate" /> to be used for all calls into the
+    /// <see cref="SQLiteFunction.Invoke" />,
+    /// <see cref="SQLiteFunction.Step" />,
+    /// and <see cref="SQLiteFunction.Compare" /> virtual methods.
+    /// </param>
+    /// <param name="callback2">
+    /// The <see cref="Delegate" /> to be used for all calls into the
+    /// <see cref="SQLiteFunction.Final" /> virtual method.
     /// </param>
     public static void RegisterFunction(
         string name,
         int argumentCount,
         FunctionType functionType,
         Type instanceType,
-        Delegate callback
+        Delegate callback1,
+        Delegate callback2
         )
     {
         SQLiteFunctionAttribute at = new SQLiteFunctionAttribute(
             name, argumentCount, functionType);
 
         at.InstanceType = instanceType;
-        at.Callback = callback;
+        at.Callback1 = callback1;
+        at.Callback2 = callback2;
 
         _registeredFunctions.Add(at, null);
     }
@@ -810,10 +817,12 @@ namespace System.Data.SQLite
             function = null;
             return false;
         }
-        else if (functionAttribute.Callback != null)
+        else if ((functionAttribute.Callback1 != null) ||
+                (functionAttribute.Callback2 != null))
         {
             function = new SQLiteDelegateFunction(
-                functionAttribute.Callback);
+                functionAttribute.Callback1,
+                functionAttribute.Callback2);
 
             return true;
         }
@@ -1191,10 +1200,12 @@ namespace System.Data.SQLite
   {
       #region Private Constants
       /// <summary>
-      /// This error message is used by the overridden virtual methods when the
-      /// callback has not been set.
+      /// This error message is used by the overridden virtual methods when
+      /// a required <see cref="Delegate" /> property (e.g.
+      /// <see cref="Callback1" /> or <see cref="Callback2" />) has not been
+      /// set.
       /// </summary>
-      private const string NoCallbackError = "No callback is set.";
+      private const string NoCallbackError = "No \"{0}\" callback is set.";
 
       /////////////////////////////////////////////////////////////////////////
 
@@ -1212,7 +1223,7 @@ namespace System.Data.SQLite
       /// Constructs an empty instance of this class.
       /// </summary>
       public SQLiteDelegateFunction()
-          : this(null)
+          : this(null, null)
       {
           // do nothing.
       }
@@ -1224,16 +1235,24 @@ namespace System.Data.SQLite
       /// <see cref="Delegate" /> as the <see cref="SQLiteFunction" />
       /// implementation.
       /// </summary>
-      /// <param name="callback">
+      /// <param name="callback1">
       /// The <see cref="Delegate" /> to be used for all calls into the
-      /// virtual methods needed by the <see cref="SQLiteFunction" />
-      /// class.
+      /// <see cref="Invoke" />, <see cref="Step" />, and
+      /// <see cref="Compare" /> virtual methods needed by the
+      /// <see cref="SQLiteFunction" /> base class.
+      /// </param>
+      /// <param name="callback2">
+      /// The <see cref="Delegate" /> to be used for all calls into the
+      /// <see cref="Final" /> virtual methods needed by the
+      /// <see cref="SQLiteFunction" /> base class.
       /// </param>
       public SQLiteDelegateFunction(
-          Delegate callback
+          Delegate callback1,
+          Delegate callback2
           )
       {
-          this.callback = callback;
+          this.callback1 = callback1;
+          this.callback2 = callback2;
       }
       #endregion
 
@@ -1420,16 +1439,31 @@ namespace System.Data.SQLite
       /////////////////////////////////////////////////////////////////////////
 
       #region Public Properties
-      private Delegate callback;
+      private Delegate callback1;
       /// <summary>
       /// The <see cref="Delegate" /> to be used for all calls into the
-      /// virtual methods needed by the <see cref="SQLiteFunction" />
-      /// class.
+      /// <see cref="Invoke" />, <see cref="Step" />, and
+      /// <see cref="Compare" /> virtual methods needed by the
+      /// <see cref="SQLiteFunction" /> base class.
       /// </summary>
-      public virtual Delegate Callback
+      public virtual Delegate Callback1
       {
-          get { return callback; }
-          set { callback = value; }
+          get { return callback1; }
+          set { callback1 = value; }
+      }
+
+      /////////////////////////////////////////////////////////////////////////
+
+      private Delegate callback2;
+      /// <summary>
+      /// The <see cref="Delegate" /> to be used for all calls into the
+      /// <see cref="Final" /> virtual methods needed by the
+      /// <see cref="SQLiteFunction" /> base class.
+      /// </summary>
+      public virtual Delegate Callback2
+      {
+          get { return callback2; }
+          set { callback2 = value; }
       }
       #endregion
 
@@ -1451,11 +1485,14 @@ namespace System.Data.SQLite
           object[] args /* in */
           )
       {
-          if (callback == null)
-              throw new InvalidOperationException(NoCallbackError);
+          if (callback1 == null)
+          {
+              throw new InvalidOperationException(String.Format(
+                  NoCallbackError, "Invoke"));
+          }
 
           SQLiteInvokeDelegate invokeDelegate =
-              callback as SQLiteInvokeDelegate;
+              callback1 as SQLiteInvokeDelegate;
 
           if (invokeDelegate != null)
           {
@@ -1463,7 +1500,7 @@ namespace System.Data.SQLite
           }
           else
           {
-              return callback.DynamicInvoke(
+              return callback1.DynamicInvoke(
                   GetInvokeArgs(args, false)); /* throw */
           }
       }
@@ -1492,10 +1529,13 @@ namespace System.Data.SQLite
           ref object contextData /* in, out */
           )
       {
-          if (callback == null)
-              throw new InvalidOperationException(NoCallbackError);
+          if (callback1 == null)
+          {
+              throw new InvalidOperationException(String.Format(
+                  NoCallbackError, "Step"));
+          }
 
-          SQLiteStepDelegate stepDelegate = callback as SQLiteStepDelegate;
+          SQLiteStepDelegate stepDelegate = callback1 as SQLiteStepDelegate;
 
           if (stepDelegate != null)
           {
@@ -1508,7 +1548,7 @@ namespace System.Data.SQLite
                   args, stepNumber, contextData, false);
 
               /* IGNORED */
-              callback.DynamicInvoke(newArgs); /* throw */
+              callback1.DynamicInvoke(newArgs); /* throw */
 
               UpdateStepArgs(newArgs, ref contextData, false);
           }
@@ -1532,19 +1572,22 @@ namespace System.Data.SQLite
           object contextData /* in */
           )
       {
-          if (callback == null)
-              throw new InvalidOperationException(NoCallbackError);
+          if (callback2 == null)
+          {
+              throw new InvalidOperationException(String.Format(
+                  NoCallbackError, "Final"));
+          }
 
-          SQLiteFinalDelegate finalDelegate = callback as SQLiteFinalDelegate;
+          SQLiteFinalDelegate finalDelegate = callback2 as SQLiteFinalDelegate;
 
           if (finalDelegate != null)
           {
-              return finalDelegate.Invoke("Final", contextData);
+              return finalDelegate.Invoke("Final", contextData); /* throw */
           }
           else
           {
-              return callback.DynamicInvoke(GetFinalArgs(
-                  contextData, callback is SQLiteFinalDelegate)); /* throw */
+              return callback1.DynamicInvoke(GetFinalArgs(
+                  contextData, false)); /* throw */
           }
       }
 
@@ -1573,19 +1616,23 @@ namespace System.Data.SQLite
           string param2  /* in */
           )
       {
-          if (callback == null)
-              throw new InvalidOperationException(NoCallbackError);
+          if (callback1 == null)
+          {
+              throw new InvalidOperationException(String.Format(
+                  NoCallbackError, "Compare"));
+          }
 
           SQLiteCompareDelegate compareDelegate =
-              callback as SQLiteCompareDelegate;
+              callback1 as SQLiteCompareDelegate;
 
           if (compareDelegate != null)
           {
-              return compareDelegate.Invoke("Compare", param1, param2);
+              return compareDelegate.Invoke(
+                  "Compare", param1, param2); /* throw */
           }
           else
           {
-              object result = callback.DynamicInvoke(GetCompareArgs(
+              object result = callback1.DynamicInvoke(GetCompareArgs(
                   param1, param2, false)); /* throw */
 
               if (result is int)

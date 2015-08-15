@@ -1414,13 +1414,21 @@ namespace System.Data.SQLite
     /// The <see cref="SQLiteFunctionAttribute" /> object instance containing
     /// the metadata for the function to be bound.
     /// </param>
-    /// <param name="callback">
-    /// The <see cref="Delegate" /> object instance that implements the
-    /// function to be bound.
+    /// <param name="callback1">
+    /// A <see cref="Delegate" /> object instance that helps implement the
+    /// function to be bound.  For aggregate functions, this corresponds to the
+    /// <see cref="SQLiteStepDelegate" /> callback.
+    /// </param>
+    /// <param name="callback2">
+    /// A <see cref="Delegate" /> object instance that helps implement the
+    /// function to be bound.  For aggregate functions, this corresponds to the
+    /// <see cref="SQLiteFinalDelegate" /> callback.  For other callback types,
+    /// it is not used and must be null.
     /// </param>
     public void BindFunction(
         SQLiteFunctionAttribute functionAttribute,
-        Delegate callback
+        Delegate callback1,
+        Delegate callback2
         )
     {
         CheckDisposed();
@@ -1430,7 +1438,7 @@ namespace System.Data.SQLite
                 "Database connection not valid for binding functions.");
 
         _sql.BindFunction(functionAttribute,
-            new SQLiteDelegateFunction(callback), _flags);
+            new SQLiteDelegateFunction(callback1, callback2), _flags);
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////

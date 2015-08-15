@@ -20,7 +20,8 @@ namespace System.Data.SQLite
     private int          _argumentCount;
     private FunctionType _functionType;
     private Type         _instanceType;
-    private Delegate     _callback;
+    private Delegate     _callback1;
+    private Delegate     _callback2;
 
     /// <summary>
     /// Default constructor, initializes the internal variables for the function.
@@ -54,7 +55,8 @@ namespace System.Data.SQLite
         _argumentCount = argumentCount;
         _functionType = functionType;
         _instanceType = null;
-        _callback = null;
+        _callback1 = null;
+        _callback2 = null;
     }
 
     /// <summary>
@@ -87,8 +89,8 @@ namespace System.Data.SQLite
     /// <summary>
     /// The <see cref="System.Type" /> object instance that describes the class
     /// containing the implementation for the associated function.  The value of
-    /// this property will not be used if the <see cref="Callback" /> property
-    /// value is set to non-null.
+    /// this property will not be used if either the <see cref="Callback1" /> or
+    /// <see cref="Callback2" /> property values are set to non-null.
     /// </summary>
     internal Type InstanceType
     {
@@ -101,10 +103,21 @@ namespace System.Data.SQLite
     /// associated function.  If this property value is set to non-null, it will
     /// be used instead of the <see cref="InstanceType" /> property value.
     /// </summary>
-    internal Delegate Callback
+    internal Delegate Callback1
     {
-        get { return _callback; }
-        set { _callback = value; }
+        get { return _callback1; }
+        set { _callback1 = value; }
+    }
+
+    /// <summary>
+    /// The <see cref="Delegate" /> that refers to the implementation for the
+    /// associated function.  If this property value is set to non-null, it will
+    /// be used instead of the <see cref="InstanceType" /> property value.
+    /// </summary>
+    internal Delegate Callback2
+    {
+        get { return _callback2; }
+        set { _callback2 = value; }
     }
   }
 }
