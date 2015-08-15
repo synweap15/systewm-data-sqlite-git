@@ -1634,6 +1634,12 @@ namespace System.Data.SQLite
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
 
+    /// <summary>
+    /// Cleans up resources (native and managed) associated with the current instance.
+    /// </summary>
+    /// <param name="disposing">
+    /// Zero when being disposed via garbage collection; otherwise, non-zero.
+    /// </param>
     protected override void Dispose(bool disposing)
     {
 #if !NET_COMPACT_20 && TRACE_WARNING
@@ -3285,6 +3291,7 @@ namespace System.Data.SQLite
     /// A standard SQLite return code (i.e. zero for success and non-zero
     /// for failure).
     /// </returns>
+    #pragma warning disable 3001
     public static SQLiteErrorCode ReleaseMemory(
         int nBytes,
         bool reset,
@@ -3297,6 +3304,7 @@ namespace System.Data.SQLite
         return SQLite3.StaticReleaseMemory(
             nBytes, reset, compact, ref nFree, ref resetOk, ref nLargest);
     }
+    #pragma warning restore 3001
 
     /// <summary>
     /// Sets the status of the memory usage tracking subsystem in the SQLite core library.  By default, this is enabled.
@@ -5536,6 +5544,9 @@ namespace System.Data.SQLite
 
   ///////////////////////////////////////////////////////////////////////////////////////////////
 
+  /// <summary>
+  /// The event data associated with progress reporting events.
+  /// </summary>
   public class ProgressEventArgs : EventArgs
   {
       /// <summary>

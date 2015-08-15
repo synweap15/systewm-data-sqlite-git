@@ -201,6 +201,9 @@ namespace System.Data.SQLite
     ///////////////////////////////////////////////////////////////////////////////////////////////
 
     #region Destructor
+    /// <summary>
+    /// Cleans up resources associated with the current instance.
+    /// </summary>
     ~SQLiteFunction()
     {
         Dispose(false);
@@ -1487,7 +1490,9 @@ namespace System.Data.SQLite
       {
           if (callback1 == null)
           {
-              throw new InvalidOperationException(String.Format(
+              throw new InvalidOperationException(
+                  UnsafeNativeMethods.StringFormat(
+                  CultureInfo.CurrentCulture,
                   NoCallbackError, "Invoke"));
           }
 
@@ -1531,7 +1536,9 @@ namespace System.Data.SQLite
       {
           if (callback1 == null)
           {
-              throw new InvalidOperationException(String.Format(
+              throw new InvalidOperationException(
+                  UnsafeNativeMethods.StringFormat(
+                  CultureInfo.CurrentCulture,
                   NoCallbackError, "Step"));
           }
 
@@ -1574,7 +1581,9 @@ namespace System.Data.SQLite
       {
           if (callback2 == null)
           {
-              throw new InvalidOperationException(String.Format(
+              throw new InvalidOperationException(
+                  UnsafeNativeMethods.StringFormat(
+                  CultureInfo.CurrentCulture,
                   NoCallbackError, "Final"));
           }
 
@@ -1618,7 +1627,9 @@ namespace System.Data.SQLite
       {
           if (callback1 == null)
           {
-              throw new InvalidOperationException(String.Format(
+              throw new InvalidOperationException(
+                  UnsafeNativeMethods.StringFormat(
+                  CultureInfo.CurrentCulture,
                   NoCallbackError, "Compare"));
           }
 
@@ -1638,7 +1649,9 @@ namespace System.Data.SQLite
               if (result is int)
                   return (int)result;
 
-              throw new InvalidOperationException(String.Format(
+              throw new InvalidOperationException(
+                  UnsafeNativeMethods.StringFormat(
+                  CultureInfo.CurrentCulture,
                   ResultInt32Error, "Compare"));
           }
       }
@@ -1678,6 +1691,12 @@ namespace System.Data.SQLite
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
 
+    /// <summary>
+    /// Cleans up resources (native and managed) associated with the current instance.
+    /// </summary>
+    /// <param name="disposing">
+    /// Zero when being disposed via garbage collection; otherwise, non-zero.
+    /// </param>
     protected override void Dispose(bool disposing)
     {
         try
