@@ -42,11 +42,18 @@
 #
 #           runTestEpilogue
 #
-if {![info exists test_path]} then {
-  set test_path [file normalize [file dirname [info script]]]
+if {![info exists test_all_path]} then {
+  set test_all_path \
+      [file normalize [file dirname [info script]]]
 }
 
-source [file join $test_path prologue.eagle]
+if {![info exists test_path]} then {
+  set test_path [file normalize [file join \
+      [file dirname [file dirname $test_all_path]] \
+      Library Tests]]
+}
+
+source [file join $test_all_path prologue.eagle]
 
 set no(prologue.eagle) true
 set no(epilogue.eagle) true
@@ -55,8 +62,8 @@ set test_time [time {
   runAllTests $test_channel $test_path \
       [getTestFiles [list $test_path] $test_flags(-file) \
           $test_flags(-notFile)] \
-      [list [file tail [info script]] *.tcl pkgIndex.eagle \
-          constraints.eagle epilogue.eagle prologue.eagle] \
+      [list [file tail [info script]] *.tcl \
+          epilogue.eagle prologue.eagle] \
       $test_flags(-startFile) $test_flags(-stopFile)
 }]
 
@@ -68,4 +75,4 @@ unset no(prologue.eagle)
 
 if {[array size no] == 0} then {unset no}
 
-source [file join $test_path epilogue.eagle]
+source [file join $test_all_path epilogue.eagle]
