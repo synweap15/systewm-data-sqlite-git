@@ -1425,14 +1425,17 @@ namespace System.Data.SQLite
     /// </param>
     /// <param name="callback1">
     /// A <see cref="Delegate" /> object instance that helps implement the
-    /// function to be bound.  For aggregate functions, this corresponds to the
-    /// <see cref="SQLiteStepDelegate" /> callback.
+    /// function to be bound.  For scalar functions, this corresponds to the
+    /// <see cref="SQLiteInvokeDelegate" /> type.  For aggregate functions,
+    /// this corresponds to the <see cref="SQLiteStepDelegate" /> type.  For
+    /// collation functions, this corresponds to the
+    /// <see cref="SQLiteCompareDelegate" /> type.
     /// </param>
     /// <param name="callback2">
     /// A <see cref="Delegate" /> object instance that helps implement the
     /// function to be bound.  For aggregate functions, this corresponds to the
-    /// <see cref="SQLiteFinalDelegate" /> callback.  For other callback types,
-    /// it is not used and must be null.
+    /// <see cref="SQLiteFinalDelegate" /> type.  For other callback types, it
+    /// is not used and must be null.
     /// </param>
     public void BindFunction(
         SQLiteFunctionAttribute functionAttribute,
