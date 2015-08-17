@@ -742,7 +742,7 @@ namespace System.Data.SQLite
                 continue;
 
             RegisterFunction(
-                at.Name, at.Arguments, at.FuncType, at.InstanceType,
+                at.Name, at.Arguments, at.FuncType, typ,
                 at.Callback1, at.Callback2);
         }
     }
