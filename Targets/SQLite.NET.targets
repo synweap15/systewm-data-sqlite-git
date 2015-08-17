@@ -118,7 +118,7 @@
     <Exec Condition="'$(DirForCloneAndMark32BitOnly)' != '' And
                      HasTrailingSlash('$(DirForCloneAndMark32BitOnly)') And
                      Exists('$(DirForCloneAndMark32BitOnly)bin\CorFlags.exe')"
-          Command="&quot;$(DirForCloneAndMark32BitOnly)bin\CorFlags.exe&quot; &quot;$(TargetDir)$(TargetName)32$(TargetExt)&quot; /32BIT+ /Force" />
+          Command="&quot;$(DirForCloneAndMark32BitOnly)bin\CorFlags.exe&quot; &quot;$(TargetDir)$(TargetName)32$(TargetExt)&quot; /32BIT+ /Force 1&gt;NUL" />
 
     <Exec Condition="'$(DirForCloneAndMark32BitOnly)' != '' And
                      HasTrailingSlash('$(DirForCloneAndMark32BitOnly)') And
@@ -151,7 +151,7 @@
     <Exec Condition="'$(TargetFrameworkSDKToolsDirectory)' != '' And
                      HasTrailingSlash('$(TargetFrameworkSDKToolsDirectory)') And
                      Exists('$(TargetFrameworkSDKToolsDirectory)CorFlags.exe')"
-          Command="&quot;$(TargetFrameworkSDKToolsDirectory)CorFlags.exe&quot; &quot;$(TargetDir)$(TargetName)32$(TargetExt)&quot; /32BIT+ /Force" />
+          Command="&quot;$(TargetFrameworkSDKToolsDirectory)CorFlags.exe&quot; &quot;$(TargetDir)$(TargetName)32$(TargetExt)&quot; /32BIT+ /Force 1&gt;NUL" />
 
     <Exec Condition="'$(TargetFrameworkSDKToolsDirectory)' != '' And
                      HasTrailingSlash('$(TargetFrameworkSDKToolsDirectory)') And
