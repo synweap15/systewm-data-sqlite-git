@@ -775,7 +775,8 @@ namespace System.Data.SQLite
     /// </param>
     /// <param name="callback2">
     /// The <see cref="Delegate" /> to be used for all calls into the
-    /// <see cref="SQLiteFunction.Final" /> virtual method.
+    /// <see cref="SQLiteFunction.Final" /> virtual method.  This
+    /// parameter is only necessary for aggregate functions.
     /// </param>
     public static void RegisterFunction(
         string name,

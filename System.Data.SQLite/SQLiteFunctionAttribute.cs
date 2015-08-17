@@ -27,13 +27,15 @@ namespace System.Data.SQLite
     /// Default constructor, initializes the internal variables for the function.
     /// </summary>
     public SQLiteFunctionAttribute()
-        : this(String.Empty, -1, FunctionType.Scalar)
+        : this(null, -1, FunctionType.Scalar)
     {
         // do nothing.
     }
 
     /// <summary>
-    /// Constructs an instance of this class.
+    /// Constructs an instance of this class.  This sets the initial
+    /// <see cref="InstanceType" />, <see cref="Callback1" />, and
+    /// <see cref="Callback2" /> properties to null.
     /// </summary>
     /// <param name="name">
     /// The name of the function, as seen by the SQLite core library.
