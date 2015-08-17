@@ -27,7 +27,8 @@ runTest {test tkt-ac47dd230a-1.1 {multiple AppDomains} -setup {
 
     set result null
     set interpreterHelper($i) [object invoke -alias InterpreterHelper \
-        Create $appDomain($i) null Default Default null null null result]
+        Create $appDomain($i) null Default Default Default null null null \
+        result]
 
     if {[string length $interpreterHelper($i)] == 0} then {
       error [object invoke $result ToString]

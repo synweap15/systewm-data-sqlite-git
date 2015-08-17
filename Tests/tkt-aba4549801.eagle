@@ -66,7 +66,7 @@ System.Data.SQLite} -match regexp -result \
 \{System#Data#SQLite#SQLiteConnection#\d+ Closing \{\} \{\} \{\} \{\}\}\
 \{System#Data#SQLite#SQLiteConnection#\d+ Closed \{\} \{\} \{\} \{\}\}\
 \{System#Data#SQLite#SQLiteConnection#\d+ ConnectionString \{\} \{\} \{\}\
-\{\}\} \{System#Object#\d+ NewCriticalHandle \{\} \{\} \{\}\
+\{\}\} \{\{\} NewCriticalHandle \{\} \{\} \{\}\
 System#Data#SQLite#SQLiteConnectionHandle#\d+\}\
 \{System#Data#SQLite#SQLiteConnection#\d+ NewCommand \{\}\
 System#Data#SQLite#SQLiteCommand#\d+ \{\} \{\}\}\
@@ -77,7 +77,7 @@ System#Data#SQLite#SQLiteCommand#\d+ \{\} \{\}\}\
 System#Data#SQLite#SQLiteCommand#\d+ \{\} \{\}\}\
 \{System#Data#SQLite#SQLiteConnection#\d+ NewDataReader \{\}\
 System#Data#SQLite#SQLiteCommand#\d+ System#Data#SQLite#SQLiteDataReader#\d+\
-\{\}\} \{System#Object#\d+ NewCriticalHandle \{\} \{\} \{\}\
+\{\}\} \{\{\} NewCriticalHandle \{\} \{\} \{\}\
 System#Data#SQLite#SQLiteStatementHandle#\d+\}\
 \{System#Data#SQLite#SQLiteConnection#\d+ DisposingDataReader \{\}\
 System#Data#SQLite#SQLiteCommand#\d+ System#Data#SQLite#SQLiteDataReader#\d+\
@@ -89,7 +89,7 @@ System#Data#SQLite#SQLiteCommand#\d+ \{\} \{\}\}\
 System#Data#SQLite#SQLiteCommand#\d+ \{\} \{\}\}\
 \{System#Data#SQLite#SQLiteConnection#\d+ NewDataReader \{\}\
 System#Data#SQLite#SQLiteCommand#\d+ System#Data#SQLite#SQLiteDataReader#\d+\
-\{\}\} \{System#Object#\d+ NewCriticalHandle \{\} \{\} \{\}\
+\{\}\} \{\{\} NewCriticalHandle \{\} \{\} \{\}\
 System#Data#SQLite#SQLiteStatementHandle#\d+\}\
 \{System#Data#SQLite#SQLiteConnection#\d+ DisposingDataReader \{\}\
 System#Data#SQLite#SQLiteCommand#\d+ System#Data#SQLite#SQLiteDataReader#\d+\
@@ -101,7 +101,7 @@ System#Data#SQLite#SQLiteCommand#\d+ \{\} \{\}\}\
 System#Data#SQLite#SQLiteCommand#\d+ \{\} \{\}\}\
 \{System#Data#SQLite#SQLiteConnection#\d+ NewDataReader \{\}\
 System#Data#SQLite#SQLiteCommand#\d+ System#Data#SQLite#SQLiteDataReader#\d+\
-\{\}\} \{System#Object#\d+ NewCriticalHandle \{\} \{\} \{\}\
+\{\}\} \{\{\} NewCriticalHandle \{\} \{\} \{\}\
 System#Data#SQLite#SQLiteStatementHandle#\d+\}\
 \{System#Data#SQLite#SQLiteConnection#\d+ DisposingDataReader \{\}\
 System#Data#SQLite#SQLiteCommand#\d+ System#Data#SQLite#SQLiteDataReader#\d+\
@@ -115,9 +115,9 @@ System#Data#SQLite#SQLiteTransaction#\d+ \{\} \{\} \{\}\}\
 System#Data#SQLite#SQLiteCommand#\d+ \{\} \{\}\}\
 \{System#Data#SQLite#SQLiteConnection#\d+ NewDataReader \{\}\
 System#Data#SQLite#SQLiteCommand#\d+ System#Data#SQLite#SQLiteDataReader#\d+\
-\{\}\} \{System#Object#\d+ NewCriticalHandle \{\} \{\} \{\}\
-System#Data#SQLite#SQLiteStatementHandle#\d+\} \{System#Object#\d+\
-NewCriticalHandle \{\} \{\} \{\} System#Data#SQLite#SQLiteStatementHandle#\d+\}\
+\{\}\} \{\{\} NewCriticalHandle \{\} \{\} \{\}\
+System#Data#SQLite#SQLiteStatementHandle#\d+\} \{\{\} NewCriticalHandle \{\}\
+\{\} \{\} System#Data#SQLite#SQLiteStatementHandle#\d+\}\
 \{System#Data#SQLite#SQLiteConnection#\d+ ClosingDataReader \{\}\
 System#Data#SQLite#SQLiteCommand#\d+ System#Data#SQLite#SQLiteDataReader#\d+\
 \{\}\} \{System#Data#SQLite#SQLiteConnection#\d+ DisposingCommand \{\}\
@@ -126,7 +126,7 @@ System#Data#SQLite#SQLiteCommand#\d+ \{\} \{\}\}\
 System#Data#SQLite#SQLiteCommand#\d+ \{\} \{\}\}\
 \{System#Data#SQLite#SQLiteConnection#\d+ NewDataReader \{\}\
 System#Data#SQLite#SQLiteCommand#\d+ System#Data#SQLite#SQLiteDataReader#\d+\
-\{\}\} \{System#Object#\d+ NewCriticalHandle \{\} \{\} \{\}\
+\{\}\} \{\{\} NewCriticalHandle \{\} \{\} \{\}\
 System#Data#SQLite#SQLiteStatementHandle#\d+\}\
 \{System#Data#SQLite#SQLiteConnection#\d+ DisposingDataReader \{\}\
 System#Data#SQLite#SQLiteCommand#\d+ System#Data#SQLite#SQLiteDataReader#\d+\
