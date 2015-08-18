@@ -1192,14 +1192,30 @@ namespace System.Data.SQLite
 
   /////////////////////////////////////////////////////////////////////////////
 
+#if !PLATFORM_COMPACTFRAMEWORK
   /// <summary>
   /// This class implements a SQLite function using a <see cref="Delegate" />.
   /// All the virtual methods of the <see cref="SQLiteFunction" /> class are
-  /// implemented using calls to the <see cref="Delegate.DynamicInvoke" />
-  /// method.  The arguments are presented in the same order they appear in
+  /// implemented using calls to the <see cref="SQLiteInvokeDelegate" />,
+  /// <see cref="SQLiteStepDelegate" />, <see cref="SQLiteFinalDelegate" />,
+  /// and <see cref="SQLiteCompareDelegate" /> strongly typed delegate types
+  /// or via the <see cref="Delegate.DynamicInvoke" /> method.
+  /// The arguments are presented in the same order they appear in
   /// the associated <see cref="SQLiteFunction" /> methods with one exception:
   /// the first argument is the name of the virtual method being implemented.
   /// </summary>
+#else
+  /// <summary>
+  /// This class implements a SQLite function using a <see cref="Delegate" />.
+  /// All the virtual methods of the <see cref="SQLiteFunction" /> class are
+  /// implemented using calls to the <see cref="SQLiteInvokeDelegate" />,
+  /// <see cref="SQLiteStepDelegate" />, <see cref="SQLiteFinalDelegate" />,
+  /// and <see cref="SQLiteCompareDelegate" /> strongly typed delegate types.
+  /// The arguments are presented in the same order they appear in
+  /// the associated <see cref="SQLiteFunction" /> methods with one exception:
+  /// the first argument is the name of the virtual method being implemented.
+  /// </summary>
+#endif
   public class SQLiteDelegateFunction : SQLiteFunction
   {
       #region Private Constants
@@ -1506,8 +1522,12 @@ namespace System.Data.SQLite
           }
           else
           {
+#if !PLATFORM_COMPACTFRAMEWORK
               return callback1.DynamicInvoke(
                   GetInvokeArgs(args, false)); /* throw */
+#else
+              throw new NotImplementedException();
+#endif
           }
       }
 
@@ -1552,6 +1572,7 @@ namespace System.Data.SQLite
           }
           else
           {
+#if !PLATFORM_COMPACTFRAMEWORK
               object[] newArgs = GetStepArgs(
                   args, stepNumber, contextData, false);
 
@@ -1559,6 +1580,9 @@ namespace System.Data.SQLite
               callback1.DynamicInvoke(newArgs); /* throw */
 
               UpdateStepArgs(newArgs, ref contextData, false);
+#else
+              throw new NotImplementedException();
+#endif
           }
       }
 
@@ -1596,8 +1620,12 @@ namespace System.Data.SQLite
           }
           else
           {
+#if !PLATFORM_COMPACTFRAMEWORK
               return callback1.DynamicInvoke(GetFinalArgs(
                   contextData, false)); /* throw */
+#else
+              throw new NotImplementedException();
+#endif
           }
       }
 
@@ -1644,6 +1672,7 @@ namespace System.Data.SQLite
           }
           else
           {
+#if !PLATFORM_COMPACTFRAMEWORK
               object result = callback1.DynamicInvoke(GetCompareArgs(
                   param1, param2, false)); /* throw */
 
@@ -1654,6 +1683,9 @@ namespace System.Data.SQLite
                   UnsafeNativeMethods.StringFormat(
                   CultureInfo.CurrentCulture,
                   ResultInt32Error, "Compare"));
+#else
+              throw new NotImplementedException();
+#endif
           }
       }
       #endregion
