@@ -50,6 +50,12 @@ namespace System.Data.SQLite
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
 
+    /// <summary>
+    /// Cleans up resources (native and managed) associated with the current instance.
+    /// </summary>
+    /// <param name="disposing">
+    /// Zero when being disposed via garbage collection; otherwise, non-zero.
+    /// </param>
     protected override void Dispose(bool disposing)
     {
         try
@@ -102,7 +108,7 @@ namespace System.Data.SQLite
     /// <returns>Error</returns>
     protected override string GetParameterName(string parameterName)
     {
-      return String.Format(CultureInfo.InvariantCulture, "@{0}", parameterName);
+      return UnsafeNativeMethods.StringFormat(CultureInfo.InvariantCulture, "@{0}", parameterName);
     }
 
     /// <summary>
@@ -112,7 +118,7 @@ namespace System.Data.SQLite
     /// <returns>Error</returns>
     protected override string GetParameterName(int parameterOrdinal)
     {
-      return String.Format(CultureInfo.InvariantCulture, "@param{0}", parameterOrdinal);
+      return UnsafeNativeMethods.StringFormat(CultureInfo.InvariantCulture, "@param{0}", parameterOrdinal);
     }
 
     /// <summary>

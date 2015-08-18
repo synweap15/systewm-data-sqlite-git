@@ -9,6 +9,7 @@ namespace System.Data.SQLite
 {
   using System;
   using System.Data.Common;
+  using System.Globalization;
 
 #if !PLATFORM_COMPACTFRAMEWORK
   using System.Reflection;
@@ -182,7 +183,9 @@ namespace System.Data.SQLite
         string message
         )
     {
-        return String.Format("{0}{1}{2}",
+        return UnsafeNativeMethods.StringFormat(
+            CultureInfo.CurrentCulture,
+            "{0}{1}{2}",
             GetErrorString(errorCode),
 #if !NET_COMPACT_20
             Environment.NewLine, message).Trim();

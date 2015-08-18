@@ -273,6 +273,13 @@ SET PATH=%BUILDTOOLDIR%;%PATH%
 %_VECHO% Path = '%PATH%'
 
 IF NOT DEFINED SOLUTION (
+  IF DEFINED COREONLY (
+    %_AECHO% Building core managed project...
+    SET SOLUTION=.\System.Data.SQLite\System.Data.SQLite.%YEAR%.csproj
+  )
+)
+
+IF NOT DEFINED SOLUTION (
   %_AECHO% Building all projects...
   SET SOLUTION=.\SQLite.NET.%YEAR%.MSBuild.sln
 )

@@ -104,7 +104,7 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
-#if !INTEROP_LOG
+#if !USE_INTEROP_DLL || !INTEROP_LOG
         /// <summary>
         /// The log callback passed to native SQLite engine.  This must live
         /// as long as the SQLite library has a pointer to it.
@@ -178,7 +178,7 @@ namespace System.Data.SQLite
                 }
 #endif
 
-#if !INTEROP_LOG
+#if !USE_INTEROP_DLL || !INTEROP_LOG
                 //
                 // NOTE: Create an instance of the SQLite wrapper class.
                 //
@@ -245,7 +245,7 @@ namespace System.Data.SQLite
                 //
                 _enabled = false;
 
-#if !INTEROP_LOG
+#if !USE_INTEROP_DLL || !INTEROP_LOG
                 //
                 // BUGBUG: This will cause serious problems if other AppDomains
                 //         have any open SQLite connections; however, there is
@@ -559,13 +559,13 @@ namespace System.Data.SQLite
             if ((errorCode != null) &&
                 !Object.ReferenceEquals(errorCode, String.Empty))
             {
-                Trace.WriteLine(String.Format(
+                Trace.WriteLine(UnsafeNativeMethods.StringFormat(
                     CultureInfo.CurrentCulture, "SQLite {0} ({1}): {2}",
                     type, errorCode, message));
             }
             else
             {
-                Trace.WriteLine(String.Format(
+                Trace.WriteLine(UnsafeNativeMethods.StringFormat(
                     CultureInfo.CurrentCulture, "SQLite {0}: {1}",
                     type, message));
             }

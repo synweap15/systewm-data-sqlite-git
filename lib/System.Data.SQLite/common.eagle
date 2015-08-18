@@ -514,6 +514,11 @@ namespace eval ::Eagle {
       }
 
       #
+      # NOTE: What is the architecture for this machine?
+      #
+      set architecture [machineToPlatform $::tcl_platform(machine) true]
+
+      #
       # NOTE: What is the platform for this machine?
       #
       set platform [machineToPlatform $::tcl_platform(machine)]
@@ -523,6 +528,13 @@ namespace eval ::Eagle {
       #       containing the System.Data.SQLite native components.  If this
       #       file exists, we should have everything we need.
       #
+      set fileName [file nativename [file join $directory \
+          $architecture SQLite.Interop.dll]]
+
+      if {[file exists $fileName]} then {
+        return true
+      }
+
       set fileName [file nativename [file join $directory \
           $platform SQLite.Interop.dll]]
 
@@ -542,6 +554,13 @@ namespace eval ::Eagle {
       #       library.  If this file exists, we should have everything we
       #       need.
       #
+      set fileName [file nativename [file join $directory \
+          $architecture sqlite3.dll]]
+
+      if {[file exists $fileName]} then {
+        return true
+      }
+
       set fileName [file nativename [file join $directory \
           $platform sqlite3.dll]]
 
@@ -1201,7 +1220,7 @@ namespace eval ::Eagle {
       }]
     }
 
-    proc matchMachine { platform } {
+    proc matchPlatform { platform } {
       #
       # NOTE: An empty string for the platform means that the build is not
       #       [primarily] a native build; therefore, it always matches.
@@ -1329,7 +1348,7 @@ namespace eval ::Eagle {
               #       available build of System.Data.SQLite and then return
               #       immediately.
               #
-              if {$select && [matchMachine $platform]} then {
+              if {$select && [matchPlatform $platform]} then {
                 #
                 # NOTE: Manually override all the build directory selection
                 #       related test settings in order to force this build
@@ -1390,7 +1409,7 @@ namespace eval ::Eagle {
             set platform unknown
           }
 
-          if {$select && [matchMachine $platform]} then {
+          if {$select && [matchPlatform $platform]} then {
             set ::build_directory $directory
 
             tputs $channel [appendArgs "yes, selected (" $platform ")\n"]
@@ -1413,7 +1432,7 @@ namespace eval ::Eagle {
                   set platform unknown
                 }
 
-                if {$select && [matchMachine $platform]} then {
+                if {$select && [matchPlatform $platform]} then {
                   set ::build_directory $path
 
                   tputs $channel [appendArgs "yes, selected (" $platform ")\n"]
@@ -1523,11 +1542,21 @@ namespace eval ::Eagle {
         }
 
         #
-        # NOTE: Yes, the SQLite interop assembly appears to be available.
+        # NOTE: Before actually adding the test constraint, make sure the
+        #       version is valid (i.e. not just that we could query it).
         #
-        addConstraint SQLiteInterop
+        if {$version ne "null"} then {
+          #
+          # NOTE: Yes, the SQLite interop assembly appears to be available.
+          #
+          addConstraint SQLiteInterop
 
-        tputs $channel [appendArgs "yes (" $version " " $sourceId ")\n"]
+          set answer yes
+        } else {
+          set answer no
+        }
+
+        tputs $channel [appendArgs $answer " (" $version " " $sourceId ")\n"]
       } else {
         tputs $channel no\n
       }

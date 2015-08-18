@@ -131,7 +131,7 @@ runTest {test tkt-f8dbab8baf-1.6 {SchemaOnly CREATE/SELECT failure} -setup {
 
   unset -nocomplain rows db fileName
 } -constraints \
-{eagle monoBug28 command.sql compile.DATA SQLite System.Data.SQLite} \
+{eagle monoBug40 command.sql compile.DATA SQLite System.Data.SQLite} \
 -returnCodes 1 -match regexp -result [string map [list \n \r\n] \
 {^System\.Data\.SQLite\.SQLiteException \(0x80004005\): SQL logic error or\
 missing database

@@ -67,7 +67,7 @@ namespace System.Data.SQLite
     /// </summary>
     private SQLiteFinalCallback  _FinalFunc;
     /// <summary>
-    /// Holds a reference to the callback function for collation sequences
+    /// Holds a reference to the callback function for collating sequences
     /// </summary>
     private SQLiteCollation _CompareFunc;
 
@@ -201,6 +201,9 @@ namespace System.Data.SQLite
     ///////////////////////////////////////////////////////////////////////////////////////////////
 
     #region Destructor
+    /// <summary>
+    /// Cleans up resources associated with the current instance.
+    /// </summary>
     ~SQLiteFunction()
     {
         Dispose(false);
@@ -277,11 +280,11 @@ namespace System.Data.SQLite
     }
 
     /// <summary>
-    /// User-defined collation sequences override this method to provide a custom string sorting algorithm.
+    /// User-defined collating sequences override this method to provide a custom string sorting algorithm.
     /// </summary>
-    /// <param name="param1">The first string to compare</param>
-    /// <param name="param2">The second strnig to compare</param>
-    /// <returns>1 if param1 is greater than param2, 0 if they are equal, or -1 if param1 is less than param2</returns>
+    /// <param name="param1">The first string to compare.</param>
+    /// <param name="param2">The second strnig to compare.</param>
+    /// <returns>1 if param1 is greater than param2, 0 if they are equal, or -1 if param1 is less than param2.</returns>
     public virtual int Compare(string param1, string param2)
     {
       CheckDisposed();
@@ -417,7 +420,7 @@ namespace System.Data.SQLite
                         SQLiteConnectionFlags.LogCallbackException)
                 {
                     SQLiteLog.LogMessage(SQLiteBase.COR_E_EXCEPTION,
-                        String.Format(CultureInfo.CurrentCulture,
+                        UnsafeNativeMethods.StringFormat(CultureInfo.CurrentCulture,
                         "Caught exception in \"Invoke\" method: {0}",
                         e)); /* throw */
                 }
@@ -430,7 +433,7 @@ namespace System.Data.SQLite
     }
 
     /// <summary>
-    /// Internal collation sequence function, which wraps up the raw string pointers and executes the Compare() virtual function.
+    /// Internal collating sequence function, which wraps up the raw string pointers and executes the Compare() virtual function.
     /// WARNING: Must not throw exceptions.
     /// </summary>
     /// <param name="ptr">Not used</param>
@@ -455,7 +458,7 @@ namespace System.Data.SQLite
                         SQLiteConnectionFlags.LogCallbackException)
                 {
                     SQLiteLog.LogMessage(SQLiteBase.COR_E_EXCEPTION,
-                        String.Format(CultureInfo.CurrentCulture,
+                        UnsafeNativeMethods.StringFormat(CultureInfo.CurrentCulture,
                         "Caught exception in \"Compare\" (UTF8) method: {0}",
                         e)); /* throw */
                 }
@@ -477,7 +480,7 @@ namespace System.Data.SQLite
     }
 
     /// <summary>
-    /// Internal collation sequence function, which wraps up the raw string pointers and executes the Compare() virtual function.
+    /// Internal collating sequence function, which wraps up the raw string pointers and executes the Compare() virtual function.
     /// WARNING: Must not throw exceptions.
     /// </summary>
     /// <param name="ptr">Not used</param>
@@ -502,7 +505,7 @@ namespace System.Data.SQLite
                         SQLiteConnectionFlags.LogCallbackException)
                 {
                     SQLiteLog.LogMessage(SQLiteBase.COR_E_EXCEPTION,
-                        String.Format(CultureInfo.CurrentCulture,
+                        UnsafeNativeMethods.StringFormat(CultureInfo.CurrentCulture,
                         "Caught exception in \"Compare\" (UTF16) method: {0}",
                         e)); /* throw */
                 }
@@ -575,7 +578,7 @@ namespace System.Data.SQLite
                         SQLiteConnectionFlags.LogCallbackException)
                 {
                     SQLiteLog.LogMessage(SQLiteBase.COR_E_EXCEPTION,
-                        String.Format(CultureInfo.CurrentCulture,
+                        UnsafeNativeMethods.StringFormat(CultureInfo.CurrentCulture,
                         "Caught exception in \"Step\" method: {1}",
                         e)); /* throw */
                 }
@@ -630,7 +633,7 @@ namespace System.Data.SQLite
                         SQLiteConnectionFlags.LogCallbackException)
                 {
                     SQLiteLog.LogMessage(SQLiteBase.COR_E_EXCEPTION,
-                        String.Format(CultureInfo.CurrentCulture,
+                        UnsafeNativeMethods.StringFormat(CultureInfo.CurrentCulture,
                         "Caught exception in \"Final\" method: {1}",
                         e)); /* throw */
                 }
@@ -728,19 +731,117 @@ namespace System.Data.SQLite
     /// <param name="typ">The type of the function to register</param>
     public static void RegisterFunction(Type typ)
     {
-      object[] arAtt = typ.GetCustomAttributes(typeof(SQLiteFunctionAttribute), false);
-      int u = arAtt.Length;
-      SQLiteFunctionAttribute at;
+        object[] arAtt = typ.GetCustomAttributes(
+            typeof(SQLiteFunctionAttribute), false);
 
-      for (int y = 0; y < u; y++)
-      {
-        at = arAtt[y] as SQLiteFunctionAttribute;
-        if (at != null)
+        for (int y = 0; y < arAtt.Length; y++)
         {
-          at.InstanceType = typ;
-          _registeredFunctions.Add(at, null);
+            SQLiteFunctionAttribute at = arAtt[y] as SQLiteFunctionAttribute;
+
+            if (at == null)
+                continue;
+
+            RegisterFunction(
+                at.Name, at.Arguments, at.FuncType, typ,
+                at.Callback1, at.Callback2);
         }
-      }
+    }
+
+    /// <summary>
+    /// Alternative method of registering a function.  This method
+    /// does not require the specified type to be annotated with
+    /// <see cref="SQLiteFunctionAttribute" />.
+    /// </summary>
+    /// <param name="name">
+    /// The name of the function to register.
+    /// </param>
+    /// <param name="argumentCount">
+    /// The number of arguments accepted by the function.
+    /// </param>
+    /// <param name="functionType">
+    /// The type of SQLite function being resitered (e.g. scalar,
+    /// aggregate, or collating sequence).
+    /// </param>
+    /// <param name="instanceType">
+    /// The <see cref="Type" /> that actually implements the function.
+    /// This will only be used if the <paramref name="callback1" />
+    /// and <paramref name="callback2" /> parameters are null.
+    /// </param>
+    /// <param name="callback1">
+    /// The <see cref="Delegate" /> to be used for all calls into the
+    /// <see cref="SQLiteFunction.Invoke" />,
+    /// <see cref="SQLiteFunction.Step" />,
+    /// and <see cref="SQLiteFunction.Compare" /> virtual methods.
+    /// </param>
+    /// <param name="callback2">
+    /// The <see cref="Delegate" /> to be used for all calls into the
+    /// <see cref="SQLiteFunction.Final" /> virtual method.  This
+    /// parameter is only necessary for aggregate functions.
+    /// </param>
+    public static void RegisterFunction(
+        string name,
+        int argumentCount,
+        FunctionType functionType,
+        Type instanceType,
+        Delegate callback1,
+        Delegate callback2
+        )
+    {
+        SQLiteFunctionAttribute at = new SQLiteFunctionAttribute(
+            name, argumentCount, functionType);
+
+        at.InstanceType = instanceType;
+        at.Callback1 = callback1;
+        at.Callback2 = callback2;
+
+        _registeredFunctions.Add(at, null);
+    }
+
+    /// <summary>
+    /// Creates a <see cref="SQLiteFunction" /> instance based on the specified
+    /// <see cref="SQLiteFunctionAttribute" />.
+    /// </summary>
+    /// <param name="functionAttribute">
+    /// The <see cref="SQLiteFunctionAttribute" /> containing the metadata about
+    /// the function to create.
+    /// </param>
+    /// <param name="function">
+    /// The created function -OR- null if the function could not be created.
+    /// </param>
+    /// <returns>
+    /// Non-zero if the function was created; otherwise, zero.
+    /// </returns>
+    private static bool CreateFunction(
+        SQLiteFunctionAttribute functionAttribute,
+        out SQLiteFunction function
+        )
+    {
+        if (functionAttribute == null)
+        {
+            function = null;
+            return false;
+        }
+        else if ((functionAttribute.Callback1 != null) ||
+                (functionAttribute.Callback2 != null))
+        {
+            function = new SQLiteDelegateFunction(
+                functionAttribute.Callback1,
+                functionAttribute.Callback2);
+
+            return true;
+        }
+        else if (functionAttribute.InstanceType != null)
+        {
+            function = (SQLiteFunction)Activator.CreateInstance(
+                functionAttribute.InstanceType);
+
+            return true;
+        }
+        else
+        {
+            function = null;
+            return false;
+        }
     }
 
     /// <summary>
@@ -771,11 +872,17 @@ namespace System.Data.SQLite
             if (pr == null)
                 continue;
 
-            SQLiteFunction f = (SQLiteFunction)Activator.CreateInstance(
-                pr.InstanceType);
+            SQLiteFunction f;
 
-            BindFunction(sqlbase, pr, f, flags);
-            lFunctions[pr] = f;
+            if (CreateFunction(pr, out f))
+            {
+                BindFunction(sqlbase, pr, f, flags);
+                lFunctions[pr] = f;
+            }
+            else
+            {
+                lFunctions[pr] = null;
+            }
         }
 
         return lFunctions;
@@ -861,7 +968,7 @@ namespace System.Data.SQLite
     }
 
     /// <summary>
-    /// This function binds a user-defined functions to a connection.
+    /// This function binds a user-defined function to a connection.
     /// </summary>
     /// <param name="sqliteBase">
     /// The <see cref="SQLiteBase" /> object instance associated with the
@@ -987,8 +1094,572 @@ namespace System.Data.SQLite
     }
   }
 
+  /////////////////////////////////////////////////////////////////////////////
 
+  /// <summary>
+  /// This <see cref="Delegate" /> type is used with the
+  /// <see cref="SQLiteDelegateFunction.Invoke" /> method.
+  /// </summary>
+  /// <param name="param0">
+  /// This is always the string literal "Invoke".
+  /// </param>
+  /// <param name="args">
+  /// The arguments for the scalar function.
+  /// </param>
+  /// <returns>
+  /// The result of the scalar function.
+  /// </returns>
+  public delegate object SQLiteInvokeDelegate(
+    string param0,
+    object[] args
+  );
 
+  /////////////////////////////////////////////////////////////////////////////
+
+  /// <summary>
+  /// This <see cref="Delegate" /> type is used with the
+  /// <see cref="SQLiteDelegateFunction.Step" /> method.
+  /// </summary>
+  /// <param name="param0">
+  /// This is always the string literal "Step".
+  /// </param>
+  /// <param name="args">
+  /// The arguments for the aggregate function.
+  /// </param>
+  /// <param name="stepNumber">
+  /// The step number (one based).  This is incrememted each time the
+  /// <see cref="SQLiteDelegateFunction.Step" /> method is called.
+  /// </param>
+  /// <param name="contextData">
+  /// A placeholder for implementers to store contextual data pertaining
+  /// to the current context.
+  /// </param>
+  public delegate void SQLiteStepDelegate(
+    string param0,
+    object[] args,
+    int stepNumber,
+    ref object contextData
+  );
+
+  /////////////////////////////////////////////////////////////////////////////
+
+  /// <summary>
+  /// This <see cref="Delegate" /> type is used with the
+  /// <see cref="SQLiteDelegateFunction.Final" /> method.
+  /// </summary>
+  /// <param name="param0">
+  /// This is always the string literal "Final".
+  /// </param>
+  /// <param name="contextData">
+  /// A placeholder for implementers to store contextual data pertaining
+  /// to the current context.
+  /// </param>
+  /// <returns>
+  /// The result of the aggregate function.
+  /// </returns>
+  public delegate object SQLiteFinalDelegate(
+    string param0,
+    object contextData
+  );
+
+  /////////////////////////////////////////////////////////////////////////////
+
+  /// <summary>
+  /// This <see cref="Delegate" /> type is used with the
+  /// <see cref="SQLiteDelegateFunction.Compare" /> method.
+  /// </summary>
+  /// <param name="param0">
+  /// This is always the string literal "Compare".
+  /// </param>
+  /// <param name="param1">
+  /// The first string to compare.
+  /// </param>
+  /// <param name="param2">
+  /// The second strnig to compare.
+  /// </param>
+  /// <returns>
+  /// A positive integer if the <paramref name="param1" /> parameter is
+  /// greater than the <paramref name="param2" /> parameter, a negative
+  /// integer if the <paramref name="param1" /> parameter is less than
+  /// the <paramref name="param2" /> parameter, or zero if they are
+  /// equal.
+  /// </returns>
+  public delegate int SQLiteCompareDelegate(
+    string param0,
+    string param1,
+    string param2
+  );
+
+  /////////////////////////////////////////////////////////////////////////////
+
+  /// <summary>
+  /// This class implements a SQLite function using a <see cref="Delegate" />.
+  /// All the virtual methods of the <see cref="SQLiteFunction" /> class are
+  /// implemented using calls to the <see cref="Delegate.DynamicInvoke" />
+  /// method.  The arguments are presented in the same order they appear in
+  /// the associated <see cref="SQLiteFunction" /> methods with one exception:
+  /// the first argument is the name of the virtual method being implemented.
+  /// </summary>
+  public class SQLiteDelegateFunction : SQLiteFunction
+  {
+      #region Private Constants
+      /// <summary>
+      /// This error message is used by the overridden virtual methods when
+      /// a required <see cref="Delegate" /> property (e.g.
+      /// <see cref="Callback1" /> or <see cref="Callback2" />) has not been
+      /// set.
+      /// </summary>
+      private const string NoCallbackError = "No \"{0}\" callback is set.";
+
+      /////////////////////////////////////////////////////////////////////////
+
+      /// <summary>
+      /// This error message is used by the overridden <see cref="Compare" />
+      /// method when the result does not have a type of <see cref="Int32" />.
+      /// </summary>
+      private const string ResultInt32Error = "\"{0}\" result must be Int32.";
+      #endregion
+
+      /////////////////////////////////////////////////////////////////////////
+
+      #region Public Constructors
+      /// <summary>
+      /// Constructs an empty instance of this class.
+      /// </summary>
+      public SQLiteDelegateFunction()
+          : this(null, null)
+      {
+          // do nothing.
+      }
+
+      /////////////////////////////////////////////////////////////////////////
+
+      /// <summary>
+      /// Constructs an instance of this class using the specified
+      /// <see cref="Delegate" /> as the <see cref="SQLiteFunction" />
+      /// implementation.
+      /// </summary>
+      /// <param name="callback1">
+      /// The <see cref="Delegate" /> to be used for all calls into the
+      /// <see cref="Invoke" />, <see cref="Step" />, and
+      /// <see cref="Compare" /> virtual methods needed by the
+      /// <see cref="SQLiteFunction" /> base class.
+      /// </param>
+      /// <param name="callback2">
+      /// The <see cref="Delegate" /> to be used for all calls into the
+      /// <see cref="Final" /> virtual methods needed by the
+      /// <see cref="SQLiteFunction" /> base class.
+      /// </param>
+      public SQLiteDelegateFunction(
+          Delegate callback1,
+          Delegate callback2
+          )
+      {
+          this.callback1 = callback1;
+          this.callback2 = callback2;
+      }
+      #endregion
+
+      /////////////////////////////////////////////////////////////////////////
+
+      #region Protected Methods
+      /// <summary>
+      /// Returns the list of arguments for the <see cref="Invoke" /> method,
+      /// as an <see cref="Array" /> of <see cref="Object" />.  The first
+      /// argument is always the literal string "Invoke".
+      /// </summary>
+      /// <param name="args">
+      /// The original arguments received by the <see cref="Invoke" /> method.
+      /// </param>
+      /// <param name="earlyBound">
+      /// Non-zero if the returned arguments are going to be used with the
+      /// <see cref="SQLiteInvokeDelegate" /> type; otherwise, zero.
+      /// </param>
+      /// <returns>
+      /// The arguments to pass to the configured <see cref="Delegate" />.
+      /// </returns>
+      protected virtual object[] GetInvokeArgs(
+          object[] args,
+          bool earlyBound
+          )
+      {
+          object[] newArgs = new object[] { "Invoke", args };
+
+          if (!earlyBound)
+              newArgs = new object[] { newArgs }; // WRAP
+
+          return newArgs;
+      }
+
+      /////////////////////////////////////////////////////////////////////////
+
+      /// <summary>
+      /// Returns the list of arguments for the <see cref="Step" /> method,
+      /// as an <see cref="Array" /> of <see cref="Object" />.  The first
+      /// argument is always the literal string "Step".
+      /// </summary>
+      /// <param name="args">
+      /// The original arguments received by the <see cref="Step" /> method.
+      /// </param>
+      /// <param name="stepNumber">
+      /// The step number (one based).  This is incrememted each time the
+      /// <see cref="Step" /> method is called.
+      /// </param>
+      /// <param name="contextData">
+      /// A placeholder for implementers to store contextual data pertaining
+      /// to the current context.
+      /// </param>
+      /// <param name="earlyBound">
+      /// Non-zero if the returned arguments are going to be used with the
+      /// <see cref="SQLiteStepDelegate" /> type; otherwise, zero.
+      /// </param>
+      /// <returns>
+      /// The arguments to pass to the configured <see cref="Delegate" />.
+      /// </returns>
+      protected virtual object[] GetStepArgs(
+          object[] args,
+          int stepNumber,
+          object contextData,
+          bool earlyBound
+          )
+      {
+          object[] newArgs = new object[] {
+              "Step", args, stepNumber, contextData
+          };
+
+          if (!earlyBound)
+              newArgs = new object[] { newArgs }; // WRAP
+
+          return newArgs;
+      }
+
+      /////////////////////////////////////////////////////////////////////////
+
+      /// <summary>
+      /// Updates the output arguments for the <see cref="Step" /> method,
+      /// using an <see cref="Array" /> of <see cref="Object" />.  The first
+      /// argument is always the literal string "Step".  Currently, only the
+      /// <paramref name="contextData" /> parameter is updated.
+      /// </summary>
+      /// <param name="args">
+      /// The original arguments received by the <see cref="Step" /> method.
+      /// </param>
+      /// <param name="contextData">
+      /// A placeholder for implementers to store contextual data pertaining
+      /// to the current context.
+      /// </param>
+      /// <param name="earlyBound">
+      /// Non-zero if the returned arguments are going to be used with the
+      /// <see cref="SQLiteStepDelegate" /> type; otherwise, zero.
+      /// </param>
+      /// <returns>
+      /// The arguments to pass to the configured <see cref="Delegate" />.
+      /// </returns>
+      protected virtual void UpdateStepArgs(
+          object[] args,
+          ref object contextData,
+          bool earlyBound
+          )
+      {
+          object[] newArgs;
+
+          if (earlyBound)
+              newArgs = args;
+          else
+              newArgs = args[0] as object[];
+
+          if (newArgs == null)
+              return;
+
+          contextData = newArgs[newArgs.Length - 1];
+      }
+
+      /////////////////////////////////////////////////////////////////////////
+
+      /// <summary>
+      /// Returns the list of arguments for the <see cref="Final" /> method,
+      /// as an <see cref="Array" /> of <see cref="Object" />.  The first
+      /// argument is always the literal string "Final".
+      /// </summary>
+      /// <param name="contextData">
+      /// A placeholder for implementers to store contextual data pertaining
+      /// to the current context.
+      /// </param>
+      /// <param name="earlyBound">
+      /// Non-zero if the returned arguments are going to be used with the
+      /// <see cref="SQLiteFinalDelegate" /> type; otherwise, zero.
+      /// </param>
+      /// <returns>
+      /// The arguments to pass to the configured <see cref="Delegate" />.
+      /// </returns>
+      protected virtual object[] GetFinalArgs(
+          object contextData,
+          bool earlyBound
+          )
+      {
+          object[] newArgs = new object[] { "Final", contextData };
+
+          if (!earlyBound)
+              newArgs = new object[] { newArgs }; // WRAP
+
+          return newArgs;
+      }
+
+      /////////////////////////////////////////////////////////////////////////
+
+      /// <summary>
+      /// Returns the list of arguments for the <see cref="Compare" /> method,
+      /// as an <see cref="Array" /> of <see cref="Object" />.  The first
+      /// argument is always the literal string "Compare".
+      /// </summary>
+      /// <param name="param1">
+      /// The first string to compare.
+      /// </param>
+      /// <param name="param2">
+      /// The second strnig to compare.
+      /// </param>
+      /// <param name="earlyBound">
+      /// Non-zero if the returned arguments are going to be used with the
+      /// <see cref="SQLiteCompareDelegate" /> type; otherwise, zero.
+      /// </param>
+      /// <returns>
+      /// The arguments to pass to the configured <see cref="Delegate" />.
+      /// </returns>
+      protected virtual object[] GetCompareArgs(
+          string param1,
+          string param2,
+          bool earlyBound
+          )
+      {
+          object[] newArgs = new object[] { "Compare", param1, param2 };
+
+          if (!earlyBound)
+              newArgs = new object[] { newArgs }; // WRAP
+
+          return newArgs;
+      }
+      #endregion
+
+      /////////////////////////////////////////////////////////////////////////
+
+      #region Public Properties
+      private Delegate callback1;
+      /// <summary>
+      /// The <see cref="Delegate" /> to be used for all calls into the
+      /// <see cref="Invoke" />, <see cref="Step" />, and
+      /// <see cref="Compare" /> virtual methods needed by the
+      /// <see cref="SQLiteFunction" /> base class.
+      /// </summary>
+      public virtual Delegate Callback1
+      {
+          get { return callback1; }
+          set { callback1 = value; }
+      }
+
+      /////////////////////////////////////////////////////////////////////////
+
+      private Delegate callback2;
+      /// <summary>
+      /// The <see cref="Delegate" /> to be used for all calls into the
+      /// <see cref="Final" /> virtual methods needed by the
+      /// <see cref="SQLiteFunction" /> base class.
+      /// </summary>
+      public virtual Delegate Callback2
+      {
+          get { return callback2; }
+          set { callback2 = value; }
+      }
+      #endregion
+
+      /////////////////////////////////////////////////////////////////////////
+
+      #region System.Data.SQLite.SQLiteFunction Overrides
+      /// <summary>
+      /// This virtual method is the implementation for scalar functions.
+      /// See the <see cref="SQLiteFunction.Invoke" /> method for more
+      /// details.
+      /// </summary>
+      /// <param name="args">
+      /// The arguments for the scalar function.
+      /// </param>
+      /// <returns>
+      /// The result of the scalar function.
+      /// </returns>
+      public override object Invoke(
+          object[] args /* in */
+          )
+      {
+          if (callback1 == null)
+          {
+              throw new InvalidOperationException(
+                  UnsafeNativeMethods.StringFormat(
+                  CultureInfo.CurrentCulture,
+                  NoCallbackError, "Invoke"));
+          }
+
+          SQLiteInvokeDelegate invokeDelegate =
+              callback1 as SQLiteInvokeDelegate;
+
+          if (invokeDelegate != null)
+          {
+              return invokeDelegate.Invoke("Invoke", args); /* throw */
+          }
+          else
+          {
+              return callback1.DynamicInvoke(
+                  GetInvokeArgs(args, false)); /* throw */
+          }
+      }
+
+      /////////////////////////////////////////////////////////////////////////
+
+      /// <summary>
+      /// This virtual method is part of the implementation for aggregate
+      /// functions.  See the <see cref="SQLiteFunction.Step" /> method
+      /// for more details.
+      /// </summary>
+      /// <param name="args">
+      /// The arguments for the aggregate function.
+      /// </param>
+      /// <param name="stepNumber">
+      /// The step number (one based).  This is incrememted each time the
+      /// <see cref="Step" /> method is called.
+      /// </param>
+      /// <param name="contextData">
+      /// A placeholder for implementers to store contextual data pertaining
+      /// to the current context.
+      /// </param>
+      public override void Step(
+          object[] args,         /* in */
+          int stepNumber,        /* in */
+          ref object contextData /* in, out */
+          )
+      {
+          if (callback1 == null)
+          {
+              throw new InvalidOperationException(
+                  UnsafeNativeMethods.StringFormat(
+                  CultureInfo.CurrentCulture,
+                  NoCallbackError, "Step"));
+          }
+
+          SQLiteStepDelegate stepDelegate = callback1 as SQLiteStepDelegate;
+
+          if (stepDelegate != null)
+          {
+              stepDelegate.Invoke(
+                  "Step", args, stepNumber, ref contextData); /* throw */
+          }
+          else
+          {
+              object[] newArgs = GetStepArgs(
+                  args, stepNumber, contextData, false);
+
+              /* IGNORED */
+              callback1.DynamicInvoke(newArgs); /* throw */
+
+              UpdateStepArgs(newArgs, ref contextData, false);
+          }
+      }
+
+      /////////////////////////////////////////////////////////////////////////
+
+      /// <summary>
+      /// This virtual method is part of the implementation for aggregate
+      /// functions.  See the <see cref="SQLiteFunction.Final" /> method
+      /// for more details.
+      /// </summary>
+      /// <param name="contextData">
+      /// A placeholder for implementers to store contextual data pertaining
+      /// to the current context.
+      /// </param>
+      /// <returns>
+      /// The result of the aggregate function.
+      /// </returns>
+      public override object Final(
+          object contextData /* in */
+          )
+      {
+          if (callback2 == null)
+          {
+              throw new InvalidOperationException(
+                  UnsafeNativeMethods.StringFormat(
+                  CultureInfo.CurrentCulture,
+                  NoCallbackError, "Final"));
+          }
+
+          SQLiteFinalDelegate finalDelegate = callback2 as SQLiteFinalDelegate;
+
+          if (finalDelegate != null)
+          {
+              return finalDelegate.Invoke("Final", contextData); /* throw */
+          }
+          else
+          {
+              return callback1.DynamicInvoke(GetFinalArgs(
+                  contextData, false)); /* throw */
+          }
+      }
+
+      /////////////////////////////////////////////////////////////////////////
+
+      /// <summary>
+      /// This virtual method is part of the implementation for collating
+      /// sequences.  See the <see cref="SQLiteFunction.Compare" /> method
+      /// for more details.
+      /// </summary>
+      /// <param name="param1">
+      /// The first string to compare.
+      /// </param>
+      /// <param name="param2">
+      /// The second strnig to compare.
+      /// </param>
+      /// <returns>
+      /// A positive integer if the <paramref name="param1" /> parameter is
+      /// greater than the <paramref name="param2" /> parameter, a negative
+      /// integer if the <paramref name="param1" /> parameter is less than
+      /// the <paramref name="param2" /> parameter, or zero if they are
+      /// equal.
+      /// </returns>
+      public override int Compare(
+          string param1, /* in */
+          string param2  /* in */
+          )
+      {
+          if (callback1 == null)
+          {
+              throw new InvalidOperationException(
+                  UnsafeNativeMethods.StringFormat(
+                  CultureInfo.CurrentCulture,
+                  NoCallbackError, "Compare"));
+          }
+
+          SQLiteCompareDelegate compareDelegate =
+              callback1 as SQLiteCompareDelegate;
+
+          if (compareDelegate != null)
+          {
+              return compareDelegate.Invoke(
+                  "Compare", param1, param2); /* throw */
+          }
+          else
+          {
+              object result = callback1.DynamicInvoke(GetCompareArgs(
+                  param1, param2, false)); /* throw */
+
+              if (result is int)
+                  return (int)result;
+
+              throw new InvalidOperationException(
+                  UnsafeNativeMethods.StringFormat(
+                  CultureInfo.CurrentCulture,
+                  ResultInt32Error, "Compare"));
+          }
+      }
+      #endregion
+  }
+
+  /////////////////////////////////////////////////////////////////////////////
 
   /// <summary>
   /// Extends SQLiteFunction and allows an inherited class to obtain the collating sequence associated with a function call.
@@ -1021,6 +1692,12 @@ namespace System.Data.SQLite
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
 
+    /// <summary>
+    /// Cleans up resources (native and managed) associated with the current instance.
+    /// </summary>
+    /// <param name="disposing">
+    /// Zero when being disposed via garbage collection; otherwise, non-zero.
+    /// </param>
     protected override void Dispose(bool disposing)
     {
         try
@@ -1067,7 +1744,7 @@ namespace System.Data.SQLite
     /// </summary>
     Aggregate = 1,
     /// <summary>
-    /// Collation sequences are used to sort textual data in a custom manner, and appear in an ORDER BY clause.  Typically text in an ORDER BY is
+    /// Collating sequences are used to sort textual data in a custom manner, and appear in an ORDER BY clause.  Typically text in an ORDER BY is
     /// sorted using a straight case-insensitive comparison function.  Custom collating sequences can be used to alter the behavior of text sorting
     /// in a user-defined manner.
     /// </summary>
@@ -1093,7 +1770,7 @@ namespace System.Data.SQLite
 #endif
   internal delegate void SQLiteFinalCallback(IntPtr context);
   /// <summary>
-  /// Internal callback delegate for implementing collation sequences
+  /// Internal callback delegate for implementing collating sequences
   /// </summary>
   /// <param name="puser">Not used</param>
   /// <param name="len1">Length of the string pv1</param>

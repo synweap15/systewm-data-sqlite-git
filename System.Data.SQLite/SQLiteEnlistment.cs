@@ -96,7 +96,7 @@ namespace System.Data.SQLite
         if (throwOnUnsupported)
         {
             throw new InvalidOperationException(
-                String.Format(CultureInfo.InvariantCulture,
+                UnsafeNativeMethods.StringFormat(CultureInfo.CurrentCulture,
                 "unsupported isolation level {0}", isolationLevel));
         }
 

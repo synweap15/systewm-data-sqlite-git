@@ -12,11 +12,12 @@ namespace System.Data.SQLite
 
 #if !NET_COMPACT_20 && TRACE_CONNECTION
   using System.Diagnostics;
-  using System.Globalization;
 #endif
 
+  using System.Globalization;
   using System.IO;
   using System.Runtime.InteropServices;
+
 
   /// <summary>
   /// Alternate SQLite3 object, overriding many text behaviors to support UTF-16 (Unicode)
@@ -162,7 +163,7 @@ namespace System.Data.SQLite
             _poolVersion }));
 
 #if !NET_COMPACT_20 && TRACE_CONNECTION
-        Trace.WriteLine(String.Format(
+        Trace.WriteLine(UnsafeNativeMethods.StringFormat(
             CultureInfo.CurrentCulture,
             "Open16 (Pool): {0}",
             HandleToString()));
@@ -201,7 +202,8 @@ namespace System.Data.SQLite
 
             if (vfsName != null)
             {
-              throw new SQLiteException(SQLiteErrorCode.CantOpen, String.Format(
+              throw new SQLiteException(SQLiteErrorCode.CantOpen, UnsafeNativeMethods.StringFormat(
+                CultureInfo.CurrentCulture,
                 "cannot open using UTF-16 and VFS \"{0}\": need interop assembly", vfsName));
             }
 
@@ -209,7 +211,7 @@ namespace System.Data.SQLite
           }
 
 #if !NET_COMPACT_20 && TRACE_CONNECTION
-          Trace.WriteLine(String.Format(
+          Trace.WriteLine(UnsafeNativeMethods.StringFormat(
               CultureInfo.CurrentCulture,
               "Open16: {0}", db));
 #endif

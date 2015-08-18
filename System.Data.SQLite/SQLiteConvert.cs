@@ -1152,7 +1152,7 @@ namespace System.Data.SQLite
                     Convert.ToBoolean(obj, provider) :
                     ToBoolean(ToStringWithProvider(obj, provider));
             default:
-                throw new SQLiteException(String.Format(
+                throw new SQLiteException(UnsafeNativeMethods.StringFormat(
                     CultureInfo.CurrentCulture,
                     "Cannot convert type {0} to boolean",
                     typeCode));
@@ -1443,7 +1443,7 @@ namespace System.Data.SQLite
     {
         if ((flags & SQLiteConnectionFlags.TraceWarning) == SQLiteConnectionFlags.TraceWarning)
         {
-            Trace.WriteLine(String.Format(
+            Trace.WriteLine(UnsafeNativeMethods.StringFormat(
                 CultureInfo.CurrentCulture,
                 "WARNING: Type mapping failed, returning default name \"{0}\" for type {1}.",
                 typeName, dbType));
@@ -1472,7 +1472,7 @@ namespace System.Data.SQLite
         if (!String.IsNullOrEmpty(typeName) &&
             ((flags & SQLiteConnectionFlags.TraceWarning) == SQLiteConnectionFlags.TraceWarning))
         {
-            Trace.WriteLine(String.Format(
+            Trace.WriteLine(UnsafeNativeMethods.StringFormat(
                 CultureInfo.CurrentCulture,
                 "WARNING: Type mapping failed, returning default type {0} for name \"{1}\".",
                 dbType, typeName));

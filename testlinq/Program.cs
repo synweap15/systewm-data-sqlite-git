@@ -94,10 +94,12 @@ namespace testlinq
                   {
                       return SubStringTest();
                   }
+#if USE_INTEROP_DLL && INTEROP_EXTENSION_FUNCTIONS
               case "unionall":
                   {
                       return UnionAllTest();
                   }
+#endif
               case "endswith":
                   {
                       string value = null;
@@ -144,10 +146,12 @@ namespace testlinq
 
                       return EFTransactionTest(value);
                   }
+#if NET_40 || NET_45 || NET_451 || NET_46
               case "insert":
                   {
                       return InsertTest();
                   }
+#endif
               case "update":
                   {
                       return UpdateTest();
@@ -368,6 +372,7 @@ namespace testlinq
           return 0;
       }
 
+#if USE_INTEROP_DLL && INTEROP_EXTENSION_FUNCTIONS
       //
       // NOTE: Used to test the fix for ticket [0a32885109].
       //
@@ -438,6 +443,7 @@ namespace testlinq
 
           return 0;
       }
+#endif
 
       //
       // NOTE: Used to test the fix for ticket [ccfa69fc32].
@@ -552,6 +558,7 @@ namespace testlinq
           return 0;
       }
 
+#if NET_40 || NET_45 || NET_451 || NET_46
       //
       // NOTE: Used to test the INSERT fix (i.e. an extra semi-colon in
       //       the SQL statement after the actual INSERT statement in
@@ -559,10 +566,6 @@ namespace testlinq
       //
       private static int InsertTest()
       {
-          long[] orderIds = new long[] {
-              0
-          };
-
           using (northwindEFEntities db = new northwindEFEntities())
           {
               int[] counts = { 0 };
@@ -606,6 +609,7 @@ namespace testlinq
 
           return 0;
       }
+#endif
 
       //
       // NOTE: Used to test the UPDATE fix (i.e. the missing semi-colon
