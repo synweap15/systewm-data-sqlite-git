@@ -4687,7 +4687,7 @@ static void fts5ExprFunction(
   int iArg = 1;
 
   if( nArg<1 ){
-    char *zErr = sqlite3_mprintf("wrong number of arguments to function %s",
+    zErr = sqlite3_mprintf("wrong number of arguments to function %s",
         bTcl ? "fts5_expr_tcl" : "fts5_expr"
     );
     sqlite3_result_error(pCtx, zErr, -1);
@@ -13259,7 +13259,7 @@ static void fts5SourceIdFunc(
   sqlite3_value **apVal           /* Function arguments */
 ){
   assert( nArg==0 );
-  sqlite3_result_text(pCtx, "fts5: 2015-08-15 16:32:50 f65a9b4ab2c6f0b7028e16e2a0f83fd6d58ae1cd", -1, SQLITE_TRANSIENT);
+  sqlite3_result_text(pCtx, "fts5: 2015-08-18 19:09:28 8599402092537ab3df8926eb900661c12d738d4c", -1, SQLITE_TRANSIENT);
 }
 
 #ifdef _WIN32
