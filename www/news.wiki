@@ -14,6 +14,7 @@
     <li>Honor the second argument to Math.Round when using LINQ.&nbsp;<b>** Potentially Incompatible Change **</b></li>
     <li>Honor the pre-existing flags for connections during the Open method. Fix for [964063da16].&nbsp;<b>** Potentially Incompatible Change **</b></li>
     <li>Remove errant semi-colons from the SQL used by LINQ to INSERT and then SELECT rows with composite primary keys. Fix for [9d353b0bd8].</li>
+    <li>Refactor INSERT/UPDATE handling (in the LINQ assembly) so it can handle composite and non-integer primary keys. Fix for [41aea496e0].</li>
     <li>Change the base type for the SQLiteConnectionFlags enumeration to long integer.&nbsp;<b>** Potentially Incompatible Change **</b></li>
     <li>Add extended return codes to the SQLiteErrorCode enumeration. Pursuant to [71bedaca19].&nbsp;<b>** Potentially Incompatible Change **</b></li>
     <li>Improve exception handling in all native callbacks implemented in the SQLiteConnection class.</li>
