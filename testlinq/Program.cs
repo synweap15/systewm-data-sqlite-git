@@ -12,10 +12,10 @@ using System.Data.Common;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Transactions;
 
 #if USE_ENTITY_FRAMEWORK_6
+using System.Data.Entity.Core;
 using System.Data.Entity.Core.EntityClient;
 using System.Data.Entity.Core.Objects;
 #else
