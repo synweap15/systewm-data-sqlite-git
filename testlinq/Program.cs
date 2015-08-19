@@ -6,14 +6,16 @@
  ********************************************************/
 
 using System;
+using System.Collections.Generic;
+using System.Data;
 using System.Data.Common;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Transactions;
 
 #if USE_ENTITY_FRAMEWORK_6
+using System.Data.Entity.Core;
 using System.Data.Entity.Core.EntityClient;
 using System.Data.Entity.Core.Objects;
 #else
@@ -146,12 +148,10 @@ namespace testlinq
 
                       return EFTransactionTest(value);
                   }
-#if NET_40 || NET_45 || NET_451 || NET_46
               case "insert":
                   {
                       return InsertTest();
                   }
-#endif
               case "update":
                   {
                       return UpdateTest();
@@ -200,6 +200,10 @@ namespace testlinq
                       return RoundTest();
                   }
 #endif
+              case "complexprimarykey":
+                  {
+                      return ComplexPrimaryKeyTest();
+                  }
               default:
                   {
                       Console.WriteLine("unknown test \"{0}\"", arg);
@@ -558,7 +562,6 @@ namespace testlinq
           return 0;
       }
 
-#if NET_40 || NET_45 || NET_451 || NET_46
       //
       // NOTE: Used to test the INSERT fix (i.e. an extra semi-colon in
       //       the SQL statement after the actual INSERT statement in
@@ -568,6 +571,8 @@ namespace testlinq
       {
           using (northwindEFEntities db = new northwindEFEntities())
           {
+              long orderId = 10248;
+              long productId = 1;
               int[] counts = { 0 };
 
               //
@@ -580,13 +585,29 @@ namespace testlinq
               //
               db.Connection.Open();
 
+              KeyValuePair<string, object> orderIdPair =
+                  new KeyValuePair<string, object>("OrderID", orderId);
+
+              KeyValuePair<string, object> productIdPair =
+                  new KeyValuePair<string, object>("ProductID", productId);
+
+              /////////////////////////////////////////////////////////////////
+
               OrderDetails newOrderDetails = new OrderDetails();
 
-              newOrderDetails.OrderID = 10248;
-              newOrderDetails.ProductID = 1;
+              newOrderDetails.OrderID = orderId;
+              newOrderDetails.ProductID = productId;
               newOrderDetails.UnitPrice = (decimal)1.23;
               newOrderDetails.Quantity = 1;
               newOrderDetails.Discount = 0.0f;
+
+              newOrderDetails.OrdersReference.EntityKey = new EntityKey(
+                  "northwindEFEntities.Orders",
+                  new KeyValuePair<string, object>[] { orderIdPair });
+
+              newOrderDetails.ProductsReference.EntityKey = new EntityKey(
+                  "northwindEFEntities.Products",
+                  new KeyValuePair<string, object>[] { productIdPair });
 
               db.AddObject("OrderDetails", newOrderDetails);
 
@@ -609,7 +630,6 @@ namespace testlinq
 
           return 0;
       }
-#endif
 
       //
       // NOTE: Used to test the UPDATE fix (i.e. the missing semi-colon
@@ -754,6 +774,112 @@ namespace testlinq
           return 0;
       }
 #endif
+
+      private static int ComplexPrimaryKeyTest()
+      {
+          using (northwindEFEntities db = new northwindEFEntities())
+          {
+              long orderId = 10248;
+              long productId = 1;
+              int[] counts = { 0, 0 };
+
+              //
+              // NOTE: *REQUIRED* This is required so that the
+              //       Entity Framework is prevented from opening
+              //       multiple connections to the underlying SQLite
+              //       database (i.e. which would result in multiple
+              //       IMMEDIATE transactions, thereby failing [later
+              //       on] with locking errors).
+              //
+              db.Connection.Open();
+
+              KeyValuePair<string, object> orderIdPair =
+                  new KeyValuePair<string, object>("OrderID", orderId);
+
+              KeyValuePair<string, object> productIdPair =
+                  new KeyValuePair<string, object>("ProductID", productId);
+
+              /////////////////////////////////////////////////////////////////
+
+              OrderDetails newOrderDetails = new OrderDetails();
+
+              newOrderDetails.OrderID = orderId;
+              newOrderDetails.ProductID = productId;
+              newOrderDetails.UnitPrice = (decimal)1.23;
+              newOrderDetails.Quantity = 1;
+              newOrderDetails.Discount = 0.0f;
+
+              newOrderDetails.OrdersReference.EntityKey = new EntityKey(
+                  "northwindEFEntities.Orders",
+                  new KeyValuePair<string, object>[] { orderIdPair });
+
+              newOrderDetails.ProductsReference.EntityKey = new EntityKey(
+                  "northwindEFEntities.Products",
+                  new KeyValuePair<string, object>[] { productIdPair });
+
+              db.AddObject("OrderDetails", newOrderDetails);
+
+              try
+              {
+                  db.SaveChanges();
+                  counts[0]++;
+              }
+              catch (Exception e)
+              {
+                  Console.WriteLine(e);
+              }
+              finally
+              {
+                  db.AcceptAllChanges();
+              }
+
+              try
+              {
+                  db.Refresh(RefreshMode.StoreWins, newOrderDetails);
+                  counts[0]++;
+              }
+              catch (Exception e)
+              {
+                  Console.WriteLine(e);
+              }
+
+              Console.WriteLine("inserted {0}", counts[0]);
+
+              /////////////////////////////////////////////////////////////////
+
+              newOrderDetails.UnitPrice = (decimal)2.34;
+              newOrderDetails.Quantity = 2;
+              newOrderDetails.Discount = 0.1f;
+
+              try
+              {
+                  db.SaveChanges();
+                  counts[1]++;
+              }
+              catch (Exception e)
+              {
+                  Console.WriteLine(e);
+              }
+              finally
+              {
+                  db.AcceptAllChanges();
+              }
+
+              try
+              {
+                  db.Refresh(RefreshMode.StoreWins, newOrderDetails);
+                  counts[1]++;
+              }
+              catch (Exception e)
+              {
+                  Console.WriteLine(e);
+              }
+
+              Console.WriteLine("updated {0}", counts[1]);
+          }
+
+          return 0;
+      }
 
       private static int DateTimeTest()
       {

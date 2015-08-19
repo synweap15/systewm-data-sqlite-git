@@ -10,3 +10,4 @@
 *EntityFramework.*
 *EnvDTE.*
 *Microsoft.*
+*stdole.*

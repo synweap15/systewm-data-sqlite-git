@@ -83,7 +83,7 @@ namespace System.Data.SQLite.Linq
       commandText.AppendLine(";");
 
       // generate returning sql
-      GenerateReturningSql(commandText, tree, translator, tree.Returning);
+      GenerateReturningSql(commandText, tree, translator, tree.Returning, false);
 
       parameters = translator.Parameters;
       return commandText.ToString();
@@ -150,7 +150,7 @@ namespace System.Data.SQLite.Linq
       }
 
       // generate returning sql
-      GenerateReturningSql(commandText, tree, translator, tree.Returning);
+      GenerateReturningSql(commandText, tree, translator, tree.Returning, true);
 
       parameters = translator.Parameters;
       return commandText.ToString();
@@ -162,6 +162,87 @@ namespace System.Data.SQLite.Linq
     private static string GenerateMemberTSql(EdmMember member)
     {
       return SqlGenerator.QuoteIdentifier(member.Name);
+    }
+
+    /// <summary>
+    /// This method attempts to determine if the specified table has an integer
+    /// primary key (i.e. "rowid").  If so, it sets the
+    /// <paramref name="primaryKeyMember" /> parameter to the right
+    /// <see cref="EdmMember" />; otherwise, the
+    /// <paramref name="primaryKeyMember" /> parameter is set to null.
+    /// </summary>
+    /// <param name="table">The table to check.</param>
+    /// <param name="keyMembers">
+    /// The collection of key members.  An attempt is always made to set this
+    /// parameter to a valid value.
+    /// </param>
+    /// <param name="primaryKeyMember">
+    /// The <see cref="EdmMember" /> that represents the integer primary key
+    /// -OR- null if no such <see cref="EdmMember" /> exists.
+    /// </param>
+    /// <returns>
+    /// Non-zero if the specified table has an integer primary key.
+    /// </returns>
+    private static bool IsIntegerPrimaryKey(
+        EntitySetBase table,
+        out ReadOnlyMetadataCollection<EdmMember> keyMembers,
+        out EdmMember primaryKeyMember
+        )
+    {
+        keyMembers = table.ElementType.KeyMembers;
+
+        if (keyMembers.Count == 1) /* NOTE: The "rowid" only? */
+        {
+            EdmMember keyMember = keyMembers[0];
+            PrimitiveTypeKind typeKind;
+
+            if (MetadataHelpers.TryGetPrimitiveTypeKind(
+                    keyMember.TypeUsage, out typeKind) &&
+                (typeKind == PrimitiveTypeKind.Int64))
+            {
+                primaryKeyMember = keyMember;
+                return true;
+            }
+        }
+
+        primaryKeyMember = null;
+        return false;
+    }
+
+    /// <summary>
+    /// This method attempts to determine if all the specified key members have
+    /// values available.
+    /// </summary>
+    /// <param name="translator">
+    /// The <see cref="ExpressionTranslator" /> to use.
+    /// </param>
+    /// <param name="keyMembers">
+    /// The collection of key members to check.
+    /// </param>
+    /// <param name="missingKeyMember">
+    /// The first missing key member that is found.  This is only set to a valid
+    /// value if the method is returning false.
+    /// </param>
+    /// <returns>
+    /// Non-zero if all key members have values; otherwise, zero.
+    /// </returns>
+    private static bool DoAllKeyMembersHaveValues(
+        ExpressionTranslator translator,
+        ReadOnlyMetadataCollection<EdmMember> keyMembers,
+        out EdmMember missingKeyMember
+        )
+    {
+        foreach (EdmMember keyMember in keyMembers)
+        {
+            if (!translator.MemberValues.ContainsKey(keyMember))
+            {
+                missingKeyMember = keyMember;
+                return false;
+            }
+        }
+
+        missingKeyMember = null;
+        return true;
     }
 
     /// <summary>
@@ -190,8 +271,12 @@ namespace System.Data.SQLite.Linq
     /// for the tree</param>
     /// <param name="returning">Returning expression. If null, the method returns
     /// immediately without producing a SELECT statement.</param>
+    /// <param name="wasInsert">
+    /// Non-zero if this method is being called as part of processing an INSERT;
+    /// otherwise (e.g. UPDATE), zero.
+    /// </param>
     private static void GenerateReturningSql(StringBuilder commandText, DbModificationCommandTree tree,
-        ExpressionTranslator translator, DbExpression returning)
+        ExpressionTranslator translator, DbExpression returning, bool wasInsert)
     {
       // Nothing to do if there is no Returning expression
       if (null == returning) { return; }
@@ -212,34 +297,124 @@ namespace System.Data.SQLite.Linq
 #else
       commandText.Append("WHERE changes() > 0");
 #endif
-      EntitySetBase table = ((DbScanExpression)tree.Target.Expression).Target;
-      bool identity = false;
-      foreach (EdmMember keyMember in table.ElementType.KeyMembers)
-      {
-        commandText.Append(" AND ");
-        commandText.Append(GenerateMemberTSql(keyMember));
-        commandText.Append(" = ");
 
-        // retrieve member value sql. the translator remembers member values
-        // as it constructs the DML statement (which precedes the "returning"
-        // SQL)
-        DbParameter value;
-        if (translator.MemberValues.TryGetValue(keyMember, out value))
-        {
-          commandText.Append(value.ParameterName);
-        }
-        else
-        {
-          // if no value is registered for the key member, it means it is an identity
-          // which can be retrieved using the scope_identity() function
-          if (identity)
+      EntitySetBase table = ((DbScanExpression)tree.Target.Expression).Target;
+      ReadOnlyMetadataCollection<EdmMember> keyMembers;
+      EdmMember primaryKeyMember;
+      EdmMember missingKeyMember;
+
+      // Model Types can be (at the time of this implementation):
+      //      Binary, Boolean, Byte, DateTime, Decimal, Double, Guid, Int16,
+      //      Int32, Int64,Single, String
+      if (IsIntegerPrimaryKey(table, out keyMembers, out primaryKeyMember))
+      {
+          //
+          // NOTE: This must be an INTEGER PRIMARY KEY (i.e. "rowid") table.
+          //
+          commandText.Append(" AND ");
+          commandText.Append(GenerateMemberTSql(primaryKeyMember));
+          commandText.Append(" = ");
+
+          DbParameter value;
+
+          if (translator.MemberValues.TryGetValue(primaryKeyMember, out value))
           {
-            // there can be only one server generated key
-            throw new NotSupportedException(string.Format("Server generated keys are only supported for identity columns. More than one key column is marked as server generated in table '{0}'.", table.Name));
+              //
+              // NOTE: Use the integer primary key value that was specified as
+              //       part the associated INSERT/UPDATE statement.
+              //
+              commandText.Append(value.ParameterName);
           }
+          else if (wasInsert)
+          {
+              //
+              // NOTE: This was part of an INSERT statement and we know the table
+              //       has an integer primary key.  This should not fail unless
+              //       something (e.g. a trigger) causes the last_insert_rowid()
+              //       function to return an incorrect result.
+              //
+              commandText.AppendLine("last_insert_rowid()");
+          }
+          else /* NOT-REACHED? */
+          {
+              //
+              // NOTE: We cannot simply use the "rowid" at this point because:
+              //
+              //       1. The last_insert_rowid() function is only valid after
+              //          an INSERT and this was an UPDATE.
+              //
+              throw new NotSupportedException(String.Format(
+                  "Missing value for INSERT key member '{0}' in table '{1}'.",
+                   (primaryKeyMember != null) ? primaryKeyMember.Name : "<unknown>",
+                   table.Name));
+          }
+      }
+      else if (DoAllKeyMembersHaveValues(translator, keyMembers, out missingKeyMember))
+      {
+          foreach (EdmMember keyMember in keyMembers)
+          {
+              commandText.Append(" AND ");
+              commandText.Append(GenerateMemberTSql(keyMember));
+              commandText.Append(" = ");
+
+              // Retrieve member value SQL. the translator remembers member values
+              // as it constructs the DML statement (which precedes the "returning"
+              // SQL).
+              DbParameter value;
+
+              if (translator.MemberValues.TryGetValue(keyMember, out value))
+              {
+                  //
+                  // NOTE: Use the primary key value that was specified as part the
+                  //       associated INSERT/UPDATE statement.  This also applies
+                  //       to composite primary keys.
+                  //
+                  commandText.Append(value.ParameterName);
+              }
+              else /* NOT-REACHED? */
+              {
+                  //
+                  // NOTE: We cannot simply use the "rowid" at this point because:
+                  //
+                  //       1. This associated INSERT/UPDATE statement appeared to
+                  //          have all the key members availab;e however, there
+                  //          appears to be an inconsistency.  This is an internal
+                  //          error and should be thrown.
+                  //
+                  throw new NotSupportedException(String.Format(
+                      "Missing value for {0} key member '{1}' in table '{2}' " +
+                      "(internal).", wasInsert ? "INSERT" : "UPDATE",
+                      (keyMember != null) ? keyMember.Name : "<unknown>",
+                      table.Name));
+              }
+          }
+      }
+      else if (wasInsert) /* NOT-REACHED? */
+      {
+          //
+          // NOTE: This was part of an INSERT statement; try using the "rowid"
+          //       column to fetch the most recently inserted row.  This may
+          //       still fail if the table is a WITHOUT ROWID table -OR-
+          //       something (e.g. a trigger) causes the last_insert_rowid()
+          //       function to return an incorrect result.
+          //
+          commandText.Append(" AND ");
+          commandText.Append(SqlGenerator.QuoteIdentifier("rowid"));
+          commandText.Append(" = ");
           commandText.AppendLine("last_insert_rowid()");
-          identity = true;
-        }
+      }
+      else /* NOT-REACHED? */
+      {
+          //
+          // NOTE: We cannot simply use the "rowid" at this point because:
+          //
+          //       1. The last_insert_rowid() function is only valid after
+          //          an INSERT and this was an UPDATE.
+          //
+          throw new NotSupportedException(String.Format(
+              "Missing value for UPDATE key member '{0}' in table '{1}'.",
+               (missingKeyMember != null) ? missingKeyMember.Name : "<unknown>",
+               table.Name));
       }
       commandText.AppendLine(";");
     }
