@@ -6,6 +6,8 @@
  ********************************************************/
 
 using System;
+using System.Collections.Generic;
+using System.Data;
 using System.Data.Common;
 using System.Diagnostics;
 using System.Linq;
@@ -200,6 +202,10 @@ namespace testlinq
                       return RoundTest();
                   }
 #endif
+              case "complexprimarykey":
+                  {
+                      return ComplexPrimaryKeyTest();
+                  }
               default:
                   {
                       Console.WriteLine("unknown test \"{0}\"", arg);
@@ -754,6 +760,86 @@ namespace testlinq
           return 0;
       }
 #endif
+
+      private static int ComplexPrimaryKeyTest()
+      {
+          Environment.SetEnvironmentVariable("SQLite_ForceLogPrepare", "1");
+
+          using (northwindEFEntities db = new northwindEFEntities())
+          {
+              int[] counts = { 0, 0 };
+
+              //
+              // NOTE: *REQUIRED* This is required so that the
+              //       Entity Framework is prevented from opening
+              //       multiple connections to the underlying SQLite
+              //       database (i.e. which would result in multiple
+              //       IMMEDIATE transactions, thereby failing [later
+              //       on] with locking errors).
+              //
+              db.Connection.Open();
+
+              EntityKey entityKey = new EntityKey("northwindEFEntities.OrderDetails",
+                  new KeyValuePair<string, object>[] {
+                  new KeyValuePair<string, object>("OrderID", (long)10248),
+                  new KeyValuePair<string, object>("ProductID", (long)1)
+              });
+
+              OrderDetails newOrderDetails = new OrderDetails();
+
+              newOrderDetails.EntityKey = entityKey;
+              newOrderDetails.OrderID = 10248;
+              newOrderDetails.ProductID = 1;
+              newOrderDetails.UnitPrice = (decimal)1.23;
+              newOrderDetails.Quantity = 1;
+              newOrderDetails.Discount = 0.0f;
+
+              db.Attach(newOrderDetails);
+
+              try
+              {
+                  db.SaveChanges();
+                  counts[0]++;
+              }
+              catch (Exception e)
+              {
+                  Console.WriteLine(e);
+              }
+              finally
+              {
+                  db.AcceptAllChanges();
+              }
+
+              Console.WriteLine("inserted {0}", counts[0]);
+              db.Refresh(RefreshMode.StoreWins, newOrderDetails);
+
+              /////////////////////////////////////////////////////////////////
+
+              newOrderDetails.EntityKey = entityKey;
+              newOrderDetails.UnitPrice = (decimal)2.34;
+              newOrderDetails.Quantity = 2;
+              newOrderDetails.Discount = 0.1f;
+
+              try
+              {
+                  db.SaveChanges();
+                  counts[1]++;
+              }
+              catch (Exception e)
+              {
+                  Console.WriteLine(e);
+              }
+              finally
+              {
+                  db.AcceptAllChanges();
+              }
+
+              Console.WriteLine("updated {0}", counts[1]);
+              db.Refresh(RefreshMode.StoreWins, newOrderDetails);
+          }
+
+          return 0;
+      }
 
       private static int DateTimeTest()
       {
