@@ -54,8 +54,8 @@ runTest {test tkt-9d353b0bd8-1.1 {DbModificationCommandTree w/INSERT} -body {
 } -cleanup {
   unset -nocomplain code output error result
 } -constraints {eagle monoToDo SQLite file_System.Data.SQLite.dll testExec\
-file_System.Data.SQLite.Linq.dll file_testlinq.exe file_northwindEF.db\
-System.Data.SQLite.dll_v4.0.30319} -result {0 {inserted 1}}}
+file_System.Data.SQLite.Linq.dll file_testlinq.exe file_northwindEF.db} \
+-result {0 {inserted 1}}}
 
 ###############################################################################
 

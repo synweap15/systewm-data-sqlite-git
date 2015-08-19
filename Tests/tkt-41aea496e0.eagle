@@ -55,7 +55,8 @@ runTest {test tkt-41aea496e0-1.1 {LINQ non-rowid primary key support} -body {
   unset -nocomplain code output error result
 } -constraints {eagle monoToDo SQLite file_System.Data.SQLite.dll testExec\
 file_System.Data.SQLite.Linq.dll file_testlinq.exe file_northwindEF.db} \
--result {}}
+-result {0 {inserted 2
+updated 2}}}
 
 ###############################################################################
 
