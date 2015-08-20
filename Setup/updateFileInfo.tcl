@@ -198,6 +198,14 @@ foreach {dummy3 fileName} [regexp -all -inline -nocase -- $pattern3 $data] \
   set fullFileName [file join $outputDirectory [file tail $fileName]]
 
   #
+  # NOTE: If the file does not exist, issue a warning and skip it.
+  #
+  if {![file exists $fullFileName]} then {
+    puts stdout "WARNING: File \"$fullFileName\" does not exist, skipped."
+    continue
+  }
+
+  #
   # NOTE: Make sure the file hash from the [modified] data matches the
   #       calculated hash for the file.  If not, fail.
   #
