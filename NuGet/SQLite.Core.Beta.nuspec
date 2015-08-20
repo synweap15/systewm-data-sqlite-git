@@ -30,6 +30,8 @@
     <file src="..\bin\2012\Release\bin\System.Data.SQLite.xml" target="lib\net45" />
     <file src="..\bin\2013\Release\bin\System.Data.SQLite.dll" target="lib\net451" />
     <file src="..\bin\2013\Release\bin\System.Data.SQLite.xml" target="lib\net451" />
+    <file src="..\bin\2015\Release\bin\System.Data.SQLite.dll" target="lib\net46" />
+    <file src="..\bin\2015\Release\bin\System.Data.SQLite.xml" target="lib\net46" />
     <file src="..\bin\2008\Win32\ReleaseNativeOnlyStatic\SQLite.Interop.dll" target="build\net20\x86" />
     <file src="..\bin\2008\x64\ReleaseNativeOnlyStatic\SQLite.Interop.dll" target="build\net20\x64" />
     <file src="..\bin\2010\Win32\ReleaseNativeOnlyStatic\SQLite.Interop.dll" target="build\net40\x86" />
@@ -38,9 +40,12 @@
     <file src="..\bin\2012\x64\ReleaseNativeOnlyStatic\SQLite.Interop.dll" target="build\net45\x64" />
     <file src="..\bin\2013\Win32\ReleaseNativeOnlyStatic\SQLite.Interop.dll" target="build\net451\x86" />
     <file src="..\bin\2013\x64\ReleaseNativeOnlyStatic\SQLite.Interop.dll" target="build\net451\x64" />
+    <file src="..\bin\2015\Win32\ReleaseNativeOnlyStatic\SQLite.Interop.dll" target="build\net46\x86" />
+    <file src="..\bin\2015\x64\ReleaseNativeOnlyStatic\SQLite.Interop.dll" target="build\net46\x64" />
     <file src="shared\Core\build\System.Data.SQLite.Core.targets" target="build\net20\System.Data.SQLite.Core.Beta.targets" />
     <file src="shared\Core\build\System.Data.SQLite.Core.targets" target="build\net40\System.Data.SQLite.Core.Beta.targets" />
     <file src="shared\Core\build\System.Data.SQLite.Core.targets" target="build\net45\System.Data.SQLite.Core.Beta.targets" />
     <file src="shared\Core\build\System.Data.SQLite.Core.targets" target="build\net451\System.Data.SQLite.Core.Beta.targets" />
+    <file src="shared\Core\build\System.Data.SQLite.Core.targets" target="build\net46\System.Data.SQLite.Core.Beta.targets" />
   </files>
 </package>

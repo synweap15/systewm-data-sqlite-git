@@ -30,5 +30,7 @@
     <file src="..\bin\2012\Release\bin\System.Data.SQLite.xml" target="lib\net45" />
     <file src="..\bin\2013\Release\bin\System.Data.SQLite.dll" target="lib\net451" />
     <file src="..\bin\2013\Release\bin\System.Data.SQLite.xml" target="lib\net451" />
+    <file src="..\bin\2015\Release\bin\System.Data.SQLite.dll" target="lib\net46" />
+    <file src="..\bin\2015\Release\bin\System.Data.SQLite.xml" target="lib\net46" />
   </files>
 </package>
