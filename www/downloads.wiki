@@ -2207,7 +2207,8 @@
         linked.
         <br />
         <big><b>This package depends on the &quot;EntityFramework&quot;
-        package.</b></big>
+        package, version 6.0 or higher (indirectly via the
+        &quot;System.Data.SQLite.EF6&quot; package).</b></big>
         <br />
         <br />
         <big><b><i>As of version 1.0.92.0, this package will not directly
@@ -2285,7 +2286,7 @@
         Framework 4.0, 4.5, 4.5.1, 4.5.2, or 4.6 is required.
         <br />
         <big><b>This package depends on the &quot;EntityFramework&quot;
-        package.</b></big>
+        package, version 6.0 or higher.</b></big>
         <br />
         (sha1: 741d1e08ce801f9770edd1706e10d4c5284b403e)
       </td>
