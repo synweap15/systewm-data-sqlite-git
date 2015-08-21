@@ -446,6 +446,10 @@ namespace System.Data.SQLite
     /// </summary>
     IoErr_ConvPath = (IoErr | (26 << 8)),
     /// <summary>
+    /// Reserved.
+    /// </summary>
+    IoErr_VNode = (IoErr | (27 << 8)),
+    /// <summary>
     /// A database table is locked in shared-cache mode.
     /// </summary>
     Locked_SharedCache = (Locked | (1 << 8)),
