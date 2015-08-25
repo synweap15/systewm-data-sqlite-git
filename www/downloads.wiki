@@ -992,12 +992,6 @@
         instead.</b></big>
         <br />
         <br />
-        <big><b>Using Entity Framework 6 design-time support may require
-        installing the Visual Studio 2015 &quot;flavor&quot; of the
-        <a href="https://www.microsoft.com/en-us/download/details.aspx?id=40762">
-        Entity Framework 6 Tools for Visual Studio 2012 &amp; 2015</a>.</b></big>
-        <br />
-        <br />
         (sha1: ee705585f8aaa8df5c69a1b0e54ef89690c4033a)
       </td>
     </tr>
