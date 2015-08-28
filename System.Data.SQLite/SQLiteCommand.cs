@@ -952,6 +952,71 @@ namespace System.Data.SQLite
     }
 
     /// <summary>
+    /// This method resets all the prepared statements held by this instance
+    /// back to their initial states, ready to be re-executed.
+    /// </summary>
+    public void Reset()
+    {
+        CheckDisposed();
+        SQLiteConnection.Check(_cnn);
+
+        Reset(true, false);
+    }
+
+    /// <summary>
+    /// This method resets all the prepared statements held by this instance
+    /// back to their initial states, ready to be re-executed.
+    /// </summary>
+    /// <param name="clearBindings">
+    /// Non-zero if the parameter bindings should be cleared as well.
+    /// </param>
+    /// <param name="ignoreErrors">
+    /// If this is zero, a <see cref="SQLiteException" /> may be thrown for
+    /// any unsuccessful return codes from the native library; otherwise, a
+    /// <see cref="SQLiteException" /> will only be thrown if the connection
+    /// or its state is invalid.
+    /// </param>
+    public void Reset(
+        bool clearBindings,
+        bool ignoreErrors
+        )
+    {
+        CheckDisposed();
+        SQLiteConnection.Check(_cnn);
+
+        if (clearBindings && (_parameterCollection != null))
+            _parameterCollection.Unbind();
+
+        if (_statementList == null)
+            return;
+
+        SQLiteBase sqlBase = _cnn._sql;
+        SQLiteErrorCode rc;
+
+        foreach (SQLiteStatement item in _statementList)
+        {
+            if (item == null)
+                continue;
+
+            SQLiteStatementHandle stmt = item._sqlite_stmt;
+
+            if (stmt == null)
+                continue;
+
+            rc = sqlBase.Reset(item);
+
+            if ((rc == SQLiteErrorCode.Ok) && clearBindings &&
+                (SQLite3.SQLiteVersionNumber >= 3003007))
+            {
+                rc = UnsafeNativeMethods.sqlite3_clear_bindings(stmt);
+            }
+
+            if (!ignoreErrors && (rc != SQLiteErrorCode.Ok))
+                throw new SQLiteException(rc, sqlBase.GetLastError());
+        }
+    }
+
+    /// <summary>
     /// Does nothing.  Commands are prepared as they are executed the first time, and kept in prepared state afterwards.
     /// </summary>
     public override void Prepare()

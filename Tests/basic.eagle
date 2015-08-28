@@ -3857,6 +3857,48 @@ System.Data.SQLite} -match regexp -result {^0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 \{1\
 
 ###############################################################################
 
+runTest {test data-1.75 {Reset method} -setup {
+  setupDb [set fileName data-1.75.db]
+} -body {
+  set connection [getDbConnection]
+
+  set result [list]
+
+  sql execute $db {
+    CREATE TABLE t1(x);
+    INSERT INTO t1 (x) VALUES(1);
+    INSERT INTO t1 (x) VALUES(2);
+    INSERT INTO t1 (x) VALUES(3);
+    INSERT INTO t1 (x) VALUES(4);
+  }
+
+  set dataReader [sql execute -execute reader -format datareader \
+      -alias $db "SELECT x FROM t1 WHERE x < ? ORDER BY x;" \
+      [list param1 Int32 4]]
+
+  $dataReader Read; lappend result [$dataReader Item x]
+  $dataReader Read; lappend result [$dataReader Item x]
+
+  $dataReader Reset; $dataReader NextResult; # TODO: Fix me.
+  $dataReader Read; lappend result [$dataReader Item x]
+  $dataReader Read; lappend result [$dataReader Item x]
+
+  $dataReader Reset; $dataReader NextResult; # TODO: Fix me.
+  $dataReader Read; lappend result [$dataReader Item x]
+  $dataReader Read; lappend result [$dataReader Item x]
+
+  set result
+} -cleanup {
+  cleanupDb $fileName
+
+  freeDbConnection
+
+  unset -nocomplain result connection db fileName
+} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
+System.Data.SQLite} -result {1 2 1 2 1 2}}
+
+###############################################################################
+
 reportSQLiteResources $test_channel
 
 ###############################################################################
