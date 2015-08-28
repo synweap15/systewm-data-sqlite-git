@@ -224,7 +224,7 @@ namespace System.Data.SQLite
                 {
                 }
               }
-              _command.ClearDataReader();
+              _command.ResetDataReader();
             }
             finally
             {
@@ -1547,48 +1547,6 @@ namespace System.Data.SQLite
         }
 
         return typ;
-    }
-
-    /// <summary>
-    /// This method resets all the prepared statements referenced by this
-    /// instance back to their initial states, ready to be re-executed.
-    /// </summary>
-    public void Reset()
-    {
-        CheckDisposed();
-        CheckClosed();
-
-        if (_command == null)
-            return;
-
-        _command.Reset();
-    }
-
-    /// <summary>
-    /// This method resets all the prepared statements referenced by this
-    /// instance back to their initial states, ready to be re-executed.
-    /// </summary>
-    /// <param name="clearBindings">
-    /// Non-zero if the parameter bindings should be cleared as well.
-    /// </param>
-    /// <param name="ignoreErrors">
-    /// If this is zero, a <see cref="SQLiteException" /> may be thrown for
-    /// any unsuccessful return codes from the native library; otherwise, a
-    /// <see cref="SQLiteException" /> will only be thrown if the connection
-    /// or its state is invalid.
-    /// </param>
-    public void Reset(
-        bool clearBindings,
-        bool ignoreErrors
-        )
-    {
-        CheckDisposed();
-        CheckClosed();
-
-        if (_command == null)
-            return;
-
-        _command.Reset(clearBindings, ignoreErrors);
     }
 
     /// <summary>

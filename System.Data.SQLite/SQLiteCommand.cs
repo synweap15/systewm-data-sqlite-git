@@ -1,7 +1,7 @@
 /********************************************************
  * ADO.NET 2.0 Data Provider for SQLite Version 3.X
  * Written by Robert Simpson (robert@blackcastlesoft.com)
- * 
+ *
  * Released to the public domain, use at your own risk!
  ********************************************************/
 
@@ -90,7 +90,7 @@ namespace System.Data.SQLite
     /// Initializes the command with the given command text
     /// </summary>
     /// <param name="commandText">The SQL command text</param>
-    public SQLiteCommand(string commandText) 
+    public SQLiteCommand(string commandText)
       : this(commandText, null, null)
     {
     }
@@ -110,7 +110,7 @@ namespace System.Data.SQLite
     /// Initializes the command and associates it with the specified connection.
     /// </summary>
     /// <param name="connection">The connection to associate with the command</param>
-    public SQLiteCommand(SQLiteConnection connection) 
+    public SQLiteCommand(SQLiteConnection connection)
       : this(null, connection, null)
     {
     }
@@ -306,28 +306,36 @@ namespace System.Data.SQLite
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
 
-    /// <summary>
-    /// Clears and destroys all statements currently prepared
-    /// </summary>
-    internal void ClearCommands()
+    private void ClearDataReader()
     {
       if (_activeReader != null)
       {
         SQLiteDataReader reader = null;
+
         try
         {
           reader = _activeReader.Target as SQLiteDataReader;
         }
         catch(InvalidOperationException)
         {
+          // do nothing.
         }
 
         if (reader != null)
-          reader.Close();
+          reader.Close(); /* Dispose */
 
         _activeReader = null;
       }
+    }
 
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+
+    /// <summary>
+    /// Clears and destroys all statements currently prepared
+    /// </summary>
+    internal void ClearCommands()
+    {
+      ClearDataReader();
       DisposeStatements();
 
       _parameterCollection.Unbind();
@@ -881,7 +889,7 @@ namespace System.Data.SQLite
     /// <summary>
     /// Called by the SQLiteDataReader when the data reader is closed.
     /// </summary>
-    internal void ClearDataReader()
+    internal void ResetDataReader()
     {
       _activeReader = null;
     }
@@ -986,6 +994,8 @@ namespace System.Data.SQLite
 
         if (clearBindings && (_parameterCollection != null))
             _parameterCollection.Unbind();
+
+        ClearDataReader();
 
         if (_statementList == null)
             return;
