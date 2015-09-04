@@ -2030,6 +2030,27 @@ namespace System.Data.SQLite
     }
 
     /// <summary>
+    /// Returns the fully qualified path and file name for the currently open
+    /// database, if any.
+    /// </summary>
+#if !PLATFORM_COMPACTFRAMEWORK
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+#endif
+    public string FileName
+    {
+        get
+        {
+            CheckDisposed();
+
+            if (_sql == null)
+                throw new InvalidOperationException(
+                    "Database connection not valid for getting file name.");
+
+            return _sql.GetFileName("main");
+        }
+    }
+
+    /// <summary>
     /// Returns the string "main".
     /// </summary>
 #if !PLATFORM_COMPACTFRAMEWORK
