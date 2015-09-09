@@ -58,7 +58,7 @@ namespace System.Data.SQLite
         "d8215c18a4349a436dd499e3c385cc683015f886f6c10bd90115eb2bd61b67750839e3a19941dc9c";
 
 #if !PLATFORM_COMPACTFRAMEWORK
-    internal const string DesignerVersion = "1.0.98.0";
+    internal const string DesignerVersion = "1.0.99.0";
 #endif
 
     /// <summary>
