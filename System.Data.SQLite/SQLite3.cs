@@ -857,6 +857,42 @@ namespace System.Data.SQLite
         return (_sql != null) && !_sql.IsInvalid && !_sql.IsClosed;
     }
 
+    /// <summary>
+    /// Returns the fully qualified path and file name for the currently open
+    /// database, if any.
+    /// </summary>
+    /// <param name="dbName">
+    /// The name of the attached database to query.
+    /// </param>
+    /// <returns>
+    /// The fully qualified path and file name for the currently open database,
+    /// if any.
+    /// </returns>
+    internal override string GetFileName(string dbName)
+    {
+        if (_sql == null)
+            return null;
+
+        IntPtr pDbName = IntPtr.Zero;
+
+        try
+        {
+            pDbName = (dbName != null) ?
+                SQLiteString.Utf8IntPtrFromString(dbName) : IntPtr.Zero;
+
+            return UTF8ToString(UnsafeNativeMethods.sqlite3_db_filename(
+                _sql, pDbName), -1);
+        }
+        finally
+        {
+            if (pDbName != IntPtr.Zero)
+            {
+                SQLiteMemory.Free(pDbName);
+                pDbName = IntPtr.Zero;
+            }
+        }
+    }
+
     internal override void Open(string strFilename, string vfsName, SQLiteConnectionFlags connectionFlags, SQLiteOpenFlagsEnum openFlags, int maxPoolSize, bool usePool)
     {
       //

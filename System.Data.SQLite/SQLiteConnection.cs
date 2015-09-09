@@ -2030,6 +2030,27 @@ namespace System.Data.SQLite
     }
 
     /// <summary>
+    /// Returns the fully qualified path and file name for the currently open
+    /// database, if any.
+    /// </summary>
+#if !PLATFORM_COMPACTFRAMEWORK
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+#endif
+    public string FileName
+    {
+        get
+        {
+            CheckDisposed();
+
+            if (_sql == null)
+                throw new InvalidOperationException(
+                    "Database connection not valid for getting file name.");
+
+            return _sql.GetFileName("main");
+        }
+    }
+
+    /// <summary>
     /// Returns the string "main".
     /// </summary>
 #if !PLATFORM_COMPACTFRAMEWORK
@@ -2727,7 +2748,7 @@ namespace System.Data.SQLite
         {
 #if PLATFORM_COMPACTFRAMEWORK
           if (fileName.StartsWith("./") || fileName.StartsWith(".\\"))
-            fileName = Path.GetDirectoryName(System.Reflection.Assembly.GetCallingAssembly().GetName().CodeBase) + fileName.Substring(1);
+            fileName = Path.GetDirectoryName(Assembly.GetCallingAssembly().GetName().CodeBase) + fileName.Substring(1);
 #endif
           bool toFullPath = SQLiteConvert.ToBoolean(FindKey(opts, "ToFullPath", DefaultToFullPath.ToString()));
           fileName = ExpandFileName(fileName, toFullPath);
@@ -3797,6 +3818,30 @@ namespace System.Data.SQLite
     }
 
     /// <summary>
+    /// Determines the directory to be used when dealing with the "|DataDirectory|"
+    /// macro in a database file name.
+    /// </summary>
+    /// <returns>
+    /// The directory to use in place of the "|DataDirectory|" macro -OR- null if it
+    /// cannot be determined.
+    /// </returns>
+    private static string GetDataDirectory()
+    {
+#if PLATFORM_COMPACTFRAMEWORK
+        string result = Path.GetDirectoryName(
+            Assembly.GetCallingAssembly().GetName().CodeBase);
+#else
+        string result = AppDomain.CurrentDomain.GetData(
+            "DataDirectory") as string;
+
+        if (String.IsNullOrEmpty(result))
+            result = AppDomain.CurrentDomain.BaseDirectory;
+#endif
+
+        return result;
+    }
+
+    /// <summary>
     /// Expand the filename of the data source, resolving the |DataDirectory|
     /// macro as appropriate.
     /// </summary>
@@ -3806,37 +3851,29 @@ namespace System.Data.SQLite
     /// (except when using the .NET Compact Framework).
     /// </param>
     /// <returns>The expanded path and filename of the filename</returns>
-    private string ExpandFileName(string sourceFile, bool toFullPath)
+    private static string ExpandFileName(string sourceFile, bool toFullPath)
     {
-      if (String.IsNullOrEmpty(sourceFile)) return sourceFile;
+        if (String.IsNullOrEmpty(sourceFile)) return sourceFile;
 
-      if (sourceFile.StartsWith(_dataDirectory, StringComparison.OrdinalIgnoreCase))
-      {
-        string dataDirectory;
-
-#if PLATFORM_COMPACTFRAMEWORK
-        dataDirectory = Path.GetDirectoryName(System.Reflection.Assembly.GetCallingAssembly().GetName().CodeBase);
-#else
-        dataDirectory = AppDomain.CurrentDomain.GetData("DataDirectory") as string;
-        if (String.IsNullOrEmpty(dataDirectory))
-          dataDirectory = AppDomain.CurrentDomain.BaseDirectory;
-#endif
-
-        if (sourceFile.Length > _dataDirectory.Length)
+        if (sourceFile.StartsWith(_dataDirectory, StringComparison.OrdinalIgnoreCase))
         {
-          if (sourceFile[_dataDirectory.Length] == Path.DirectorySeparatorChar ||
-              sourceFile[_dataDirectory.Length] == Path.AltDirectorySeparatorChar)
-            sourceFile = sourceFile.Remove(_dataDirectory.Length, 1);
+            string dataDirectory = GetDataDirectory();
+
+            if (sourceFile.Length > _dataDirectory.Length)
+            {
+                if (sourceFile[_dataDirectory.Length] == Path.DirectorySeparatorChar ||
+                    sourceFile[_dataDirectory.Length] == Path.AltDirectorySeparatorChar)
+                    sourceFile = sourceFile.Remove(_dataDirectory.Length, 1);
+            }
+            sourceFile = Path.Combine(dataDirectory, sourceFile.Substring(_dataDirectory.Length));
         }
-        sourceFile = Path.Combine(dataDirectory, sourceFile.Substring(_dataDirectory.Length));
-      }
 
 #if !PLATFORM_COMPACTFRAMEWORK
-      if (toFullPath)
-        sourceFile = Path.GetFullPath(sourceFile);
+        if (toFullPath)
+            sourceFile = Path.GetFullPath(sourceFile);
 #endif
 
-      return sourceFile;
+        return sourceFile;
     }
 
     ///<overloads>

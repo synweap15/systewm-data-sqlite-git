@@ -93,6 +93,18 @@ namespace System.Data.SQLite
     /// </returns>
     internal abstract bool IsOpen();
     /// <summary>
+    /// Returns the fully qualified path and file name for the currently open
+    /// database, if any.
+    /// </summary>
+    /// <param name="dbName">
+    /// The name of the attached database to query.
+    /// </param>
+    /// <returns>
+    /// The fully qualified path and file name for the currently open database,
+    /// if any.
+    /// </returns>
+    internal abstract string GetFileName(string dbName);
+    /// <summary>
     /// Opens a database.
     /// </summary>
     /// <remarks>
