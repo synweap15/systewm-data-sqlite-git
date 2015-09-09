@@ -3857,6 +3857,58 @@ System.Data.SQLite} -match regexp -result {^0 -1 0 -1 0 -1 0 -1 0 -1 0 -1 0 \{1\
 
 ###############################################################################
 
+runTest {test data-1.75 {SQLiteCommand.Reset method} -setup {
+  setupDb [set fileName data-1.75.db]
+} -body {
+  set connection [getDbConnection]
+
+  set result [list]
+
+  sql execute $db {
+    CREATE TABLE t1(x);
+    INSERT INTO t1 (x) VALUES(1);
+    INSERT INTO t1 (x) VALUES(2);
+    INSERT INTO t1 (x) VALUES(3);
+    INSERT INTO t1 (x) VALUES(4);
+  }
+
+  set command [$connection -alias CreateCommand]
+  set parameter [$command -alias CreateParameter]
+
+  $parameter ParameterName param1
+  $parameter DbType Int32
+  $parameter Value 4
+
+  $command CommandText "SELECT x FROM t1 WHERE x < ? ORDER BY x;"
+  $command Parameters.Add $parameter
+
+  set dataReader(1) [$command -alias ExecuteReader]
+
+  $dataReader(1) Read; lappend result [$dataReader(1) Item x]
+  $dataReader(1) Read; lappend result [$dataReader(1) Item x]
+
+  $command Reset; set dataReader(2) [$command -alias ExecuteReader]
+  $dataReader(2) Read; lappend result [$dataReader(2) Item x]
+  $dataReader(2) Read; lappend result [$dataReader(2) Item x]
+
+  $command Reset; set dataReader(3) [$command -alias ExecuteReader]
+  $dataReader(3) Read; lappend result [$dataReader(3) Item x]
+  $dataReader(3) Read; lappend result [$dataReader(3) Item x]
+
+  set result
+} -cleanup {
+  unset -nocomplain dataReader parameter command connection
+
+  freeDbConnection
+
+  cleanupDb $fileName
+
+  unset -nocomplain result db fileName
+} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
+System.Data.SQLite} -result {1 2 1 2 1 2}}
+
+###############################################################################
+
 reportSQLiteResources $test_channel
 
 ###############################################################################

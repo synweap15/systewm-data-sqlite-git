@@ -224,7 +224,7 @@ namespace System.Data.SQLite
                 {
                 }
               }
-              _command.ClearDataReader();
+              _command.ResetDataReader();
             }
             finally
             {
