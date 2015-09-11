@@ -487,6 +487,9 @@
     <ClCompile Include="src\ext\fts5.c">
       <ExcludedFromBuild>true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="src\ext\json1.c">
+      <ExcludedFromBuild>true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="src\ext\percentile.c">
       <ExcludedFromBuild>true</ExcludedFromBuild>
     </ClCompile>

@@ -2699,6 +2699,7 @@ runTest {test data-1.56 {totype extension} -setup {
 
   unset -nocomplain db fileName
 } -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
+defineConstant.System.Data.SQLite.INTEROP_TOTYPE_EXTENSION\
 System.Data.SQLite SQLiteInterop} -result {1 {} 1.01 {}}}
 
 ###############################################################################
@@ -2759,6 +2760,7 @@ runTest {test data-1.57 {regexp extension} -setup {
 
   unset -nocomplain db fileName
 } -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
+defineConstant.System.Data.SQLite.INTEROP_REGEXP_EXTENSION\
 System.Data.SQLite SQLiteInterop} -result {0 1 1 {unmatched '('} 0 1 1\
 {unmatched '('} 0 0 1 {unmatched '('} 0 0 1 {unmatched '('}}}
 
@@ -2841,6 +2843,7 @@ runTest {test data-1.59 {percentile extension} -setup {
 
   unset -nocomplain db fileName
 } -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
+defineConstant.System.Data.SQLite.INTEROP_PERCENTILE_EXTENSION\
 System.Data.SQLite SQLiteInterop} -result {0 4 -1 1.75}}
 
 ###############################################################################
@@ -3282,6 +3285,7 @@ runTest {test data-1.71 {fts5 extension} -setup {
 
   unset -nocomplain db fileName
 } -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
+defineConstant.System.Data.SQLite.INTEROP_FTS5_EXTENSION\
 System.Data.SQLite SQLiteInterop} -match regexp -result \
 {^\{fts5: \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} [0-9a-f]{40}\} \{\} \{\} \{\}\
 \{\} \{\} \{rowid 3 x horse rowid 4 x house\}$}}
@@ -3933,6 +3937,58 @@ System.Data.SQLite} -result $fileName(1)}
 ###############################################################################
 
 unset -nocomplain fileName
+
+###############################################################################
+
+runTest {test data-1.77 {json1 extension} -setup {
+  setupDb [set fileName data-1.77.db]
+} -body {
+  sql execute $db {
+    CREATE TABLE big(json JSON);
+    INSERT INTO big (json) VALUES(2);
+    INSERT INTO big (json) VALUES(3.5);
+    INSERT INTO big (json) VALUES('true');
+    INSERT INTO big (json) VALUES('false');
+    INSERT INTO big (json) VALUES('null');
+    INSERT INTO big (json) VALUES('"x"');
+    INSERT INTO big (json) VALUES('[4, 5.7, true, false, null, "x"]');
+    INSERT INTO big (json) VALUES('{"a" : [8, 9.1, true, false, null, "y"]}');
+  }
+
+  set connection [getDbConnection]
+  set result [list]
+
+  $connection EnableExtensions true
+  $connection LoadExtension [getCoreBinaryFileName] sqlite3_json_init
+
+  lappend result [sql execute -execute scalar $db \
+      {SELECT json('{ "this" : "is", "a": [ "test" ] }');}]
+
+  lappend result [sql execute -execute reader -format list $db \
+      "SELECT rowid, json_type(json) FROM big;"]
+
+  lappend result [sql execute -execute reader -format list $db {
+    SELECT big.rowid, fullkey, value
+      FROM big, json_tree(big.json)
+     WHERE json_tree.type NOT IN ('object', 'array');
+  }]
+
+  set result
+} -cleanup {
+  freeDbConnection
+
+  unset -nocomplain result connection
+
+  cleanupDb $fileName
+
+  unset -nocomplain db fileName
+} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
+defineConstant.System.Data.SQLite.INTEROP_JSON1_EXTENSION\
+System.Data.SQLite SQLiteInterop} -result {{{"this":"is","a":["test"]}} {1\
+integer 2 real 3 true 4 false 5 null 6 text 7 array 8 object} {1 {$} 2 2 {$}\
+3.5 3 {$} 1 4 {$} 0 5 {$} 6 {$} x 7 {$[0]} 4 7 {$[1]} 5.7 7 {$[2]} 1 7 {$[3]} 0\
+7 {$[4]} 7 {$[5]} x 8 {$.a[0]} 8 8 {$.a[1]} 9.1 8 {$.a[2]} 1 8 {$.a[3]} 0 8\
+{$.a[4]} 8 {$.a[5]} y}}}
 
 ###############################################################################
 

@@ -228,6 +228,20 @@
   </PropertyGroup>
 
   <!--
+      NOTE: Enable support (in the managed assemblies) for the FTS5 extension?
+  -->
+  <PropertyGroup Condition="'$(InteropFts5Extension)' != 'false'">
+    <DefineConstants>$(DefineConstants);INTEROP_FTS5_EXTENSION</DefineConstants>
+  </PropertyGroup>
+
+  <!--
+      NOTE: Enable support (in the managed assemblies) for the JSON extension?
+  -->
+  <PropertyGroup Condition="'$(InteropJson1Extension)' != 'false'">
+    <DefineConstants>$(DefineConstants);INTEROP_JSON1_EXTENSION</DefineConstants>
+  </PropertyGroup>
+
+  <!--
       NOTE: Disable all use of the sqlite3_close_v2() native API and use the
             legacy System.Data.SQLite connection closing algorithm instead.
   -->
@@ -244,10 +258,34 @@
   </PropertyGroup>
 
   <!--
+      NOTE: Enable support (in the managed assemblies) for the percentile
+            extension?
+  -->
+  <PropertyGroup Condition="'$(InteropPercentileExtension)' != 'false'">
+    <DefineConstants>$(DefineConstants);INTEROP_PERCENTILE_EXTENSION</DefineConstants>
+  </PropertyGroup>
+
+  <!--
+      NOTE: Enable support (in the managed assemblies) for the regular
+            expression extension?
+  -->
+  <PropertyGroup Condition="'$(InteropRegExpExtension)' != 'false'">
+    <DefineConstants>$(DefineConstants);INTEROP_REGEXP_EXTENSION</DefineConstants>
+  </PropertyGroup>
+
+  <!--
       NOTE: Enable support (in the managed assemblies) for the test extension?
   -->
   <PropertyGroup Condition="'$(InteropTestExtension)' != 'false'">
     <DefineConstants>$(DefineConstants);INTEROP_TEST_EXTENSION</DefineConstants>
+  </PropertyGroup>
+
+  <!--
+      NOTE: Enable support (in the managed assemblies) for the numeric type
+            checking extension?
+  -->
+  <PropertyGroup Condition="'$(InteropToTypeExtension)' != 'false'">
+    <DefineConstants>$(DefineConstants);INTEROP_TOTYPE_EXTENSION</DefineConstants>
   </PropertyGroup>
 
   <!--

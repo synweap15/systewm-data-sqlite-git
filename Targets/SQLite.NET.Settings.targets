@@ -350,6 +350,66 @@
     <InteropExtensionFunctions Condition="'$(InteropExtensionFunctions)' == ''">true</InteropExtensionFunctions>
 
     <!--
+        NOTE: Enable the FTS5 extension from the custom built interop DLL
+              (i.e. "SQLite.Interop.dll")?  By default, this is enabled.  If
+              this is disabled, the FTS5 extension will be unavailable.  If
+              this is enabled, it must also be enabled via the
+              "INTEROP_FTS5_EXTENSION=1" preprocessor define being
+              present in the "INTEROP_EXTRA_DEFINES" macro in the build
+              properties file:
+
+                  "SQLite.Interop\props\SQLite.Interop.20YY.[vs]props"
+
+              for the corresponding version(s) of Visual Studio.
+    -->
+    <InteropFts5Extension Condition="'$(InteropFts5Extension)' == ''">true</InteropFts5Extension>
+
+    <!--
+        NOTE: Enable the JSON extension from the custom built interop DLL
+              (i.e. "SQLite.Interop.dll")?  By default, this is enabled.  If
+              this is disabled, the JSON extension will be unavailable.  If
+              this is enabled, it must also be enabled via the
+              "INTEROP_JSON1_EXTENSION=1" preprocessor define being
+              present in the "INTEROP_EXTRA_DEFINES" macro in the build
+              properties file:
+
+                  "SQLite.Interop\props\SQLite.Interop.20YY.[vs]props"
+
+              for the corresponding version(s) of Visual Studio.
+    -->
+    <InteropJson1Extension Condition="'$(InteropJson1Extension)' == ''">true</InteropJson1Extension>
+
+    <!--
+        NOTE: Enable the percentile extension from the custom built interop DLL
+              (i.e. "SQLite.Interop.dll")?  By default, this is enabled.  If
+              this is disabled, the percentile extension will be unavailable.
+              If this is enabled, it must also be enabled via the
+              "INTEROP_PERCENTILE_EXTENSION=1" preprocessor define being
+              present in the "INTEROP_EXTRA_DEFINES" macro in the build
+              properties file:
+
+                  "SQLite.Interop\props\SQLite.Interop.20YY.[vs]props"
+
+              for the corresponding version(s) of Visual Studio.
+    -->
+    <InteropPercentileExtension Condition="'$(InteropPercentileExtension)' == ''">true</InteropPercentileExtension>
+
+    <!--
+        NOTE: Enable the regular expression extension from the custom built
+              interop DLL (i.e. "SQLite.Interop.dll")?  By default, this is
+              enabled.  If this is disabled, the regular expression extension
+              will be unavailable.  If this is enabled, it must also be enabled
+              via the "INTEROP_REGEXP_EXTENSION=1" preprocessor define being
+              present in the "INTEROP_EXTRA_DEFINES" macro in the build
+              properties file:
+
+                  "SQLite.Interop\props\SQLite.Interop.20YY.[vs]props"
+
+              for the corresponding version(s) of Visual Studio.
+    -->
+    <InteropRegExpExtension Condition="'$(InteropRegExpExtension)' == ''">true</InteropRegExpExtension>
+
+    <!--
         NOTE: Enable the test extension from the custom built interop DLL (i.e.
               "SQLite.Interop.dll")?  By default, this is enabled only in the
               Debug build configuration.  If this is disabled, the test
@@ -364,6 +424,21 @@
     -->
     <InteropTestExtension Condition="'$(InteropTestExtension)' == '' And '$(Configuration)' == 'Debug'">true</InteropTestExtension>
     <InteropTestExtension Condition="'$(InteropTestExtension)' == '' And '$(Configuration)' != 'Debug'">false</InteropTestExtension>
+
+    <!--
+        NOTE: Enable the numeric type checking extension from the custom built
+              interop DLL (i.e. "SQLite.Interop.dll")?  By default, this is
+              enabled.  If this is disabled, the numeric type checking
+              extension will be unavailable.  If this is enabled, it must also
+              be enabled via the "INTEROP_TOTYPE_EXTENSION=1" preprocessor
+              define being present in the "INTEROP_EXTRA_DEFINES" macro in the
+              build properties file:
+
+                  "SQLite.Interop\props\SQLite.Interop.20YY.[vs]props"
+
+              for the corresponding version(s) of Visual Studio.
+    -->
+    <InteropToTypeExtension Condition="'$(InteropToTypeExtension)' == ''">true</InteropToTypeExtension>
 
     <!--
         NOTE: Enable exposing the CryptoAPI based codec from the custom built

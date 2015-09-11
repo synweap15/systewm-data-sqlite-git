@@ -9,6 +9,7 @@
     <li>Updated to [https://www.sqlite.org/draft/releaselog/3_8_12.html|SQLite 3.8.12].</li>
     <li>Add Reset method to the SQLiteCommand class.</li>
     <li>Add FileName property to the SQLiteConnection class.</li>
+    <li>Add experimental support for the native json1 extension.</li>
 </ul>
 <p>
     <b>1.0.98.0 - August 19, 2015</b>

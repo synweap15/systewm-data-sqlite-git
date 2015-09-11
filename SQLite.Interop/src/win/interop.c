@@ -34,16 +34,20 @@
 #include "../ext/fts5.c"
 #endif
 
+#if defined(INTEROP_JSON1_EXTENSION)
+#include "../ext/json1.c"
+#endif
+
 #if defined(INTEROP_PERCENTILE_EXTENSION)
 #include "../ext/percentile.c"
 #endif
 
-#if defined(INTEROP_TOTYPE_EXTENSION)
-#include "../ext/totype.c"
-#endif
-
 #if defined(INTEROP_REGEXP_EXTENSION)
 #include "../ext/regexp.c"
+#endif
+
+#if defined(INTEROP_TOTYPE_EXTENSION)
+#include "../ext/totype.c"
 #endif
 
 #if defined(INTEROP_EXTENSION_FUNCTIONS)
@@ -120,6 +124,9 @@ static const char * const azInteropCompileOpt[] = {
 #endif
 #ifdef INTEROP_INCLUDE_ZIPVFS
   "INCLUDE_ZIPVFS",
+#endif
+#ifdef INTEROP_JSON1_EXTENSION
+  "JSON1_EXTENSION",
 #endif
 #ifdef INTEROP_LEGACY_CLOSE
   "LEGACY_CLOSE",
