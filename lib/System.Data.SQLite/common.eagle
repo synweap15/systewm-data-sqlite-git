@@ -991,15 +991,17 @@ namespace eval ::Eagle {
       #       brackets are specially quoted with backslashes.
       #
       return [uplevel 1 [list subst [appendArgs $prefix {
-        if {[hasRuntimeOption native]} then {
-          #
-          # NOTE: The \[object\] command may be missing in some Eagle core
-          #       library configurations.  In that case, we cannot copy the
-          #       "native" runtime option.
-          #
-          catch {
-            object invoke Interpreter.GetActive AddRuntimeOption native
-          }
+        #
+        # NOTE: The \[object\] command may be missing in some Eagle core
+        #       library configurations.  Cloning and using the procedure
+        #       \[changeNativeRuntimeOption\] may help to mitigate this.
+        #
+        proc changeNativeRuntimeOption \
+            {[info args changeNativeRuntimeOption]} \
+            {[info body changeNativeRuntimeOption]}
+
+        catch {
+          changeNativeRuntimeOption [hasRuntimeOption native]
         }
       } [getTestOverridesPreamble [list path test_channel]] $suffix]]]
     }
