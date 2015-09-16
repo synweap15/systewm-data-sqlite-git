@@ -98,6 +98,7 @@ IoErr_ShmSize 4874
 IoErr_Short_Read 522
 IoErr_Truncate 1546
 IoErr_Unlock 2058
+IoErr_VNode 6922
 IoErr_Write 778
 Locked 6
 Locked_SharedCache 262
