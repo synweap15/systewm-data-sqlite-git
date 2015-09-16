@@ -3890,14 +3890,17 @@ runTest {test data-1.75 {SQLiteCommand.Reset method} -setup {
 
   $dataReader(1) Read; lappend result [$dataReader(1) Item x]
   $dataReader(1) Read; lappend result [$dataReader(1) Item x]
+  $dataReader(1) Dispose
 
   $command Reset; set dataReader(2) [$command -alias ExecuteReader]
   $dataReader(2) Read; lappend result [$dataReader(2) Item x]
   $dataReader(2) Read; lappend result [$dataReader(2) Item x]
+  $dataReader(2) Dispose
 
   $command Reset; set dataReader(3) [$command -alias ExecuteReader]
   $dataReader(3) Read; lappend result [$dataReader(3) Item x]
   $dataReader(3) Read; lappend result [$dataReader(3) Item x]
+  $dataReader(3) Dispose
 
   set result
 } -cleanup {
