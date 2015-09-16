@@ -26,31 +26,8 @@
 #include "../ext/algorithms.c"
 #endif
 
-#if defined(INTEROP_VIRTUAL_TABLE) && SQLITE_VERSION_NUMBER >= 3004001
-#include "../ext/vtshim.c"
-#endif
-
-#if defined(INTEROP_FTS5_EXTENSION)
-#include "../ext/fts5.c"
-#endif
-
-#if defined(INTEROP_JSON1_EXTENSION)
-#include "../ext/json1.c"
-#endif
-
-#if defined(INTEROP_PERCENTILE_EXTENSION)
-#include "../ext/percentile.c"
-#endif
-
-#if defined(INTEROP_REGEXP_EXTENSION)
-#include "../ext/regexp.c"
-#endif
-
-#if defined(INTEROP_TOTYPE_EXTENSION)
-#include "../ext/totype.c"
-#endif
-
 #if defined(INTEROP_EXTENSION_FUNCTIONS)
+#undef COMPILE_SQLITE_EXTENSIONS_AS_LOADABLE_MODULE
 #include "../contrib/extension-functions.c"
 extern int RegisterExtensionFunctions(sqlite3 *db);
 #endif
@@ -503,6 +480,17 @@ SQLITE_API int WINAPI sqlite3_prepare16_interop(sqlite3 *db, const void *sql, in
 }
 
 #if defined(INTEROP_VIRTUAL_TABLE) && SQLITE_VERSION_NUMBER >= 3004001
+#ifdef _WIN32
+__declspec(dllexport)
+#endif
+void *sqlite3_create_disposable_module(
+  sqlite3 *db,
+  const char *zName,
+  const sqlite3_module *p,
+  void *pClientData,
+  void(*xDestroy)(void*)
+); /* defined in "src/ext/vtshim.c" (included below) */
+
 SQLITE_API void *WINAPI sqlite3_create_disposable_module_interop(
   sqlite3 *db,
   const char *zName,
@@ -1029,6 +1017,32 @@ SQLITE_API int WINAPI sqlite3_cursor_rowid_interop(sqlite3_stmt *pstmt, int curs
   return ret;
 }
 #endif /* SQLITE_OS_WIN */
+
+/*****************************************************************************/
+
+#if defined(INTEROP_VIRTUAL_TABLE) && SQLITE_VERSION_NUMBER >= 3004001
+#include "../ext/vtshim.c"
+#endif
+
+#if defined(INTEROP_FTS5_EXTENSION)
+#include "../ext/fts5.c"
+#endif
+
+#if defined(INTEROP_JSON1_EXTENSION)
+#include "../ext/json1.c"
+#endif
+
+#if defined(INTEROP_PERCENTILE_EXTENSION)
+#include "../ext/percentile.c"
+#endif
+
+#if defined(INTEROP_REGEXP_EXTENSION)
+#include "../ext/regexp.c"
+#endif
+
+#if defined(INTEROP_TOTYPE_EXTENSION)
+#include "../ext/totype.c"
+#endif
 
 /*****************************************************************************/
 
