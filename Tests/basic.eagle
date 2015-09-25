@@ -3904,7 +3904,7 @@ runTest {test data-1.75 {SQLiteCommand.Reset method} -setup {
 
   set result
 } -cleanup {
-  unset -nocomplain dataReader parameter command connection
+  unset -nocomplain dataReader parameter command
 
   freeDbConnection
 
