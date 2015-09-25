@@ -3910,7 +3910,7 @@ runTest {test data-1.75 {SQLiteCommand.Reset method} -setup {
 
   cleanupDb $fileName
 
-  unset -nocomplain result db fileName
+  unset -nocomplain result connection db fileName
 } -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
 System.Data.SQLite} -result {1 2 1 2 1 2}}
 
