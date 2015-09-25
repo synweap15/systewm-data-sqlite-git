@@ -253,7 +253,9 @@ namespace System.Data.SQLite
     internal abstract void ColumnMetaData(string dataBase, string table, string column, ref string dataType, ref string collateSequence, ref bool notNull, ref bool primaryKey, ref bool autoIncrement);
     internal abstract void GetIndexColumnExtendedInfo(string database, string index, string column, ref int sortMode, ref int onError, ref string collationSequence);
 
+    internal abstract object GetObject(SQLiteStatement stmt, int index);
     internal abstract double GetDouble(SQLiteStatement stmt, int index);
+    internal abstract Boolean GetBoolean(SQLiteStatement stmt, int index);
     internal abstract SByte GetSByte(SQLiteStatement stmt, int index);
     internal abstract Byte GetByte(SQLiteStatement stmt, int index);
     internal abstract Int16 GetInt16(SQLiteStatement stmt, int index);

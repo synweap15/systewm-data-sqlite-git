@@ -2025,6 +2025,45 @@ namespace System.Data.SQLite
       autoIncrement = (nautoInc == 1);
     }
 
+    internal override object GetObject(SQLiteStatement stmt, int index)
+    {
+        switch (ColumnAffinity(stmt, index))
+        {
+            case TypeAffinity.Int64:
+                {
+                    return GetInt64(stmt, index);
+                }
+            case TypeAffinity.Double:
+                {
+                    return GetDouble(stmt, index);
+                }
+            case TypeAffinity.Text:
+                {
+                    return GetText(stmt, index);
+                }
+            case TypeAffinity.Blob:
+                {
+                    long size = GetBytes(stmt, index, 0, null, 0, 0);
+
+                    if ((size > 0) && (size <= int.MaxValue))
+                    {
+                        byte[] bytes = new byte[(int)size];
+
+                        GetBytes(stmt, index, 0, bytes, 0, (int)size);
+
+                        return bytes;
+                    }
+                    break;
+                }
+            case TypeAffinity.Null:
+                {
+                    return DBNull.Value;
+                }
+        }
+
+        throw new NotImplementedException();
+    }
+
     internal override double GetDouble(SQLiteStatement stmt, int index)
     {
 #if !PLATFORM_COMPACTFRAMEWORK
@@ -2036,6 +2075,11 @@ namespace System.Data.SQLite
 #else
       throw new NotImplementedException();
 #endif
+    }
+
+    internal override bool GetBoolean(SQLiteStatement stmt, int index)
+    {
+      return ToBoolean(GetObject(stmt, index), CultureInfo.InvariantCulture, false);
     }
 
     internal override sbyte GetSByte(SQLiteStatement stmt, int index)
@@ -3083,12 +3127,14 @@ namespace System.Data.SQLite
           return Convert.ChangeType(GetDouble(stmt, index), t, null);
         case TypeAffinity.Int64:
           if (t == null) return GetInt64(stmt, index);
+          if (t == typeof(Boolean)) return GetBoolean(stmt, index);
           if (t == typeof(SByte)) return GetSByte(stmt, index);
           if (t == typeof(Byte)) return GetByte(stmt, index);
           if (t == typeof(Int16)) return GetInt16(stmt, index);
           if (t == typeof(UInt16)) return GetUInt16(stmt, index);
           if (t == typeof(Int32)) return GetInt32(stmt, index);
           if (t == typeof(UInt32)) return GetUInt32(stmt, index);
+          if (t == typeof(Int64)) return GetInt64(stmt, index);
           if (t == typeof(UInt64)) return GetUInt64(stmt, index);
           return Convert.ChangeType(GetInt64(stmt, index), t, null);
         default:
