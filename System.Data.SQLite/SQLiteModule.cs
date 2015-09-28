@@ -675,6 +675,29 @@ namespace System.Data.SQLite
 
     ///////////////////////////////////////////////////////////////////////////
 
+    #region SQLiteIndexFlags Enumeration
+    /// <summary>
+    /// These are the allowed values for the output flags from the
+    /// <see cref="ISQLiteManagedModule.BestIndex" /> method.
+    /// </summary>
+    [Flags()]
+    public enum SQLiteIndexFlags
+    {
+        /// <summary>
+        /// No special handling.  This is the default.
+        /// </summary>
+        None = 0x0,
+
+        /// <summary>
+        /// This value indicates that the scan of the index will visit at
+        /// most one row.
+        /// </summary>
+        ScanUnique = 0x1
+    }
+    #endregion
+
+    ///////////////////////////////////////////////////////////////////////////
+
     #region SQLiteIndexConstraint Helper Class
     /// <summary>
     /// This class represents the native sqlite3_index_constraint structure
@@ -1017,6 +1040,24 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
+        /// <summary>
+        /// Determines if the native flags field can be used, based on the
+        /// available version of the SQLite core library.
+        /// </summary>
+        /// <returns>
+        /// Non-zero if the <see cref="Flags" /> property is supported by the
+        /// SQLite core library.
+        /// </returns>
+        public bool CanUseFlags()
+        {
+            if (UnsafeNativeMethods.sqlite3_libversion_number() >= 3008012)
+                return true;
+
+            return false;
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+
         #region Public Properties
         private SQLiteIndexConstraintUsage[] constraintUsages;
         /// <summary>
@@ -1106,6 +1147,18 @@ namespace System.Data.SQLite
         {
             get { return estimatedRows; }
             set { estimatedRows = value; }
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+
+        private SQLiteIndexFlags? flags;
+        /// <summary>
+        /// The flags that should be used with this index.
+        /// </summary>
+        public SQLiteIndexFlags? Flags
+        {
+            get { return flags; }
+            set { flags = value; }
         }
         #endregion
     }
@@ -1335,6 +1388,13 @@ namespace System.Data.SQLite
             {
                 SQLiteMarshal.WriteInt64(pIndex, offset,
                     index.Outputs.EstimatedRows.GetValueOrDefault());
+            }
+
+            if (index.Outputs.CanUseFlags() &&
+                index.Outputs.Flags.HasValue)
+            {
+                SQLiteMarshal.WriteInt32(pIndex, offset,
+                   (int)index.Outputs.Flags.GetValueOrDefault());
             }
         }
         #endregion
@@ -7176,6 +7236,53 @@ namespace System.Data.SQLite
             )
         {
             return SetEstimatedRows(index, null);
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+
+        /// <summary>
+        /// Modifies the specified <see cref="SQLiteIndex" /> object instance
+        /// to contain the specified flags.
+        /// </summary>
+        /// <param name="index">
+        /// The <see cref="SQLiteIndex" /> object instance to modify.
+        /// </param>
+        /// <param name="flags">
+        /// The flags value to use.  Using a null value means that the default
+        /// value provided by the SQLite core library should be used.
+        /// </param>
+        /// <returns>
+        /// Non-zero upon success.
+        /// </returns>
+        protected virtual bool SetFlags(
+            SQLiteIndex index,
+            int? flags
+            )
+        {
+            if ((index == null) || (index.Outputs == null))
+                return false;
+
+            index.Outputs.Flags = flags;
+            return true;
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+
+        /// <summary>
+        /// Modifies the specified <see cref="SQLiteIndex" /> object instance
+        /// to contain the default flags.
+        /// </summary>
+        /// <param name="index">
+        /// The <see cref="SQLiteIndex" /> object instance to modify.
+        /// </param>
+        /// <returns>
+        /// Non-zero upon success.
+        /// </returns>
+        protected virtual bool SetFlags(
+            SQLiteIndex index
+            )
+        {
+            return SetFlags(index, null);
         }
         #endregion
         #endregion
