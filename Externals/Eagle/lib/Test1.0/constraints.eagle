@@ -20,6 +20,12 @@
 #       namespace if this script actually ends up being evaluated in Tcl.
 #
 namespace eval ::Eagle {
+  proc getKnownBuildTypes {} {
+    return [list \
+        NetFx20 NetFx35 NetFx40 NetFx45 NetFx451 NetFx452 NetFx46 Bare \
+        LeanAndMean Database MonoOnUnix Development]
+  }
+
   proc getKnownCompileOptions {} {
     return [list \
         APPDOMAINS APPROVED_VERBS ARM ASSEMBLY_RELEASE \
@@ -45,7 +51,8 @@ namespace eval ::Eagle {
         SHARED_ID_POOL SHELL SOURCE_ID SOURCE_TIMESTAMP STATIC TCL TCL_KITS \
         TCL_THREADED TCL_THREADS TCL_UNICODE TCL_WRAPPER TEST THREADING \
         THROW_ON_DISPOSED TRACE TYPE_CACHE UNIX USE_NAMESPACES VERBOSE WEB \
-        WINDOWS WINFORMS WIX_30 WIX_35 WIX_36 WIX_37 WIX_38 WIX_39 X64 X86 XML]
+        WINDOWS WINFORMS WIX_30 WIX_35 WIX_36 WIX_37 WIX_38 WIX_39 WIX_310 \
+        X64 X86 XML]
   }
 
   proc getKnownMonoVersions {} {
@@ -3697,21 +3704,22 @@ namespace eval ::Eagle {
     #       global namespace.
     #
     exportAndImportPackageCommands [namespace current] [list \
-        getKnownCompileOptions getKnownMonoVersions lpermute \
-        alwaysFullInterpReady canExecWhoAmI canExecTclShell canExecFossil \
-        isTestMono isTestAdministrator canPing checkForTestSuiteFiles \
-        checkForPlatform checkForWindowsVersion checkForScriptLibrary \
-        checkForVariable checkForTclOptions checkForWindowsCommandProcessor \
-        checkForFossil checkForEagle checkForSymbols checkForLogFile \
-        checkForGaruda checkForShell checkForDebug checkForTk checkForVersion \
-        checkForCommand checkForNamespaces checkForTestExec \
-        checkForTestMachine checkForTestPlatform checkForTestConfiguration \
-        checkForTestSuffix checkForFile checkForPathFile checkForNativeCode \
-        checkForTip127 checkForTip194 checkForTip207 checkForTip241 \
-        checkForTip285 checkForTip405 checkForTip426 checkForTip429 \
-        checkForTiming checkForPerformance checkForBigLists \
-        checkForTimeIntensive checkForFullTest checkForMemoryIntensive \
-        checkForStackIntensive checkForInteractive checkForInteractiveCommand \
+        getKnownBuildTypes getKnownCompileOptions getKnownMonoVersions \
+        lpermute alwaysFullInterpReady canExecWhoAmI canExecTclShell \
+        canExecFossil isTestMono isTestAdministrator canPing \
+        checkForTestSuiteFiles checkForPlatform checkForWindowsVersion \
+        checkForScriptLibrary checkForVariable checkForTclOptions \
+        checkForWindowsCommandProcessor checkForFossil checkForEagle \
+        checkForSymbols checkForLogFile checkForGaruda checkForShell \
+        checkForDebug checkForTk checkForVersion checkForCommand \
+        checkForNamespaces checkForTestExec checkForTestMachine \
+        checkForTestPlatform checkForTestConfiguration checkForTestSuffix \
+        checkForFile checkForPathFile checkForNativeCode checkForTip127 \
+        checkForTip194 checkForTip207 checkForTip241 checkForTip285 \
+        checkForTip405 checkForTip426 checkForTip429 checkForTiming \
+        checkForPerformance checkForBigLists checkForTimeIntensive \
+        checkForFullTest checkForMemoryIntensive checkForStackIntensive \
+        checkForInteractive checkForInteractiveCommand \
         checkForUserInteraction checkForNetwork checkForCompileOption \
         checkForKnownCompileOptions] false false
 

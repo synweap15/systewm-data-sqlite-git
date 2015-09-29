@@ -1442,10 +1442,21 @@ namespace eval ::Eagle {
       set updateBaseUri [info engine UpdateBaseUri]
 
       #
-      # NOTE: Append the path and query string used for updates to it.
+      # NOTE: Grab the update path and query string used for updates.
       #
-      set updateUri [appendArgs \
-          $updateBaseUri [info engine UpdatePathAndQuery]]
+      set updatePathAndQuery [info engine UpdatePathAndQuery]
+
+      #
+      # HACK: Exract the URI type (e.g. "stable" or "latest") from the
+      #       update path and query.  This code may need to be modified
+      #       in the future.
+      #
+      set updateUriType [lindex [split $updatePathAndQuery .] 0]
+
+      #
+      # NOTE: Combine them to form the complete update URI.
+      #
+      set updateUri [appendArgs $updateBaseUri $updatePathAndQuery]
 
       #
       # NOTE: Fetch the master update data from the distribution site
@@ -1673,10 +1684,10 @@ namespace eval ::Eagle {
                   #       if any, to upgrade now?
                   #
                   set text [appendArgs \
-                      "latest build " $patchLevel ", dated " $dateTime \
-                      ", is newer than the running build " $enginePatchLevel \
-                      ", dated " $engineDateTime ", based on data from " \
-                      $updateBaseUri]
+                      $updateUriType " build " $patchLevel ", dated " \
+                      $dateTime ", is newer than the running build " \
+                      $enginePatchLevel ", dated " $engineDateTime \
+                      ", based on data from " $updateBaseUri]
 
                   if {$prompt && [isInteractive]} then {
                     #
@@ -1920,17 +1931,17 @@ namespace eval ::Eagle {
                 #
                 return [list [appendArgs \
                     "running build " $enginePatchLevel ", dated " \
-                    $engineDateTime ", is newer than the latest build " \
-                    $patchLevel ", dated " $dateTime ", based on data " \
-                    "from " $updateBaseUri]]
+                    $engineDateTime ", is newer than the " $updateUriType \
+                    " build " $patchLevel ", dated " $dateTime \
+                    ", based on data " "from " $updateBaseUri]]
               } elseif {$checkBuild} then {
                 #
                 # NOTE: The patch levels are equal, we are up-to-date.
                 #
                 return [list [appendArgs \
                     "running build " $enginePatchLevel ", dated " \
-                    $engineDateTime ", is the latest build, based on " \
-                    "data from " $updateBaseUri]]
+                    $engineDateTime ", is the " $updateUriType \
+                    " build, based on " "data from " $updateBaseUri]]
               }
             }
           }

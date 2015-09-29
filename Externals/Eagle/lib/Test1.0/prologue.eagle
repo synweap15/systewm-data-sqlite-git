@@ -230,6 +230,29 @@ if {![info exists no([file tail [info script]])]} then {
   #############################################################################
 
   #
+  # NOTE: *SPECIAL* This test constraint must be checked first as it can
+  #       determine if subsequent ones will emit warnings.  This is only
+  #       applicable to Eagle.  This block requires the "Eagle.Test" and
+  #       "Eagle.Test.Constraints" packages.
+  #
+  if {[isEagle]} then {
+    #
+    # NOTE: Has quiet testing support been disabled?
+    #
+    if {![info exists no(preQuiet)]} then {
+      #
+      # NOTE: There are checks for the "quiet" test constraint prior to
+      #       the real test constraints being initialized.  Prepare for
+      #       those checks now.  This will have to be repeated later,
+      #       after the real test constraints are initialized.
+      #
+      checkForQuiet $test_channel true
+    }
+  }
+
+  #############################################################################
+
+  #
   # NOTE: Verify that the current call frame is correct and that the
   #       interpreter call stack has not been imbalanced by previous
   #       tests or other errors.  This check only applies to Eagle.
@@ -245,6 +268,28 @@ if {![info exists no([file tail [info script]])]} then {
         [list source [file normalize [info script]]]} then {
       unset -nocomplain test_suite_running
       error "cannot run prologue, current frame not for this script"
+    }
+
+    #
+    # NOTE: Attempt to determine if the this script file being run as
+    #       part of the overall test suite script file itself.  If not,
+    #       issue a warning about the inability to detect "leaks" from
+    #       the tests.
+    #
+    if {[lsearch -glob -index 0 -- [object invoke -flags +NonPublic \
+            Interpreter.GetActive ScriptLocations.ToString] \
+            {*[/\]all.eagle}] == -1} then {
+      #
+      # NOTE: Check if the warning should actually be emitted.  If this
+      #       warning has specifically been disabled or we are in quiet
+      #       mode, do nothing.
+      #
+      if {![info exists no(warningForAllEagle)] && \
+          ![haveConstraint quiet]} then {
+        tputs $test_channel [appendArgs \
+            "==== WARNING: tests are not being run via suite script file " \
+            "\"all.eagle\", resource leaks will probably not be reported.\n"]
+      }
     }
   }
 
@@ -311,9 +356,11 @@ if {![info exists no([file tail [info script]])]} then {
   set test_flags(-match) [list *]; # default to running all tests.
   set test_flags(-skip) [list]; # default to skipping no tests.
   set test_flags(-constraints) [list]; # default to no manual constraints.
+  set test_flags(-verbose) ""; # default to pass, body, skip, start, error.
   set test_flags(-logFile) ""; # default to using standard log file naming.
   set test_flags(-threshold) ""; # default to requiring all tests to pass.
   set test_flags(-randomOrder) ""; # default to deterministic order.
+  set test_flags(-uncountedLeaks) ""; # use defaults for uncounted resources.
   set test_flags(-breakOnLeak) ""; # default to continue on leak.
   set test_flags(-stopOnFailure) ""; # default to continue on failure.
   set test_flags(-stopOnLeak) ""; # default to continue on leak.
@@ -370,6 +417,16 @@ if {![info exists no([file tail [info script]])]} then {
       #       command line.
       #
       set test_random_order $test_flags(-randomOrder)
+    }
+
+    if {[info exists test_flags(-uncountedLeaks)] && \
+        [string length $test_flags(-uncountedLeaks)] > 0} then {
+      #
+      # NOTE: Set the test uncounted leaks "list" to the one provided by
+      #       the command line.  We should probably use [string is list]
+      #       here; however, that is not available until native Tcl 8.5.
+      #
+      set test_uncounted_leaks $test_flags(-uncountedLeaks)
     }
 
     if {[info exists test_flags(-breakOnLeak)] && \
@@ -485,28 +542,6 @@ if {![info exists no([file tail [info script]])]} then {
   #############################################################################
 
   #
-  # NOTE: *SPECIAL* This test constraint must be checked first as it can
-  #       determine if subsequent ones will emit warnings.  This is only
-  #       applicable to Eagle.
-  #
-  if {[isEagle]} then {
-    #
-    # NOTE: Has quiet testing support been disabled?
-    #
-    if {![info exists no(preQuiet)]} then {
-      #
-      # NOTE: There are checks for the "quiet" test constraint prior to
-      #       the real test constraints being initialized.  Prepare for
-      #       those checks now.  This will have to be repeated later,
-      #       after the real test constraints are initialized.
-      #
-      checkForQuiet $test_channel true
-    }
-  }
-
-  #############################################################################
-
-  #
   # NOTE: Has native Tcl shell detection and use been disabled?
   #
   if {![info exists no(tclsh)]} then {
@@ -566,7 +601,8 @@ if {![info exists no([file tail [info script]])]} then {
   #       plugins being loaded (i.e. there are some tests are sensitive to
   #       having "unexpected" plugins loaded).
   #
-  if {[isEagle] && ![info exists no(warningForPlugin)] && \
+  if {[isEagle] && \
+      ![info exists no(warningForPlugin)] && \
       ![haveConstraint quiet]} then {
     foreach loaded [info loaded] {
       #
@@ -768,6 +804,11 @@ if {![info exists no([file tail [info script]])]} then {
           [string is boolean -strict $test_random_order] ? \
               $test_random_order : "<none>"}] \n]
 
+  tputs $test_channel [appendArgs "---- uncounted leaks: " \
+      [expr {[info exists test_uncounted_leaks] && \
+          [string length $test_uncounted_leaks] > 0 ? \
+              $test_uncounted_leaks : "<none>"}] \n]
+
   tputs $test_channel [appendArgs "---- break on leak: " \
       [expr {[info exists test_break_on_leak] && \
           [string is boolean -strict $test_break_on_leak] ? \
@@ -789,40 +830,45 @@ if {![info exists no([file tail [info script]])]} then {
               $test_exit_on_complete : "<none>"}] \n]
 
   #
-  # NOTE: Show the information about which tests and files are being run and/or
-  #       skipped (COMPAT: Tcl).
+  # NOTE: Show the information about which tests and files are being run
+  #       and/or skipped (COMPAT: Tcl).
   #
-  if {[llength $test_flags(-file)] > 0} then {
-    tputs $test_channel [appendArgs "---- running test files that match: " \
-        $test_flags(-file) \n]
-  }
+  tputs $test_channel [appendArgs "---- running test files that match: " \
+      [expr {[info exists test_flags(-file)] && \
+          [llength $test_flags(-file)] > 0 ? \
+              $test_flags(-file) : "<none>"}] \n]
 
-  if {[llength $test_flags(-notFile)] > 0} then {
-    tputs $test_channel [appendArgs "---- skipping test files that match: " \
-        $test_flags(-notFile) \n]
-  }
+  tputs $test_channel [appendArgs "---- skipping test files that match: " \
+      [expr {[info exists test_flags(-notFile)] && \
+          [llength $test_flags(-notFile)] > 0 ? \
+              $test_flags(-notFile) : "<none>"}] \n]
 
-  if {[llength $test_flags(-startFile)] > 0} then {
-    tputs $test_channel [appendArgs \
-        "---- starting with test files that match: " \
-        $test_flags(-startFile) \n]
-  }
+  tputs $test_channel [appendArgs \
+      "---- starting with test files that match: " \
+      [expr {[info exists test_flags(-startFile)] && \
+          [llength $test_flags(-startFile)] > 0 ? \
+              $test_flags(-startFile) : "<none>"}] \n]
 
-  if {[llength $test_flags(-stopFile)] > 0} then {
-    tputs $test_channel [appendArgs \
-        "---- stopping after test files that match: " \
-        $test_flags(-stopFile) \n]
-  }
+  tputs $test_channel [appendArgs \
+      "---- stopping after test files that match: " \
+      [expr {[info exists test_flags(-stopFile)] && \
+          [llength $test_flags(-stopFile)] > 0 ? \
+              $test_flags(-stopFile) : "<none>"}] \n]
 
-  if {[llength $test_flags(-match)] > 0} then {
-    tputs $test_channel [appendArgs "---- running tests that match: " \
-        $test_flags(-match) \n]
-  }
+  tputs $test_channel [appendArgs "---- running tests that match: " \
+      [expr {[info exists test_flags(-match)] && \
+          [llength $test_flags(-match)] > 0 ? \
+              $test_flags(-match) : "<none>"}] \n]
 
-  if {[llength $test_flags(-skip)] > 0} then {
-    tputs $test_channel [appendArgs "---- skipping tests that match: " \
-        $test_flags(-skip) \n]
-  }
+  tputs $test_channel [appendArgs "---- skipping tests that match: " \
+      [expr {[info exists test_flags(-skip)] && \
+          [llength $test_flags(-skip)] > 0 ? \
+              $test_flags(-skip) : "<none>"}] \n]
+
+  tputs $test_channel [appendArgs "---- verbosity level for tests: " \
+      [expr {[info exists test_flags(-verbose)] && \
+          [string length $test_flags(-verbose)] > 0 ? \
+              $test_flags(-verbose) : "<none>"}] \n]
 
   tputs $test_channel [appendArgs "---- path: " \
       [expr {[info exists path] && [string length $path] > 0 ? \
@@ -870,7 +916,7 @@ if {![info exists no([file tail [info script]])]} then {
     # NOTE: *WARNING* This has the effect of removing test constraints
     #       added prior to this point.
     #
-    initializeTests; configureTcltest [list] [list] [list] [list] false
+    initializeTests; configureTcltest "" [list] [list] [list] [list] false
 
     #
     # NOTE: If the "no(mono)" variable is set (to anything) then any
@@ -2243,8 +2289,16 @@ if {![info exists no([file tail [info script]])]} then {
     #
     # NOTE: Make sure that Tcl honors the Eagle test constraints.
     #
-    configureTcltest $test_flags(-match) $test_flags(-skip) \
-        $test_flags(-constraints) [list] false
+    configureTcltest \
+        [expr {[info exists test_flags(-verbose)] ? \
+            $test_flags(-verbose) : ""}] \
+        [expr {[info exists test_flags(-match)] ? \
+            $test_flags(-match) : [list]}] \
+        [expr {[info exists test_flags(-skip)] ? \
+            $test_flags(-skip) : [list]}] \
+        [expr {[info exists test_flags(-constraints)] ? \
+            $test_flags(-constraints) : [list]}] \
+        [list] false
 
     #
     # HACK: Reset the test counts for tcltest.
@@ -2387,14 +2441,23 @@ if {![info exists no([file tail [info script]])]} then {
     }
 
     #
-    # NOTE: This is not currently used by any tests.
+    # NOTE: For test "basic-1.73".
+    #
+    if {![info exists no(callStack.eagle)]} then {
+      checkForFile $test_channel [file join $test_data_path callStack.eagle]
+    }
+
+    #
+    # NOTE: This is not currently used by any tests.  However, it is
+    #       used by the sample targets file "Eagle.Sample.targets".
     #
     if {![info exists no(evaluate.eagle)]} then {
       checkForFile $test_channel [file join $test_data_path evaluate.eagle]
     }
 
     #
-    # NOTE: This is not currently used by any tests.
+    # NOTE: This is not currently used by any tests.  However, it is
+    #       used by the sample targets file "Eagle.Sample.targets".
     #
     if {![info exists no(substitute.eagle)]} then {
       checkForFile $test_channel [file join $test_data_path substitute.eagle]
@@ -2923,7 +2986,8 @@ if {![info exists no([file tail [info script]])]} then {
 
         if {![info exists no(bogoCopsMultipliers)]} then {
           foreach multiplier $test_base_cops_multipliers {
-            if {$test_cops <= $test_base_cops * (1.0 / $multiplier)} then {
+            if {$multiplier != 0 && \
+                $test_cops <= $test_base_cops * (1.0 / $multiplier)} then {
               addConstraint [appendArgs slowerBogoCopsBy $multiplier X]
             }
           }

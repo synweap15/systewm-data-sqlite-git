@@ -507,7 +507,7 @@ namespace eval ::Eagle {
         -file -logFile -machine -match -no -notFile -platform \
         -postTest -preTest -postWait -preWait -randomOrder -skip \
         -startFile -stopFile -stopOnFailure -stopOnLeak -suffix \
-        -suite -tclsh -threshold]
+        -suite -tclsh -threshold -uncountedLeaks -verbose]
 
     set length [llength $args]
 
@@ -1194,6 +1194,15 @@ namespace eval ::Eagle {
     }
   }
 
+  proc getTestUncountedLeaks {} {
+    if {[info exists ::test_uncounted_leaks] && \
+        [string length $::test_uncounted_leaks] > 0} then {
+      return $::test_uncounted_leaks
+    }
+
+    return [list]
+  }
+
   #
   # NOTE: This procedure should return non-zero if the [exec] command may be
   #       used by the specified test package procedure.
@@ -1432,9 +1441,14 @@ namespace eval ::Eagle {
       }
 
       #
-      # NOTE: Display and log the result of the test we just completed.
+      # NOTE: Display and/or log the results for the test that we just
+      #       completed.
       #
-      tresult $code $result
+      if {[shouldWriteTestData]} then {
+        tresult $code $result
+      } else {
+        tlog $result
+      }
 
       #
       # NOTE: If the test failed with an actual error (i.e. not just a
@@ -1459,7 +1473,17 @@ namespace eval ::Eagle {
       }
     } else {
       if {$error} then {
-        tputs $::test_channel [appendArgs "ERROR (runTest): " $result \n]
+        #
+        # HACK: Prevent spurious errors dealing with [test] command options
+        #       that are missing from native Tcl.
+        #
+        set badOptionPattern {^bad option ".*?":\
+            must be -body, -cleanup, -constraints, -errorOutput,\
+            -match, -output, -result, -returnCodes, or -setup$}
+
+        if {[isEagle] || ![regexp -- $badOptionPattern $result]} then {
+          tputs $::test_channel [appendArgs "ERROR (runTest): " $result \n]
+        }
       }
 
       unhookPuts
@@ -1532,7 +1556,12 @@ namespace eval ::Eagle {
 
     ###########################################################################
 
-    set array(uncounted,$index) [list]
+    if {![info exists array(uncounted,$index)]} then {
+      set array(uncounted,$index) [getTestUncountedLeaks]
+    }
+
+    ###########################################################################
+
     set array(time,$index) [clock seconds]
     set array(afters,$index) [llength [after info]]
     set array(variables,$index) [llength [info globals]]
@@ -1554,7 +1583,9 @@ namespace eval ::Eagle {
     #       for leaks (i.e. because the "leak" may be from an external
     #       process).
     #
-    lappend array(uncounted,$index) temporaryFiles
+    if {![info exists ::no(uncountedTemporaryFiles)]} then {
+      lappend array(uncounted,$index) temporaryFiles
+    }
 
     ###########################################################################
 
@@ -1631,7 +1662,13 @@ namespace eval ::Eagle {
       #       for leaks (i.e. because the "leak" may be from an external
       #       process).
       #
-      lappend array(uncounted,$index) assemblies processes
+      if {![info exists ::no(uncountedAssemblies)]} then {
+        lappend array(uncounted,$index) assemblies
+      }
+
+      if {![info exists ::no(uncountedProcesses)]} then {
+        lappend array(uncounted,$index) processes
+      }
     }
   }
 
@@ -2619,7 +2656,7 @@ namespace eval ::Eagle {
     }
   }
 
-  proc configureTcltest { match skip constraints imports force } {
+  proc configureTcltest { verbose match skip constraints imports force } {
     #
     # NOTE: Eagle and native Tcl have different configuration requirements
     #       for the "tcltest" package.  For Eagle, the necessary testing
@@ -2662,7 +2699,11 @@ namespace eval ::Eagle {
       # NOTE: Configure it for our use (only when it was not loaded).
       #
       if {!$loaded} then {
-        ::tcltest::configure -verbose bpste
+        if {[string length $verbose] > 0} then {
+          ::tcltest::configure -verbose $verbose
+        } else {
+          ::tcltest::configure -verbose pbste
+        }
       }
 
       #
@@ -2833,8 +2874,25 @@ namespace eval ::Eagle {
         set eagle_tests(Constraints) [getEnvironmentVariable testConstraints]
 
         if {[info exists test_flags(-constraints)]} then {
-            eval lappend eagle_tests(Constraints) $test_flags(-constraints)
+          eval lappend eagle_tests(Constraints) $test_flags(-constraints)
         }
+
+        unset -nocomplain test_verbose; set test_verbose Default
+
+        if {[info exists test_flags(-verbose)] && \
+            [string length $test_flags(-verbose)] > 0} then {
+          #
+          # NOTE: Map all test verbosity flags we support for script usage
+          #       to their abbreviated names (which are all one letter) and
+          #       then split them into a list.
+          #
+          set test_verbose [split [string map [list \
+              Body B Pass P Skip S Start T Error E Line L \
+              Fail F Reason R Time I Exit X StdOut O StdErr D] \
+              $test_flags(-verbose)] ""]
+        }
+
+        set eagle_tests(Verbose) $test_verbose; unset test_verbose
       }
     }
 
@@ -2931,6 +2989,17 @@ namespace eval ::Eagle {
           }
         }
       }
+    }
+
+    proc shouldWriteTestData {} {
+      if {[llength [info commands object]] > 0 && [catch {
+        object invoke -flags +NonPublic \
+            Eagle._Components.Private.TestOps ShouldWriteTestData ""
+      } writeTestData] == 0 && $writeTestData} then {
+        return false
+      }
+
+      return true
     }
 
     proc tresult { code result } {
@@ -3426,7 +3495,7 @@ namespace eval ::Eagle {
     #       are prevented.
     #
     if {![info exists ::no(configureTcltest)]} then {
-      configureTcltest [list] [list] [list] [list] false
+      configureTcltest "" [list] [list] [list] [list] false
     }
 
     ###########################################################################
@@ -3470,7 +3539,7 @@ namespace eval ::Eagle {
     # NOTE: Load and configure the "tcltest" package unless we are prevented.
     #
     if {![info exists ::no(configureTcltest)]} then {
-      configureTcltest [list] [list] [list] [list test testConstraint] false
+      configureTcltest "" [list] [list] [list] [list test testConstraint] false
     }
 
     #
@@ -3485,12 +3554,13 @@ namespace eval ::Eagle {
         getTclShellFileName getTemporaryPath getFiles getTestFiles \
         getTestRunId getTestLogId getDefaultTestLog getTestLog getLastTestLog \
         getTestSuite getTestMachine getTestPlatform getTestConfiguration \
-        getTestSuffix testExec testClrExec execTestShell isRandomOrder \
-        isBreakOnLeak isStopOnFailure isStopOnLeak isExitOnComplete \
-        returnInfoScript runTestPrologue runTestEpilogue hookPuts unhookPuts \
-        runTest testDebugBreak testArrayGet testShim tsource \
-        recordTestStatistics reportTestStatistics formatList formatListAsDict \
-        pathToRegexp inverseLsearchGlob removePathFromFileNames formatDecimal \
+        getTestSuffix getTestUncountedLeaks testExec testClrExec \
+        execTestShell isRandomOrder isBreakOnLeak isStopOnFailure \
+        isStopOnLeak isExitOnComplete returnInfoScript runTestPrologue \
+        runTestEpilogue hookPuts unhookPuts runTest testDebugBreak \
+        testArrayGet testShim tsource recordTestStatistics \
+        reportTestStatistics formatList formatListAsDict pathToRegexp \
+        inverseLsearchGlob removePathFromFileNames formatDecimal \
         clearTestPercent reportTestPercent runAllTests isTestSuiteRunning \
         getTestChannelOrDefault checkForAndSetTestPath configureTcltest \
         machineToPlatform getPassPercentage getSkipPercentage] false false
