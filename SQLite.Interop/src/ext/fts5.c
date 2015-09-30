@@ -11133,7 +11133,7 @@ static void fts5DecodeFunction(
     memset(&term, 0, sizeof(Fts5Buffer));
 
     if( n<4 ){
-      sqlite3Fts5BufferSet(&rc, &s, 8, (const u8*)"corrupt");
+      sqlite3Fts5BufferSet(&rc, &s, 7, (const u8*)"corrupt");
       goto decode_out;
     }else{
       iRowidOff = fts5GetU16(&a[0]);
@@ -13565,7 +13565,7 @@ static void fts5SourceIdFunc(
   sqlite3_value **apVal           /* Function arguments */
 ){
   assert( nArg==0 );
-  sqlite3_result_text(pCtx, "fts5: 2015-09-28 17:05:22 c5566bb39c8d9b58f77380b81a873429575c7d5c", -1, SQLITE_TRANSIENT);
+  sqlite3_result_text(pCtx, "fts5: 2015-09-30 14:30:19 e796c0efb6cf17444b53af75046daf7d8fa82f78", -1, SQLITE_TRANSIENT);
 }
 
 #ifdef _WIN32
