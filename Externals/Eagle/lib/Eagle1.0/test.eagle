@@ -845,9 +845,11 @@ namespace eval ::Eagle {
     if {[isEagle]} then {
       set result [list]
 
-      foreach fileName [lsort -dictionary [file list $directory $pattern]] {
-        if {[file isfile $fileName] && [file readable $fileName]} then {
-          lappend result $fileName
+      if {[file exists $directory] && [file isdirectory $directory]} then {
+        foreach fileName [lsort -dictionary [file list $directory $pattern]] {
+          if {[file isfile $fileName] && [file readable $fileName]} then {
+            lappend result $fileName
+          }
         }
       }
 

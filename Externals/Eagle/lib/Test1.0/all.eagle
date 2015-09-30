@@ -47,13 +47,13 @@ if {![info exists test_all_path]} then {
       [file normalize [file dirname [info script]]]
 }
 
+source [file join $test_all_path prologue.eagle]
+
 if {![info exists test_path]} then {
   set test_path [file normalize [file join \
       [file dirname [file dirname $test_all_path]] \
       Library Tests]]
 }
-
-source [file join $test_all_path prologue.eagle]
 
 set no(prologue.eagle) true
 set no(epilogue.eagle) true

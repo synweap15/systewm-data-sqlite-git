@@ -889,6 +889,9 @@ if {![info exists no([file tail [info script]])]} then {
   tputs $test_channel [appendArgs "---- library path: \"" \
       $lib_path \"\n]
 
+  tputs $test_channel [appendArgs "---- test suite files located in: \"" \
+      $test_all_path \"\n]
+
   tputs $test_channel [appendArgs "---- test script files located in: \"" \
       $test_path \"\n]
 
