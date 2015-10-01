@@ -44,8 +44,29 @@ if {![info exists no([file tail [info script]])]} then {
   # NOTE: Set the location of the test suite, if necessary.
   #
   if {![info exists test_path]} then {
-    set test_path [file normalize [file join \
-        [file dirname [file dirname $test_all_path]] Library Tests]]
+    #
+    # NOTE: Search for the "Library/Tests" -OR- "Tests" sub-directories
+    #       within the sub-directory one level up and then two levels up
+    #       from the sub-directory containing the "all.eagle" file from
+    #       the test suite package.
+    #
+    set test_path [file normalize [file join [file dirname \
+        $test_all_path] Library Tests]]
+
+    if {![file exists $test_path] || ![file isdirectory $test_path]} then {
+      set test_path [file normalize [file join [file dirname \
+          [file dirname $test_all_path]] Library Tests]]
+    }
+
+    if {![file exists $test_path] || ![file isdirectory $test_path]} then {
+      set test_path [file normalize [file join [file dirname \
+          $test_all_path] Tests]]
+    }
+
+    if {![file exists $test_path] || ![file isdirectory $test_path]} then {
+      set test_path [file normalize [file join [file dirname \
+          [file dirname $test_all_path]] Tests]]
+    }
   }
 
   #
