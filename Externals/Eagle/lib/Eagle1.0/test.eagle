@@ -1332,6 +1332,13 @@ namespace eval ::Eagle {
 
   proc runTestPrologue {} {
     #
+    # NOTE: Verify that the global test path variable is available.
+    #
+    if {![info exists ::test_path]} then {
+      error "cannot run test prologue, \"::test_path\" must be set"
+    }
+
+    #
     # HACK: We do not want to force every third-party test suite
     #       to come up with a half-baked solution to finding its
     #       own files.
@@ -1348,6 +1355,13 @@ namespace eval ::Eagle {
   }
 
   proc runTestEpilogue {} {
+    #
+    # NOTE: Verify that the global test path variable is available.
+    #
+    if {![info exists ::test_path]} then {
+      error "cannot run test epilogue, \"::test_path\" must be set"
+    }
+
     #
     # NOTE: Evaluate the standard test epilogue in the context of
     #       the caller.
@@ -1570,7 +1584,17 @@ namespace eval ::Eagle {
     set array(commands,$index) [llength [info commands]]
     set array(procedures,$index) [llength [info procs]]
     set array(namespaces,$index) [llength [namespace children ::]]
-    set array(files,$index) [llength [getFiles $::test_path *]]
+
+    ###########################################################################
+
+    if {[info exists ::test_path]} then {
+      set array(files,$index) [llength [getFiles $::test_path *]]
+    } else {
+      set array(files,$index) 0; # NOTE: Information not available.
+    }
+
+    ###########################################################################
+
     set array(temporaryFiles,$index) [llength [getFiles [getTemporaryPath] *]]
     set array(channels,$index) [llength [file channels]]
     set array(aliases,$index) [llength [interp aliases]]
@@ -1697,6 +1721,20 @@ namespace eval ::Eagle {
     set count 0; upvar 1 $statsVarName array
 
     foreach statistic $statistics {
+      if {![info exists array($statistic,after)]} then {
+        tputs $channel [appendArgs "==== \"" $fileName "\" MISSING " \
+            $statistic " AFTER\n"]
+
+        continue
+      }
+
+      if {![info exists array($statistic,before)]} then {
+        tputs $channel [appendArgs "==== \"" $fileName "\" MISSING " \
+            $statistic " BEFORE\n"]
+
+        continue
+      }
+
       if {$array($statistic,after) > $array($statistic,before)} then {
         lappend array(statistics,leaked) $statistic
 
@@ -2424,6 +2462,23 @@ namespace eval ::Eagle {
     return stdout; # TODO: Good default?
   }
 
+  proc tryVerifyTestPath {} {
+    #
+    # NOTE: If the test path variable does not exist, the directory it
+    #       points to does not exist (or is not really a directory), or
+    #       it appears to be an empty directory, return false; otherwise,
+    #       return true.
+    #
+    if {![info exists ::test_path] || \
+        ![file exists $::test_path] || \
+        ![file isdirectory $::test_path] || \
+        [llength [getFiles $::test_path *]] == 0} then {
+      return false
+    }
+
+    return true
+  }
+
   proc checkForAndSetTestPath { whatIf {quiet false} } {
     #
     # NOTE: Everything in this procedure requires access to the file system;
@@ -2464,9 +2519,8 @@ namespace eval ::Eagle {
           }
         }
 
-        if {[string length $base] > 0 && ($whatIf || \
-            ![info exists ::test_path] || ![file exists $::test_path] || \
-            ![file isdirectory $::test_path])} then {
+        if {[string length $base] > 0 && \
+            ($whatIf || ![tryVerifyTestPath])} then {
           #
           # NOTE: Try the source release directory structure again; this
           #       time, assume only the embedded script library was used.
@@ -2483,9 +2537,8 @@ namespace eval ::Eagle {
           }
         }
 
-        if {[string length $script] > 0 && ($whatIf || \
-            ![info exists ::test_path] || ![file exists $::test_path] || \
-            ![file isdirectory $::test_path])} then {
+        if {[string length $script] > 0 && \
+            ($whatIf || ![tryVerifyTestPath])} then {
           #
           # NOTE: Try for the test package directory.  For this case, the
           #       final test path would be:
@@ -2502,9 +2555,8 @@ namespace eval ::Eagle {
           }
         }
 
-        if {[string length $base] > 0 && ($whatIf || \
-            ![info exists ::test_path] || ![file exists $::test_path] || \
-            ![file isdirectory $::test_path])} then {
+        if {[string length $base] > 0 && \
+            ($whatIf || ![tryVerifyTestPath])} then {
           #
           # NOTE: Try for the test package directory again; this time, use
           #       the base path and assume the source release directory
@@ -2522,9 +2574,8 @@ namespace eval ::Eagle {
           }
         }
 
-        if {[string length $base] > 0 && ($whatIf || \
-            ![info exists ::test_path] || ![file exists $::test_path] || \
-            ![file isdirectory $::test_path])} then {
+        if {[string length $base] > 0 && \
+            ($whatIf || ![tryVerifyTestPath])} then {
           #
           # NOTE: Try for the test package directory again; this time, use
           #       the base path.  For this case, the final test path would
@@ -2542,9 +2593,8 @@ namespace eval ::Eagle {
           }
         }
 
-        if {[string length $library] > 0 && ($whatIf || \
-            ![info exists ::test_path] || ![file exists $::test_path] || \
-            ![file isdirectory $::test_path])} then {
+        if {[string length $library] > 0 && \
+            ($whatIf || ![tryVerifyTestPath])} then {
           #
           # NOTE: This must be a binary release, no "Library" directory
           #       then.  Also, binary releases have an upper-case "Tests"
@@ -2564,9 +2614,8 @@ namespace eval ::Eagle {
           }
         }
 
-        if {[string length $base] > 0 && ($whatIf || \
-            ![info exists ::test_path] || ![file exists $::test_path] || \
-            ![file isdirectory $::test_path])} then {
+        if {[string length $base] > 0 && \
+            ($whatIf || ![tryVerifyTestPath])} then {
           #
           # NOTE: Fallback to using the base directory and checking for a
           #       "Tests" directory beneath it.  For this case, the final
@@ -2607,9 +2656,8 @@ namespace eval ::Eagle {
           }
         }
 
-        if {[string length $script] > 0 && ($whatIf || \
-            ![info exists ::test_path] || ![file exists $::test_path] || \
-            ![file isdirectory $::test_path])} then {
+        if {[string length $script] > 0 && \
+            ($whatIf || ![tryVerifyTestPath])} then {
           #
           # NOTE: Try for the test package directory.  For this case, the
           #       final test path would be:
@@ -2626,9 +2674,8 @@ namespace eval ::Eagle {
           }
         }
 
-        if {[string length $script] > 0 && ($whatIf || \
-            ![info exists ::test_path] || ![file exists $::test_path] || \
-            ![file isdirectory $::test_path])} then {
+        if {[string length $script] > 0 && \
+            ($whatIf || ![tryVerifyTestPath])} then {
           #
           # NOTE: This must be a binary release, no "Library" directory
           #       then.  Also, binary releases have an upper-case "Tests"
@@ -3564,8 +3611,9 @@ namespace eval ::Eagle {
         reportTestStatistics formatList formatListAsDict pathToRegexp \
         inverseLsearchGlob removePathFromFileNames formatDecimal \
         clearTestPercent reportTestPercent runAllTests isTestSuiteRunning \
-        getTestChannelOrDefault checkForAndSetTestPath configureTcltest \
-        machineToPlatform getPassPercentage getSkipPercentage] false false
+        getTestChannelOrDefault tryVerifyTestPath checkForAndSetTestPath \
+        configureTcltest machineToPlatform getPassPercentage \
+        getSkipPercentage] false false
 
     ###########################################################################
     ############################## END Tcl ONLY ###############################
