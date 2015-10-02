@@ -43,7 +43,7 @@ IF ERRORLEVEL 1 (
   GOTO errors
 )
 
-FOR /F "delims=" %%V IN ('find.exe "AssemblyVersion" System.Data.SQLite\AssemblyInfo.cs') DO (
+FOR /F "delims=" %%V IN ('TYPE System.Data.SQLite\AssemblyInfo.cs ^| find.exe "AssemblyVersion"') DO (
   SET VERSION=%%V
 )
 
