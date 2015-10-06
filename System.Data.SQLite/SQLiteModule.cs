@@ -1045,10 +1045,10 @@ namespace System.Data.SQLite
         /// available version of the SQLite core library.
         /// </summary>
         /// <returns>
-        /// Non-zero if the <see cref="Flags" /> property is supported by the
-        /// SQLite core library.
+        /// Non-zero if the <see cref="IdxFlags" /> property is supported by
+        /// the SQLite core library.
         /// </returns>
-        public bool CanUseFlags()
+        public bool CanUseIdxFlags()
         {
             if (UnsafeNativeMethods.sqlite3_libversion_number() >= 3008012)
                 return true;
@@ -1390,7 +1390,7 @@ namespace System.Data.SQLite
                     index.Outputs.EstimatedRows.GetValueOrDefault());
             }
 
-            if (index.Outputs.CanUseFlags() &&
+            if (index.Outputs.CanUseIdxFlags() &&
                 index.Outputs.IdxFlags.HasValue)
             {
                 SQLiteMarshal.WriteInt32(pIndex, offset,
