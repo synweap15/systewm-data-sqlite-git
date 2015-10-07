@@ -1142,6 +1142,8 @@ namespace System.Data.SQLite
         /// <summary>
         /// Estimated number of rows returned.  Using a null value here
         /// indicates that a default estimated rows value should be used.
+        /// This property has no effect if the SQLite core library is not at
+        /// least version 3.8.2.
         /// </summary>
         public long? EstimatedRows
         {
@@ -1153,7 +1155,10 @@ namespace System.Data.SQLite
 
         private SQLiteIndexFlags? idxFlags;
         /// <summary>
-        /// The flags that should be used with this index.
+        /// The flags that should be used with this index.  Using a null value
+        /// here indicates that a default flags value should be used.  This
+        /// property has no effect if the SQLite core library is not at least
+        /// version 3.8.12.
         /// </summary>
         public SQLiteIndexFlags? IdxFlags
         {
