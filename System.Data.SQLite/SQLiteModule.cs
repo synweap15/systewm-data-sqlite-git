@@ -1050,7 +1050,7 @@ namespace System.Data.SQLite
         /// </returns>
         public bool CanUseIdxFlags()
         {
-            if (UnsafeNativeMethods.sqlite3_libversion_number() >= 3008012)
+            if (UnsafeNativeMethods.sqlite3_libversion_number() >= 3009000)
                 return true;
 
             return false;
@@ -1158,7 +1158,7 @@ namespace System.Data.SQLite
         /// The flags that should be used with this index.  Using a null value
         /// here indicates that a default flags value should be used.  This
         /// property has no effect if the SQLite core library is not at least
-        /// version 3.8.12.
+        /// version 3.9.0.
         /// </summary>
         public SQLiteIndexFlags? IdxFlags
         {

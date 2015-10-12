@@ -1020,6 +1020,10 @@ SQLITE_API int WINAPI sqlite3_cursor_rowid_interop(sqlite3_stmt *pstmt, int curs
 
 /*****************************************************************************/
 
+#if defined(SQLITE_CORE)
+#undef SQLITE_CORE
+#endif
+
 #if defined(INTEROP_VIRTUAL_TABLE) && SQLITE_VERSION_NUMBER >= 3004001
 #include "../ext/vtshim.c"
 #endif
