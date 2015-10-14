@@ -113,7 +113,7 @@ extern "C" {
 */
 #define SQLITE_VERSION        "3.9.0"
 #define SQLITE_VERSION_NUMBER 3009000
-#define SQLITE_SOURCE_ID      "2015-10-12 04:56:12 6f2858f6817ca70c132f0437ac2f0f74deb273d2"
+#define SQLITE_SOURCE_ID      "2015-10-14 12:29:53 a721fc0d89495518fe5612e2e3bbc60befd2e90d"
 
 /*
 ** CAPI3REF: Run-Time Library Version Numbers
@@ -7946,6 +7946,10 @@ struct sqlite3_rtree_query_info {
 
 #include "sqlite3.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*************************************************************************
 ** CUSTOM AUXILIARY FUNCTIONS
 **
@@ -8430,6 +8434,10 @@ struct fts5_api {
 /*
 ** END OF REGISTRATION API
 *************************************************************************/
+
+#ifdef __cplusplus
+}  /* end of the 'extern "C"' block */
+#endif
 
 #endif /* _FTS5_H */
 
