@@ -64,6 +64,13 @@ a:visited { color: #734559 }
 .fancy li p { margin: 1em 0 }
 /* End of "fancyformat" specific rules. */
 
+.yyterm {
+  background: #fff;
+  border: 1px solid #000;
+  border-radius: 11px;
+  padding-left: 4px;
+  padding-right: 4px;
+}
 </style>
   
 </head>
@@ -160,10 +167,11 @@ a:visited { color: #734559 }
 </pre>
 
 <p>
-  If a database name is specified as part of an object reference, it must be
-  either "main", or "temp" or the name of an attached database. Like other
-  SQL identifiers, database names are case-insensitive. If a database name
-  is specified, then only the named database is searched for the named object.
+  If a schema name is specified as part of an object reference, it must be
+  either "main", or "temp" or the schema-name of an attached database.
+  Like other SQL identifiers, schema names are case-insensitive.
+  If a schema name is specified, then only that one schema is searched for
+  the named object.
 
 <p>
   Most object references may only resolve to a specific type of object (for
