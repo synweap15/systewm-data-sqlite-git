@@ -41,7 +41,7 @@ proc englishToList { value } {
   return $result
 }
 
-proc processLine { line } {
+proc processLine { line prefix } {
   if {[string length [string trim $line]] == 0 || \
       [regexp -- {<h\d(?: |>)} [string range $line 0 3]]} then {
     return ""
@@ -60,16 +60,16 @@ proc processLine { line } {
     }
   }
 
-  regsub -all -- {<br>} $result \n result
+  regsub -all -- {<br>} $result \n[escapeSubSpec $prefix] result
   regsub -all -- {&ne;} $result {\&#8800;} result
   regsub -all -- {&#91(?:;)?} $result {[} result
   regsub -all -- {&#93(?:;)?} $result {]} result
   regsub -all -- {<( |\"|\d|=)} $result {\&lt;\1} result
   regsub -all -- {( |\"|\d|=)>} $result {\1\&gt;} result
-  regsub -all -- {<blockquote><pre>} $result <code> result
-  regsub -all -- {</pre></blockquote>} $result </code> result
-  regsub -all -- {<blockquote>} $result <code> result
-  regsub -all -- {</blockquote>} $result </code> result
+  regsub -all -- {<blockquote><pre>} $result <para><code> result
+  regsub -all -- {</pre></blockquote>} $result </code></para> result
+  regsub -all -- {<blockquote>} $result <para><code> result
+  regsub -all -- {</blockquote>} $result </code></para> result
 
   return $result
 }
@@ -103,7 +103,7 @@ proc extractMethod { name lines pattern prefix indexVarName methodsVarName } {
       } elseif {[string range $trimLine 0 2] eq "<p>"} then {
         # open paragraph ... maybe one line?
         if {[string range $trimLine end-3 end] eq "</p>"} then {
-          set newLine [processLine $line]
+          set newLine [processLine $line $prefix]
 
           if {[string length $newLine] > 0} then {
             # one line paragraph, wrap.
@@ -119,25 +119,24 @@ proc extractMethod { name lines pattern prefix indexVarName methodsVarName } {
             append data \n $prefix </para>
           }
         } else {
-          append data \n $prefix <para>
+          if {[info exists methods($name)]} then {
+            # non-first line, leading line separator.
+            append data \n $prefix <para>
+          } else {
+            # first line, no leading line separator.
+            append data $prefix <para>
+          }
 
-          set newLine [processLine $line]
+          set newLine [processLine $line $prefix]
 
           if {[string length $newLine] > 0} then {
-            # open paragraph, add line to it.
-            if {[info exists methods($name)]} then {
-              # non-first line, leading line separator.
-              append data \n $prefix $newLine
-            } else {
-              # first line, no leading line separator.
-              append data $prefix $newLine
-            }
+            append data \n $prefix $newLine
           }
 
           incr paragraph
         }
       } else {
-        set newLine [processLine $line]
+        set newLine [processLine $line $prefix]
 
         if {[string length $newLine] > 0} then {
           if {[info exists methods($name)]} then {
@@ -183,16 +182,12 @@ if {![file exists $outputFileName]} then {
 set lines [split [string map [list \r\n \n] [readFile $inputFileName]] \n]
 set patterns(method) {^<h3>2\.\d+ The (.*) Method(?:s)?</h3>$}
 set prefix "        /// "
-set start false; array set methods {}
+unset -nocomplain methods; set start false
 
 for {set index 0} {$index < [llength $lines]} {} {
   set line [lindex $lines $index]
 
   if {$start} then {
-    if {[regexp -- {^<a name=".*"></a>$} $line]} then {
-      incr index; continue
-    }
-
     if {[regexp -- $patterns(method) $line dummy capture]} then {
       foreach method [englishToList $capture] {
         set methodIndex [expr {$index + 1}]
@@ -210,6 +205,41 @@ for {set index 0} {$index < [llength $lines]} {} {
   } else {
     incr index
   }
+}
+
+set data [string map [list \r\n \n] [readFile $outputFileName]]
+set count 0; set start 0
+
+foreach name [array names methods] {
+  if {$count > 0} then {
+    set start [string first [string repeat / 71] $data $start]
+  }
+
+  set pattern ""
+
+  append pattern ^ {\s{8}} "/// <summary>"
+  append pattern {((?:.|\n)*?)}
+  append pattern {\n\s{8}} "/// </summary>"
+  append pattern {(?:(?:.|\n)*?)}
+  append pattern {\n\s{8}[\w]+?\s+?} $name {\($}
+
+  if {[regexp -start \
+      $start -line -indices -- $pattern $data dummy indexes]} then {
+    set summaryStart [lindex $indexes 0]
+    set summaryEnd [lindex $indexes 1]
+
+    set data [string range $data 0 $summaryStart]$methods($name)[string \
+        range $data [expr {$summaryEnd + 1}] end]
+
+    incr count; set start [expr {$summaryEnd + 1}]
+  } else {
+    error "cannot find virtual table method \"$name\" in \"$outputFileName\""
+  }
+}
+
+if {$count > 0} then {
+  # writeFile $outputFileName [string map [list \n \r\n] $data]
+  writeFile $outputFileName.new [string map [list \n \r\n] $data]
 }
 
 # exit 0
