@@ -210,7 +210,18 @@ for {set index 0} {$index < [llength $lines]} {} {
 set data [string map [list \r\n \n] [readFile $outputFileName]]
 set count 0; set start 0
 
-foreach name [array names methods] {
+#
+# NOTE: These method names must be processed in the EXACT order that they
+#       appear in the output file.
+#
+foreach name [list \
+    xCreate xConnect xBestIndex xDisconnect xDestroy xOpen xClose \
+    xFilter xNext xEof xColumn xRowid xUpdate xBegin xSync xCommit \
+    xRollback xFindFunction xRename xSavepoint xRelease xRollbackTo] {
+  #
+  # HACK: This assumes that a line of 71 forward slashes will be present
+  #       before each method, except for the first one.
+  #
   if {$count > 0} then {
     set start [string first [string repeat / 71] $data $start]
   }
@@ -223,7 +234,7 @@ foreach name [array names methods] {
   append pattern {(?:(?:.|\n)*?)}
   append pattern {\n\s{8}[\w]+?\s+?} $name {\($}
 
-  if {[regexp -start \
+  if {[regexp -nocase -start \
       $start -line -indices -- $pattern $data dummy indexes]} then {
     set summaryStart [lindex $indexes 0]
     set summaryEnd [lindex $indexes 1]
@@ -238,8 +249,7 @@ foreach name [array names methods] {
 }
 
 if {$count > 0} then {
-  # writeFile $outputFileName [string map [list \n \r\n] $data]
-  writeFile $outputFileName.new [string map [list \n \r\n] $data]
+  writeFile $outputFileName [string map [list \n \r\n] $data]
 }
 
-# exit 0
+exit 0
