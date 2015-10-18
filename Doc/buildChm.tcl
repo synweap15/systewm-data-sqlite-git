@@ -68,13 +68,7 @@ proc unescapeHtmlTags { fileName cdata } {
     #
     # NOTE: Grab everything within the CDATA tags and use verbatim.
     #
-    set cdataCount [regsub -all -- {<![CDATA[(.*?)]]>} $data {\1} data]
-
-    if {$cdataCount > 0} then {
-      incr count $cdataCount
-    } else {
-      # puts stdout "*WARNING* File \"$fileName\" has no CDATA"
-    }
+    incr count [regsub -all -- {<![CDATA[(.*?)]]>} $data {\1} data]
   }
 
   #
@@ -95,7 +89,7 @@ proc unescapeHtmlTags { fileName cdata } {
   }
 
   #
-  # NOTE: Issue a warning if the "href" pattern was not matched.
+  # NOTE: Issue a warning if the HTML tag patterns were not matched.
   #
   if {$count == 0} then {
     puts stdout "*WARNING* File \"$fileName\" has no supported HTML tags"
