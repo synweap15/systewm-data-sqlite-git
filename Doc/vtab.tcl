@@ -163,7 +163,7 @@ proc extractMethod { name lines pattern prefix indexVarName methodsVarName } {
 #
 set path [file normalize [file dirname [info script]]]
 
-set coreDocPath [file join $path Extra Core]
+set coreDocPath [file join $path Special Core]
 set interfacePath [file join [file dirname $path] System.Data.SQLite]
 set inputFileName [file join $coreDocPath vtab.html]
 
