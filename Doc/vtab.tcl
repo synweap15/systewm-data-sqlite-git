@@ -50,9 +50,7 @@ proc processLine { line prefix } {
   set result $line
 
   foreach remove [list \
-      {<a name=".*?">} {<a href=".*?">} {</a>} {<b>} {</b>} \
-      {<dd>} {</dd>} {<dl>} {</dl>} {<dt>} {</dt>} {<li>} \
-      {</li>} {<ol>} {</ol>} {<p>} {</p>} {<ul>} {</ul>}] {
+      {<a name=".*?">} {<a href=".*?">} {</a>} {<p>} {</p>}] {
     regsub -all -- $remove $result "" result
 
     if {[string length [string trim $result]] == 0} then {
@@ -60,7 +58,13 @@ proc processLine { line prefix } {
     }
   }
 
-  regsub -all -- {<br>} $result \n[escapeSubSpec $prefix] result
+  foreach escape [list \
+      {<b>} {</b>} {<br>} {<dd>} {</dd>} {<dl>} {</dl>} {<dt>} \
+      {</dt>} {<li>} {</li>} {<ol>} {</ol>} {<tt>} {</tt>} \
+      {<ul>} {</ul>}] {
+    regsub -all -- ($escape) $result {<![CDATA[\1]]>} result
+  }
+
   regsub -all -- {&ne;} $result {\&#8800;} result
   regsub -all -- {&#91(?:;)?} $result {[} result
   regsub -all -- {&#93(?:;)?} $result {]} result
@@ -78,7 +82,7 @@ proc extractMethod { name lines pattern prefix indexVarName methodsVarName } {
   upvar 1 $indexVarName index
   upvar 1 $methodsVarName methods
 
-  set paragraph 0
+  array set levels {p 0}
   set length [llength $lines]
 
   while {$index < $length} {
@@ -89,7 +93,7 @@ proc extractMethod { name lines pattern prefix indexVarName methodsVarName } {
     } else {
       set trimLine [string trim $line]; set data ""
 
-      if {$paragraph > 0 && [string length $trimLine] == 0} then {
+      if {$levels(p) > 0 && [string length $trimLine] == 0} then {
         # blank line, close paragraph.
         if {[info exists methods($name)]} then {
           # non-first line, leading line separator.
@@ -99,14 +103,14 @@ proc extractMethod { name lines pattern prefix indexVarName methodsVarName } {
           append data $prefix </para>
         }
 
-        incr paragraph -1
+        incr levels(p) -1
       } elseif {[string range $trimLine 0 2] eq "<p>"} then {
-        # open paragraph ... maybe one line?
+        # open tag ... maybe one line?
         if {[string range $trimLine end-3 end] eq "</p>"} then {
           set newLine [processLine $line $prefix]
 
           if {[string length $newLine] > 0} then {
-            # one line paragraph, wrap.
+            # one line tag, wrap.
             if {[info exists methods($name)]} then {
               # non-first line, leading line separator.
               append data \n $prefix <para>
@@ -133,7 +137,7 @@ proc extractMethod { name lines pattern prefix indexVarName methodsVarName } {
             append data \n $prefix $newLine
           }
 
-          incr paragraph
+          incr levels(p)
         }
       } else {
         set newLine [processLine $line $prefix]

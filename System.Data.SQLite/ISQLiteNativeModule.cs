@@ -109,12 +109,14 @@ namespace System.Data.SQLite
         /// A hidden column differs from a normal column in three respects:
         /// </para>
         /// <para>
-        ///  Hidden columns are not listed in the dataset returned by 
+        /// <![CDATA[<ul>]]>
+        /// <![CDATA[<li>]]> Hidden columns are not listed in the dataset returned by 
         ///      "PRAGMA table_info",
-        ///  Hidden columns are not included in the expansion of a "*"
+        /// <![CDATA[<li>]]> Hidden columns are not included in the expansion of a "*"
         ///      expression in the result set of a SELECT, and
-        ///  Hidden columns are not included in the implicit column-list 
+        /// <![CDATA[<li>]]> Hidden columns are not included in the implicit column-list 
         ///      used by an INSERT statement that lacks an explicit column-list. 
+        /// <![CDATA[</ul>]]>
         /// </para>
         /// <para>
         /// For example, if the following SQL is passed to sqlite3_declare_vtab():
@@ -353,9 +355,9 @@ namespace System.Data.SQLite
         ///     int needToFreeIdxStr;      /* Free idxStr using sqlite3_free() if true */
         ///     int orderByConsumed;       /* True if output is already ordered */
         ///     double estimatedCost;      /* Estimated cost of using this index */
-        ///     /* Fields below are only available in SQLite 3.8.2 and later */
+        ///     <![CDATA[<b>]]>/* Fields below are only available in SQLite 3.8.2 and later */<![CDATA[</b>]]>
         ///     sqlite3_int64 estimatedRows;    /* Estimated number of rows returned */
-        ///     /* Fields below are only available in SQLite 3.9.0 and later */
+        ///     <![CDATA[<b>]]>/* Fields below are only available in SQLite 3.9.0 and later */<![CDATA[</b>]]>
         ///     int idxFlags;              /* Mask of SQLITE_INDEX_SCAN_* flags */
         ///   };
         /// </code></para>
@@ -874,16 +876,18 @@ namespace System.Data.SQLite
         /// following interface:
         /// </para>
         /// <para>
-        ///  sqlite3_result_blob()
-        ///  sqlite3_result_double()
-        ///  sqlite3_result_int()
-        ///  sqlite3_result_int64()
-        ///  sqlite3_result_null()
-        ///  sqlite3_result_text()
-        ///  sqlite3_result_text16()
-        ///  sqlite3_result_text16le()
-        ///  sqlite3_result_text16be()
-        ///  sqlite3_result_zeroblob()
+        /// <![CDATA[<ul>]]>
+        /// <![CDATA[<li>]]> sqlite3_result_blob()
+        /// <![CDATA[<li>]]> sqlite3_result_double()
+        /// <![CDATA[<li>]]> sqlite3_result_int()
+        /// <![CDATA[<li>]]> sqlite3_result_int64()
+        /// <![CDATA[<li>]]> sqlite3_result_null()
+        /// <![CDATA[<li>]]> sqlite3_result_text()
+        /// <![CDATA[<li>]]> sqlite3_result_text16()
+        /// <![CDATA[<li>]]> sqlite3_result_text16le()
+        /// <![CDATA[<li>]]> sqlite3_result_text16be()
+        /// <![CDATA[<li>]]> sqlite3_result_zeroblob()
+        /// <![CDATA[</ul>]]>
         /// </para>
         /// <para>
         /// If the xColumn method implementation calls none of the functions above,
@@ -975,9 +979,9 @@ namespace System.Data.SQLite
         /// <para>
         /// Every argv entry will have a non-NULL value in C but may contain the 
         /// SQL value NULL.  In other words, it is always true that
-        /// <tt>argv[i]!=0</tt> for i between 0 and <tt>argc-1</tt>.
+        /// <![CDATA[<tt>]]>argv[i]!=0<![CDATA[</tt>]]> for <![CDATA[<b>]]>i<![CDATA[</b>]]> between 0 and <![CDATA[<tt>]]>argc-1<![CDATA[</tt>]]>.
         /// However, it might be the case that
-        /// <tt>sqlite3_value_type(argv[i])==SQLITE_NULL</tt>.
+        /// <![CDATA[<tt>]]>sqlite3_value_type(argv[i])==SQLITE_NULL<![CDATA[</tt>]]>.
         /// </para>
         /// <para>
         /// The argv[0] parameter is the rowid of a row in the virtual table 
@@ -1002,32 +1006,29 @@ namespace System.Data.SQLite
         /// </para>
         /// <para>
         /// Each call to xUpdate will fall into one of cases shown below.
-        /// Not that references to argv[i] mean the SQL value
+        /// Not that references to <![CDATA[<b>]]>argv[i]<![CDATA[</b>]]> mean the SQL value
         /// held within the argv[i] object, not the argv[i]
         /// object itself.
         /// </para>
         /// <para><code>
-        /// argc = 1
-        /// The single row with rowid equal to argv[0] is deleted. No insert occurs.
-        /// argc &gt; 1 
-        ///  argv[0] = NULL
-        /// A new row is inserted with a rowid argv[1] and column values in
+        /// <![CDATA[<dl>]]>
+        /// <![CDATA[<dt>]]><![CDATA[<b>]]>argc = 1<![CDATA[</b>]]>
+        /// <![CDATA[<dd>]]>The single row with rowid equal to argv[0] is deleted. No insert occurs.
+        /// <![CDATA[<dt>]]><![CDATA[<b>]]>argc &gt; 1 <![CDATA[<br>]]> argv[0] = NULL<![CDATA[</b>]]>
+        /// <![CDATA[<dd>]]>A new row is inserted with a rowid argv[1] and column values in
         ///        argv[2] and following.  If argv[1] is an SQL NULL,
         ///        the a new unique rowid is generated automatically.
-        /// argc &gt; 1 
-        ///  argv[0] &#8800; NULL 
-        ///  argv[0] = argv[1]
-        /// The row with rowid argv[0] is updated with new values 
+        /// <![CDATA[<dt>]]><![CDATA[<b>]]>argc &gt; 1 <![CDATA[<br>]]> argv[0] &#8800; NULL <![CDATA[<br>]]> argv[0] = argv[1]<![CDATA[</b>]]>
+        /// <![CDATA[<dd>]]>The row with rowid argv[0] is updated with new values 
         ///        in argv[2] and following parameters.
-        /// argc &gt; 1 
-        ///  argv[0] &#8800; NULL 
-        ///  argv[0] &#8800; argv[1]
-        ///  The row with rowid argv[0] is updated with rowid argv[1] 
+        /// <![CDATA[<dt>]]><![CDATA[<b>]]>argc &gt; 1 <![CDATA[<br>]]> argv[0] &#8800; NULL <![CDATA[<br>]]> argv[0] &#8800; argv[1]<![CDATA[</b>]]>
+        /// <![CDATA[<dd>]]> The row with rowid argv[0] is updated with rowid argv[1] 
         /// and new values in argv[2] and following parameters. This will occur 
         /// when an SQL statement updates a rowid, as in the statement:
         /// <para><code>
         ///    UPDATE table SET rowid=rowid+1 WHERE ...; 
         /// </code></para>
+        /// <![CDATA[</dl>]]>
         /// </code></para>
         /// <para>
         /// The xUpdate method must return SQLITE_OK if and only if it is
