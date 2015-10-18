@@ -23,6 +23,12 @@ proc writeFile { fileName data } {
   return ""
 }
 
+proc escapeSubSpec { data } {
+  regsub -all -- {&} $data {\\\&} data
+  regsub -all -- {\\(\d+)} $data {\\\\\1} data
+  return $data
+}
+
 proc englishToList { value } {
   set result [list]
 
@@ -50,7 +56,6 @@ proc processLine { line } {
     regsub -all -- $remove $result "" result
 
     if {[string length [string trim $result]] == 0} then {
-      puts "STOP with no content, original line = $line"
       return ""
     }
   }
@@ -69,7 +74,7 @@ proc processLine { line } {
   return $result
 }
 
-proc extractMethod { name lines pattern indexVarName methodsVarName } {
+proc extractMethod { name lines pattern prefix indexVarName methodsVarName } {
   upvar 1 $indexVarName index
   upvar 1 $methodsVarName methods
 
@@ -86,7 +91,7 @@ proc extractMethod { name lines pattern indexVarName methodsVarName } {
 
       if {$paragraph > 0 && [string length $trimLine] == 0} then {
         # blank line, close paragraph.
-        append data \n </para>; incr paragraph -1
+        append data \n $prefix </para>; incr paragraph -1
       } elseif {[string range $trimLine 0 2] eq "<p>"} then {
         # open paragraph ... maybe one line?
         if {[string range $trimLine end-3 end] eq "</p>"} then {
@@ -94,24 +99,24 @@ proc extractMethod { name lines pattern indexVarName methodsVarName } {
 
           if {[string length $newLine] > 0} then {
             # one line paragraph, wrap.
-            if {[info exists methods($name)]} then {
-              append data \n
-            }
-
-            append data <para> \n $newLine \n </para>
+            append data \n $prefix <para>
+            append data \n $prefix $newLine
+            append data \n $prefix </para>
           }
         } else {
-          if {[info exists methods($name)]} then {
-            append data \n
-          }
-
-          append data <para>
+          append data \n $prefix <para>
 
           set newLine [processLine $line]
 
           if {[string length $newLine] > 0} then {
             # open paragraph, add line to it.
-            append data $newLine
+            if {[info exists methods($name)]} then {
+              # non-first line, leading line separator.
+              append data \n $prefix $newLine
+            } else {
+              # first line, no leading line separator.
+              append data $prefix $newLine
+            }
           }
 
           incr paragraph
@@ -121,10 +126,12 @@ proc extractMethod { name lines pattern indexVarName methodsVarName } {
 
         if {[string length $newLine] > 0} then {
           if {[info exists methods($name)]} then {
-            append data \n
+            # non-first line, leading line separator.
+            append data \n $prefix $newLine
+          } else {
+            # first line, no leading line separator.
+            append data $prefix $newLine
           }
-
-          append data $newLine
         }
       }
 
@@ -144,17 +151,26 @@ set path [file normalize [file dirname [info script]]]
 
 set coreDocPath [file join $path Extra Core]
 set interfacePath [file join [file dirname $path] System.Data.SQLite]
-
 set inputFileName [file join $coreDocPath vtab.html]
+
+if {![file exists $inputFileName]} then {
+  puts "input file \"$inputFileName\" does not exist"
+  exit 1
+}
+
 set outputFileName [file join $interfacePath ISQLiteNativeModule.cs]
 
-set methodPattern {^<h3>2\.\d+ The (.*) Method(?:s)?</h3>$}
-set start false
-array set methods {}
-set lines [split [readFile $inputFileName] \n]
-set length [llength $lines]
+if {![file exists $outputFileName]} then {
+  puts "output file \"$outputFileName\" does not exist"
+  exit 1
+}
 
-for {set index 0} {$index < $length} {} {
+set lines [split [string map [list \r\n \n] [readFile $inputFileName]] \n]
+set patterns(method) {^<h3>2\.\d+ The (.*) Method(?:s)?</h3>$}
+set prefix "        /// "
+set start false; array set methods {}
+
+for {set index 0} {$index < [llength $lines]} {} {
   set line [lindex $lines $index]
 
   if {$start} then {
@@ -162,10 +178,12 @@ for {set index 0} {$index < $length} {} {
       incr index; continue
     }
 
-    if {[regexp -- $methodPattern $line dummy capture]} then {
+    if {[regexp -- $patterns(method) $line dummy capture]} then {
       foreach method [englishToList $capture] {
         set methodIndex [expr {$index + 1}]
-        extractMethod $method $lines $methodPattern methodIndex methods
+
+        extractMethod \
+            $method $lines $patterns(method) $prefix methodIndex methods
       }
 
       set index $methodIndex
@@ -179,6 +197,4 @@ for {set index 0} {$index < $length} {} {
   }
 }
 
-# "        /// <summary>"
-# "        /// </summary>"
 # exit 0
