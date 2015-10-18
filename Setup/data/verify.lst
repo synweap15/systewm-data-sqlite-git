@@ -530,6 +530,7 @@ set sds_manifests(source) {
   System.Data.SQLite/AssemblySourceTimeStampAttribute.cs
   System.Data.SQLite/Configurations/
   System.Data.SQLite/Configurations/System.Data.SQLite.dll.config
+  System.Data.SQLite/ISQLiteNativeModule.cs
   System.Data.SQLite/LINQ/
   System.Data.SQLite/LINQ/SQLiteConnection_Linq.cs
   System.Data.SQLite/LINQ/SQLiteFactory_Linq.cs

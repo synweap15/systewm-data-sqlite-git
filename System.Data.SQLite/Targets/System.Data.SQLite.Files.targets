@@ -103,6 +103,7 @@
   -->
 
   <ItemGroup Condition="'$(InteropVirtualTable)' != 'false'">
+    <Compile Include="ISQLiteNativeModule.cs" />
     <Compile Include="SQLiteModule.cs" />
     <Compile Include="SQLiteModuleCommon.cs" />
     <Compile Include="SQLiteModuleEnumerable.cs" />
