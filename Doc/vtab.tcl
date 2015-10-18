@@ -91,7 +91,15 @@ proc extractMethod { name lines pattern prefix indexVarName methodsVarName } {
 
       if {$paragraph > 0 && [string length $trimLine] == 0} then {
         # blank line, close paragraph.
-        append data \n $prefix </para>; incr paragraph -1
+        if {[info exists methods($name)]} then {
+          # non-first line, leading line separator.
+          append data \n $prefix </para>
+        } else {
+          # first line, no leading line separator.
+          append data $prefix </para>
+        }
+
+        incr paragraph -1
       } elseif {[string range $trimLine 0 2] eq "<p>"} then {
         # open paragraph ... maybe one line?
         if {[string range $trimLine end-3 end] eq "</p>"} then {
@@ -99,7 +107,14 @@ proc extractMethod { name lines pattern prefix indexVarName methodsVarName } {
 
           if {[string length $newLine] > 0} then {
             # one line paragraph, wrap.
-            append data \n $prefix <para>
+            if {[info exists methods($name)]} then {
+              # non-first line, leading line separator.
+              append data \n $prefix <para>
+            } else {
+              # first line, no leading line separator.
+              append data $prefix <para>
+            }
+
             append data \n $prefix $newLine
             append data \n $prefix </para>
           }
