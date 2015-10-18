@@ -1221,7 +1221,6 @@ namespace System.Data.SQLite
         /// state for the virtual table for it to restore itself back to, which
         /// should also have the effect of deleting all saved states with an
         /// integer identifier greater than this one.
-        /// <list type=""></list>
         /// </param>
         /// <returns>
         /// A standard SQLite return code.
