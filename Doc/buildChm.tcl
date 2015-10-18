@@ -46,6 +46,65 @@ proc getFileHash { fileName } {
 }
 
 #
+# NOTE: This procedure unescapes certain HTML tags that are used within the
+#       documentation for the virtual table methods.
+#
+proc unescapeHtmlTags { fileName cdata } {
+  #
+  # NOTE: Read all the textual data from the file.
+  #
+  set data [readFile $fileName]
+
+  #
+  # NOTE: No replacements made yet.
+  #
+  set count 0
+
+  #
+  # NOTE: If requested by the caller, unwrap all content contained with XML
+  #       CDATA sections as well.
+  #
+  if {$cdata} then {
+    #
+    # NOTE: Grab everything within the CDATA tags and use verbatim.
+    #
+    incr count [regsub -all -- {<![CDATA[(.*?)]]>} $data {\1} data]
+  }
+
+  #
+  # TODO: Handle all the HTML tags we know may be present in the virtual
+  #       table method documentation.  This may need adjustments in the
+  #       future.
+  #
+  foreach to [list \
+      {<b>} {</b>} {<br>} {<dd>} {</dd>} {<dl>} {</dl>} {<dt>} \
+      {</dt>} {<li>} {</li>} {<ol>} {</ol>} {<tt>} {</tt>} \
+      {<ul>} {</ul>}] {
+    #
+    # NOTE: Figure out the escaped form of this tag and then replace it
+    #       with the unescaped form.
+    #
+    set from [string map [list < &lt\; > &gt\;] $to]
+    incr count [regsub -all -- $from $data $to data]
+  }
+
+  #
+  # NOTE: Issue a warning if the HTML tag patterns were not matched.
+  #
+  if {$count == 0} then {
+    puts stdout "*WARNING* File \"$fileName\" has no supported HTML tags"
+  }
+
+  #
+  # NOTE: If some replacements were performed on the data from the file,
+  #       then overwrite it with the new data.
+  #
+  if {$count > 0} then {
+    writeFile $fileName $data
+  }
+}
+
+#
 # HACK: This procedure checks all the "href" attribute values in the specified
 #       core documentation file.  For each value, this procedure checks if the
 #       reference conforms to one of the following general categories:
@@ -139,13 +198,18 @@ proc transformCoreDocumentationFile { fileName url } {
   }
 
   #
-  # NOTE: If some replacements were performed on the data from the file, then
-  #       overwrite it with the new data; otherwise, issue a warning.
+  # NOTE: Issue a warning if the "href" pattern was not matched.
+  #
+  if {$count == 0} then {
+    puts stdout "*WARNING* File \"$fileName\" does not match: href=\"(.*?)\""
+  }
+
+  #
+  # NOTE: If some replacements were performed on the data from the file,
+  #       then overwrite it with the new data.
   #
   if {$count > 0} then {
     writeFile $fileName $data
-  } else {
-    puts stdout "*WARNING* File \"$fileName\" does not match: href=\"(.*?)\""
   }
 }
 
@@ -295,6 +359,20 @@ foreach fileName [glob -nocomplain [file join $coreSyntaxPath *.html]] {
   }
 
   transformCoreDocumentationFile $fileName https://www.sqlite.org/
+}
+
+###############################################################################
+
+foreach fileName [glob -nocomplain [file join $temporaryPath \
+    System.Data.SQLite~System.Data.SQLite.ISQLiteNativeModule*.html]] {
+  set fileName [file join $path $fileName]
+
+  if {![file isfile $fileName]} then {
+    puts stdout "Cannot find temporary provider file: $fileName"
+    exit 1
+  }
+
+  unescapeHtmlTags $fileName false
 }
 
 ###############################################################################
