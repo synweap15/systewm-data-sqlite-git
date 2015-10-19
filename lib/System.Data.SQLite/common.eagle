@@ -2470,6 +2470,100 @@ namespace eval ::Eagle {
       return $code
     }
 
+    proc cleanupMemory { channel varName {quiet false} } {
+      if {[haveSQLiteObjectCommand] && \
+          [string length $varName] > 0} then {
+        #
+        # NOTE: Refer to the specified variable (e.g. "connection") in the
+        #       context of our caller.  The opaque object handle for an
+        #       ADO.NET connection previously returned by [getDbConnection]
+        #       should be stored there.
+        #
+        upvar 1 $varName connection
+
+        if {[catch {
+          object invoke $connection ReleaseMemory
+        } result]} then {
+          if {!$quiet} then {
+            tputs $channel [appendArgs \
+                "==== WARNING: failed to release database memory, error: " \
+                \n\t $result \n]
+          }
+        }
+      }
+
+      if {[llength [info commands debug]] > 0} then {
+        if {[catch {
+          uplevel 1 [list debug purge]
+        } result]} then {
+          if {!$quiet} then {
+            tputs $channel [appendArgs \
+                "==== WARNING: failed to purge call frame, error: " \
+                \n\t $result \n]
+          }
+        }
+
+        if {[catch {
+          uplevel 1 [list debug cleanup]
+        } result]} then {
+          if {!$quiet} then {
+            tputs $channel [appendArgs \
+                "==== WARNING: failed to cleanup interpreter, error: " \
+                \n\t $result \n]
+          }
+        }
+
+        if {[catch {
+          uplevel 1 [list debug collect]
+        } result]} then {
+          if {!$quiet} then {
+            tputs $channel [appendArgs \
+                "==== WARNING: failed to collect garbage, error: " \
+                \n\t $result \n]
+          }
+        }
+      }
+    }
+
+    proc setupMemoryCounters { varName } {
+      if {[haveSQLiteObjectCommand]} then {
+        upvar 1 $varName counter
+
+        set counter(1) [object create -alias \
+            System.Diagnostics.PerformanceCounter Process \
+            "Working Set" [file rootname [file tail $::bin_file]]]
+
+        set counter(2) [object create -alias \
+            System.Diagnostics.PerformanceCounter Process \
+            "Working Set Peak" [file rootname [file tail $::bin_file]]]
+
+        set counter(3) [object create -alias \
+            System.Diagnostics.PerformanceCounter Process \
+            "Private Bytes" [file rootname [file tail $::bin_file]]]
+      }
+    }
+
+    proc reportMemoryCounters { channel varName prefix } {
+      if {[haveSQLiteObjectCommand]} then {
+        upvar 1 $varName counter
+
+        tputs $channel [appendArgs \
+            "---- " $prefix " counter \"" \
+            [object invoke $counter(1) CounterName] "\" value is " \
+            [object invoke $counter(1) RawValue] \n]
+
+        tputs $channel [appendArgs \
+            "---- " $prefix " counter \"" \
+            [object invoke $counter(2) CounterName] "\" value is " \
+            [object invoke $counter(2) RawValue] \n]
+
+        tputs $channel [appendArgs \
+            "---- " $prefix " counter \"" \
+            [object invoke $counter(3) CounterName] "\" value is " \
+            [object invoke $counter(3) RawValue] \n]
+      }
+    }
+
     proc collectGarbage { channel {milliseconds 1000} {quiet true} } {
       if {[haveSQLiteObjectCommand]} then {
         if {[catch {
