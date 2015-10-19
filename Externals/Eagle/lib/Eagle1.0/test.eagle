@@ -2926,7 +2926,12 @@ namespace eval ::Eagle {
           eval lappend eagle_tests(Constraints) $test_flags(-constraints)
         }
 
-        unset -nocomplain test_verbose; set test_verbose Default
+        unset -nocomplain test_verbose
+        set test_verbose [getEnvironmentVariable testVerbose]
+
+        if {[string length $test_verbose] == 0} then {
+          set test_verbose Default
+        }
 
         if {[info exists test_flags(-verbose)] && \
             [string length $test_flags(-verbose)] > 0} then {

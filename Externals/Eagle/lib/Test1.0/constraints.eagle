@@ -688,6 +688,7 @@ namespace eval ::Eagle {
     if {[canExecFossil] && \
         [catch {exec -- fossil version} version] == 0} then {
       set version [string trim $version]
+
       set pattern {^This is fossil version (.*) \[([0-9a-f]+)\]\
           \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} UTC$}
 
@@ -704,59 +705,97 @@ namespace eval ::Eagle {
         append result version " " $version " \[" $sourceId \]
 
         if {[canExecFossil] && \
-            [catch {exec -- fossil remote} remote] == 0} then {
-          set remote [string trim $remote]; set valid false
+            [catch {exec -- fossil remote-url} remoteUrl] == 0} then {
+          set remoteUrl [string trim $remoteUrl]; set validUrl false
 
           if {[isEagle]} then {
             #
-            # NOTE: With Eagle, we can actually validate the URI.
+            # NOTE: With Eagle, we can actually validate the URL.
             #
-            if {[uri isvalid $remote]} then {
-              set valid true
+            if {[uri isvalid $remoteUrl]} then {
+              set validUrl true
             }
           } else {
             #
             # HACK: Currently, there is no simple way to validate
-            #       an arbitrary URI with Tcl (i.e. without using
+            #       an arbitrary URL with Tcl (i.e. without using
             #       some hideously complex regular expression).
             #
-            if {[string length $remote] > 0} then {
-              set valid true
+            if {[string length $remoteUrl] > 0} then {
+              set validUrl true
             }
           }
 
-          if {$valid} then {
+          if {$validUrl} then {
             #
             # NOTE: Add a constraint to show that a valid Fossil
-            #       repository URI appears to be available.
+            #       repository URL appears to be available.
             #
-            addConstraint fossil_repository
+            addConstraint fossil_repository_url
 
             #
-            # NOTE: If we are not prevented from doing so, save the
-            #       test repository to the repository URI currently
-            #       in use to a suitably named global variable.
+            # NOTE: If we are not prevented from doing so, save
+            #       the test repository URL to the repository
+            #       currently in use to a suitably named global
+            #       variable.
             #
-            if {![info exists ::no(setRepository)]} then {
-              set ::test_repository $remote
+            if {![info exists ::no(setRepositoryUrl)]} then {
+              set ::test_repository_url $remoteUrl
             }
 
             #
-            # NOTE: Append the repository URI currently in use.
+            # NOTE: Append the repository URL currently in use.
             #
-            append result ", repository \"" $remote \"
-
-            #
-            # NOTE: Show the result of the checking.
-            #
-            tputs $channel [appendArgs "yes (" $result ")\n"]
-
-            #
-            # NOTE: We are done here, return now.
-            #
-            return
+            append result ", remote URL \"" $remoteUrl \"
           }
         }
+
+        if {[canExecFossil] && \
+            [catch {exec -- fossil info} info] == 0} then {
+          set info [string trim $info]; set validFile false
+
+          if {[string length $info] > 0} then {
+            set pattern {^repository:\s+(.*?)\s+$}
+
+            if {[regexp -line -- $pattern $info dummy repository] && \
+                [file exists $repository]} then {
+              set validFile true
+            }
+          }
+
+          if {$validFile} then {
+            #
+            # NOTE: Add a constraint to show that a valid Fossil
+            #       repository file appears to be available.
+            #
+            addConstraint fossil_repository_file
+
+            #
+            # NOTE: If we are not prevented from doing so, save
+            #       the test repository file for the repository
+            #       currently in use to a suitably named global
+            #       variable.
+            #
+            if {![info exists ::no(setRepositoryFile)]} then {
+              set ::test_repository_file $repository
+            }
+
+            #
+            # NOTE: Append the repository file currently in use.
+            #
+            append result ", local file \"" $repository \"
+          }
+        }
+
+        #
+        # NOTE: Show the result of the checking.
+        #
+        tputs $channel [appendArgs "yes (" $result ")\n"]
+
+        #
+        # NOTE: We are done here, return now.
+        #
+        return
       }
     }
 

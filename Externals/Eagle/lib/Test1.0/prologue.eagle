@@ -2761,8 +2761,12 @@ if {![info exists no([file tail [info script]])]} then {
     checkForFossil $test_channel
   }
 
-  if {![info exists no(testRepository)]} then {
-    checkForVariable $test_channel test_repository
+  if {![info exists no(testRepositoryUrl)]} then {
+    checkForVariable $test_channel test_repository_url
+  }
+
+  if {![info exists no(testRepositoryFile)]} then {
+    checkForVariable $test_channel test_repository_file
   }
 
   if {![info exists no(version)]} then {

@@ -1335,6 +1335,25 @@ namespace eval ::Eagle {
       set command [list exec -shell -- \
           [file join $directory Hippogriff.exe] -delay 2000]
 
+      #
+      # HACK: The native StrongNameSignatureVerificationEx() function does
+      #       not appear to work on WOA (Windows-on-ARM) on the Surface RT
+      #       tablet; therefore, attempt to disable its use when calling
+      #       into the updater on that platform.
+      #
+      if {[isWindows] && \
+          [info exists ::tcl_platform(machine)] && \
+          $::tcl_platform(machine) eq "arm"} then {
+        #
+        # NOTE: We appear to be running on WOA (Windows-on-ARM), add the
+        #       command line option that skips strong name verification.
+        #
+        lappend command -noStrongNameSigned true
+      }
+
+      #
+      # NOTE: If requested, enable fully automatic update mode.
+      #
       if {$automatic} then {
         lappend command -silent true -confirm false
       }
@@ -1343,6 +1362,12 @@ namespace eval ::Eagle {
 
       if {[string length $baseUri] > 0} then {
         lappend command -baseUri $baseUri
+      }
+
+      set pathAndQuery [getUpdatePathAndQuery]
+
+      if {[string length $pathAndQuery] > 0} then {
+        lappend command -tagPathAndQuery $pathAndQuery
       }
 
       eval $command &; exit -force
@@ -1365,6 +1390,33 @@ namespace eval ::Eagle {
         #
         if {$baseUri(0) ne $baseUri(1)} then {
           return $baseUri(0)
+        }
+      }
+
+      return ""
+    }
+
+    proc getUpdatePathAndQuery {} {
+      #
+      # NOTE: Check the current tag path and query for updates against the
+      #       one baked into the assembly.  If they are different, then the
+      #       tag path and query must have been overridden.  In that case,
+      #       we must return the current tag path and query; otherwise, we
+      #       must return an empty string.
+      #
+      set pathAndQuery(0) [info engine UpdatePathAndQuery \
+          false]; # NOTE: Current.
+
+      set pathAndQuery(1) [info engine UpdatePathAndQuery \
+          true];  # NOTE: Default.
+
+      if {[string length $pathAndQuery(0)] > 0 && \
+          [string length $pathAndQuery(1)] > 0} then {
+        #
+        # NOTE: Ok, they are both valid.  Are they different?
+        #
+        if {$pathAndQuery(0) ne $pathAndQuery(1)} then {
+          return $pathAndQuery(0)
         }
       }
 
