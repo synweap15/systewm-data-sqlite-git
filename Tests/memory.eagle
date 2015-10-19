@@ -57,52 +57,66 @@ runTest {test memory-1.1 {SQLiteDataReader memory testing} -setup {
 
   set sql "SELECT rid, rcvid, size, uuid, content FROM blob ORDER BY rid;"
 
-  set dataReader [sql execute -execute reader -format datareader \
-      -alias $db $sql]
+  set working(rowCount) 0
+  set working(contentLength) 0
 
-  while {[$dataReader Read]} {
-    set working(rid) [$dataReader GetValue \
-        [$dataReader GetOrdinal rid]]
+  set working(time) [time {
+    set dataReader [sql execute -execute reader -format datareader \
+        -alias $db $sql]
 
-    set working(rcvid) [$dataReader GetValue \
-        [$dataReader GetOrdinal rcvid]]
+    while {[$dataReader Read]} {
+      incr working(rowCount)
 
-    set working(size) [$dataReader GetValue \
-        [$dataReader GetOrdinal size]]
+      set working(rid) [$dataReader GetValue \
+          [$dataReader GetOrdinal rid]]
 
-    set working(uuid) [$dataReader GetValue \
-        [$dataReader GetOrdinal uuid]]
+      set working(rcvid) [$dataReader GetValue \
+          [$dataReader GetOrdinal rcvid]]
 
-    set working(content) [$dataReader -create -alias GetValue \
-        [$dataReader GetOrdinal content]]
+      set working(size) [$dataReader GetValue \
+          [$dataReader GetOrdinal size]]
 
-    set working(counter1Cur) [$counter(1) RawValue]
-    set working(counter2Cur) [$counter(2) RawValue]
-    set working(counter3Cur) [$counter(3) RawValue]
+      set working(uuid) [$dataReader GetValue \
+          [$dataReader GetOrdinal uuid]]
 
-    if {![info exists working(counter1Max)] || \
-        $working(counter1Cur) > $working(counter1Max)} then {
-      set working(counter1Max) $working(counter1Cur)
-      reportMemoryCounters $test_channel counter "new maximum"
-      cleanupMemory connection
+      set working(content) [$dataReader -create -alias GetValue \
+          [$dataReader GetOrdinal content]]
+
+      incr working(contentLength) [$working(content) Length]
+
+      set working(counter1Cur) [$counter(1) RawValue]
+      set working(counter2Cur) [$counter(2) RawValue]
+      set working(counter3Cur) [$counter(3) RawValue]
+
+      if {![info exists working(counter1Max)] || \
+          $working(counter1Cur) > $working(counter1Max)} then {
+        set working(counter1Max) $working(counter1Cur)
+        reportMemoryCounters $test_channel counter current
+        cleanupMemory connection
+      }
+
+      if {![info exists working(counter2Max)] || \
+          $working(counter2Cur) > $working(counter2Max)} then {
+        set working(counter2Max) $working(counter2Cur)
+        reportMemoryCounters $test_channel counter current
+        cleanupMemory connection
+      }
+
+      if {![info exists working(counter3Max)] || \
+          $working(counter3Cur) > $working(counter3Max)} then {
+        set working(counter3Max) $working(counter3Cur)
+        reportMemoryCounters $test_channel counter current
+        cleanupMemory connection
+      }
     }
-
-    if {![info exists working(counter2Max)] || \
-        $working(counter2Cur) > $working(counter2Max)} then {
-      set working(counter2Max) $working(counter2Cur)
-      reportMemoryCounters $test_channel counter "new maximum"
-      cleanupMemory connection
-    }
-
-    if {![info exists working(counter3Max)] || \
-        $working(counter3Cur) > $working(counter3Max)} then {
-      set working(counter3Max) $working(counter3Cur)
-      reportMemoryCounters $test_channel counter "new maximum"
-      cleanupMemory connection
-    }
-  }
+  }]
 
   reportMemoryCounters $test_channel counter final
+
+  tputs $test_channel [appendArgs \
+      "---- found " $working(rowCount) " rows with " \
+      $working(contentLength) " bytes of content in " \
+      $working(time) \n]
 } -cleanup {
   freeDbConnection
 
