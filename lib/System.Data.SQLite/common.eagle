@@ -2470,7 +2470,7 @@ namespace eval ::Eagle {
       return $code
     }
 
-    proc cleanupMemory { channel varName {quiet false} } {
+    proc cleanupMemory { varName {quiet false} } {
       if {[haveSQLiteObjectCommand] && \
           [string length $varName] > 0} then {
         #
@@ -2485,7 +2485,7 @@ namespace eval ::Eagle {
           object invoke $connection ReleaseMemory
         } result]} then {
           if {!$quiet} then {
-            tputs $channel [appendArgs \
+            tputs $::test_channel [appendArgs \
                 "==== WARNING: failed to release database memory, error: " \
                 \n\t $result \n]
           }
@@ -2497,7 +2497,7 @@ namespace eval ::Eagle {
           uplevel 1 [list debug purge]
         } result]} then {
           if {!$quiet} then {
-            tputs $channel [appendArgs \
+            tputs $::test_channel [appendArgs \
                 "==== WARNING: failed to purge call frame, error: " \
                 \n\t $result \n]
           }
@@ -2507,7 +2507,7 @@ namespace eval ::Eagle {
           uplevel 1 [list debug cleanup]
         } result]} then {
           if {!$quiet} then {
-            tputs $channel [appendArgs \
+            tputs $::test_channel [appendArgs \
                 "==== WARNING: failed to cleanup interpreter, error: " \
                 \n\t $result \n]
           }
@@ -2517,7 +2517,7 @@ namespace eval ::Eagle {
           uplevel 1 [list debug collect]
         } result]} then {
           if {!$quiet} then {
-            tputs $channel [appendArgs \
+            tputs $::test_channel [appendArgs \
                 "==== WARNING: failed to collect garbage, error: " \
                 \n\t $result \n]
           }
@@ -2541,6 +2541,8 @@ namespace eval ::Eagle {
             System.Diagnostics.PerformanceCounter Process \
             "Private Bytes" [file rootname [file tail $::bin_file]]]
       }
+
+      return ""
     }
 
     proc reportMemoryCounters { channel varName prefix } {
