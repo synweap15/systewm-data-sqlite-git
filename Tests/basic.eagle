@@ -3995,6 +3995,51 @@ integer 2 real 3 true 4 false 5 null 6 text 7 array 8 object} {1 {$} 2 2 {$}\
 
 ###############################################################################
 
+runTest {test data-1.78 {basic and extended column metadata} -setup {
+  setupDb [set fileName data-1.78.db]
+} -body {
+  sql execute $db {
+    CREATE TABLE t1(x INTEGER, y TEXT, z MYTYPE);
+    INSERT INTO t1 (x, y, z) VALUES(1, 'foo', 1234);
+    INSERT INTO t1 (x, y, z) VALUES(1, 5678, 'bar');
+  }
+
+  set dataReader [sql execute -execute reader -format datareader \
+      -alias $db "SELECT x, y, z FROM t1;"]
+
+  set result [list]
+
+  while {[$dataReader Read]} {
+    lappend result \
+        [list [$dataReader GetOrdinal x] [$dataReader GetName 0] \
+        [$dataReader GetValue 0] [$dataReader GetDatabaseName 0] \
+        [$dataReader GetTableName 0] [$dataReader GetOriginalName 0] \
+        [$dataReader GetDataTypeName 0] [$dataReader GetFieldType 0]] \
+        [list [$dataReader GetOrdinal y] [$dataReader GetName 1] \
+        [$dataReader GetValue 1] [$dataReader GetDatabaseName 1] \
+        [$dataReader GetTableName 1] [$dataReader GetOriginalName 1] \
+        [$dataReader GetDataTypeName 1] [$dataReader GetFieldType 1]] \
+        [list [$dataReader GetOrdinal z] [$dataReader GetName 2] \
+        [$dataReader GetValue 2] [$dataReader GetDatabaseName 2] \
+        [$dataReader GetTableName 2] [$dataReader GetOriginalName 2] \
+        [$dataReader GetDataTypeName 2] [$dataReader GetFieldType 2]]
+  }
+
+  set result
+} -cleanup {
+  unset -nocomplain dataReader
+
+  cleanupDb $fileName
+
+  unset -nocomplain result db fileName
+} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
+System.Data.SQLite} -result {{0 x 1 main t1 x INTEGER System.Int64} {1 y foo\
+main t1 y TEXT System.String} {2 z 1234 main t1 z MYTYPE System.Int64} {0 x 1\
+main t1 x INTEGER System.Int64} {1 y 5678 main t1 y TEXT System.String} {2 z\
+bar main t1 z MYTYPE System.String}}}
+
+###############################################################################
+
 reportSQLiteResources $test_channel
 
 ###############################################################################
