@@ -74,6 +74,7 @@ Internal 2
 Interrupt 9
 IoErr 10
 IoErr_Access 3338
+IoErr_Auth 7178
 IoErr_Blocked 2826
 IoErr_CheckReservedLock 3594
 IoErr_Close 4106
