@@ -34,6 +34,11 @@ extern int RegisterExtensionFunctions(sqlite3 *db);
 
 #if defined(SQLITE_OS_WIN)
 #if defined(INTEROP_CODEC) && !defined(INTEROP_INCLUDE_SEE)
+#ifdef SQLITE_ENABLE_ZIPVFS
+#define INTEROP_CODEC_GET_PAGER(a,b,c) sqlite3PagerGet(a,b,c,0)
+#else
+#define INTEROP_CODEC_GET_PAGER(a,b,c) sqlite3PagerGet(a,b,c)
+#endif
 #include "crypt.c"
 #endif
 

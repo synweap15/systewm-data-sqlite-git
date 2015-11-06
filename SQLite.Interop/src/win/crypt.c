@@ -395,7 +395,7 @@ SQLITE_API int sqlite3_rekey_v2(sqlite3 *db, const char *zDbName, const void *pK
     for(n = 1; n <= nPage; n ++)
     {
       if (n == nSkip) continue;
-      rc = sqlite3PagerGet(p, n, &pPage);
+      rc = INTEROP_CODEC_GET_PAGER(p, n, &pPage);
       if(!rc)
       {
         rc = sqlite3PagerWrite(pPage);
