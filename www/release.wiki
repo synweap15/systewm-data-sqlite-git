@@ -26,6 +26,8 @@
     Enter the following commands to build all the x86 and x64 binaries:
     <br />
     <br />
+    <b>SET BUILD_FULL=1</b>
+    <br />
     <b>SET BUILD_DEBUG=1</b>
     <br />
     <b>build_all.bat</b>

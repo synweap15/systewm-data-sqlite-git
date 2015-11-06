@@ -280,17 +280,20 @@ IF NOT DEFINED SOLUTION (
   )
 )
 
-IF NOT DEFINED SOLUTION (
+IF DEFINED BUILD_FULL (
+  %_AECHO% Building all projects...
+  SET SOLUTION=.\SQLite.NET.%YEAR%.sln
+) ELSE (
   %_AECHO% Building all projects...
   SET SOLUTION=.\SQLite.NET.%YEAR%.MSBuild.sln
 )
 
-IF NOT EXIST "%SOLUTION%" (
-  %_AECHO% Building all projects...
-  SET SOLUTION=.\SQLite.NET.%YEAR%.sln
-)
-
 %_VECHO% Solution = '%SOLUTION%'
+
+IF NOT EXIST "%SOLUTION%" (
+  ECHO Solution file "%SOLUTION%" does not exist.
+  GOTO errors
+)
 
 IF NOT DEFINED TARGET (
   SET TARGET=Rebuild
