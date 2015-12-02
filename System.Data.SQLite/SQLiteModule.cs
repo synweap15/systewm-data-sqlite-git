@@ -1058,6 +1058,24 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
+        /// <summary>
+        /// Determines if the native flags field can be used, based on the
+        /// available version of the SQLite core library.
+        /// </summary>
+        /// <returns>
+        /// Non-zero if the <see cref="ColUsed" /> property is supported by
+        /// the SQLite core library.
+        /// </returns>
+        public bool CanUseColUsed()
+        {
+            if (UnsafeNativeMethods.sqlite3_libversion_number() >= 3010000)
+                return true;
+
+            return false;
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+
         #region Public Properties
         private SQLiteIndexConstraintUsage[] constraintUsages;
         /// <summary>
@@ -1164,6 +1182,30 @@ namespace System.Data.SQLite
         {
             get { return idxFlags; }
             set { idxFlags = value; }
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+
+        private long? colUsed;
+        /// <summary>
+        /// The colUsed field indicates which columns of the virtual table
+        /// may be required by the current scan.  Virtual table columns are
+        /// numbered from zero in the order in which they appear within the
+        /// CREATE TABLE statement passed to sqlite3_declare_vtab().  For the
+        /// first 63 columns (columns 0-62), the corresponding bit is set
+        /// within the colUsed mask if the column may be required by SQLite.
+        /// If the table has at least 64 columns and any column to the right
+        /// of the first 63 is required, then bit 63 of colUsed is also set.
+        /// In other words, column iCol may be required if the expression
+        /// (colUsed & ((sqlite3_uint64)1 << (iCol>=63 ? 63 : iCol)))
+        /// evaluates to non-zero.  Using a null value here indicates that a
+        /// default flags value should be used.  This property has no effect
+        /// if the SQLite core library is not at least version 3.10.0.
+        /// </summary>
+        public long? ColUsed
+        {
+            get { return colUsed; }
+            set { colUsed = value; }
         }
         #endregion
     }
@@ -1400,6 +1442,13 @@ namespace System.Data.SQLite
             {
                 SQLiteMarshal.WriteInt32(pIndex, offset,
                    (int)index.Outputs.IdxFlags.GetValueOrDefault());
+            }
+
+            if (index.Outputs.CanUseColUsed() &&
+                index.Outputs.ColUsed.HasValue)
+            {
+                SQLiteMarshal.WriteInt64(pIndex, offset,
+                    index.Outputs.ColUsed.GetValueOrDefault());
             }
         }
         #endregion
