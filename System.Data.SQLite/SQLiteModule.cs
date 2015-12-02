@@ -1430,6 +1430,9 @@ namespace System.Data.SQLite
                     index.Outputs.EstimatedCost.GetValueOrDefault());
             }
 
+            offset = SQLiteMarshal.NextOffsetOf(offset, sizeof(double),
+                sizeof(long));
+
             if (index.Outputs.CanUseEstimatedRows() &&
                 index.Outputs.EstimatedRows.HasValue)
             {
@@ -1437,12 +1440,18 @@ namespace System.Data.SQLite
                     index.Outputs.EstimatedRows.GetValueOrDefault());
             }
 
+            offset = SQLiteMarshal.NextOffsetOf(offset, sizeof(long),
+                sizeof(int));
+
             if (index.Outputs.CanUseIdxFlags() &&
                 index.Outputs.IdxFlags.HasValue)
             {
                 SQLiteMarshal.WriteInt32(pIndex, offset,
                    (int)index.Outputs.IdxFlags.GetValueOrDefault());
             }
+
+            offset = SQLiteMarshal.NextOffsetOf(offset, sizeof(int),
+                sizeof(long));
 
             if (index.Outputs.CanUseColUsed() &&
                 index.Outputs.ColUsed.HasValue)
