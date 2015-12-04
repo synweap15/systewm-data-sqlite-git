@@ -1318,7 +1318,7 @@ namespace System.Data.SQLite
         /// <see cref="UnsafeNativeMethods.sqlite3_index_info" /> structure
         /// -OR- <see cref="IntPtr.Zero" /> if it could not be fully allocated.
         /// </returns>
-        internal static IntPtr AllocMemoryBlock( /* NOTE: For test use only. */
+        private static IntPtr AllocateAndInitializeNative( /* NOTE: For test use only. */
             int nConstraint,
             int nOrderBy
             )
@@ -1437,7 +1437,7 @@ namespace System.Data.SQLite
         /// The native pointer to the native sqlite3_index_info structure to
         /// free.
         /// </param>
-        internal static void FreeMemoryBlock( /* NOTE: For test use only. */
+        private static void FreeNative( /* NOTE: For test use only. */
             IntPtr pIndex
             )
         {
@@ -1458,7 +1458,8 @@ namespace System.Data.SQLite
             offset = SQLiteMarshal.NextOffsetOf(
                 offset, sizeof(int), IntPtr.Size);
 
-            IntPtr pOrderBy = SQLiteMarshal.ReadIntPtr(pIndex, offset);
+            IntPtr pOrderBy = SQLiteMarshal.ReadIntPtr(
+                pIndex, offset);
 
             offset = SQLiteMarshal.NextOffsetOf(
                 offset, IntPtr.Size, IntPtr.Size);

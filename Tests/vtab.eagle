@@ -1836,7 +1836,7 @@ runTest {test vtab-1.12 {SQLiteIndex managed-to-native-to-managed} -setup {
   }
 
   set pIndex(1) [object invoke -create -flags +NonPublic \
-      System.Data.SQLite.SQLiteIndex AllocMemoryBlock \
+      System.Data.SQLite.SQLiteIndex AllocateAndInitializeNative \
       $nConstraint $nOrderBy]
 
   object invoke -flags +NonPublic \
@@ -1964,7 +1964,7 @@ runTest {test vtab-1.12 {SQLiteIndex managed-to-native-to-managed} -setup {
 } -cleanup {
   catch {
     object invoke -flags +NonPublic \
-        System.Data.SQLite.SQLiteIndex FreeMemoryBlock $pIndex(1)
+        System.Data.SQLite.SQLiteIndex FreeNative $pIndex(1)
   }
 
   unset -nocomplain constraintUsage
