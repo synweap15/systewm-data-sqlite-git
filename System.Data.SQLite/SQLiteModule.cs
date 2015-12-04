@@ -1278,7 +1278,7 @@ namespace System.Data.SQLite
         /// <see cref="UnsafeNativeMethods.sqlite3_index_constraint_usage" />
         /// structure is stored here.
         /// </param>
-        private static void SizeOf(
+        private static void SizeOfNative(
             out int sizeOfInfoType,
             out int sizeOfConstraintType,
             out int sizeOfOrderByType,
@@ -1336,7 +1336,7 @@ namespace System.Data.SQLite
                 int sizeOfConstraintType;
                 int sizeOfConstraintUsageType;
 
-                SizeOf(out sizeOfInfoType, out sizeOfConstraintType,
+                SizeOfNative(out sizeOfInfoType, out sizeOfConstraintType,
                     out sizeOfOrderByType, out sizeOfConstraintUsageType);
 
                 if ((sizeOfInfoType > 0) &&

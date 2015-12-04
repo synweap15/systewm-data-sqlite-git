@@ -1944,6 +1944,8 @@ runTest {test vtab-1.12 {SQLiteIndex managed-to-native-to-managed} -setup {
         [$index(2) Outputs.EstimatedRows]} then {
       error "EstimatedRows does not match"
     }
+
+    tputs $test_channel "---- checked EstimatedRows property\n"
   }
 
   if {[$index(1) Outputs.CanUseIndexFlags] && \
@@ -1952,6 +1954,8 @@ runTest {test vtab-1.12 {SQLiteIndex managed-to-native-to-managed} -setup {
         [$index(2) Outputs.IndexFlags]} then {
       error "IndexFlags does not match"
     }
+
+    tputs $test_channel "---- checked IndexFlags property\n"
   }
 
   if {[$index(1) Outputs.CanUseColumnsUsed] && \
@@ -1960,6 +1964,8 @@ runTest {test vtab-1.12 {SQLiteIndex managed-to-native-to-managed} -setup {
         [$index(2) Outputs.ColumnsUsed]} then {
       error "ColumnsUsed does not match"
     }
+
+    tputs $test_channel "---- checked ColumnsUsed property\n"
   }
 } -cleanup {
   catch {
