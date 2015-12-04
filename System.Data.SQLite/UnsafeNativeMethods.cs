@@ -2855,7 +2855,7 @@ namespace System.Data.SQLite
         /* Inputs */
         public int nConstraint; /* Number of entries in aConstraint */
         public IntPtr aConstraint;
-        public int nOrderBy;
+        public int nOrderBy;    /* Number of entries in aOrderBy */
         public IntPtr aOrderBy;
         /* Outputs */
         public IntPtr aConstraintUsage;
@@ -2864,6 +2864,9 @@ namespace System.Data.SQLite
         public int needToFreeIdxStr; /* Free idxStr using sqlite3_free() if true */
         public int orderByConsumed;  /* True if output is already ordered */
         public double estimatedCost; /* Estimated cost of using this index */
+        public long estimatedRows;   /* Estimated number of rows returned */
+        public SQLiteIndexFlags idxFlags; /* Mask of SQLITE_INDEX_SCAN_* flags */
+        public long colUsed;         /* Input: Mask of columns used by statement */
     }
 #endif
     #endregion
