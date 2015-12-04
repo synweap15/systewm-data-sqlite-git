@@ -7,7 +7,11 @@
 
 using System.Collections.Generic;
 using System.Globalization;
+
+#if !PLATFORM_COMPACTFRAMEWORK
 using System.Runtime.CompilerServices;
+#endif
+
 using System.Runtime.InteropServices;
 using System.Text;
 
