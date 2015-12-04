@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <!--
  *
  * SQLite.Designer.2015.csproj -
@@ -114,7 +114,9 @@
     <Compile Include="Design\Trigger.cs" />
     <Compile Include="Design\Unique.cs" />
     <Compile Include="Design\View.cs" />
-    <Compile Include="Editors\AutoCompleteColumn.cs" />
+    <Compile Include="Editors\AutoCompleteColumn.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Editors\TableDesignerDoc.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -206,7 +208,16 @@
   </ItemGroup>
   <Import Project="$(SQLiteNetDir)\System.Data.SQLite\Targets\System.Data.SQLite.Properties.targets" />
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
-  <PropertyGroup Condition="'$(VSSDK140Install)' == '' Or&#xD;&#xA;                            !Exists('$(VSSDK140Install)VisualStudioIntegration\Common\Assemblies\v4.0\Microsoft.Data.ConnectionUI.dll') Or&#xD;&#xA;                            !Exists('$(VSSDK140Install)VisualStudioIntegration\Common\Assemblies\v4.0\Microsoft.VisualStudio.Data.dll') Or&#xD;&#xA;                            !Exists('$(VSSDK140Install)VisualStudioIntegration\Common\Assemblies\v4.0\Microsoft.VisualStudio.Data.Services.dll') Or&#xD;&#xA;                            !Exists('$(VSSDK140Install)VisualStudioIntegration\Common\Assemblies\v2.0\Microsoft.VisualStudio.OLE.Interop.dll') Or&#xD;&#xA;                            !Exists('$(VSSDK140Install)VisualStudioIntegration\Common\Assemblies\v4.0\Microsoft.VisualStudio.Shell.14.0.dll') Or&#xD;&#xA;                            !Exists('$(VSSDK140Install)VisualStudioIntegration\Common\Assemblies\v2.0\Microsoft.VisualStudio.Shell.Interop.dll') Or&#xD;&#xA;                            !Exists('$(VSSDK140Install)VisualStudioIntegration\Common\Assemblies\v2.0\Microsoft.VisualStudio.Shell.Interop.8.0.dll') Or&#xD;&#xA;                            !Exists('$(VSSDK140Install)VisualStudioIntegration\Common\Assemblies\v2.0\Microsoft.VisualStudio.Shell.Interop.9.0.dll') Or&#xD;&#xA;                            !Exists('$(VSSDK140Install)VisualStudioIntegration\Common\Assemblies\v2.0\Microsoft.VisualStudio.Shell.Interop.10.0.dll')">
+  <PropertyGroup Condition="'$(VSSDK140Install)' == '' Or
+                            !Exists('$(VSSDK140Install)VisualStudioIntegration\Common\Assemblies\v4.0\Microsoft.Data.ConnectionUI.dll') Or
+                            !Exists('$(VSSDK140Install)VisualStudioIntegration\Common\Assemblies\v4.0\Microsoft.VisualStudio.Data.dll') Or
+                            !Exists('$(VSSDK140Install)VisualStudioIntegration\Common\Assemblies\v4.0\Microsoft.VisualStudio.Data.Services.dll') Or
+                            !Exists('$(VSSDK140Install)VisualStudioIntegration\Common\Assemblies\v2.0\Microsoft.VisualStudio.OLE.Interop.dll') Or
+                            !Exists('$(VSSDK140Install)VisualStudioIntegration\Common\Assemblies\v4.0\Microsoft.VisualStudio.Shell.14.0.dll') Or
+                            !Exists('$(VSSDK140Install)VisualStudioIntegration\Common\Assemblies\v2.0\Microsoft.VisualStudio.Shell.Interop.dll') Or
+                            !Exists('$(VSSDK140Install)VisualStudioIntegration\Common\Assemblies\v2.0\Microsoft.VisualStudio.Shell.Interop.8.0.dll') Or
+                            !Exists('$(VSSDK140Install)VisualStudioIntegration\Common\Assemblies\v2.0\Microsoft.VisualStudio.Shell.Interop.9.0.dll') Or
+                            !Exists('$(VSSDK140Install)VisualStudioIntegration\Common\Assemblies\v2.0\Microsoft.VisualStudio.Shell.Interop.10.0.dll')">
     <!--
         NOTE: We cannot build this project without the necessary reference
               assemblies; therefore, skip building it altogether.
