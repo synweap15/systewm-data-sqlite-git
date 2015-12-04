@@ -1045,10 +1045,10 @@ namespace System.Data.SQLite
         /// available version of the SQLite core library.
         /// </summary>
         /// <returns>
-        /// Non-zero if the <see cref="IdxFlags" /> property is supported by
+        /// Non-zero if the <see cref="IndexFlags" /> property is supported by
         /// the SQLite core library.
         /// </returns>
-        public bool CanUseIdxFlags()
+        public bool CanUseIndexFlags()
         {
             if (UnsafeNativeMethods.sqlite3_libversion_number() >= 3009000)
                 return true;
@@ -1063,10 +1063,10 @@ namespace System.Data.SQLite
         /// available version of the SQLite core library.
         /// </summary>
         /// <returns>
-        /// Non-zero if the <see cref="ColUsed" /> property is supported by
+        /// Non-zero if the <see cref="ColumnsUsed" /> property is supported by
         /// the SQLite core library.
         /// </returns>
-        public bool CanUseColUsed()
+        public bool CanUseColumnsUsed()
         {
             if (UnsafeNativeMethods.sqlite3_libversion_number() >= 3010000)
                 return true;
@@ -1171,41 +1171,47 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
-        private SQLiteIndexFlags? idxFlags;
+        private SQLiteIndexFlags? indexFlags;
         /// <summary>
         /// The flags that should be used with this index.  Using a null value
         /// here indicates that a default flags value should be used.  This
         /// property has no effect if the SQLite core library is not at least
         /// version 3.9.0.
         /// </summary>
-        public SQLiteIndexFlags? IdxFlags
+        public SQLiteIndexFlags? IndexFlags
         {
-            get { return idxFlags; }
-            set { idxFlags = value; }
+            get { return indexFlags; }
+            set { indexFlags = value; }
         }
 
         ///////////////////////////////////////////////////////////////////////
 
-        private long? colUsed;
+        private long? columnsUsed;
         /// <summary>
-        /// The colUsed field indicates which columns of the virtual table
-        /// may be required by the current scan.  Virtual table columns are
-        /// numbered from zero in the order in which they appear within the
-        /// CREATE TABLE statement passed to sqlite3_declare_vtab().  For the
-        /// first 63 columns (columns 0-62), the corresponding bit is set
-        /// within the colUsed mask if the column may be required by SQLite.
-        /// If the table has at least 64 columns and any column to the right
-        /// of the first 63 is required, then bit 63 of colUsed is also set.
-        /// In other words, column iCol may be required if the expression
-        /// (colUsed & ((sqlite3_uint64)1 << (iCol>=63 ? 63 : iCol)))
+        /// <para>
+        /// Indicates which columns of the virtual table may be required by the
+        /// current scan.  Virtual table columns are numbered from zero in the
+        /// order in which they appear within the CREATE TABLE statement passed
+        /// to sqlite3_declare_vtab().  For the first 63 columns (columns 0-62),
+        /// the corresponding bit is set within the bit mask if the column may
+        /// be required by SQLite.  If the table has at least 64 columns and
+        /// any column to the right of the first 63 is required, then bit 63 of
+        /// colUsed is also set.  In other words, column iCol may be required
+        /// if the expression
+        /// </para>
+        /// <para><code>
+        /// (colUsed &amp; ((sqlite3_uint64)1 &lt;&lt; (iCol&gt;=63 ? 63 : iCol)))
+        /// </code></para>
+        /// <para>
         /// evaluates to non-zero.  Using a null value here indicates that a
-        /// default flags value should be used.  This property has no effect
-        /// if the SQLite core library is not at least version 3.10.0.
+        /// default flags value should be used.  This property has no effect if
+        /// the SQLite core library is not at least version 3.10.0.
+        /// </para>
         /// </summary>
-        public long? ColUsed
+        public long? ColumnsUsed
         {
-            get { return colUsed; }
-            set { colUsed = value; }
+            get { return columnsUsed; }
+            set { columnsUsed = value; }
         }
         #endregion
     }
@@ -1247,6 +1253,247 @@ namespace System.Data.SQLite
 
         #region Internal Marshal Helper Methods
         /// <summary>
+        /// Attempts to determine the structure sizes needed to create and
+        /// populate a native
+        /// <see cref="UnsafeNativeMethods.sqlite3_index_info" />
+        /// structure.
+        /// </summary>
+        /// <param name="sizeOfInfoType">
+        /// The size of the native
+        /// <see cref="UnsafeNativeMethods.sqlite3_index_info" />
+        /// structure is stored here.
+        /// </param>
+        /// <param name="sizeOfConstraintType">
+        /// The size of the native
+        /// <see cref="UnsafeNativeMethods.sqlite3_index_constraint" />
+        /// structure is stored here.
+        /// </param>
+        /// <param name="sizeOfOrderByType">
+        /// The size of the native
+        /// <see cref="UnsafeNativeMethods.sqlite3_index_orderby" />
+        /// structure is stored here.
+        /// </param>
+        /// <param name="sizeOfConstraintUsageType">
+        /// The size of the native
+        /// <see cref="UnsafeNativeMethods.sqlite3_index_constraint_usage" />
+        /// structure is stored here.
+        /// </param>
+        private static void SizeOf( /* NOTE: For test use only. */
+            out int sizeOfInfoType,
+            out int sizeOfConstraintType,
+            out int sizeOfOrderByType,
+            out int sizeOfConstraintUsageType
+            )
+        {
+            sizeOfInfoType = Marshal.SizeOf(typeof(
+                UnsafeNativeMethods.sqlite3_index_info));
+
+            sizeOfConstraintType = Marshal.SizeOf(typeof(
+                UnsafeNativeMethods.sqlite3_index_constraint));
+
+            sizeOfOrderByType = Marshal.SizeOf(typeof(
+                UnsafeNativeMethods.sqlite3_index_orderby));
+
+            sizeOfConstraintUsageType = Marshal.SizeOf(typeof(
+                UnsafeNativeMethods.sqlite3_index_constraint_usage));
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+
+        /// <summary>
+        /// Attempts to allocate and initialize a native
+        /// <see cref="UnsafeNativeMethods.sqlite3_index_info" />
+        /// structure.
+        /// </summary>
+        /// <param name="nConstraint">
+        /// The number of <see cref="SQLiteIndexConstraint" /> instances to
+        /// pre-allocate space for.
+        /// </param>
+        /// <param name="nOrderBy">
+        /// The number of <see cref="SQLiteIndexOrderBy" /> instances to
+        /// pre-allocate space for.
+        /// </param>
+        /// <returns>
+        /// The newly allocated native
+        /// <see cref="UnsafeNativeMethods.sqlite3_index_info" /> structure
+        /// -OR- <see cref="IntPtr.Zero" /> if it could not be fully allocated.
+        /// </returns>
+        internal static IntPtr AllocMemoryBlock( /* NOTE: For test use only. */
+            int nConstraint,
+            int nOrderBy
+            )
+        {
+            IntPtr pIndex = IntPtr.Zero;
+            IntPtr pInfo = IntPtr.Zero;
+            IntPtr pConstraint = IntPtr.Zero;
+            IntPtr pOrderBy = IntPtr.Zero;
+            IntPtr pConstraintUsage = IntPtr.Zero;
+
+            try
+            {
+                int sizeOfInfoType;
+                int sizeOfOrderByType;
+                int sizeOfConstraintType;
+                int sizeOfConstraintUsageType;
+
+                SizeOf(out sizeOfInfoType, out sizeOfConstraintType,
+                    out sizeOfOrderByType, out sizeOfConstraintUsageType);
+
+                if ((sizeOfInfoType > 0) &&
+                    (sizeOfConstraintType > 0) &&
+                    (sizeOfOrderByType > 0) &&
+                    (sizeOfConstraintUsageType > 0))
+                {
+                    pInfo = SQLiteMemory.Allocate(sizeOfInfoType);
+
+                    pConstraint = SQLiteMemory.Allocate(
+                        sizeOfConstraintType * nConstraint);
+
+                    pOrderBy = SQLiteMemory.Allocate(
+                        sizeOfOrderByType * nOrderBy);
+
+                    pConstraintUsage = SQLiteMemory.Allocate(
+                        sizeOfConstraintUsageType * nConstraint);
+
+                    if ((pInfo != IntPtr.Zero) &&
+                        (pConstraint != IntPtr.Zero) &&
+                        (pOrderBy != IntPtr.Zero) &&
+                        (pConstraintUsage != IntPtr.Zero))
+                    {
+                        int offset = 0;
+
+                        Marshal.WriteInt32(
+                            pInfo, offset, nConstraint);
+
+                        offset = SQLiteMarshal.NextOffsetOf(
+                            offset, sizeof(int), IntPtr.Size);
+
+                        Marshal.WriteIntPtr(
+                            pInfo, offset, pConstraint);
+
+                        offset = SQLiteMarshal.NextOffsetOf(
+                            offset, IntPtr.Size, sizeof(int));
+
+                        Marshal.WriteInt32(
+                            pInfo, offset, nOrderBy);
+
+                        offset = SQLiteMarshal.NextOffsetOf(
+                            offset, sizeof(int), IntPtr.Size);
+
+                        Marshal.WriteIntPtr(
+                            pInfo, offset, pOrderBy);
+
+                        offset = SQLiteMarshal.NextOffsetOf(
+                            offset, IntPtr.Size, IntPtr.Size);
+
+                        Marshal.WriteIntPtr(
+                            pInfo, offset, pConstraintUsage);
+
+                        pIndex = pInfo; /* NOTE: Success. */
+                    }
+                }
+            }
+            finally
+            {
+                if (pIndex == IntPtr.Zero) /* NOTE: Failure? */
+                {
+                    if (pConstraintUsage != IntPtr.Zero)
+                    {
+                        SQLiteMemory.Free(pConstraintUsage);
+                        pConstraintUsage = IntPtr.Zero;
+                    }
+
+                    if (pOrderBy != IntPtr.Zero)
+                    {
+                        SQLiteMemory.Free(pOrderBy);
+                        pOrderBy = IntPtr.Zero;
+                    }
+
+                    if (pConstraint != IntPtr.Zero)
+                    {
+                        SQLiteMemory.Free(pConstraint);
+                        pConstraint = IntPtr.Zero;
+                    }
+
+                    if (pInfo != IntPtr.Zero)
+                    {
+                        SQLiteMemory.Free(pInfo);
+                        pInfo = IntPtr.Zero;
+                    }
+                }
+            }
+
+            return pIndex;
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+
+        /// <summary>
+        /// Frees all the memory associated with a native
+        /// <see cref="UnsafeNativeMethods.sqlite3_index_info" />
+        /// structure.
+        /// </summary>
+        /// <param name="pIndex">
+        /// The native pointer to the native sqlite3_index_info structure to
+        /// free.
+        /// </param>
+        internal static void FreeMemoryBlock( /* NOTE: For test use only. */
+            IntPtr pIndex
+            )
+        {
+            if (pIndex == IntPtr.Zero)
+                return;
+
+            int offset = 0;
+
+            offset = SQLiteMarshal.NextOffsetOf(
+                offset, sizeof(int), IntPtr.Size);
+
+            IntPtr pConstraint = SQLiteMarshal.ReadIntPtr(
+                pIndex, offset);
+
+            offset = SQLiteMarshal.NextOffsetOf(
+                offset, IntPtr.Size, sizeof(int));
+
+            offset = SQLiteMarshal.NextOffsetOf(
+                offset, sizeof(int), IntPtr.Size);
+
+            IntPtr pOrderBy = SQLiteMarshal.ReadIntPtr(pIndex, offset);
+
+            offset = SQLiteMarshal.NextOffsetOf(
+                offset, IntPtr.Size, IntPtr.Size);
+
+            IntPtr pConstraintUsage = SQLiteMarshal.ReadIntPtr(
+                pIndex, offset);
+
+            if (pConstraintUsage != IntPtr.Zero)
+            {
+                SQLiteMemory.Free(pConstraintUsage);
+                pConstraintUsage = IntPtr.Zero;
+            }
+
+            if (pOrderBy != IntPtr.Zero)
+            {
+                SQLiteMemory.Free(pOrderBy);
+                pOrderBy = IntPtr.Zero;
+            }
+
+            if (pConstraint != IntPtr.Zero)
+            {
+                SQLiteMemory.Free(pConstraint);
+                pConstraint = IntPtr.Zero;
+            }
+
+            if (pIndex != IntPtr.Zero)
+            {
+                SQLiteMemory.Free(pIndex);
+                pIndex = IntPtr.Zero;
+            }
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+
+        /// <summary>
         /// Converts a native pointer to a native sqlite3_index_info structure
         /// into a new <see cref="SQLiteIndex" /> object instance.
         /// </summary>
@@ -1254,12 +1501,17 @@ namespace System.Data.SQLite
         /// The native pointer to the native sqlite3_index_info structure to
         /// convert.
         /// </param>
+        /// <param name="includeOutput">
+        /// Non-zero to include fields from the outputs portion of the native
+        /// structure; otherwise, the "output" fields will not be read.
+        /// </param>
         /// <param name="index">
         /// Upon success, this parameter will be modified to contain the newly
         /// created <see cref="SQLiteIndex" /> object instance.
         /// </param>
         internal static void FromIntPtr(
             IntPtr pIndex,
+            bool includeOutput,
             ref SQLiteIndex index
             )
         {
@@ -1268,29 +1520,59 @@ namespace System.Data.SQLite
 
             int offset = 0;
 
-            int nConstraint = SQLiteMarshal.ReadInt32(pIndex, offset);
+            int nConstraint = SQLiteMarshal.ReadInt32(
+                pIndex, offset);
 
-            offset = SQLiteMarshal.NextOffsetOf(offset, sizeof(int),
-                IntPtr.Size);
+            offset = SQLiteMarshal.NextOffsetOf(
+                offset, sizeof(int), IntPtr.Size);
 
-            IntPtr pConstraint = SQLiteMarshal.ReadIntPtr(pIndex, offset);
+            IntPtr pConstraint = SQLiteMarshal.ReadIntPtr(
+                pIndex, offset);
 
-            offset = SQLiteMarshal.NextOffsetOf(offset, IntPtr.Size,
-                sizeof(int));
+            offset = SQLiteMarshal.NextOffsetOf(
+                offset, IntPtr.Size, sizeof(int));
 
-            int nOrderBy = SQLiteMarshal.ReadInt32(pIndex, offset);
+            int nOrderBy = SQLiteMarshal.ReadInt32(
+                pIndex, offset);
 
-            offset = SQLiteMarshal.NextOffsetOf(offset, sizeof(int),
-                IntPtr.Size);
+            offset = SQLiteMarshal.NextOffsetOf(
+                offset, sizeof(int), IntPtr.Size);
 
-            IntPtr pOrderBy = SQLiteMarshal.ReadIntPtr(pIndex, offset);
+            IntPtr pOrderBy = SQLiteMarshal.ReadIntPtr(
+                pIndex, offset);
+
+            IntPtr pConstraintUsage = IntPtr.Zero;
+
+            if (includeOutput)
+            {
+                offset = SQLiteMarshal.NextOffsetOf(
+                    offset, IntPtr.Size, IntPtr.Size);
+
+                pConstraintUsage = SQLiteMarshal.ReadIntPtr(
+                    pIndex, offset);
+            }
 
             index = new SQLiteIndex(nConstraint, nOrderBy);
+            SQLiteIndexInputs inputs = index.Inputs;
 
-            Type indexConstraintType = typeof(
+            if (inputs == null)
+                return;
+
+            SQLiteIndexConstraint[] constraints = inputs.Constraints;
+
+            if (constraints == null)
+                return;
+
+            SQLiteIndexOrderBy[] orderBys = inputs.OrderBys;
+
+            if (orderBys == null)
+                return;
+
+            Type constraintType = typeof(
                 UnsafeNativeMethods.sqlite3_index_constraint);
 
-            int sizeOfConstraintType = Marshal.SizeOf(indexConstraintType);
+            int sizeOfConstraintType = Marshal.SizeOf(
+                constraintType);
 
             for (int iConstraint = 0; iConstraint < nConstraint; iConstraint++)
             {
@@ -1299,16 +1581,16 @@ namespace System.Data.SQLite
 
                 UnsafeNativeMethods.sqlite3_index_constraint constraint =
                     (UnsafeNativeMethods.sqlite3_index_constraint)
-                        Marshal.PtrToStructure(pOffset, indexConstraintType);
+                        Marshal.PtrToStructure(pOffset, constraintType);
 
-                index.Inputs.Constraints[iConstraint] =
-                    new SQLiteIndexConstraint(constraint);
+                constraints[iConstraint] = new SQLiteIndexConstraint(
+                    constraint);
             }
 
-            Type indexOrderByType = typeof(
+            Type orderByType = typeof(
                 UnsafeNativeMethods.sqlite3_index_orderby);
 
-            int sizeOfOrderByType = Marshal.SizeOf(indexOrderByType);
+            int sizeOfOrderByType = Marshal.SizeOf(orderByType);
 
             for (int iOrderBy = 0; iOrderBy < nOrderBy; iOrderBy++)
             {
@@ -1317,10 +1599,99 @@ namespace System.Data.SQLite
 
                 UnsafeNativeMethods.sqlite3_index_orderby orderBy =
                     (UnsafeNativeMethods.sqlite3_index_orderby)
-                        Marshal.PtrToStructure(pOffset, indexOrderByType);
+                        Marshal.PtrToStructure(pOffset, orderByType);
 
-                index.Inputs.OrderBys[iOrderBy] =
-                    new SQLiteIndexOrderBy(orderBy);
+                orderBys[iOrderBy] = new SQLiteIndexOrderBy(orderBy);
+            }
+
+            if (includeOutput)
+            {
+                SQLiteIndexOutputs outputs = index.Outputs;
+
+                if (outputs == null)
+                    return;
+
+                SQLiteIndexConstraintUsage[] constraintUsages =
+                    outputs.ConstraintUsages;
+
+                if (constraintUsages == null)
+                    return;
+
+                Type constraintUsageType = typeof(
+                    UnsafeNativeMethods.sqlite3_index_constraint_usage);
+
+                int sizeOfConstraintUsageType = Marshal.SizeOf(
+                    constraintUsageType);
+
+                for (int iConstraint = 0; iConstraint < nConstraint; iConstraint++)
+                {
+                    IntPtr pOffset = SQLiteMarshal.IntPtrForOffset(
+                        pConstraintUsage, iConstraint * sizeOfConstraintUsageType);
+
+                    UnsafeNativeMethods.sqlite3_index_constraint_usage constraintUsage =
+                        (UnsafeNativeMethods.sqlite3_index_constraint_usage)
+                            Marshal.PtrToStructure(pOffset, constraintUsageType);
+
+                    constraintUsages[iConstraint] = new SQLiteIndexConstraintUsage(
+                        constraintUsage);
+                }
+
+                offset = SQLiteMarshal.NextOffsetOf(
+                    offset, IntPtr.Size, sizeof(int));
+
+                outputs.IndexNumber = SQLiteMarshal.ReadInt32(
+                    pIndex, offset);
+
+                offset = SQLiteMarshal.NextOffsetOf(
+                    offset, sizeof(int), IntPtr.Size);
+
+                outputs.IndexString = SQLiteString.StringFromUtf8IntPtr(
+                    SQLiteMarshal.ReadIntPtr(pIndex, offset));
+
+                offset = SQLiteMarshal.NextOffsetOf(
+                    offset, IntPtr.Size, sizeof(int));
+
+                outputs.NeedToFreeIndexString = SQLiteMarshal.ReadInt32(
+                    pIndex, offset);
+
+                offset = SQLiteMarshal.NextOffsetOf(
+                    offset, sizeof(int), sizeof(int));
+
+                outputs.OrderByConsumed = SQLiteMarshal.ReadInt32(
+                    pIndex, offset);
+
+                offset = SQLiteMarshal.NextOffsetOf(
+                    offset, sizeof(int), sizeof(double));
+
+                outputs.EstimatedCost = SQLiteMarshal.ReadDouble(
+                    pIndex, offset);
+
+                offset = SQLiteMarshal.NextOffsetOf(
+                    offset, sizeof(double), sizeof(long));
+
+                if (outputs.CanUseEstimatedRows())
+                {
+                    outputs.EstimatedRows = SQLiteMarshal.ReadInt64(
+                        pIndex, offset);
+                }
+
+                offset = SQLiteMarshal.NextOffsetOf(
+                    offset, sizeof(long), sizeof(int));
+
+                if (outputs.CanUseIndexFlags())
+                {
+                    outputs.IndexFlags = (SQLiteIndexFlags)
+                        SQLiteMarshal.ReadInt32(pIndex, offset);
+                }
+
+                offset = SQLiteMarshal.NextOffsetOf(
+                    offset, sizeof(int), sizeof(long));
+
+                if (outputs.CanUseColumnsUsed())
+                {
+                    outputs.ColumnsUsed = SQLiteMarshal.ReadInt64(
+                        pIndex, offset);
+                }
             }
         }
 
@@ -1339,17 +1710,50 @@ namespace System.Data.SQLite
         /// The native pointer to the pre-allocated native sqlite3_index_info
         /// structure.
         /// </param>
+        /// <param name="includeInput">
+        /// Non-zero to include fields from the inputs portion of the native
+        /// structure; otherwise, the "input" fields will not be written.
+        /// </param>
         internal static void ToIntPtr(
             SQLiteIndex index,
-            IntPtr pIndex
+            IntPtr pIndex,
+            bool includeInput
             )
         {
-            if ((index == null) || (index.Inputs == null) ||
-                (index.Inputs.Constraints == null) ||
-                (index.Outputs == null) ||
-                (index.Outputs.ConstraintUsages == null))
-            {
+            if (index == null)
                 return;
+
+            SQLiteIndexOutputs outputs = index.Outputs;
+
+            if (outputs == null)
+                return;
+
+            SQLiteIndexConstraintUsage[] constraintUsages =
+                outputs.ConstraintUsages;
+
+            if (constraintUsages == null)
+                return;
+
+            SQLiteIndexInputs inputs = null;
+            SQLiteIndexConstraint[] constraints = null;
+            SQLiteIndexOrderBy[] orderBys = null;
+
+            if (includeInput)
+            {
+                inputs = index.Inputs;
+
+                if (inputs == null)
+                    return;
+
+                constraints = inputs.Constraints;
+
+                if (constraints == null)
+                    return;
+
+                orderBys = inputs.OrderBys;
+
+                if (orderBys == null)
+                    return;
             }
 
             if (pIndex == IntPtr.Zero)
@@ -1359,25 +1763,73 @@ namespace System.Data.SQLite
 
             int nConstraint = SQLiteMarshal.ReadInt32(pIndex, offset);
 
-            if (nConstraint != index.Inputs.Constraints.Length)
+            if (includeInput && (nConstraint != constraints.Length))
                 return;
 
-            if (nConstraint != index.Outputs.ConstraintUsages.Length)
+            if (nConstraint != constraintUsages.Length)
                 return;
 
-            offset = SQLiteMarshal.NextOffsetOf(offset, sizeof(int),
-                IntPtr.Size);
+            offset = SQLiteMarshal.NextOffsetOf(
+                offset, sizeof(int), IntPtr.Size);
 
-            offset = SQLiteMarshal.NextOffsetOf(offset, IntPtr.Size,
-                sizeof(int));
+            if (includeInput)
+            {
+                IntPtr pConstraint = SQLiteMarshal.ReadIntPtr(
+                    pIndex, offset);
 
-            offset = SQLiteMarshal.NextOffsetOf(offset, sizeof(int),
-                IntPtr.Size);
+                int sizeOfConstraintType = Marshal.SizeOf(typeof(
+                    UnsafeNativeMethods.sqlite3_index_constraint));
 
-            offset = SQLiteMarshal.NextOffsetOf(offset, IntPtr.Size,
-                sizeof(int));
+                for (int iConstraint = 0; iConstraint < nConstraint; iConstraint++)
+                {
+                    UnsafeNativeMethods.sqlite3_index_constraint constraint =
+                        new UnsafeNativeMethods.sqlite3_index_constraint(
+                            constraints[iConstraint]);
 
-            IntPtr pConstraintUsage = SQLiteMarshal.ReadIntPtr(pIndex, offset);
+                    Marshal.StructureToPtr(
+                        constraint, SQLiteMarshal.IntPtrForOffset(
+                        pConstraint, iConstraint * sizeOfConstraintType),
+                        false);
+                }
+            }
+
+            offset = SQLiteMarshal.NextOffsetOf(
+                offset, IntPtr.Size, sizeof(int));
+
+            int nOrderBy = includeInput ?
+                SQLiteMarshal.ReadInt32(pIndex, offset) : 0;
+
+            if (includeInput && (nOrderBy != orderBys.Length))
+                return;
+
+            offset = SQLiteMarshal.NextOffsetOf(
+                offset, sizeof(int), IntPtr.Size);
+
+            if (includeInput)
+            {
+                IntPtr pOrderBy = SQLiteMarshal.ReadIntPtr(pIndex, offset);
+
+                int sizeOfOrderByType = Marshal.SizeOf(typeof(
+                    UnsafeNativeMethods.sqlite3_index_orderby));
+
+                for (int iOrderBy = 0; iOrderBy < nOrderBy; iOrderBy++)
+                {
+                    UnsafeNativeMethods.sqlite3_index_orderby orderBy =
+                        new UnsafeNativeMethods.sqlite3_index_orderby(
+                            orderBys[iOrderBy]);
+
+                    Marshal.StructureToPtr(
+                        orderBy, SQLiteMarshal.IntPtrForOffset(
+                        pOrderBy, iOrderBy * sizeOfOrderByType),
+                        false);
+                }
+            }
+
+            offset = SQLiteMarshal.NextOffsetOf(
+                offset, IntPtr.Size, IntPtr.Size);
+
+            IntPtr pConstraintUsage = SQLiteMarshal.ReadIntPtr(
+                pIndex, offset);
 
             int sizeOfConstraintUsageType = Marshal.SizeOf(typeof(
                 UnsafeNativeMethods.sqlite3_index_constraint_usage));
@@ -1386,7 +1838,7 @@ namespace System.Data.SQLite
             {
                 UnsafeNativeMethods.sqlite3_index_constraint_usage constraintUsage =
                     new UnsafeNativeMethods.sqlite3_index_constraint_usage(
-                        index.Outputs.ConstraintUsages[iConstraint]);
+                        constraintUsages[iConstraint]);
 
                 Marshal.StructureToPtr(
                     constraintUsage, SQLiteMarshal.IntPtrForOffset(
@@ -1394,70 +1846,76 @@ namespace System.Data.SQLite
                     false);
             }
 
-            offset = SQLiteMarshal.NextOffsetOf(offset, IntPtr.Size,
-                sizeof(int));
+            offset = SQLiteMarshal.NextOffsetOf(
+                offset, IntPtr.Size, sizeof(int));
 
             SQLiteMarshal.WriteInt32(pIndex, offset,
-                index.Outputs.IndexNumber);
+                outputs.IndexNumber);
 
-            offset = SQLiteMarshal.NextOffsetOf(offset, sizeof(int),
-                IntPtr.Size);
+            offset = SQLiteMarshal.NextOffsetOf(
+                offset, sizeof(int), IntPtr.Size);
 
             SQLiteMarshal.WriteIntPtr(pIndex, offset,
-                SQLiteString.Utf8IntPtrFromString(index.Outputs.IndexString));
+                SQLiteString.Utf8IntPtrFromString(outputs.IndexString));
 
-            offset = SQLiteMarshal.NextOffsetOf(offset, IntPtr.Size,
-                sizeof(int));
+            offset = SQLiteMarshal.NextOffsetOf(
+                offset, IntPtr.Size, sizeof(int));
 
             //
             // NOTE: We just allocated the IndexString field; therefore, we
-            //       need to set the NeedToFreeIndexString field to non-zero.
+            //       need to set make sure the NeedToFreeIndexString field
+            //       is non-zero; however, we are not picky about the exact
+            //       value.
             //
-            SQLiteMarshal.WriteInt32(pIndex, offset, 1);
-
-            offset = SQLiteMarshal.NextOffsetOf(offset, sizeof(int),
-                sizeof(int));
+            int needToFreeIndexString = outputs.NeedToFreeIndexString != 0 ?
+                outputs.NeedToFreeIndexString : 1;
 
             SQLiteMarshal.WriteInt32(pIndex, offset,
-                index.Outputs.OrderByConsumed);
+                needToFreeIndexString);
 
-            offset = SQLiteMarshal.NextOffsetOf(offset, sizeof(int),
-                sizeof(double));
+            offset = SQLiteMarshal.NextOffsetOf(
+                offset, sizeof(int), sizeof(int));
 
-            if (index.Outputs.EstimatedCost.HasValue)
+            SQLiteMarshal.WriteInt32(pIndex, offset,
+                outputs.OrderByConsumed);
+
+            offset = SQLiteMarshal.NextOffsetOf(
+                offset, sizeof(int), sizeof(double));
+
+            if (outputs.EstimatedCost.HasValue)
             {
                 SQLiteMarshal.WriteDouble(pIndex, offset,
-                    index.Outputs.EstimatedCost.GetValueOrDefault());
+                    outputs.EstimatedCost.GetValueOrDefault());
             }
 
-            offset = SQLiteMarshal.NextOffsetOf(offset, sizeof(double),
-                sizeof(long));
+            offset = SQLiteMarshal.NextOffsetOf(
+                offset, sizeof(double), sizeof(long));
 
-            if (index.Outputs.CanUseEstimatedRows() &&
-                index.Outputs.EstimatedRows.HasValue)
+            if (outputs.CanUseEstimatedRows() &&
+                outputs.EstimatedRows.HasValue)
             {
                 SQLiteMarshal.WriteInt64(pIndex, offset,
-                    index.Outputs.EstimatedRows.GetValueOrDefault());
+                    outputs.EstimatedRows.GetValueOrDefault());
             }
 
-            offset = SQLiteMarshal.NextOffsetOf(offset, sizeof(long),
-                sizeof(int));
+            offset = SQLiteMarshal.NextOffsetOf(
+                offset, sizeof(long), sizeof(int));
 
-            if (index.Outputs.CanUseIdxFlags() &&
-                index.Outputs.IdxFlags.HasValue)
+            if (outputs.CanUseIndexFlags() &&
+                outputs.IndexFlags.HasValue)
             {
                 SQLiteMarshal.WriteInt32(pIndex, offset,
-                   (int)index.Outputs.IdxFlags.GetValueOrDefault());
+                   (int)outputs.IndexFlags.GetValueOrDefault());
             }
 
-            offset = SQLiteMarshal.NextOffsetOf(offset, sizeof(int),
-                sizeof(long));
+            offset = SQLiteMarshal.NextOffsetOf(
+                offset, sizeof(int), sizeof(long));
 
-            if (index.Outputs.CanUseColUsed() &&
-                index.Outputs.ColUsed.HasValue)
+            if (outputs.CanUseColumnsUsed() &&
+                outputs.ColumnsUsed.HasValue)
             {
                 SQLiteMarshal.WriteInt64(pIndex, offset,
-                    index.Outputs.ColUsed.GetValueOrDefault());
+                    outputs.ColumnsUsed.GetValueOrDefault());
             }
         }
         #endregion
@@ -3279,6 +3737,35 @@ namespace System.Data.SQLite
             return Marshal.ReadInt32(pointer, offset);
 #else
             return Marshal.ReadInt32(IntPtrForOffset(pointer, offset));
+#endif
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+
+        /// <summary>
+        /// Reads a <see cref="Int64" /> value from the specified memory
+        /// location.
+        /// </summary>
+        /// <param name="pointer">
+        /// The <see cref="IntPtr" /> object instance representing the base
+        /// memory location.
+        /// </param>
+        /// <param name="offset">
+        /// The integer offset from the base memory location where the
+        /// <see cref="Int64" /> value to be read is located.
+        /// </param>
+        /// <returns>
+        /// The <see cref="Int64" /> value at the specified memory location.
+        /// </returns>
+        public static long ReadInt64(
+            IntPtr pointer,
+            int offset
+            )
+        {
+#if !PLATFORM_COMPACTFRAMEWORK
+            return Marshal.ReadInt64(pointer, offset);
+#else
+            return Marshal.ReadInt64(IntPtrForOffset(pointer, offset));
 #endif
         }
 
@@ -5143,11 +5630,11 @@ namespace System.Data.SQLite
 
                 int offset = 0;
 
-                offset = SQLiteMarshal.NextOffsetOf(offset, IntPtr.Size,
-                    sizeof(int));
+                offset = SQLiteMarshal.NextOffsetOf(
+                    offset, IntPtr.Size, sizeof(int));
 
-                offset = SQLiteMarshal.NextOffsetOf(offset, sizeof(int),
-                    IntPtr.Size);
+                offset = SQLiteMarshal.NextOffsetOf(
+                    offset, sizeof(int), IntPtr.Size);
 
                 IntPtr pOldError = SQLiteMarshal.ReadIntPtr(pVtab, offset);
 
@@ -5421,13 +5908,13 @@ namespace System.Data.SQLite
 
             SQLiteMarshal.WriteIntPtr(pVtab, offset, IntPtr.Zero);
 
-            offset = SQLiteMarshal.NextOffsetOf(offset, IntPtr.Size,
-                sizeof(int));
+            offset = SQLiteMarshal.NextOffsetOf(
+                offset, IntPtr.Size, sizeof(int));
 
             SQLiteMarshal.WriteInt32(pVtab, offset, 0);
 
-            offset = SQLiteMarshal.NextOffsetOf(offset, sizeof(int),
-                IntPtr.Size);
+            offset = SQLiteMarshal.NextOffsetOf(
+                offset, sizeof(int), IntPtr.Size);
 
             SQLiteMarshal.WriteIntPtr(pVtab, offset, IntPtr.Zero);
         }
@@ -6083,22 +6570,22 @@ namespace System.Data.SQLite
         /// <param name="index">
         /// The <see cref="SQLiteIndex" /> object instance to modify.
         /// </param>
-        /// <param name="idxFlags">
+        /// <param name="indexFlags">
         /// The index flags value to use.  Using a null value means that the
         /// default value provided by the SQLite core library should be used.
         /// </param>
         /// <returns>
         /// Non-zero upon success.
         /// </returns>
-        protected virtual bool SetIdxFlags(
+        protected virtual bool SetIndexFlags(
             SQLiteIndex index,
-            SQLiteIndexFlags? idxFlags
+            SQLiteIndexFlags? indexFlags
             )
         {
             if ((index == null) || (index.Outputs == null))
                 return false;
 
-            index.Outputs.IdxFlags = idxFlags;
+            index.Outputs.IndexFlags = indexFlags;
             return true;
         }
 
@@ -6114,11 +6601,11 @@ namespace System.Data.SQLite
         /// <returns>
         /// Non-zero upon success.
         /// </returns>
-        protected virtual bool SetIdxFlags(
+        protected virtual bool SetIndexFlags(
             SQLiteIndex index
             )
         {
-            return SetIdxFlags(index, null);
+            return SetIndexFlags(index, null);
         }
         #endregion
         #endregion
@@ -6259,11 +6746,11 @@ namespace System.Data.SQLite
                 {
                     SQLiteIndex index = null;
 
-                    SQLiteIndex.FromIntPtr(pIndex, ref index);
+                    SQLiteIndex.FromIntPtr(pIndex, true, ref index);
 
                     if (BestIndex(table, index) == SQLiteErrorCode.Ok)
                     {
-                        SQLiteIndex.ToIntPtr(index, pIndex);
+                        SQLiteIndex.ToIntPtr(index, pIndex, true);
                         return SQLiteErrorCode.Ok;
                     }
                 }
