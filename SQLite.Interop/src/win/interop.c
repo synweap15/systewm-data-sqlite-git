@@ -951,7 +951,11 @@ SQLITE_API int WINAPI sqlite3_table_cursor_interop(sqlite3_stmt *pstmt, int iDb,
   {
     if (p->apCsr[n]->isTable == FALSE) continue;
     if (p->apCsr[n]->iDb != iDb) continue;
+#if SQLITE_VERSION_NUMBER >= 3010000
+    if (p->apCsr[n]->uc.pCursor->pgnoRoot == tableRootPage)
+#else
     if (p->apCsr[n]->pCursor->pgnoRoot == tableRootPage)
+#endif
     {
       ret = n;
       break;
@@ -997,24 +1001,40 @@ SQLITE_API int WINAPI sqlite3_cursor_rowid_interop(sqlite3_stmt *pstmt, int curs
     }
     else
 #endif
+#if SQLITE_VERSION_NUMBER >= 3010000
+    if(pC->uc.pseudoTableReg > 0)
+#else
     if(pC->pseudoTableReg > 0)
+#endif
     {
       ret = SQLITE_ERROR;
       break;
     }
+#if SQLITE_VERSION_NUMBER >= 3010000
+    else if(pC->nullRow || pC->uc.pCursor==0)
+#else
     else if(pC->nullRow || pC->pCursor==0)
+#endif
     {
       ret = SQLITE_ERROR;
       break;
     }
     else
     {
+#if SQLITE_VERSION_NUMBER >= 3010000
+      if (pC->uc.pCursor == NULL)
+#else
       if (pC->pCursor == NULL)
+#endif
       {
         ret = SQLITE_ERROR;
         break;
       }
+#if SQLITE_VERSION_NUMBER >= 3010000
+      sqlite3BtreeKeySize(pC->uc.pCursor, prowid);
+#else
       sqlite3BtreeKeySize(pC->pCursor, prowid);
+#endif
       if (prowid) *prowid = *prowid;
     }
     break;
