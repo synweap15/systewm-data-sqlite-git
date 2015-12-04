@@ -1362,31 +1362,31 @@ namespace System.Data.SQLite
                     {
                         int offset = 0;
 
-                        Marshal.WriteInt32(
+                        SQLiteMarshal.WriteInt32(
                             pInfo, offset, nConstraint);
 
                         offset = SQLiteMarshal.NextOffsetOf(
                             offset, sizeof(int), IntPtr.Size);
 
-                        Marshal.WriteIntPtr(
+                        SQLiteMarshal.WriteIntPtr(
                             pInfo, offset, pConstraint);
 
                         offset = SQLiteMarshal.NextOffsetOf(
                             offset, IntPtr.Size, sizeof(int));
 
-                        Marshal.WriteInt32(
+                        SQLiteMarshal.WriteInt32(
                             pInfo, offset, nOrderBy);
 
                         offset = SQLiteMarshal.NextOffsetOf(
                             offset, sizeof(int), IntPtr.Size);
 
-                        Marshal.WriteIntPtr(
+                        SQLiteMarshal.WriteIntPtr(
                             pInfo, offset, pOrderBy);
 
                         offset = SQLiteMarshal.NextOffsetOf(
                             offset, IntPtr.Size, IntPtr.Size);
 
-                        Marshal.WriteIntPtr(
+                        SQLiteMarshal.WriteIntPtr(
                             pInfo, offset, pConstraintUsage);
 
                         pIndex = pInfo; /* NOTE: Success. */
