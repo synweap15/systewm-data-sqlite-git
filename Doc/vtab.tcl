@@ -183,7 +183,14 @@ if {![file exists $outputFileName]} then {
   exit 1
 }
 
-set lines [split [string map [list \r\n \n] [readFile $inputFileName]] \n]
+set inputData [readFile $inputFileName]
+
+set inputData [string map [list \
+    {<font size="6" color="red">*** DRAFT ***</font>} ""] $inputData]
+
+set inputData [string map [list {<p align="center"></p>} ""] $inputData]
+
+set lines [split [string map [list \r\n \n] $inputData] \n]
 set patterns(method) {^<h3>2\.\d+ The (.*) Method(?:s)?</h3>$}
 set prefix "        /// "
 unset -nocomplain methods; set start false
@@ -211,7 +218,7 @@ for {set index 0} {$index < [llength $lines]} {} {
   }
 }
 
-set data [string map [list \r\n \n] [readFile $outputFileName]]
+set outputData [string map [list \r\n \n] [readFile $outputFileName]]
 set count 0; set start 0
 
 #
@@ -227,7 +234,7 @@ foreach name [list \
   #       before each method, except for the first one.
   #
   if {$count > 0} then {
-    set start [string first [string repeat / 71] $data $start]
+    set start [string first [string repeat / 71] $outputData $start]
   }
 
   set pattern ""
@@ -239,12 +246,13 @@ foreach name [list \
   append pattern {\n\s{8}[\w]+?\s+?} $name {\($}
 
   if {[regexp -nocase -start \
-      $start -line -indices -- $pattern $data dummy indexes]} then {
+      $start -line -indices -- $pattern $outputData dummy indexes]} then {
     set summaryStart [lindex $indexes 0]
     set summaryEnd [lindex $indexes 1]
 
-    set data [string range $data 0 $summaryStart]$methods($name)[string \
-        range $data [expr {$summaryEnd + 1}] end]
+    set outputData [string range \
+        $outputData 0 $summaryStart]$methods($name)[string \
+        range $outputData [expr {$summaryEnd + 1}] end]
 
     incr count; set start [expr {$summaryEnd + 1}]
   } else {
@@ -253,7 +261,7 @@ foreach name [list \
 }
 
 if {$count > 0} then {
-  writeFile $outputFileName [string map [list \n \r\n] $data]
+  writeFile $outputFileName [string map [list \n \r\n] $outputData]
 }
 
 exit 0
