@@ -1251,7 +1251,7 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
-        #region Internal Marshal Helper Methods
+        #region Private Marshal Helper Methods (For Test Use Only)
         /// <summary>
         /// Attempts to determine the structure sizes needed to create and
         /// populate a native
@@ -1278,7 +1278,7 @@ namespace System.Data.SQLite
         /// <see cref="UnsafeNativeMethods.sqlite3_index_constraint_usage" />
         /// structure is stored here.
         /// </param>
-        private static void SizeOf( /* NOTE: For test use only. */
+        private static void SizeOf(
             out int sizeOfInfoType,
             out int sizeOfConstraintType,
             out int sizeOfOrderByType,
@@ -1318,7 +1318,7 @@ namespace System.Data.SQLite
         /// <see cref="UnsafeNativeMethods.sqlite3_index_info" /> structure
         /// -OR- <see cref="IntPtr.Zero" /> if it could not be fully allocated.
         /// </returns>
-        private static IntPtr AllocateAndInitializeNative( /* NOTE: For test use only. */
+        private static IntPtr AllocateAndInitializeNative(
             int nConstraint,
             int nOrderBy
             )
@@ -1437,7 +1437,7 @@ namespace System.Data.SQLite
         /// The native pointer to the native sqlite3_index_info structure to
         /// free.
         /// </param>
-        private static void FreeNative( /* NOTE: For test use only. */
+        private static void FreeNative(
             IntPtr pIndex
             )
         {
@@ -1491,9 +1491,11 @@ namespace System.Data.SQLite
                 pIndex = IntPtr.Zero;
             }
         }
+        #endregion
 
         ///////////////////////////////////////////////////////////////////////
 
+        #region Internal Marshal Helper Methods
         /// <summary>
         /// Converts a native pointer to a native sqlite3_index_info structure
         /// into a new <see cref="SQLiteIndex" /> object instance.
