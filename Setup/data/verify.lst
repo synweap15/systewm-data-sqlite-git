@@ -194,10 +194,14 @@ set sds_manifests(source) {
   Doc/Extra/Provider/syntax.html
   Doc/Extra/Provider/version.html
   Doc/Extra/Provider/welcome.html
+  Doc/Special/
+  Doc/Special/Core/
+  Doc/Special/Core/vtab.html
   Doc/SQLite.NET.chm
   Doc/SQLite.NET.hhc
   Doc/SQLite.NET.hhp
   Doc/SQLite.NET.ndoc
+  Doc/vtab.tcl
   Externals/
   Externals/Eagle/
   Externals/Eagle/bin/
@@ -207,14 +211,20 @@ set sds_manifests(source) {
   Externals/Eagle/lib/Eagle1.0/
   Externals/Eagle/lib/Eagle1.0/vendor.eagle
   Externals/Eagle/lib/Test1.0/
+  Keys/
+  Keys/System.Data.SQLite.CF.snk
+  Keys/System.Data.SQLite.snk
   lib/
   lib/System.Data.SQLite/
   lib/System.Data.SQLite/common.eagle
   lib/System.Data.SQLite/pkgIndex.eagle
-  Keys/
-  Keys/System.Data.SQLite.CF.snk
-  Keys/System.Data.SQLite.snk
   NuGet/
+  NuGet/net40/
+  NuGet/net40/EF6/
+  NuGet/net40/EF6/content/
+  NuGet/net40/EF6/content/config.transform
+  NuGet/net40/EF6/tools/
+  NuGet/net40/EF6/tools/provider.ps1
   NuGet/shared/
   NuGet/shared/Core/
   NuGet/shared/Core/build/
@@ -222,27 +232,21 @@ set sds_manifests(source) {
   NuGet/shared/Core/content/
   NuGet/shared/Core/content/config.install.xdt
   NuGet/shared/Core/content/config.transform
-  NuGet/net40/
-  NuGet/net40/EF6/
-  NuGet/net40/EF6/content/
-  NuGet/net40/EF6/content/config.transform
-  NuGet/net40/EF6/tools/
-  NuGet/net40/EF6/tools/provider.ps1
   NuGet/SQLite.Beta.nuspec
-  NuGet/SQLite.Core.nuspec
   NuGet/SQLite.Core.Beta.nuspec
-  NuGet/SQLite.Core.MSIL.nuspec
   NuGet/SQLite.Core.MSIL.Beta.nuspec
+  NuGet/SQLite.Core.MSIL.nuspec
   NuGet/SQLite.Core.MSIL.Test.nuspec
+  NuGet/SQLite.Core.nuspec
   NuGet/SQLite.Core.Test.nuspec
-  NuGet/SQLite.EF6.nuspec
   NuGet/SQLite.EF6.Beta.nuspec
+  NuGet/SQLite.EF6.nuspec
   NuGet/SQLite.EF6.Test.nuspec
-  NuGet/SQLite.Linq.nuspec
   NuGet/SQLite.Linq.Beta.nuspec
+  NuGet/SQLite.Linq.nuspec
   NuGet/SQLite.Linq.Test.nuspec
-  NuGet/SQLite.MSIL.nuspec
   NuGet/SQLite.MSIL.Beta.nuspec
+  NuGet/SQLite.MSIL.nuspec
   NuGet/SQLite.MSIL.Test.nuspec
   NuGet/SQLite.nuspec
   NuGet/SQLite.Test.nuspec
@@ -279,27 +283,9 @@ set sds_manifests(source) {
   Setup/set_2015.bat
   Setup/set_common.bat
   Setup/set_Debug.bat
-  Setup/set_DebugNativeOnly.bat
-  "Setup/set_DebugNativeOnly_CEPC DevPlatform.bat"
-  "Setup/set_DebugNativeOnly_Pocket PC 2003 (ARMV4).bat"
-  "Setup/set_DebugNativeOnly_ARMV7.bat"
-  Setup/set_DebugNativeOnly_Win32.bat
-  Setup/set_DebugNativeOnly_x64.bat
-  Setup/set_DebugNativeOnly_x64_2005.bat
-  Setup/set_DebugNativeOnly_x64_2008.bat
-  Setup/set_DebugNativeOnly_x64_2010.bat
-  Setup/set_DebugNativeOnly_x64_2012.bat
-  Setup/set_DebugNativeOnly_x64_2013.bat
-  Setup/set_DebugNativeOnly_x64_2015.bat
-  Setup/set_DebugNativeOnly_x86_2005.bat
-  Setup/set_DebugNativeOnly_x86_2008.bat
-  Setup/set_DebugNativeOnly_x86_2010.bat
-  Setup/set_DebugNativeOnly_x86_2012.bat
-  Setup/set_DebugNativeOnly_x86_2013.bat
-  Setup/set_DebugNativeOnly_x86_2015.bat
+  Setup/set_Debug_ARMV7.bat
   "Setup/set_Debug_CEPC DevPlatform.bat"
   "Setup/set_Debug_Pocket PC 2003 (ARMV4).bat"
-  "Setup/set_Debug_ARMV7.bat"
   Setup/set_Debug_Win32.bat
   Setup/set_Debug_x64.bat
   Setup/set_Debug_x64_2005.bat
@@ -314,6 +300,24 @@ set sds_manifests(source) {
   Setup/set_Debug_x86_2012.bat
   Setup/set_Debug_x86_2013.bat
   Setup/set_Debug_x86_2015.bat
+  Setup/set_DebugNativeOnly.bat
+  Setup/set_DebugNativeOnly_ARMV7.bat
+  "Setup/set_DebugNativeOnly_CEPC DevPlatform.bat"
+  "Setup/set_DebugNativeOnly_Pocket PC 2003 (ARMV4).bat"
+  Setup/set_DebugNativeOnly_Win32.bat
+  Setup/set_DebugNativeOnly_x64.bat
+  Setup/set_DebugNativeOnly_x64_2005.bat
+  Setup/set_DebugNativeOnly_x64_2008.bat
+  Setup/set_DebugNativeOnly_x64_2010.bat
+  Setup/set_DebugNativeOnly_x64_2012.bat
+  Setup/set_DebugNativeOnly_x64_2013.bat
+  Setup/set_DebugNativeOnly_x64_2015.bat
+  Setup/set_DebugNativeOnly_x86_2005.bat
+  Setup/set_DebugNativeOnly_x86_2008.bat
+  Setup/set_DebugNativeOnly_x86_2010.bat
+  Setup/set_DebugNativeOnly_x86_2012.bat
+  Setup/set_DebugNativeOnly_x86_2013.bat
+  Setup/set_DebugNativeOnly_x86_2015.bat
   Setup/set_netFx20.bat
   Setup/set_netFx35.bat
   Setup/set_netFx40.bat
@@ -323,27 +327,9 @@ set sds_manifests(source) {
   Setup/set_netFx46.bat
   Setup/set_netFx461.bat
   Setup/set_Release.bat
-  Setup/set_ReleaseNativeOnly.bat
-  "Setup/set_ReleaseNativeOnly_CEPC DevPlatform.bat"
-  "Setup/set_ReleaseNativeOnly_Pocket PC 2003 (ARMV4).bat"
-  "Setup/set_ReleaseNativeOnly_ARMV7.bat"
-  Setup/set_ReleaseNativeOnly_Win32.bat
-  Setup/set_ReleaseNativeOnly_x64.bat
-  Setup/set_ReleaseNativeOnly_x64_2005.bat
-  Setup/set_ReleaseNativeOnly_x64_2008.bat
-  Setup/set_ReleaseNativeOnly_x64_2010.bat
-  Setup/set_ReleaseNativeOnly_x64_2012.bat
-  Setup/set_ReleaseNativeOnly_x64_2013.bat
-  Setup/set_ReleaseNativeOnly_x64_2015.bat
-  Setup/set_ReleaseNativeOnly_x86_2005.bat
-  Setup/set_ReleaseNativeOnly_x86_2008.bat
-  Setup/set_ReleaseNativeOnly_x86_2010.bat
-  Setup/set_ReleaseNativeOnly_x86_2012.bat
-  Setup/set_ReleaseNativeOnly_x86_2013.bat
-  Setup/set_ReleaseNativeOnly_x86_2015.bat
+  Setup/set_Release_ARMV7.bat
   "Setup/set_Release_CEPC DevPlatform.bat"
   "Setup/set_Release_Pocket PC 2003 (ARMV4).bat"
-  "Setup/set_Release_ARMV7.bat"
   Setup/set_Release_Win32.bat
   Setup/set_Release_x64.bat
   Setup/set_Release_x64_2005.bat
@@ -358,6 +344,24 @@ set sds_manifests(source) {
   Setup/set_Release_x86_2012.bat
   Setup/set_Release_x86_2013.bat
   Setup/set_Release_x86_2015.bat
+  Setup/set_ReleaseNativeOnly.bat
+  Setup/set_ReleaseNativeOnly_ARMV7.bat
+  "Setup/set_ReleaseNativeOnly_CEPC DevPlatform.bat"
+  "Setup/set_ReleaseNativeOnly_Pocket PC 2003 (ARMV4).bat"
+  Setup/set_ReleaseNativeOnly_Win32.bat
+  Setup/set_ReleaseNativeOnly_x64.bat
+  Setup/set_ReleaseNativeOnly_x64_2005.bat
+  Setup/set_ReleaseNativeOnly_x64_2008.bat
+  Setup/set_ReleaseNativeOnly_x64_2010.bat
+  Setup/set_ReleaseNativeOnly_x64_2012.bat
+  Setup/set_ReleaseNativeOnly_x64_2013.bat
+  Setup/set_ReleaseNativeOnly_x64_2015.bat
+  Setup/set_ReleaseNativeOnly_x86_2005.bat
+  Setup/set_ReleaseNativeOnly_x86_2008.bat
+  Setup/set_ReleaseNativeOnly_x86_2010.bat
+  Setup/set_ReleaseNativeOnly_x86_2012.bat
+  Setup/set_ReleaseNativeOnly_x86_2013.bat
+  Setup/set_ReleaseNativeOnly_x86_2015.bat
   Setup/set_x64_2005.bat
   Setup/set_x64_2008.bat
   Setup/set_x64_2010.bat
@@ -672,9 +676,9 @@ set sds_manifests(source) {
   testce/Form1.Designer.cs
   testce/Form1.resx
   testce/Program.cs
-  testce/TestCases.cs
   testce/test.cfg
   testce/test.sql
+  testce/TestCases.cs
   testce/testce.2005.csproj
   testce/testce.2008.csproj
   testce/testce.2012.csproj
@@ -703,22 +707,22 @@ set sds_manifests(source) {
   testlinq/2015/LINQ/
   testlinq/2015/LINQ/App.config
   testlinq/northwindEF.db
-  testlinq/NorthwindModel.Linq.2008.Designer.cs
-  testlinq/NorthwindModel.Linq.2008.edmx
   testlinq/NorthwindModel.EF6.2010.Designer.cs
   testlinq/NorthwindModel.EF6.2010.edmx
-  testlinq/NorthwindModel.Linq.2010.Designer.cs
-  testlinq/NorthwindModel.Linq.2010.edmx
   testlinq/NorthwindModel.EF6.2012.Designer.cs
   testlinq/NorthwindModel.EF6.2012.edmx
-  testlinq/NorthwindModel.Linq.2012.Designer.cs
-  testlinq/NorthwindModel.Linq.2012.edmx
   testlinq/NorthwindModel.EF6.2013.Designer.cs
   testlinq/NorthwindModel.EF6.2013.edmx
-  testlinq/NorthwindModel.Linq.2013.Designer.cs
-  testlinq/NorthwindModel.Linq.2013.edmx
   testlinq/NorthwindModel.EF6.2015.Designer.cs
   testlinq/NorthwindModel.EF6.2015.edmx
+  testlinq/NorthwindModel.Linq.2008.Designer.cs
+  testlinq/NorthwindModel.Linq.2008.edmx
+  testlinq/NorthwindModel.Linq.2010.Designer.cs
+  testlinq/NorthwindModel.Linq.2010.edmx
+  testlinq/NorthwindModel.Linq.2012.Designer.cs
+  testlinq/NorthwindModel.Linq.2012.edmx
+  testlinq/NorthwindModel.Linq.2013.Designer.cs
+  testlinq/NorthwindModel.Linq.2013.edmx
   testlinq/NorthwindModel.Linq.2015.Designer.cs
   testlinq/NorthwindModel.Linq.2015.edmx
   testlinq/Program.cs
@@ -761,6 +765,7 @@ set sds_manifests(source) {
   Tests/empty.eagle
   Tests/installer.eagle
   Tests/linq.eagle
+  Tests/memory.eagle
   Tests/progress.eagle
   Tests/speed.eagle
   Tests/stress.eagle
@@ -771,6 +776,7 @@ set sds_manifests(source) {
   Tests/tkt-17045010df.eagle
   Tests/tkt-1c456ae75f.eagle
   Tests/tkt-201128cc88.eagle
+  Tests/tkt-2556655d1b.eagle
   Tests/tkt-2c630bffa7.eagle
   Tests/tkt-2ce0870fad.eagle
   Tests/tkt-3113734605.eagle
@@ -796,6 +802,7 @@ set sds_manifests(source) {
   Tests/tkt-71bedaca19.eagle
   Tests/tkt-72905c9a77.eagle
   Tests/tkt-74542e702e.eagle
+  Tests/tkt-7714b60d61.eagle
   Tests/tkt-7c151a2f0e.eagle
   Tests/tkt-7e3fa93744.eagle
   Tests/tkt-84718e79fa.eagle
