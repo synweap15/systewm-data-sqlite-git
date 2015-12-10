@@ -288,12 +288,14 @@ IF NOT DEFINED SOLUTION (
   )
 )
 
-IF DEFINED BUILD_FULL (
-  %_AECHO% Building all projects...
-  SET SOLUTION=.\SQLite.NET.%YEAR%.sln
-) ELSE (
-  %_AECHO% Building all projects...
-  SET SOLUTION=.\SQLite.NET.%YEAR%.MSBuild.sln
+IF NOT DEFINED SOLUTION (
+  IF DEFINED BUILD_FULL (
+    %_AECHO% Building all projects...
+    SET SOLUTION=.\SQLite.NET.%YEAR%.sln
+  ) ELSE (
+    %_AECHO% Building all projects...
+    SET SOLUTION=.\SQLite.NET.%YEAR%.MSBuild.sln
+  )
 )
 
 %_VECHO% Solution = '%SOLUTION%'
