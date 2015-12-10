@@ -1,5 +1,6 @@
 *.done
 *.exp
+*.ilk
 *.lib
 *.manifest
 *.map
@@ -10,4 +11,5 @@
 *EntityFramework.*
 *EnvDTE.*
 *Microsoft.*
+*Newtonsoft.*
 *stdole.*
