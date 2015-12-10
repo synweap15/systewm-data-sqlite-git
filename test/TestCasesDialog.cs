@@ -1,7 +1,7 @@
 /********************************************************
  * ADO.NET 2.0 Data Provider for SQLite Version 3.X
  * Written by Robert Simpson (robert@blackcastlesoft.com)
- * 
+ *
  * Released to the public domain, use at your own risk!
  ********************************************************/
 
@@ -63,6 +63,16 @@ namespace test
       }
 
       this.Shown += new EventHandler(TestCasesDialog_Shown);
+      this.FormClosing += new FormClosingEventHandler(TestCasesDialog_FormClosing);
+    }
+
+    private void TestCasesDialog_FormClosing(
+        object sender,
+        FormClosingEventArgs e
+        )
+    {
+        if (_autoRun && (e.CloseReason == CloseReason.UserClosing))
+            e.Cancel = true;
     }
 
     private StringBuilder GridToText()
