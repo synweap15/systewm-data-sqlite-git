@@ -4757,7 +4757,7 @@ namespace System.Data.SQLite
                     {
                       while (rdIndex.Read())
                       {
-                        string columnName = rdIndex.IsDBNull(2) ? String.Empty : rdIndex.GetString(2);
+                        string columnName = rdIndex.IsDBNull(2) ? null : rdIndex.GetString(2);
 
                         row = tbl.NewRow();
                         row["CONSTRAINT_CATALOG"] = strCatalog;
@@ -4772,7 +4772,7 @@ namespace System.Data.SQLite
                         int sortMode = 0;
                         int onError = 0;
 
-                        if(!String.IsNullOrEmpty(columnName))
+                        if (columnName != null)
                           _sql.GetIndexColumnExtendedInfo(strCatalog, rdIndexes.GetString(1), columnName, ref sortMode, ref onError, ref collationSequence);
 
                         if (String.IsNullOrEmpty(collationSequence) == false)
@@ -4783,7 +4783,7 @@ namespace System.Data.SQLite
 
                         ordinal++;
 
-                        if (String.IsNullOrEmpty(strColumn) || String.Compare(strColumn, row["COLUMN_NAME"].ToString(), StringComparison.OrdinalIgnoreCase) == 0)
+                        if ((strColumn == null) || String.Compare(strColumn, columnName, StringComparison.OrdinalIgnoreCase) == 0)
                           tbl.Rows.Add(row);
                       }
                     }

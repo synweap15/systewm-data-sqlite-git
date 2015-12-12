@@ -243,6 +243,9 @@ namespace System.Data.SQLite
                     List<string> cols = new List<string>();
                     for (int x = 0; x < indexColumns.Rows.Count; x++)
                     {
+                      string columnName = SQLiteConvert.GetStringOrNull(
+                          indexColumns.Rows[x]["COLUMN_NAME"]);
+
                       bool addKey = true;
                       // If the column in the index already appears in the query, skip it
                       foreach (DataRow row in schema.Rows)
@@ -250,7 +253,7 @@ namespace System.Data.SQLite
                         if (row.IsNull(SchemaTableColumn.BaseColumnName))
                           continue;
 
-                        if ((string)row[SchemaTableColumn.BaseColumnName] == (string)indexColumns.Rows[x]["COLUMN_NAME"] &&
+                        if ((string)row[SchemaTableColumn.BaseColumnName] == columnName &&
                             (string)row[SchemaTableColumn.BaseTableName] == table &&
                             (string)row[SchemaTableOptionalColumn.BaseCatalogName] == pair.Key)
                         {
@@ -261,7 +264,7 @@ namespace System.Data.SQLite
                         }
                       }
                       if (addKey == true)
-                        cols.Add((string)indexColumns.Rows[x]["COLUMN_NAME"]);
+                        cols.Add(columnName);
                     }
 
                     // If the index is not a rowid alias, record all the columns
@@ -281,7 +284,7 @@ namespace System.Data.SQLite
                     // Create a KeyInfo struct for each column of the index
                     for (int x = 0; x < indexColumns.Rows.Count; x++)
                     {
-                      string columnName = (string)indexColumns.Rows[x]["COLUMN_NAME"];
+                      string columnName = SQLiteConvert.GetStringOrNull(indexColumns.Rows[x]["COLUMN_NAME"]);
                       KeyInfo key = new KeyInfo();
 
                       key.rootPage = rootPage;
