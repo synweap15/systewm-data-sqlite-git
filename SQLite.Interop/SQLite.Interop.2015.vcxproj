@@ -155,7 +155,7 @@
     <Link>
       <AdditionalOptions>$(INTEROP_ASSEMBLY_RESOURCES) %(AdditionalOptions)</AdditionalOptions>
       <AdditionalLibraryDirectories>$(INTEROP_LIBRARY_DIRECTORIES)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>$(ProjectDir)..\bin\$(ConfigurationYear)\$(Configuration)Module\bin\System.Data.SQLite.netmodule $(INTEROP_LIBRARY_DEPENDENCIES);%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(ProjectDir)..\bin\$(ConfigurationYear)\$(Configuration)Module\bin\System.Data.SQLite.netmodule;$(INTEROP_LIBRARY_DEPENDENCIES);%(AdditionalDependencies)</AdditionalDependencies>
       <Version>$(INTEROP_LINKER_VERSION)</Version>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AssemblyDebug>true</AssemblyDebug>
@@ -199,7 +199,7 @@
     <Link>
       <AdditionalOptions>$(INTEROP_ASSEMBLY_RESOURCES) %(AdditionalOptions)</AdditionalOptions>
       <AdditionalLibraryDirectories>$(INTEROP_LIBRARY_DIRECTORIES)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>$(ProjectDir)..\bin\$(ConfigurationYear)\$(Configuration)Module\bin\System.Data.SQLite.netmodule $(INTEROP_LIBRARY_DEPENDENCIES);%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(ProjectDir)..\bin\$(ConfigurationYear)\$(Configuration)Module\bin\System.Data.SQLite.netmodule;$(INTEROP_LIBRARY_DEPENDENCIES);%(AdditionalDependencies)</AdditionalDependencies>
       <Version>$(INTEROP_LINKER_VERSION)</Version>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AssemblyDebug>true</AssemblyDebug>
@@ -322,7 +322,7 @@
     <Link>
       <AdditionalOptions>$(INTEROP_ASSEMBLY_RESOURCES) %(AdditionalOptions)</AdditionalOptions>
       <AdditionalLibraryDirectories>$(INTEROP_LIBRARY_DIRECTORIES)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>$(ProjectDir)..\bin\$(ConfigurationYear)\$(Configuration)Module\bin\System.Data.SQLite.netmodule $(INTEROP_LIBRARY_DEPENDENCIES);%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(ProjectDir)..\bin\$(ConfigurationYear)\$(Configuration)Module\bin\System.Data.SQLite.netmodule;$(INTEROP_LIBRARY_DEPENDENCIES);%(AdditionalDependencies)</AdditionalDependencies>
       <Version>$(INTEROP_LINKER_VERSION)</Version>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <GenerateMapFile>true</GenerateMapFile>
@@ -368,7 +368,7 @@
     <Link>
       <AdditionalOptions>$(INTEROP_ASSEMBLY_RESOURCES) %(AdditionalOptions)</AdditionalOptions>
       <AdditionalLibraryDirectories>$(INTEROP_LIBRARY_DIRECTORIES)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>$(ProjectDir)..\bin\$(ConfigurationYear)\$(Configuration)Module\bin\System.Data.SQLite.netmodule $(INTEROP_LIBRARY_DEPENDENCIES);%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(ProjectDir)..\bin\$(ConfigurationYear)\$(Configuration)Module\bin\System.Data.SQLite.netmodule;$(INTEROP_LIBRARY_DEPENDENCIES);%(AdditionalDependencies)</AdditionalDependencies>
       <Version>$(INTEROP_LINKER_VERSION)</Version>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <GenerateMapFile>true</GenerateMapFile>
