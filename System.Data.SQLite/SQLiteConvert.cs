@@ -1855,7 +1855,7 @@ namespace System.Data.SQLite
         if (value is string)
             return (string)value;
 
-        if (Object.ReferenceEquals(value, DBNull.Value))
+        if (value == DBNull.Value)
             return null;
 
         return value.ToString();
