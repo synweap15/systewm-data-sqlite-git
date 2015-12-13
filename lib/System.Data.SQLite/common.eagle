@@ -2374,9 +2374,12 @@ namespace eval ::Eagle {
           #
           debug callback apply {{sender e} {
             #
-            # NOTE: Check if this callback is one that we care about.
+            # NOTE: Check if this debugger callback is one that we care about.
             #
-            if {"Canceled" in [split [$e InterruptType] ", "]} then {
+            set interruptTypes [split [$e InterruptType] ", "]
+
+            if {"Canceled" in $interruptTypes || \
+                "Unwound" in $interruptTypes} then {
               #
               # NOTE: Make sure the [object] command is available.  Since
               #       this is an isolated interpreter, check for it the hard
