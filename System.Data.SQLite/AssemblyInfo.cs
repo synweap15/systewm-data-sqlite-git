@@ -59,7 +59,7 @@ using System.Runtime.ConstrainedExecution;
 //
 // NOTE: This attribute is only available in .NET Framework 4.0 or higher.
 //
-[assembly: SecurityRules(System.Security.SecurityRuleSet.Level1)]
+[assembly: SecurityRules(SecurityRuleSet.Level1)]
 #endif
 #endif
 
