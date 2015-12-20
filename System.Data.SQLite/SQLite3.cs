@@ -873,24 +873,8 @@ namespace System.Data.SQLite
         if (_sql == null)
             return null;
 
-        IntPtr pDbName = IntPtr.Zero;
-
-        try
-        {
-            pDbName = (dbName != null) ?
-                SQLiteString.Utf8IntPtrFromString(dbName) : IntPtr.Zero;
-
-            return UTF8ToString(UnsafeNativeMethods.sqlite3_db_filename(
-                _sql, pDbName), -1);
-        }
-        finally
-        {
-            if (pDbName != IntPtr.Zero)
-            {
-                SQLiteMemory.Free(pDbName);
-                pDbName = IntPtr.Zero;
-            }
-        }
+        return UTF8ToString(UnsafeNativeMethods.sqlite3_db_filename_bytes(
+            _sql, ToUTF8(dbName)), -1);
     }
 
     internal override void Open(string strFilename, string vfsName, SQLiteConnectionFlags connectionFlags, SQLiteOpenFlagsEnum openFlags, int maxPoolSize, bool usePool)
