@@ -3174,7 +3174,7 @@ runTest {test data-1.68 {unset env(DefaultFlags_SQLiteConnection)} -setup {
 
   freeDbConnection
 
-  unset -nocomplain connection db fileName
+  unset -nocomplain connection db fileName savedEnv
 } -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
 System.Data.SQLite} -match regexp -result \
 {^Default Default|LogCallbackException LogCallbackException$}}
@@ -3198,7 +3198,7 @@ runTest {test data-1.69 {set env(DefaultFlags_SQLiteConnection)} -setup {
 
   freeDbConnection
 
-  unset -nocomplain connection db fileName
+  unset -nocomplain connection db fileName savedEnv
 } -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
 System.Data.SQLite} -result {{DetectTextAffinity, DetectStringType}\
 {DetectTextAffinity, DetectStringType}}}
