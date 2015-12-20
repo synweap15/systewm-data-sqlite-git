@@ -2338,14 +2338,83 @@ namespace eval ::Eagle {
       return $code
     }
 
+    proc saveEnvironmentVariables { names {varName ""} } {
+      #
+      # NOTE: For each name, does the live environment variable exist?  If
+      #       so, save the value for later; otherwise, make sure the saved
+      #       value does not exist either.  The live environment variables
+      #       ARE NOT changed by this procedure.
+      #
+      if {[string length $varName] == 0} then {
+        set varName savedEnv
+      }
+
+      upvar 1 $varName savedEnv
+
+      foreach name $names {
+        if {[info exists ::env($name)]} then {
+          set savedEnv($name) $::env($name)
+        } else {
+          unset -nocomplain savedEnv($name)
+        }
+      }
+
+      #
+      # NOTE: This is self-cleaning.  If no saved environment variables now
+      #       exist, remove the array.
+      #
+      if {[array size savedEnv] == 0} then {
+        unset -nocomplain savedEnv
+      }
+    }
+
+    proc restoreEnvironmentVariables { names {varName ""} } {
+      #
+      # NOTE: For each name, does the saved environment variable exist?  If
+      #       so, restore the saved value and unset it; otherwise, make sure
+      #       the live environment variable does not exist either (i.e. it
+      #       was not set to begin with).  Both saved and live environment
+      #       variables ARE changed by this procedure.
+      #
+      if {[string length $varName] == 0} then {
+        set varName savedEnv
+      }
+
+      upvar 1 $varName savedEnv
+
+      foreach name $names {
+        if {[info exists savedEnv($name)]} then {
+          set ::env($name) $savedEnv($name)
+          unset -nocomplain savedEnv($name)
+        } else {
+          unset -nocomplain ::env($name)
+        }
+      }
+
+      #
+      # NOTE: This is self-cleaning.  If no saved environment variables now
+      #       exist, remove the array.
+      #
+      if {[array size savedEnv] == 0} then {
+        unset -nocomplain savedEnv
+      }
+    }
+
     proc setupDbInterruptCallback { channel log } {
       tputs $channel "---- setting up debugger interrupt callback... "
 
       if {[catch {
-        set ::env(quietFindInterpreterTestPath) 1
-        set ::env(quietSetupInterpreterTestPath) 1
+        saveEnvironmentVariables [list \
+            quietFindInterpreterTestPath quietSetupInterpreterTestPath]
 
         try {
+          #
+          # NOTE: Prevent the vendor script from being noisy when creating
+          #       the isolated interpreter.
+          #
+          set ::env(quietFindInterpreterTestPath) 1
+          set ::env(quietSetupInterpreterTestPath) 1
+
           #
           # NOTE: Make sure the script debugger and the isolated interpreter
           #       are setup and ready for use.
@@ -2411,8 +2480,8 @@ namespace eval ::Eagle {
             }
           }}
         } finally {
-          catch {unset ::env(quietSetupInterpreterTestPath)}
-          catch {unset ::env(quietFindInterpreterTestPath)}
+          restoreEnvironmentVariables [list \
+              quietFindInterpreterTestPath quietSetupInterpreterTestPath]
         }
       } error] == 0} then {
         addConstraint interruptCallback.sqlite3
