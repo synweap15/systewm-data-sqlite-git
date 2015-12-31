@@ -1172,7 +1172,7 @@ namespace System.Data.SQLite
                 });
               foreach (DataRow rowColumnIndex in tblIndexColumns.Rows)
               {
-                if (String.Compare((string)rowColumnIndex["COLUMN_NAME"], strColumn, StringComparison.OrdinalIgnoreCase) == 0)
+                if (String.Compare(SQLiteConvert.GetStringOrNull(rowColumnIndex["COLUMN_NAME"]), strColumn, StringComparison.OrdinalIgnoreCase) == 0)
                 {
                   //
                   // BUGFIX: Make sure that we only flag this column as "unique"

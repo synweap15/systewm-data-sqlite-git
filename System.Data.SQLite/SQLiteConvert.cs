@@ -1832,6 +1832,36 @@ namespace System.Data.SQLite
     }
 
     /// <summary>
+    /// Converts the object value, which is assumed to have originated
+    /// from a <see cref="DataRow" />, to a string value.
+    /// </summary>
+    /// <param name="value">
+    /// The value to be converted to a string.
+    /// </param>
+    /// <returns>
+    /// A null value will be returned if the original value is null -OR-
+    /// the original value is <see cref="DBNull.Value" />.  Otherwise,
+    /// the original value will be converted to a string, using its
+    /// (possibly overridden) <see cref="Object.ToString" /> method and
+    /// then returned.
+    /// </returns>
+    public static string GetStringOrNull(
+        object value
+        )
+    {
+        if (value == null)
+            return null;
+
+        if (value is string)
+            return (string)value;
+
+        if (value == DBNull.Value)
+            return null;
+
+        return value.ToString();
+    }
+
+    /// <summary>
     /// Determines if the specified textual value appears to be a
     /// <see cref="DBNull" /> value.
     /// </summary>
