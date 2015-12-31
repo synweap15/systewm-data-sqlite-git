@@ -393,7 +393,11 @@ namespace SQLite.Designer.Design
       _parent = parent;
       if (row != null)
       {
-        _column = row["COLUMN_NAME"].ToString();
+        if (!row.IsNull("COLUMN_NAME"))
+          _column = row["COLUMN_NAME"].ToString();
+        else
+          _column = null;
+
         if (row.IsNull("SORT_MODE") == false && (string)row["SORT_MODE"] != "ASC")
           _mode = ColumnSortMode.Descending;
 

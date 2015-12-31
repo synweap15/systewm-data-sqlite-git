@@ -4757,19 +4757,23 @@ namespace System.Data.SQLite
                     {
                       while (rdIndex.Read())
                       {
+                        string columnName = rdIndex.IsDBNull(2) ? null : rdIndex.GetString(2);
+
                         row = tbl.NewRow();
                         row["CONSTRAINT_CATALOG"] = strCatalog;
                         row["CONSTRAINT_NAME"] = rdIndexes.GetString(1);
                         row["TABLE_CATALOG"] = strCatalog;
                         row["TABLE_NAME"] = rdIndexes.GetString(2);
-                        row["COLUMN_NAME"] = rdIndex.GetString(2);
+                        row["COLUMN_NAME"] = columnName;
                         row["INDEX_NAME"] = rdIndexes.GetString(1);
                         row["ORDINAL_POSITION"] = ordinal; // rdIndex.GetInt32(1);
 
                         string collationSequence = null;
                         int sortMode = 0;
                         int onError = 0;
-                        _sql.GetIndexColumnExtendedInfo(strCatalog, rdIndexes.GetString(1), rdIndex.GetString(2), ref sortMode, ref onError, ref collationSequence);
+
+                        if (columnName != null)
+                          _sql.GetIndexColumnExtendedInfo(strCatalog, rdIndexes.GetString(1), columnName, ref sortMode, ref onError, ref collationSequence);
 
                         if (String.IsNullOrEmpty(collationSequence) == false)
                           row["COLLATION_NAME"] = collationSequence;
@@ -4779,7 +4783,7 @@ namespace System.Data.SQLite
 
                         ordinal++;
 
-                        if (String.IsNullOrEmpty(strColumn) || String.Compare(strColumn, row["COLUMN_NAME"].ToString(), StringComparison.OrdinalIgnoreCase) == 0)
+                        if ((strColumn == null) || String.Compare(strColumn, columnName, StringComparison.OrdinalIgnoreCase) == 0)
                           tbl.Rows.Add(row);
                       }
                     }
