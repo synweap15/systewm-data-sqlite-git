@@ -82,6 +82,8 @@ IF ERRORLEVEL 1 (
   GOTO errors
 )
 
+GOTO no_errors
+
 :fn_AppendVariable
   SET __ECHO_CMD=ECHO %%%1%%
   IF DEFINED %1 (

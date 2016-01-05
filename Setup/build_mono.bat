@@ -50,6 +50,8 @@ IF ERRORLEVEL 1 (
   GOTO errors
 )
 
+GOTO no_errors
+
 :fn_ResetErrorLevel
   VERIFY > NUL
   GOTO :EOF
