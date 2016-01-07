@@ -55,7 +55,7 @@ IF NOT DEFINED PREARGS (
 
 IF NOT DEFINED TEST_FILE (
   %_AECHO% No test file specified, using default...
-  SET TEST_FILE=Tests\empty.eagle
+  SET TEST_FILE=Tests\template\empty.eagle
 )
 
 %_VECHO% TestFile = '%TEST_FILE%'
