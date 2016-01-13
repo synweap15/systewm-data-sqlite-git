@@ -8,6 +8,8 @@
 <ul>
     <li>Updated to <a href="https://www.sqlite.org/releaselog/3_10_0.html">SQLite 3.10.0</a>.</li>
     <li>Properly handle NULL values in the &quot;name&quot; column of the results returned by PRAGMA index_info(). Fix for [5251bd0878].</li>
+    <li>For column types that resolve to boolean, recognize case-insensitive prefixes of &quot;True&quot; and &quot;False&quot;. Fix for [dbd65441a5].</li>
+    <li>Add NoVerifyTextAffinity connection flag to skip type affinity checking when fetching a column value as a string. Pursuant to [dbd65441a5].</li>
 </ul>
 <p>
     <b>1.0.99.0 - December 9, 2015</b>

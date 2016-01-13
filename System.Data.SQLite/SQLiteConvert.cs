@@ -1173,34 +1173,41 @@ namespace System.Data.SQLite
     }
 
     /// <summary>
-    /// Convert a string to true or false.
+    /// Attempts to convert a <see cref="String" /> into a <see cref="Boolean" />.
     /// </summary>
-    /// <param name="source">A string representing true or false</param>
-    /// <returns></returns>
+    /// <param name="source">
+    /// The <see cref="String" /> to convert, cannot be null.
+    /// </param>
+    /// <returns>
+    /// The converted <see cref="Boolean" /> value.
+    /// </returns>
     /// <remarks>
-    /// "yes", "no", "y", "n", "0", "1", "on", "off" as well as Boolean.FalseString and Boolean.TrueString will all be
-    /// converted to a proper boolean value.
+    /// The supported strings are "yes", "no", "y", "n", "on", "off", "0", "1",
+    /// as well as any prefix of the strings <see cref="Boolean.FalseString" />
+    /// and <see cref="Boolean.TrueString" />.  All strings are treated in a
+    /// case-insensitive manner.
     /// </remarks>
     public static bool ToBoolean(string source)
     {
-      if (String.Compare(source, bool.TrueString, StringComparison.OrdinalIgnoreCase) == 0) return true;
-      else if (String.Compare(source, bool.FalseString, StringComparison.OrdinalIgnoreCase) == 0) return false;
+        if (source == null) throw new ArgumentNullException("source");
+        if (String.Compare(source, 0, bool.TrueString, 0, source.Length, StringComparison.OrdinalIgnoreCase) == 0) return true;
+        else if (String.Compare(source, 0, bool.FalseString, 0, source.Length, StringComparison.OrdinalIgnoreCase) == 0) return false;
 
-      switch(source.ToLower(CultureInfo.InvariantCulture))
-      {
-        case "yes":
-        case "y":
-        case "1":
-        case "on":
-          return true;
-        case "no":
-        case "n":
-        case "0":
-        case "off":
-          return false;
-        default:
-          throw new ArgumentException("source");
-      }
+        switch (source.ToLower(CultureInfo.InvariantCulture))
+        {
+            case "y":
+            case "yes":
+            case "on":
+            case "1":
+                return true;
+            case "n":
+            case "no":
+            case "off":
+            case "0":
+                return false;
+        }
+
+        throw new ArgumentException("source");
     }
 
     #region Type Conversions

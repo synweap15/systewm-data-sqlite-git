@@ -524,7 +524,9 @@ namespace System.Data.SQLite
         if (i >= PrivateVisibleFieldCount && _keyInfo != null)
             return _keyInfo.GetChars(i - PrivateVisibleFieldCount, fieldoffset, buffer, bufferoffset, length);
 
-        VerifyType(i, DbType.String);
+        if ((_flags & SQLiteConnectionFlags.NoVerifyTextAffinity) != SQLiteConnectionFlags.NoVerifyTextAffinity)
+            VerifyType(i, DbType.String);
+
         return _activeStatement._sql.GetChars(_activeStatement, i, (int)fieldoffset, buffer, bufferoffset, length);
     }
 
@@ -1234,7 +1236,9 @@ namespace System.Data.SQLite
         if (i >= PrivateVisibleFieldCount && _keyInfo != null)
             return _keyInfo.GetString(i - PrivateVisibleFieldCount);
 
-        VerifyType(i, DbType.String);
+        if ((_flags & SQLiteConnectionFlags.NoVerifyTextAffinity) != SQLiteConnectionFlags.NoVerifyTextAffinity)
+            VerifyType(i, DbType.String);
+
         return _activeStatement._sql.GetText(_activeStatement, i);
     }
 

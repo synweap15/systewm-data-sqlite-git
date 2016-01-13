@@ -1150,6 +1150,12 @@ namespace System.Data.SQLite
       UnbindFunctionsOnClose = 0x100000000,
 
       /// <summary>
+      /// When returning column values as a <see cref="String" />, skip
+      /// verifying their affinity.
+      /// </summary>
+      NoVerifyTextAffinity = 0x200000000,
+
+      /// <summary>
       /// When binding parameter values or returning column values, always
       /// treat them as though they were plain text (i.e. no numeric,
       /// date/time, or other conversions should be attempted).
