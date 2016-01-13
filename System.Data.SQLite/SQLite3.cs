@@ -2708,14 +2708,36 @@ namespace System.Data.SQLite
     {
       SQLiteErrorCode n = UnsafeNativeMethods.sqlite3_key(_sql, passwordBytes, passwordBytes.Length);
       if (n != SQLiteErrorCode.Ok) throw new SQLiteException(n, GetLastError());
-      _usePool = false;
+
+      if (_usePool)
+      {
+        _usePool = false;
+
+#if !NET_COMPACT_20 && TRACE_CONNECTION
+        Trace.WriteLine(UnsafeNativeMethods.StringFormat(
+          CultureInfo.CurrentCulture,
+          "SetPassword (Pool) Disabled: {0}",
+          HandleToString()));
+#endif
+      }
     }
 
     internal override void ChangePassword(byte[] newPasswordBytes)
     {
       SQLiteErrorCode n = UnsafeNativeMethods.sqlite3_rekey(_sql, newPasswordBytes, (newPasswordBytes == null) ? 0 : newPasswordBytes.Length);
       if (n != SQLiteErrorCode.Ok) throw new SQLiteException(n, GetLastError());
-      _usePool = false;
+
+      if (_usePool)
+      {
+        _usePool = false;
+
+#if !NET_COMPACT_20 && TRACE_CONNECTION
+        Trace.WriteLine(UnsafeNativeMethods.StringFormat(
+          CultureInfo.CurrentCulture,
+          "ChangePassword (Pool) Disabled: {0}",
+          HandleToString()));
+#endif
+      }
     }
 #endif
 
