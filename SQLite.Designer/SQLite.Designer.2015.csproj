@@ -208,6 +208,15 @@
   </ItemGroup>
   <Import Project="$(SQLiteNetDir)\System.Data.SQLite\Targets\System.Data.SQLite.Properties.targets" />
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup Condition="'$(NetFx46)' == 'false'">
+    <!--
+        NOTE: We cannot build this project unless the version of the .NET
+              Framework matches exactly.
+    -->
+    <BuildDependsOn>
+      WrongNetFx
+    </BuildDependsOn>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(VSSDK140Install)' == '' Or
                             !Exists('$(VSSDK140Install)VisualStudioIntegration\Common\Assemblies\v4.0\Microsoft.Data.ConnectionUI.dll') Or
                             !Exists('$(VSSDK140Install)VisualStudioIntegration\Common\Assemblies\v4.0\Microsoft.VisualStudio.Data.dll') Or

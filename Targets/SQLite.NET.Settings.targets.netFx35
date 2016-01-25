@@ -21,6 +21,6 @@
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <TargetFrameworkProfile></TargetFrameworkProfile>
     <Prefer32Bit>false</Prefer32Bit>
-    <PlatformToolset>v110</PlatformToolset>
+    <!-- <PlatformToolset>v110</PlatformToolset> -->
   </PropertyGroup>
 </Project>

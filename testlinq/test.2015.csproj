@@ -54,7 +54,16 @@
     <Reference Include="System.Data.Entity" />
   </ItemGroup>
   <ItemGroup Condition="'$(UseEntityFramework6)' != 'false'">
-    <Reference Include="EntityFramework">
+    <Reference Include="EntityFramework"
+               Condition="'$(NetFx40)' != 'false'">
+      <HintPath>$(SQLiteNetDir)\Externals\EntityFramework\lib\net40\EntityFramework.dll</HintPath>
+    </Reference>
+    <Reference Include="EntityFramework"
+               Condition="'$(NetFx45)' != 'false' Or
+                          '$(NetFx451)' != 'false' Or
+                          '$(NetFx452)' != 'false' Or
+                          '$(NetFx46)' != 'false' Or
+                          '$(NetFx461)' != 'false'">
       <HintPath>$(SQLiteNetDir)\Externals\EntityFramework\lib\net45\EntityFramework.dll</HintPath>
     </Reference>
   </ItemGroup>

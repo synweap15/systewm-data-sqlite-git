@@ -28,6 +28,7 @@
     <ConfigurationYear>2010</ConfigurationYear>
   </PropertyGroup>
   <Import Project="$(SQLiteNetDir)\Targets\SQLite.NET.Settings.targets" />
+  <Import Project="$(SQLiteNetDir)\Targets\SQLite.NET.targets" />
   <PropertyGroup Condition="'$(BinaryOutputPath)' != ''">
     <OutputPath>$(BinaryOutputPath)</OutputPath>
     <DocumentationFile Condition="'$(UseEntityFramework6)' == 'false'">$(BinaryOutputPath)System.Data.SQLite.Linq.xml</DocumentationFile>

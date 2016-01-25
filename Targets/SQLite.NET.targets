@@ -208,6 +208,15 @@
   ******************************************************************************
   -->
 
+  <Target Name="WrongNetFx"
+          Condition="'$(ProjectName)' != ''">
+    <Warning Text="Version mismatch for the .NET Framework, skipping project &quot;$(ProjectName)&quot;..." />
+  </Target>
+
+  <!--
+  ******************************************************************************
+  -->
+
   <Target Name="MissingVsSdk"
           Condition="'$(ProjectName)' != ''">
     <Warning Text="The Visual Studio SDK is missing, skipping project &quot;$(ProjectName)&quot;..." />

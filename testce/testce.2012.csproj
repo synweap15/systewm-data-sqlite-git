@@ -28,6 +28,7 @@
     <ConfigurationSuffix>Compact</ConfigurationSuffix>
   </PropertyGroup>
   <Import Project="$(SQLiteNetDir)\Targets\SQLite.NET.Settings.targets" />
+  <Import Project="$(SQLiteNetDir)\Targets\SQLite.NET.targets" />
   <PropertyGroup Condition="'$(BinaryOutputPath)' != ''">
     <OutputPath>$(BinaryOutputPath)</OutputPath>
   </PropertyGroup>
