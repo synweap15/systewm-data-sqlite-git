@@ -126,8 +126,9 @@ GOTO no_errors
   GOTO :EOF
 
 :fn_UnsetVariable
-  IF NOT "%1" == "" (
-    SET %1=
+  SET VALUE=%1
+  IF DEFINED VALUE (
+    SET %VALUE%=
     CALL :fn_ResetErrorLevel
   )
   GOTO :EOF
