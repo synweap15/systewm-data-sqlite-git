@@ -7,6 +7,27 @@
  *
 -->
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!--
+  ******************************************************************************
+  **                          Load Per-User Settings                          **
+  ******************************************************************************
+  -->
+
+  <!--
+      NOTE: If the per-user settings file exists, import it now.  The contained
+            settings, if any, will override the default ones provided below.
+  -->
+  <Import Project="$(SQLiteNetDir)\Targets\SQLite.NET.Settings.targets.netFx40.user"
+          Condition="('$(ConfigurationYear)' == '2010' Or
+                      '$(ConfigurationYear)' == '2012' Or
+                      '$(ConfigurationYear)' == '2013' Or
+                      '$(ConfigurationYear)' == '2015') And
+                     Exists('$(SQLiteNetDir)\Targets\SQLite.NET.Settings.targets.netFx40.user')" />
+
+  <!--
+  ******************************************************************************
+  -->
+
   <PropertyGroup Condition="'$(ConfigurationYear)' == '2010' Or
                             '$(ConfigurationYear)' == '2012' Or
                             '$(ConfigurationYear)' == '2013' Or
