@@ -186,7 +186,11 @@ SQLITE_PRIVATE void sqlite3InteropDebug(const char *zFormat, ...){
   sqlite3StrAccumInit(&acc, zMsg, sizeof(zMsg), 0);
   acc.useMalloc = 0;
 #endif
+#if SQLITE_VERSION_NUMBER >= 3011000
+  sqlite3VXPrintf(&acc, zFormat, ap);
+#else
   sqlite3VXPrintf(&acc, 0, zFormat, ap);
+#endif
   va_end(ap);
 #if SQLITE_VERSION_NUMBER >= 3007013
   sqlite3_win32_write_debug(sqlite3StrAccumFinish(&acc), -1);
@@ -971,6 +975,9 @@ SQLITE_API int WINAPI sqlite3_cursor_rowid_interop(sqlite3_stmt *pstmt, int curs
   Vdbe *p = (Vdbe *)pstmt;
   sqlite3 *db = (p == NULL) ? NULL : p->db;
   VdbeCursor *pC;
+#if SQLITE_VERSION_NUMBER >= 3011000
+  int p2 = 0;
+#endif
   int ret = SQLITE_OK;
 
   if (!p || !db) return SQLITE_ERROR;
@@ -990,7 +997,11 @@ SQLITE_API int WINAPI sqlite3_cursor_rowid_interop(sqlite3_stmt *pstmt, int curs
 
     pC = p->apCsr[cursor];
 
+#if SQLITE_VERSION_NUMBER >= 3011000
+    ret = sqlite3VdbeCursorMoveto(&pC, &p2);
+#else
     ret = sqlite3VdbeCursorMoveto(pC);
+#endif
     if(ret)
       break;
 
