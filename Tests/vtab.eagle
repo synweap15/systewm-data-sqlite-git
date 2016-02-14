@@ -1977,7 +1977,7 @@ runTest {test vtab-1.12 {SQLiteIndex managed-to-native-to-managed} -setup {
   unset -nocomplain orderBy nOrderBy iOrderBy
   unset -nocomplain constraint nConstraint iConstraint
   unset -nocomplain pIndex index
-} -constraints {eagle command.object System.Data.SQLite\
+} -constraints {eagle command.object SQLite System.Data.SQLite\
 defineConstant.System.Data.SQLite.INTEROP_VIRTUAL_TABLE} -result {}}
 
 ###############################################################################
