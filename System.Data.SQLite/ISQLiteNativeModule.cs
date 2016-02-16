@@ -335,7 +335,7 @@ namespace System.Data.SQLite
         ///     /* Inputs */
         ///     const int nConstraint;     /* Number of entries in aConstraint */
         ///     const struct sqlite3_index_constraint {
-        ///        int iColumn;              /* Column on left-hand side of constraint */
+        ///        int iColumn;              /* Column constrained.  -1 for ROWID */
         ///        unsigned char op;         /* Constraint operator */
         ///        unsigned char usable;     /* True if this constraint is usable */
         ///        int iTermOffset;          /* Used internally - xBestIndex should ignore */
