@@ -595,7 +595,7 @@ namespace System.Data.SQLite
         {
             case SQLiteDateFormats.Ticks:
                 {
-                    return ToDateTime(Convert.ToInt64(
+                    return TicksToDateTime(Convert.ToInt64(
                         dateText, CultureInfo.InvariantCulture), kind);
                 }
             case SQLiteDateFormats.JulianDay:
@@ -605,7 +605,7 @@ namespace System.Data.SQLite
                 }
             case SQLiteDateFormats.UnixEpoch:
                 {
-                    return ToDateTime(Convert.ToInt32(
+                    return UnixEpochToDateTime(Convert.ToInt64(
                         dateText, CultureInfo.InvariantCulture), kind);
                 }
             case SQLiteDateFormats.InvariantCulture:
@@ -710,7 +710,7 @@ namespace System.Data.SQLite
     /// <returns>
     /// The new <see cref="DateTime" /> value.
     /// </returns>
-    internal static DateTime ToDateTime(int seconds, DateTimeKind kind)
+    internal static DateTime UnixEpochToDateTime(long seconds, DateTimeKind kind)
     {
         return DateTime.SpecifyKind(UnixEpoch.AddSeconds(seconds), kind);
     }
@@ -728,7 +728,7 @@ namespace System.Data.SQLite
     /// <returns>
     /// The new <see cref="DateTime" /> value.
     /// </returns>
-    internal static DateTime ToDateTime(long ticks, DateTimeKind kind)
+    internal static DateTime TicksToDateTime(long ticks, DateTimeKind kind)
     {
         return new DateTime(ticks, kind);
     }
