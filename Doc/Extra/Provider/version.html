@@ -49,6 +49,7 @@
       <li>Properly handle NULL values in the &quot;name&quot; column of the results returned by PRAGMA index_info(). Fix for <a href="https://system.data.sqlite.org/index.html/info/5251bd0878">[5251bd0878]</a>.</li>
       <li>For column types that resolve to boolean, recognize case-insensitive prefixes of &quot;True&quot; and &quot;False&quot;. Fix for <a href="https://system.data.sqlite.org/index.html/info/dbd65441a5">[dbd65441a5]</a>.</li>
       <li>Add NoVerifyTextAffinity connection flag to skip type affinity checking when fetching a column value as a string. Pursuant to <a href="https://system.data.sqlite.org/index.html/info/dbd65441a5">[dbd65441a5]</a>.</li>
+      <li>The UnixEpoch DateTime format should use Int64 internally, not Int32.&nbsp;<b>** Potentially Incompatible Change **</b></li>
     </ul>
     <p><b>1.0.99.0 - December 9, 2015</b></p>
     <ul>
