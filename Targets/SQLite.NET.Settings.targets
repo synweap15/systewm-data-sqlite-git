@@ -22,6 +22,19 @@
 
   <!--
   ******************************************************************************
+  **                           Load Extra Settings                            **
+  ******************************************************************************
+  -->
+
+  <!--
+      NOTE: If the "extra" settings file exists, import it now.  The contained
+            settings, if any, will override the default ones provided below.
+  -->
+  <Import Project="$(SQLiteNetDir)\Targets\SQLite.NET.Settings.targets.extra"
+          Condition="Exists('$(SQLiteNetDir)\Targets\SQLite.NET.Settings.targets.extra')" />
+
+  <!--
+  ******************************************************************************
   **                        Load Per-Framework Settings                       **
   ******************************************************************************
   -->
