@@ -8341,6 +8341,7 @@ static Fts5Data *fts5DataRead(Fts5Index *p, i64 iRowid){
   return pRet;
 }
 
+
 /*
 ** Release a reference to data record returned by an earlier call to
 ** fts5DataRead().
@@ -9797,6 +9798,10 @@ static void fts5LeafSeek(
   iPgidx = szLeaf;
   iPgidx += fts5GetVarint32(&a[iPgidx], iTermOff);
   iOff = iTermOff;
+  if( iOff>n ){
+    p->rc = FTS5_CORRUPT;
+    return;
+  }
 
   while( 1 ){
 
@@ -12142,7 +12147,10 @@ static int sqlite3Fts5IndexOptimize(Fts5Index *p){
     if( pLvl->aSeg ){
       int iLvl, iSeg;
       int iSegOut = 0;
-      for(iLvl=0; iLvl<pStruct->nLevel; iLvl++){
+      /* Iterate through all segments, from oldest to newest. Add them to
+      ** the new Fts5Level object so that pLvl->aSeg[0] is the oldest
+      ** segment in the data structure.  */
+      for(iLvl=pStruct->nLevel-1; iLvl>=0; iLvl--){
         for(iSeg=0; iSeg<pStruct->aLevel[iLvl].nSeg; iSeg++){
           pLvl->aSeg[iSegOut] = pStruct->aLevel[iLvl].aSeg[iSeg];
           iSegOut++;
@@ -16530,7 +16538,7 @@ static void fts5SourceIdFunc(
 ){
   assert( nArg==0 );
   UNUSED_PARAM2(nArg, apUnused);
-  sqlite3_result_text(pCtx, "fts5: 2016-02-15 17:29:24 3d862f207e3adc00f78066799ac5a8c282430a5f", -1, SQLITE_TRANSIENT);
+  sqlite3_result_text(pCtx, "fts5: 2016-03-03 16:17:53 f047920ce16971e573bc6ec9a48b118c9de2b3a7", -1, SQLITE_TRANSIENT);
 }
 
 static int fts5Init(sqlite3 *db){
@@ -16591,6 +16599,17 @@ static int fts5Init(sqlite3 *db){
       );
     }
   }
+
+  /* If SQLITE_FTS5_ENABLE_TEST_MI is defined, assume that the file
+  ** fts5_test_mi.c is compiled and linked into the executable. And call
+  ** its entry point to enable the matchinfo() demo.  */
+#ifdef SQLITE_FTS5_ENABLE_TEST_MI
+  if( rc==SQLITE_OK ){
+    extern int sqlite3Fts5TestRegisterMatchinfo(sqlite3*);
+    rc = sqlite3Fts5TestRegisterMatchinfo(db);
+  }
+#endif
+
   return rc;
 }
 
