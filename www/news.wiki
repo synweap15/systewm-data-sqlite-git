@@ -11,6 +11,7 @@
     <li>For column types that resolve to boolean, recognize case-insensitive prefixes of &quot;True&quot; and &quot;False&quot;. Fix for [dbd65441a5].</li>
     <li>Add NoVerifyTextAffinity connection flag to skip type affinity checking when fetching a column value as a string. Pursuant to [dbd65441a5].</li>
     <li>The UnixEpoch DateTime format should use Int64 internally, not Int32.&nbsp;<b>** Potentially Incompatible Change **</b></li>
+    <li>Avoid using Path.Combine with null values in the native library pre-loader. Fix for [da685c0bac].</li>
 </ul>
 <p>
     <b>1.0.99.0 - December 9, 2015</b>

@@ -281,6 +281,41 @@ namespace System.Data.SQLite
 
       /////////////////////////////////////////////////////////////////////////
       /// <summary>
+      /// Combines two path strings.
+      /// </summary>
+      /// <param name="path1">
+      /// The first path -OR- null.
+      /// </param>
+      /// <param name="path2">
+      /// The second path -OR- null.
+      /// </param>
+      /// <returns>
+      /// The combined path string -OR- null if both of the original path
+      /// strings are null.
+      /// </returns>
+      private static string MaybeCombinePath(
+          string path1,
+          string path2
+          )
+      {
+          if (path1 != null)
+          {
+              if (path2 != null)
+                  return Path.Combine(path1, path2);
+              else
+                  return path1;
+          }
+          else
+          {
+              if (path2 != null)
+                  return path2;
+              else
+                  return null;
+          }
+      }
+
+      /////////////////////////////////////////////////////////////////////////
+      /// <summary>
       /// Queries and returns the XML configuration file name for the assembly
       /// containing the managed System.Data.SQLite components.
       /// </summary>
@@ -295,14 +330,14 @@ namespace System.Data.SQLite
 
 #if !PLATFORM_COMPACTFRAMEWORK
           directory = AppDomain.CurrentDomain.BaseDirectory;
-          fileName = Path.Combine(directory, XmlConfigFileName);
+          fileName = MaybeCombinePath(directory, XmlConfigFileName);
 
           if (File.Exists(fileName))
               return fileName;
 #endif
 
           directory = GetAssemblyDirectory();
-          fileName = Path.Combine(directory, XmlConfigFileName);
+          fileName = MaybeCombinePath(directory, XmlConfigFileName);
 
           if (File.Exists(fileName))
               return fileName;
@@ -487,7 +522,7 @@ namespace System.Data.SQLite
                   foreach (KeyValuePair<string, string> pair
                             in processorArchitecturePlatforms)
                   {
-                      if (Directory.Exists(Path.Combine(directory, pair.Key)))
+                      if (Directory.Exists(MaybeCombinePath(directory, pair.Key)))
                       {
                           matches.Add(pair.Key);
                           result++;
@@ -498,7 +533,7 @@ namespace System.Data.SQLite
                       if (value == null)
                           continue;
 
-                      if (Directory.Exists(Path.Combine(directory, value)))
+                      if (Directory.Exists(MaybeCombinePath(directory, value)))
                       {
                           matches.Add(value);
                           result++;
@@ -536,7 +571,7 @@ namespace System.Data.SQLite
               string directory = Path.GetDirectoryName(
                   localFileName); /* throw */
 
-              string xmlConfigFileName = Path.Combine(
+              string xmlConfigFileName = MaybeCombinePath(
                   directory, XmlConfigFileName);
 
               if (File.Exists(xmlConfigFileName))
@@ -856,8 +891,8 @@ namespace System.Data.SQLite
                   if (subDirectory == null)
                       continue;
 
-                  string fileName = FixUpDllFileName(Path.Combine(
-                      Path.Combine(directory, subDirectory), SQLITE_DLL));
+                  string fileName = FixUpDllFileName(MaybeCombinePath(
+                      MaybeCombinePath(directory, subDirectory), SQLITE_DLL));
 
                   //
                   // NOTE: If the SQLite DLL file exists, return success.
@@ -1183,8 +1218,8 @@ namespace System.Data.SQLite
           // NOTE: If the native SQLite library exists in the base directory
           //       itself, stop now.
           //
-          string fileName = FixUpDllFileName(Path.Combine(baseDirectory,
-              SQLITE_DLL));
+          string fileName = FixUpDllFileName(MaybeCombinePath(
+              baseDirectory, SQLITE_DLL));
 
           if (File.Exists(fileName))
               return false;
@@ -1206,8 +1241,8 @@ namespace System.Data.SQLite
           // NOTE: Build the full path and file name for the native SQLite
           //       library using the processor architecture name.
           //
-          fileName = FixUpDllFileName(Path.Combine(Path.Combine(baseDirectory,
-              processorArchitecture), SQLITE_DLL));
+          fileName = FixUpDllFileName(MaybeCombinePath(MaybeCombinePath(
+              baseDirectory, processorArchitecture), SQLITE_DLL));
 
           //
           // NOTE: If the file name based on the processor architecture name
@@ -1231,7 +1266,7 @@ namespace System.Data.SQLite
               // NOTE: Build the full path and file name for the native SQLite
               //       library using the platform name.
               //
-              fileName = FixUpDllFileName(Path.Combine(Path.Combine(
+              fileName = FixUpDllFileName(MaybeCombinePath(MaybeCombinePath(
                   baseDirectory, platformName), SQLITE_DLL));
 
               //
