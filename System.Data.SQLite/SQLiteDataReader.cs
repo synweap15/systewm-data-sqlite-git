@@ -1008,9 +1008,9 @@ namespace System.Data.SQLite
       DataTable tblIndexColumns;
       DataRow row;
       string temp;
-      string strCatalog = "";
-      string strTable = "";
-      string strColumn = "";
+      string strCatalog = String.Empty;
+      string strTable = String.Empty;
+      string strColumn = String.Empty;
 
       tbl.Locale = CultureInfo.InvariantCulture;
       tbl.Columns.Add(SchemaTableColumn.ColumnName, typeof(String));

@@ -1252,6 +1252,7 @@ namespace System.Data.SQLite
 
     internal override SQLiteStatement Prepare(SQLiteConnection cnn, string strSql, SQLiteStatement previous, uint timeoutMS, ref string strRemain)
     {
+      if (!String.IsNullOrEmpty(strSql)) strSql = strSql.Trim();
       if (!String.IsNullOrEmpty(strSql))
       {
         //
@@ -1379,7 +1380,7 @@ namespace System.Data.SQLite
               typedefs = strSql.Substring(0, pos + 1);
               strSql = strSql.Substring(pos + 1);
 
-              strRemain = "";
+              strRemain = String.Empty;
 
               while (cmd == null && strSql.Length > 0)
               {
@@ -1395,7 +1396,7 @@ namespace System.Data.SQLite
 #if (NET_35 || NET_40 || NET_45 || NET_451 || NET_452 || NET_46 || NET_461) && !PLATFORM_COMPACTFRAMEWORK
             else if (_buildingSchema == false && String.Compare(GetLastError(), 0, "no such table: TEMP.SCHEMA", 0, 26, StringComparison.OrdinalIgnoreCase) == 0)
             {
-              strRemain = "";
+              strRemain = String.Empty;
               _buildingSchema = true;
               try
               {

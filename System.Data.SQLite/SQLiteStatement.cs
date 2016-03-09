@@ -376,7 +376,7 @@ namespace System.Data.SQLite
       int pos = typedefs.IndexOf("TYPES", 0, StringComparison.OrdinalIgnoreCase);
       if (pos == -1) throw new ArgumentOutOfRangeException();
 
-      string[] types = typedefs.Substring(pos + 6).Replace(" ", "").Replace(";", "").Replace("\"", "").Replace("[", "").Replace("]", "").Replace("`","").Split(',', '\r', '\n', '\t');
+      string[] types = typedefs.Substring(pos + 6).Replace(" ", String.Empty).Replace(";", String.Empty).Replace("\"", String.Empty).Replace("[", String.Empty).Replace("]", String.Empty).Replace("`", String.Empty).Split(',', '\r', '\n', '\t');
 
       int n;
       for (n = 0; n < types.Length; n++)

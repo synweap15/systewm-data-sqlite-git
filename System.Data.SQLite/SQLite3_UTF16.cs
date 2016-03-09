@@ -122,7 +122,7 @@ namespace System.Data.SQLite
 
     public static string UTF16ToString(IntPtr b, int nbytelen)
     {
-      if (nbytelen == 0 || b == IntPtr.Zero) return "";
+      if (nbytelen == 0 || b == IntPtr.Zero) return String.Empty;
 
       if (nbytelen == -1)
         return Marshal.PtrToStringUni(b);
