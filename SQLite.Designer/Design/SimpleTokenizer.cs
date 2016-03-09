@@ -26,7 +26,7 @@ namespace SQLite.Designer.Design
 
       public override string ToString()
       {
-        return String.Format(CultureInfo.InvariantCulture, "{0} {1} at {2} {3} depth {4}", value, quote, position, sep == true ? "(sep)" : "", depth);
+        return String.Format(CultureInfo.InvariantCulture, "{0} {1} at {2} {3} depth {4}", value, quote, position, sep == true ? "(sep)" : String.Empty, depth);
       }
     }
 

@@ -21,10 +21,10 @@ namespace SQLite.Designer.Design
   internal class Column : IHaveConnection
   {
     private bool _allowNulls;
-    private string _dataType = "";
-    private string _defaultValue = "";
-    private string _columnName = "";
-    private string _origName = "";
+    private string _dataType = String.Empty;
+    private string _defaultValue = String.Empty;
+    private string _columnName = String.Empty;
+    private string _origName = String.Empty;
     private string _collate;
     private DataGridViewRow _parent;
     private Unique _unique;
@@ -66,7 +66,7 @@ namespace SQLite.Designer.Design
 
         if (size != 53)
         {
-          string scalestr = (scale == int.MaxValue) ? "" : String.Format(CultureInfo.InvariantCulture, ",{0}", scale);
+          string scalestr = (scale == int.MaxValue) ? String.Empty : String.Format(CultureInfo.InvariantCulture, ",{0}", scale);
           _dataType = string.Format(CultureInfo.InvariantCulture, "{0}({1}{2})", _dataType, size, scalestr);
         }
       }

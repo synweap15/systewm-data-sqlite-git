@@ -52,12 +52,12 @@ namespace SQLite.Designer
       {
         confirmLabel.Enabled = false;
         passwordConfirm.Enabled = false;
-        passwordConfirm.Text = "";
+        passwordConfirm.Text = String.Empty;
 
         if (String.IsNullOrEmpty(password.Text) && String.IsNullOrEmpty(GetCurrentPassword()) == false)
           action.Text = VSPackage.Decrypt;
         else
-          action.Text = "";
+          action.Text = String.Empty;
       }
       else
       {

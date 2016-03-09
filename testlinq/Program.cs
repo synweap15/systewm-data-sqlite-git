@@ -53,7 +53,7 @@ namespace testlinq
               arg = args[0];
 
           if (arg == null)
-              arg = "";
+              arg = String.Empty;
 
           arg = arg.Trim().TrimStart('-', '/').ToLowerInvariant();
 

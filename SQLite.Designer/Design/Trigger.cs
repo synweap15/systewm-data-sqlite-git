@@ -256,7 +256,7 @@ namespace SQLite.Designer.Design
           for (int n = 0; n < ((IList)_table.Triggers).Count; n++)
           {
             Trigger idx = ((IList)_table.Triggers)[n] as Trigger;
-            proposed = string.Format(CultureInfo.InvariantCulture, "{0}{1}", name, (count > 0) ? count.ToString() : "");
+            proposed = string.Format(CultureInfo.InvariantCulture, "{0}{1}", name, (count > 0) ? count.ToString() : String.Empty);
             if (idx.Name == proposed)
             {
               count++;
@@ -364,7 +364,7 @@ namespace SQLite.Designer.Design
             {
               x++;
               StringBuilder builder = new StringBuilder();
-              string separator = "";
+              string separator = String.Empty;
               while (arr[x + 1].keyword != "ON")
               {
                 builder.AppendFormat("{0}[{1}]", separator, arr[x + 1].value);

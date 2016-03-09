@@ -36,7 +36,7 @@ namespace SQLite.Designer
       AddProperty(CatalogSupportedInDml, true);
       AddProperty(SchemaSupported, false);
       AddProperty(SchemaSupportedInDml, false);
-      AddProperty(SchemaSeparator, "");
+      AddProperty(SchemaSeparator, String.Empty);
       AddProperty(ParameterPrefix, "@");
       AddProperty(ParameterPrefixInName, true);
       AddProperty("DeskTopDataSource", true);

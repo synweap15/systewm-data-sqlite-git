@@ -1,7 +1,7 @@
 /********************************************************
  * ADO.NET 2.0 Data Provider for SQLite Version 3.X
  * Written by Robert Simpson (robert@blackcastlesoft.com)
- * 
+ *
  * Released to the public domain, use at your own risk!
  ********************************************************/
 
@@ -104,7 +104,7 @@ namespace SQLite.Designer.Design
           }
         }
         if ((dirty == true || list.Count != _count) && _form.DialogResult == DialogResult.OK)
-        _table.MakeDirty();      
+        _table.MakeDirty();
       }
       return editValue;
     }
@@ -342,8 +342,8 @@ namespace SQLite.Designer.Design
       {
         _id = -1;
         _ordinal = -1;
-        _from = new ForeignKeyFromItem(this, "");
-        _to = new ForeignKeyToItem(this, _table.Catalog, "", "");
+        _from = new ForeignKeyFromItem(this, String.Empty);
+        _to = new ForeignKeyToItem(this, _table.Catalog, String.Empty, String.Empty);
       }
     }
 

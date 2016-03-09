@@ -124,7 +124,7 @@ namespace test
             cnn.Open();
 
             // Decrpyt database
-            cnn.ChangePassword("");
+            cnn.ChangePassword(String.Empty);
 
             cnn.Close();
 
@@ -145,7 +145,7 @@ namespace test
             }
 
             // Decrpyt database
-            cnn.ChangePassword("");
+            cnn.ChangePassword(String.Empty);
             cnn.Close();
 
             ///////////////////////////////////////////////////////////////////
@@ -613,7 +613,7 @@ INSERT INTO B (ID, MYVAL) VALUES(1,'TEST');
                     tbl.Rows.Add(row);
                   }
 
-                  //Console.WriteLine(String.Format("          Inserting using CommandBuilder and DataAdapter\r\n          ->{0} (10,000 rows) ...", (bWithIdentity == true) ? "(with identity fetch)" : ""));
+                  //Console.WriteLine(String.Format("          Inserting using CommandBuilder and DataAdapter\r\n          ->{0} (10,000 rows) ...", (bWithIdentity == true) ? "(with identity fetch)" : String.Empty));
                   int dtStart = Environment.TickCount;
                   adp.Update(tbl);
                   int dtEnd = Environment.TickCount;
@@ -884,7 +884,7 @@ INSERT INTO B (ID, MYVAL) VALUES(1,'TEST');
         {
           try
           {
-            cmd.CommandText = String.Format("DROP TABLE{1} [{0}]", table, (throwError == false) ? " IF EXISTS" : "");
+            cmd.CommandText = String.Format("DROP TABLE{1} [{0}]", table, (throwError == false) ? " IF EXISTS" : String.Empty);
             cmd.ExecuteNonQuery();
           }
           catch (Exception e)
@@ -898,7 +898,7 @@ INSERT INTO B (ID, MYVAL) VALUES(1,'TEST');
         {
           try
           {
-            cmd.CommandText = String.Format("DROP TABLE{1} [{0}]", table, (throwError == false) ? " IF EXISTS" : "");
+            cmd.CommandText = String.Format("DROP TABLE{1} [{0}]", table, (throwError == false) ? " IF EXISTS" : String.Empty);
             cmd.ExecuteNonQuery();
           }
           catch (Exception)

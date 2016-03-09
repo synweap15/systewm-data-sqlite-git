@@ -179,7 +179,7 @@ namespace SQLite.Designer.Design
 
       builder.AppendFormat("CREATE VIEW [{0}].[{1}] AS {2};\r\n", Catalog, Name, SqlText);
 
-      string sep = "";
+      string sep = String.Empty;
       foreach (ViewTrigger trig in _triggers)
       {
         builder.Append(sep);

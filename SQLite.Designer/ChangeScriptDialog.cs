@@ -74,11 +74,11 @@ namespace SQLite.Designer
             if ((_show.Visible == true && _saveOrig.Checked == true) || (_show.Visible == false && _splitter.Panel2Collapsed == true))
             {
               if (_show.Visible == true) writer.WriteLine("/*");
-              writer.WriteLine(_original.Text.Replace("\r", "").TrimEnd('\n').Replace("\n", "\r\n"));
+              writer.WriteLine(_original.Text.Replace("\r", String.Empty).TrimEnd('\n').Replace("\n", "\r\n"));
               if (_show.Visible == true) writer.WriteLine("*/");
             }
             if (_show.Visible == true || _splitter.Panel2Collapsed == false) 
-              writer.WriteLine(_script.Text.Replace("\r", "").TrimEnd('\n').Replace("\n", "\r\n"));
+              writer.WriteLine(_script.Text.Replace("\r", String.Empty).TrimEnd('\n').Replace("\n", "\r\n"));
           }
         }
       }

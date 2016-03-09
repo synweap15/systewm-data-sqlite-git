@@ -1281,7 +1281,7 @@ namespace System.Data.SQLite.Linq
         members.MoveNext();
         Debug.Assert(result.Select.IsEmpty);
 
-        string separator = "";
+        string separator = String.Empty;
 
         foreach (DbExpression key in e.Keys)
         {
@@ -2142,7 +2142,7 @@ namespace System.Data.SQLite.Linq
       bool isScalarElement = MetadataHelpers.IsPrimitiveType(collectionType.TypeUsage);
 
       SqlBuilder resultSql = new SqlBuilder();
-      string separator = "";
+      string separator = String.Empty;
 
       // handle empty table
       if (e.Arguments.Count == 0)
@@ -2238,14 +2238,14 @@ namespace System.Data.SQLite.Linq
       // but the Join postprocessing is messy and prevents this reuse.
       symbolTable.EnterScope();
 
-      string separator = "";
+      string separator = String.Empty;
       bool isLeftMostInput = true;
       int inputCount = inputs.Count;
       for (int idx = 0; idx < inputCount; idx++)
       {
         DbExpressionBinding input = inputs[idx];
 
-        if (separator != "")
+        if (separator != String.Empty)
         {
           result.From.AppendLine();
         }
@@ -2454,7 +2454,7 @@ namespace System.Data.SQLite.Linq
       {
         //_typeDefs.Length = 0;
         ReadOnlyMetadataCollection<EdmProperty> members = rowType.Properties;
-        string separator = "";
+        string separator = String.Empty;
         for (int i = 0; i < e.Arguments.Count; ++i)
         {
           DbExpression argument = e.Arguments[i];
@@ -2592,7 +2592,7 @@ namespace System.Data.SQLite.Linq
       if (!isNiladicFunction)
       {
         result.Append("(");
-        string separator = "";
+        string separator = String.Empty;
         foreach (DbExpression arg in e.Arguments)
         {
           result.Append(separator);
@@ -3285,7 +3285,7 @@ namespace System.Data.SQLite.Linq
       // collision detection.
       Dictionary<string, Symbol> columnDictionary = new Dictionary<string, Symbol>(StringComparer.OrdinalIgnoreCase);
 
-      string separator = "";
+      string separator = String.Empty;
       // The Select should usually be empty before we are called,
       // but we do not mind if it is not.
       if (!selectStatement.Select.IsEmpty)
@@ -3379,7 +3379,7 @@ namespace System.Data.SQLite.Linq
     /// <param name="sortKeys"></param>
     void AddSortKeys(SqlBuilder orderByClause, IList<DbSortClause> sortKeys)
     {
-      string separator = "";
+      string separator = String.Empty;
       foreach (DbSortClause sortClause in sortKeys)
       {
         orderByClause.Append(separator);

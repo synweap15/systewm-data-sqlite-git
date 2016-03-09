@@ -269,7 +269,7 @@ namespace SQLite.Designer.Design
       if (destinationType == typeof(string))
       {
         StringBuilder builder = new StringBuilder();
-        string separator = "";
+        string separator = String.Empty;
         foreach (IndexColumn c in (List<IndexColumn>)value)
         {
           builder.AppendFormat("{0}[{1}]", separator, c.Column);
@@ -522,8 +522,8 @@ namespace SQLite.Designer.Design
 
     internal virtual void WriteSql(StringBuilder builder)
     {
-      string separator = "";
-      builder.AppendFormat(CultureInfo.InvariantCulture, "CREATE {0}INDEX [{1}].[{2}] ON [{3}] (", (_unique == true) ? "UNIQUE " : "", _table.Catalog, Name, _table.Name);
+      string separator = String.Empty;
+      builder.AppendFormat(CultureInfo.InvariantCulture, "CREATE {0}INDEX [{1}].[{2}] ON [{3}] (", (_unique == true) ? "UNIQUE " : String.Empty, _table.Catalog, Name, _table.Name);
       foreach (IndexColumn c in Columns)
       {
         builder.AppendFormat(CultureInfo.InvariantCulture, "{0}[{1}]", separator, c.Column);
@@ -623,7 +623,7 @@ namespace SQLite.Designer.Design
           for (int n = 0; n < _table.Indexes.Count; n++)
           {
             Index idx = _table.Indexes[n];
-            proposed = String.Format(CultureInfo.InvariantCulture, "{0}{1}", name, (count > 0) ? count.ToString() : "");
+            proposed = String.Format(CultureInfo.InvariantCulture, "{0}{1}", name, (count > 0) ? count.ToString() : String.Empty);
             if (idx.Name == proposed)
             {
               count++;

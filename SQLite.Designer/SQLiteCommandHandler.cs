@@ -245,7 +245,7 @@ namespace SQLite.Designer
 
         int code = shell.CreateDocumentWindow(
           0, // (uint)(__VSCREATEDOCWIN.CDW_fCreateNewWindow | __VSCREATEDOCWIN.CDW_RDTFLAGS_MASK) | (uint)(_VSRDTFLAGS.RDT_CanBuildFromMemory | _VSRDTFLAGS.RDT_NonCreatable | _VSRDTFLAGS.RDT_VirtualDocument | _VSRDTFLAGS.RDT_DontAddToMRU),
-          form.Name, fake, (uint)itemId, formptr, formptr, ref empty, null, ref guidTableDesignContext, provider, "", form.Caption, null, out frame);
+          form.Name, fake, (uint)itemId, formptr, formptr, ref empty, null, ref guidTableDesignContext, provider, String.Empty, form.Caption, null, out frame);
 
         if (frame != null)
         {
@@ -275,7 +275,7 @@ namespace SQLite.Designer
 
         int code = shell.CreateDocumentWindow(
           0, // (uint)(__VSCREATEDOCWIN.CDW_fCreateNewWindow | __VSCREATEDOCWIN.CDW_RDTFLAGS_MASK) | (uint)(_VSRDTFLAGS.RDT_CanBuildFromMemory | _VSRDTFLAGS.RDT_NonCreatable | _VSRDTFLAGS.RDT_VirtualDocument | _VSRDTFLAGS.RDT_DontAddToMRU),
-          form.Name, fake, (uint)itemId, formptr, formptr, ref empty, null, ref guidViewDesignContext, provider, "", form.Caption, null, out frame);
+          form.Name, fake, (uint)itemId, formptr, formptr, ref empty, null, ref guidViewDesignContext, provider, String.Empty, form.Caption, null, out frame);
 
         if (frame != null)
         {

@@ -1,7 +1,7 @@
 /********************************************************
  * ADO.NET 2.0 Data Provider for SQLite Version 3.X
  * Written by Robert Simpson (robert@blackcastlesoft.com)
- * 
+ *
  * Released to the public domain, use at your own risk!
  ********************************************************/
 
@@ -103,7 +103,7 @@ namespace SQLite.Designer.Design
           return;
         }
       }
-      
+
       _indexes.Clear();
       _oldindexes.Clear();
 
@@ -372,7 +372,7 @@ namespace SQLite.Designer.Design
 
       if (_key.Columns.Count > 1)
       {
-        string innersep = "";
+        string innersep = String.Empty;
         builder.AppendFormat(CultureInfo.InvariantCulture, "{0}CONSTRAINT [PK_{1}] PRIMARY KEY (", separator, Name);
         foreach (IndexColumn c in _key.Columns)
         {
@@ -420,7 +420,7 @@ namespace SQLite.Designer.Design
       // Rebuilding an existing table
       if (altName != null)
       {
-        separator = "";
+        separator = String.Empty;
         builder.Append("\r\n-- Copy the contents of the old table into the new table\r\n");
         builder.AppendFormat("INSERT INTO [{0}].[{1}] (", _catalog, Name);
         foreach (Column c in Columns)
@@ -432,7 +432,7 @@ namespace SQLite.Designer.Design
           }
         }
         builder.Append(")\r\n  SELECT ");
-        separator = "";
+        separator = String.Empty;
         foreach (Column c in Columns)
         {
           if (String.IsNullOrEmpty(c.OriginalName) == false)
