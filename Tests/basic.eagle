@@ -4062,6 +4062,41 @@ runTest {test data-1.79 {DateTime using Int64} -setup {
 
 ###############################################################################
 
+runTest {test data-1.80 {page size using PRAGMA} -setup {
+  setupDb [set fileName data-1.80.db]
+} -body {
+  set result [list]
+
+  sql execute $db {
+    CREATE TABLE t1(x);
+    INSERT INTO t1 (x) VALUES(RANDOMBLOB(1048576));
+  }
+
+  lappend result [sql execute -execute scalar $db {
+    PRAGMA page_size;
+  }]
+
+  lappend result [sql execute $db {
+    PRAGMA page_size=4096;
+  }]
+
+  lappend result [sql execute $db {
+    VACUUM;
+  }]
+
+  lappend result [sql execute -execute scalar $db {
+    PRAGMA page_size;
+  }]
+} -cleanup {
+  cleanupDb $fileName
+
+  unset -nocomplain db fileName
+} -constraints \
+{eagle monoBug28 command.sql compile.DATA SQLite System.Data.SQLite} -result \
+{1024 -1 1 4096}}
+
+###############################################################################
+
 reportSQLiteResources $test_channel
 
 ###############################################################################

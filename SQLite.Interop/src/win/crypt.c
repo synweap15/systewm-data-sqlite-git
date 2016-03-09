@@ -323,7 +323,7 @@ void sqlite3CodecGetKey(sqlite3 *db, int nDb, void **ppKey, int *pnKeyLen)
   LPCRYPTBLOCK pBlock = (LPCRYPTBLOCK)sqlite3pager_get_codecarg(p);
 
   if (ppKey) *ppKey = 0;
-  if (pnKeyLen && pBlock) *pnKeyLen = 1;
+  if (pnKeyLen) *pnKeyLen = pBlock ? 1: 0;
 }
 
 /* We do not attach this key to the temp store, only the main database. */

@@ -218,6 +218,7 @@ released versions of System.Data.SQLite.
     <li>Add NoVerifyTextAffinity connection flag to skip type affinity checking when fetching a column value as a string. Pursuant to [dbd65441a5].</li>
     <li>The UnixEpoch DateTime format should use Int64 internally, not Int32.&nbsp;<b>** Potentially Incompatible Change **</b></li>
     <li>Avoid using Path.Combine with null values in the native library pre-loader. Fix for [da685c0bac].</li>
+    <li>Fix the (unsupported) legacy CryptoAPI based codec so that it no longer prevents page size changes.</li>
 </ul>
 <p>
     <b>1.0.99.0 - December 9, 2015</b>
