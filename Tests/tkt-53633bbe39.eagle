@@ -38,17 +38,29 @@ runTest {test tkt-53633bbe39-1.1 {column affinity overrides} -setup {
     INSERT INTO t1 (x) VALUES(3.14159);
   }
 
-  sql execute -execute reader -format list -allownull true $db \
-      "SELECT x FROM t1 ORDER BY x;"
+  set dataReader [sql execute -execute reader -format datareader \
+      -alias $db "SELECT x FROM t1 ORDER BY x;"]
+
+  set results [list]
+
+  while {[$dataReader Read]} {
+    set result [list]
+
+    lappend result [catch {$dataReader GetString 0} result] $result
+    lappend result [catch {$dataReader GetValue 0} result] $result
+
+    lappend results $result
+  }
+
+  set results
 } -cleanup {
   cleanupDb $fileName
   restoreSQLiteConvertEnvironment
   restoreSQLiteConnectionEnvironment
 
-  unset -nocomplain db fileName savedEnv
+  unset -nocomplain result results db fileName savedEnv
 } -constraints \
-{eagle monoBug28 command.sql compile.DATA SQLite System.Data.SQLite} -result \
-{{} 1 2.0 3.14159}}
+{eagle monoBug28 command.sql compile.DATA SQLite System.Data.SQLite} -result {}}
 
 ###############################################################################
 
