@@ -479,6 +479,34 @@ namespace eval ::Eagle {
       return false
     }
 
+    proc getCoreBinaryFileNamesOnly {} {
+      #
+      # NOTE: First, check if the list of native library file names has been
+      #       manually overridden.
+      #
+      if {[info exists ::native_library_file_names] && \
+          [llength $::native_library_file_names] > 0} then {
+        #
+        # NOTE: The list of native library file names has been overridden;
+        #       therefore, use it verbatim.
+        #
+        return $::native_library_file_names
+      } elseif {[isWindows]} then {
+        #
+        # NOTE: Otherwise, on Windows, always use the default file name
+        #       "sqlite3.dll".
+        #
+        return [list sqlite3.dll]
+      } else {
+        #
+        # NOTE: Otherwise, return both the generic POSIX file name and the
+        #       Mac OS X file name, since we do not currently have an easy
+        #       way to detect which of those platforms we are running on.
+        #
+        return [list libsqlite3.so libsqlite3.dylib]
+      }
+    }
+
     proc isBuildAvailable { native directory {varName ""} } {
       #
       # NOTE: Build the fully qualified file name for the primary assembly
@@ -554,25 +582,27 @@ namespace eval ::Eagle {
       #       library.  If this file exists, we should have everything we
       #       need.
       #
-      set fileName [file nativename [file join $directory \
-          $architecture sqlite3.dll]]
+      foreach fileNameOnly [getCoreBinaryFileNamesOnly] {
+        set fileName [file nativename [file join $directory \
+            $architecture $fileNameOnly]]
 
-      if {[file exists $fileName]} then {
-        return true
-      }
+        if {[file exists $fileName]} then {
+          return true
+        }
 
-      set fileName [file nativename [file join $directory \
-          $platform sqlite3.dll]]
+        set fileName [file nativename [file join $directory \
+            $platform $fileNameOnly]]
 
-      if {[file exists $fileName]} then {
-        return true
-      }
+        if {[file exists $fileName]} then {
+          return true
+        }
 
-      set fileName [file nativename [file join $directory \
-          sqlite3.dll]]
+        set fileName [file nativename [file join $directory \
+            $fileNameOnly]]
 
-      if {[file exists $fileName]} then {
-        return true
+        if {[file exists $fileName]} then {
+          return true
+        }
       }
 
       #
@@ -791,7 +821,21 @@ namespace eval ::Eagle {
             [file join [getBinaryDirectory] $platform System.Data.SQLite.dll]]
       } elseif {$standard} then {
         #
-        # NOTE: Return the native-only standard SQLite library file name.
+        # NOTE: Attempt to determine the native-only standard SQLite library
+        #       file name for this platform and then return it.
+        #
+        foreach fileNameOnly [getCoreBinaryFileNamesOnly] {
+          set fileName [file nativename \
+              [file join [getBinaryDirectory] $platform $fileNameOnly]]
+
+          if {[file exists $fileName]} then {
+            return $fileName
+          }
+        }
+
+        #
+        # NOTE: Fallback to returning the native-only standard SQLite library
+        #       file name for Windows.
         #
         return [file nativename \
             [file join [getBinaryDirectory] $platform sqlite3.dll]]
@@ -3329,8 +3373,8 @@ namespace eval ::Eagle {
         #       reason the "System.Data.SQLite.dll" file is included here is
         #       because it could be the mixed-mode assembly.
         #
-        set nativeFileNames [list \
-            sqlite3.dll SQLite.Interop.dll System.Data.SQLite.dll]
+        set nativeFileNames [getCoreBinaryFileNamesOnly]
+        lappend nativeFileNames SQLite.Interop.dll System.Data.SQLite.dll
 
         #
         # NOTE: Build the list of managed assembly files that we handle.
@@ -3567,10 +3611,12 @@ namespace eval ::Eagle {
           }
         }
 
-        catch {
-          tputs $::test_channel [appendArgs \
-              "---- file version of \"sqlite3.dll\"... " \
-              [file version [getBinaryFileName sqlite3.dll]] \n]
+        foreach fileNameOnly [getCoreBinaryFileNamesOnly] {
+          catch {
+            tputs $::test_channel [appendArgs \
+                "---- file version of \"" $fileNameOnly "\"... " \
+                [file version [getBinaryFileName $fileNameOnly]] \n]
+          }
         }
 
         catch {
@@ -3598,11 +3644,13 @@ namespace eval ::Eagle {
         }
 
         if {[string length $platform] > 0} then {
-          catch {
-            tputs $::test_channel [appendArgs \
-                "---- file version of \"" $platform \
-                "/sqlite3.dll\"... " [file version \
-                [getBinaryFileName sqlite3.dll $platform]] \n]
+          foreach fileNameOnly [getCoreBinaryFileNamesOnly] {
+            catch {
+              tputs $::test_channel [appendArgs \
+                  "---- file version of \"" $platform \
+                  / $fileNameOnly "\"... " [file version \
+                  [getBinaryFileName $fileNameOnly $platform]] \n]
+            }
           }
 
           catch {
@@ -3621,11 +3669,13 @@ namespace eval ::Eagle {
         }
 
         if {[string length $architecture] > 0} then {
-          catch {
-            tputs $::test_channel [appendArgs \
-                "---- file version of \"" $architecture \
-                "/sqlite3.dll\"... " [file version \
-                [getBinaryFileName sqlite3.dll $architecture]] \n]
+          foreach fileNameOnly [getCoreBinaryFileNamesOnly] {
+            catch {
+              tputs $::test_channel [appendArgs \
+                  "---- file version of \"" $architecture \
+                  / $fileNameOnly "\"... " [file version \
+                  [getBinaryFileName $fileNameOnly $architecture]] \n]
+            }
           }
 
           catch {
@@ -3862,7 +3912,8 @@ namespace eval ::Eagle {
             #
             set fileName [file normalize [$module FileName]]
 
-            if {[string match -nocase */sqlite3.dll $fileName]} then {
+            if {[lsearch -exact -nocase -- [getCoreBinaryFileNamesOnly] \
+                [file tail $fileName]] != -1} then {
               tputs $::test_channel [appendArgs \
                   "---- found loaded SQLite native library module: " \
                   $fileName \n]
