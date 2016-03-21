@@ -20,44 +20,6 @@ runSQLiteTestPrologue
 
 ###############################################################################
 
-proc saveSQLiteConvertEnvironment {} {
-  foreach name [list \
-      Use_SQLiteConvert_DefaultDbType Use_SQLiteConvert_DefaultTypeName] {
-    #
-    # NOTE: Does the live environment variable exist?  If so, save the value
-    #       for later; otherwise, make sure the saved value does not exist
-    #       either.  The live environment variables ARE NOT changed by this
-    #       procedure.
-    #
-    if {[uplevel 1 [list info exists env($name)]]} then {
-      uplevel 1 [list set savedEnv($name) [uplevel 1 [list set env($name)]]]
-    } else {
-      uplevel 1 [list unset -nocomplain savedEnv($name)]
-    }
-  }
-}
-
-proc restoreSQLiteConvertEnvironment {} {
-  foreach name [list \
-      Use_SQLiteConvert_DefaultDbType Use_SQLiteConvert_DefaultTypeName] {
-    #
-    # NOTE: Does the saved environment variable exist?  If so, restore the
-    #       saved value and then unset it; otherwise, make sure the live
-    #       environment variable does not exist either (i.e. it was not set
-    #       to begin with).  Both the saved and live environment variables
-    #       ARE changed by this procedure.
-    #
-    if {[uplevel 1 [list info exists savedEnv($name)]]} then {
-      uplevel 1 [list set env($name) [uplevel 1 [list set savedEnv($name)]]]
-      uplevel 1 [list unset -nocomplain savedEnv($name)]
-    } else {
-      uplevel 1 [list unset -nocomplain env($name)]
-    }
-  }
-}
-
-###############################################################################
-
 runTest {test tkt-3c00ec5b52-1.1 {default types, via connection} -setup {
   setupDb [set fileName tkt-3c00ec5b52-1.1.db] "" "" "" UseConnectionTypes \
       "DefaultDbType=String;DefaultTypeName=TEXT;"
@@ -200,11 +162,6 @@ runTest {test tkt-3c00ec5b52-1.5 {default types, with unique index} -setup {
   unset -nocomplain db fileName savedEnv
 } -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
 System.Data.SQLite} -result {{t1 sqlite_autoindex_t1_1 True}}}
-
-###############################################################################
-
-rename restoreSQLiteConvertEnvironment ""
-rename saveSQLiteConvertEnvironment ""
 
 ###############################################################################
 

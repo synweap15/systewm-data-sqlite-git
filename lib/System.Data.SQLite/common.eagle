@@ -2452,6 +2452,38 @@ namespace eval ::Eagle {
       }
     }
 
+    proc saveSQLiteConnectionEnvironment {} {
+      upvar 1 savedEnv savedEnv
+
+      saveEnvironmentVariables [list \
+          DefaultFlags_SQLiteConnection No_SQLiteConnectionNewParser] \
+          savedEnv
+    }
+
+    proc restoreSQLiteConnectionEnvironment {} {
+      upvar 1 savedEnv savedEnv
+
+      restoreEnvironmentVariables [list \
+          DefaultFlags_SQLiteConnection No_SQLiteConnectionNewParser] \
+          savedEnv
+    }
+
+    proc saveSQLiteConvertEnvironment {} {
+      upvar 1 savedEnv savedEnv
+
+      saveEnvironmentVariables [list \
+          Use_SQLiteConvert_DefaultDbType Use_SQLiteConvert_DefaultTypeName] \
+          savedEnv
+    }
+
+    proc restoreSQLiteConvertEnvironment {} {
+      upvar 1 savedEnv savedEnv
+
+      restoreEnvironmentVariables [list \
+          Use_SQLiteConvert_DefaultDbType Use_SQLiteConvert_DefaultTypeName] \
+          savedEnv
+    }
+
     proc setupDbInterruptCallback { channel log } {
       tputs $channel "---- setting up debugger interrupt callback... "
 
