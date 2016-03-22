@@ -2786,7 +2786,7 @@ runTest {test data-1.58 {SQLiteConnection.ReleaseMemory method} -setup {
   cleanupDb $fileName
 
   unset -nocomplain nLargest resetOk nFree code result db fileName
-} -constraints {eagle command.object monoBug28 configuration.Release\
+} -constraints {eagle command.object windows monoBug28 configuration.Release\
 command.sql compile.DATA SQLite System.Data.SQLite} -match regexp -result \
 {^\{Busy 0 False 0\} \{Busy \d+ False 0\} \{Ok 0 True \d+\}$}}
 
