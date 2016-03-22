@@ -1912,7 +1912,7 @@ namespace System.Data.SQLite
 #endif
       nAffinity = ColumnAffinity(stmt, index);
 
-      if (p != IntPtr.Zero && len >0) return UTF8ToString(p, len);
+      if (p != IntPtr.Zero && ((len > 0) || (len == -1))) return UTF8ToString(p, len);
       else
       {
         string[] ar = stmt.TypeDefinitions;
