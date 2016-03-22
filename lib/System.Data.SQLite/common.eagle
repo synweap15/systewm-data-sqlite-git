@@ -1842,6 +1842,18 @@ namespace eval ::Eagle {
       }]
     }
 
+    proc getDbDefaultPageSize {} {
+      try {
+        set db [sql open -type SQLite {Data Source=:memory:;}]
+        return [sql execute -execute scalar $db "PRAGMA page_size;"]
+      } finally {
+        if {[info exists db]} then {
+          catch {sql close $db}
+          unset -nocomplain db
+        }
+      }
+    }
+
     proc extractSystemDataSQLiteExceptionMessage { value } {
       #
       # NOTE: If the string conforms to format of the normal exception
