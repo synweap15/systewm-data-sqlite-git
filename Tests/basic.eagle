@@ -57,7 +57,7 @@ runTest {test data-1.1 {unit tests from the 'test' project} -setup {
   unset -nocomplain totalCount failureCount successCount code output \
       error fileName
 } -constraints {eagle SQLite file_System.Data.SQLite.dll file_test.exe\
-testExec} -result {0 {}}}
+testExec winForms} -result {0 {}}}
 
 ###############################################################################
 
