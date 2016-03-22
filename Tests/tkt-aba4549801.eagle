@@ -60,8 +60,8 @@ runTest {test tkt-aba4549801-1.1 {SQLiteConnection.Changed event} -setup {
   unset -nocomplain rows transaction result callback db fileName
 
   rename onChanged ""
-} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
-System.Data.SQLite} -match regexp -result \
+} -constraints {eagle command.object monoBug28 monoBug211 command.sql\
+compile.DATA SQLite System.Data.SQLite} -match regexp -result \
 {^\{System#Data#SQLite#SQLiteConnection#\d+ Opening \{\} \{\} \{\} \{\}\}\
 \{System#Data#SQLite#SQLiteConnection#\d+ Closing \{\} \{\} \{\} \{\}\}\
 \{System#Data#SQLite#SQLiteConnection#\d+ Closed \{\} \{\} \{\} \{\}\}\
