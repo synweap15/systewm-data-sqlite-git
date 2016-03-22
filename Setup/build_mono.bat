@@ -37,9 +37,6 @@ SET NOUSER=1
 SET MSBUILD_ARGS=/property:UseInteropDll=false
 SET MSBUILD_ARGS=%MSBUILD_ARGS% /property:UseSqliteStandard=true
 SET MSBUILD_ARGS=%MSBUILD_ARGS% /property:InteropCodec=false
-SET MSBUILD_ARGS=%MSBUILD_ARGS% /property:InteropExtensionFunctions=false
-SET MSBUILD_ARGS=%MSBUILD_ARGS% /property:InteropVirtualTable=false
-SET MSBUILD_ARGS=%MSBUILD_ARGS% /property:InteropTestExtension=false
 
 CALL :fn_ResetErrorLevel
 

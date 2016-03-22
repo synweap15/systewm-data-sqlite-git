@@ -5,7 +5,11 @@
  * Released to the public domain, use at your own risk!
  ********************************************************/
 
+#if SQLITE_OS_WIN
 #define SQLITE_API __declspec(dllexport)
+#else
+#define WINAPI
+#endif
 
 #include "../core/sqlite3.c"
 
@@ -32,7 +36,7 @@
 extern int RegisterExtensionFunctions(sqlite3 *db);
 #endif
 
-#if defined(SQLITE_OS_WIN)
+#if SQLITE_OS_WIN
 #if defined(INTEROP_CODEC) && !defined(INTEROP_INCLUDE_SEE)
 #ifdef SQLITE_ENABLE_ZIPVFS
 #define INTEROP_CODEC_GET_PAGER(a,b,c) sqlite3PagerGet(a,b,c,0)
@@ -896,7 +900,7 @@ SQLITE_API const void * WINAPI sqlite3_column_origin_name16_interop(sqlite3_stmt
   return pval;
 }
 
-SQLITE_API int WINAPI sqlite3_table_column_metadata_interop(sqlite3 *db, const char *zDbName, const char *zTableName, const char *zColumnName, char **pzDataType, char **pzCollSeq, int *pNotNull, int *pPrimaryKey, int *pAutoinc, int *pdtLen, int *pcsLen)
+SQLITE_API int WINAPI sqlite3_table_column_metadata_interop(sqlite3 *db, const char *zDbName, const char *zTableName, const char *zColumnName, char const **pzDataType, char const **pzCollSeq, int *pNotNull, int *pPrimaryKey, int *pAutoinc, int *pdtLen, int *pcsLen)
 {
   int n;
 
@@ -953,7 +957,7 @@ SQLITE_API int WINAPI sqlite3_table_cursor_interop(sqlite3_stmt *pstmt, int iDb,
   sqlite3_mutex_enter(db->mutex);
   for (n = 0; n < p->nCursor && p->apCsr[n] != NULL; n++)
   {
-    if (p->apCsr[n]->isTable == FALSE) continue;
+    if (p->apCsr[n]->isTable == 0) continue;
     if (p->apCsr[n]->iDb != iDb) continue;
 #if SQLITE_VERSION_NUMBER >= 3010000
     if (p->apCsr[n]->uc.pCursor->pgnoRoot == tableRootPage)
@@ -1095,6 +1099,10 @@ SQLITE_API int WINAPI sqlite3_cursor_rowid_interop(sqlite3_stmt *pstmt, int curs
 ** above this point to malfunction.
 */
 #if defined(INTEROP_TEST_EXTENSION)
+#if !SQLITE_OS_WIN
+#include <unistd.h>
+#endif
+
 #include "../core/sqlite3ext.h"
 SQLITE_EXTENSION_INIT1
 
@@ -1135,11 +1143,19 @@ SQLITE_PRIVATE void interopSleepFunc(
     return;
   }
   m = sqlite3_value_int(argv[0]);
+#if SQLITE_OS_WIN
 #if SQLITE_OS_WINCE
   Sleep(m);
   sqlite3_result_int(context, WAIT_OBJECT_0);
 #else
   sqlite3_result_int(context, SleepEx(m, TRUE));
+#endif
+#else
+  if( m>0 ){
+    sqlite3_result_int64(context, sleep((unsigned)m));
+  }else{
+    sqlite3_result_null(context);
+  }
 #endif
 }
 
@@ -1163,4 +1179,4 @@ SQLITE_API int interop_test_extension_init(
   }
   return rc;
 }
-#endif /* defined(SQLITE_OS_WIN) */
+#endif /* SQLITE_OS_WIN */

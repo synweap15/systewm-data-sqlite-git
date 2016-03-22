@@ -90,12 +90,14 @@ Original code 2006 June 05 by relicoder.
 */
 
 /* #include "config.h" */
-#include <windows.h>
+#if defined(_WIN32)
+#  include <windows.h>
+#endif
 
 /* #define COMPILE_SQLITE_EXTENSIONS_AS_LOADABLE_MODULE */
 
 /* NOTE: More functions are available with MSVC 2013. */
-#if defined(_MSC_VER) && _MSC_VER >= 1800
+#if !defined(_WIN32) || (defined(_MSC_VER) && _MSC_VER >= 1800)
 #  define HAVE_ACOSH		1
 #  define HAVE_ASINH		1
 #  define HAVE_ATANH		1
@@ -125,10 +127,12 @@ SQLITE_EXTENSION_INIT1
 #include <stdio.h>
 
 #if !defined(_WIN32_WCE) || defined(HAVE_ERRNO_H)
-#include <errno.h>		/* LMH 2007-03-25 */
-#else
+#  include <errno.h>		/* LMH 2007-03-25 */
+#elif defined(_WIN32)
 int errno;
-#define strerror(x)		""
+#  define strerror(x)		""
+#else
+#  include <errno.h>
 #endif
 
 #include <stdlib.h>
@@ -137,8 +141,7 @@ int errno;
 #ifndef _MAP_H_
 #define _MAP_H_
 
-/* #include <stdint.h> */
-
+#if defined(_WIN32)
 typedef signed char int8_t;
 typedef unsigned char uint8_t;
 typedef signed int int16_t;
@@ -147,6 +150,9 @@ typedef signed long int int32_t;
 typedef unsigned long int uint32_t;
 typedef signed long long int int64_t;
 typedef unsigned long long int uint64_t;
+#else
+#  include <stdint.h>
+#endif
 
 /*
 ** Simple binary tree implementation to use in median, mode and quartile calculations
