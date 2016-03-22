@@ -755,11 +755,14 @@ namespace eval ::Eagle {
           set info [string trim $info]; set validFile false
 
           if {[string length $info] > 0} then {
-            set pattern {^repository:\s+(.*?)\s+$}
+            set pattern {^repository:\s+(.*?)$}
 
-            if {[regexp -line -- $pattern $info dummy repository] && \
-                [file exists $repository]} then {
-              set validFile true
+            if {[regexp -line -- $pattern $info dummy repository]} then {
+              set repository [string trim $repository]
+
+              if {[file exists $repository]} then {
+                set validFile true
+              }
             }
           }
 

@@ -341,7 +341,7 @@ if {![info exists no([file tail [info script]])]} then {
     # NOTE: Is the use of Fossil by the test suite allowed?
     #
     if {[canExecFossil]} then {
-      set pattern {^local-root:\s+(.*?)\s+$}
+      set pattern {^local-root:\s+(.*?)$}
 
       if {[catch {exec -- fossil info} exec] || \
           ![regexp -line -- $pattern $exec dummy directory]} then {
@@ -359,9 +359,11 @@ if {![info exists no([file tail [info script]])]} then {
         #
         # NOTE: We extracted the local root directory of the source
         #       checkout from Fossil.  Now, make sure it is fully
-        #       normalized and has no trailing slashes.
+        #       normalized and has no trailing slashes.  Also, make
+        #       sure and remove any trailing newline "just in case"
+        #       the regular expression engine included it.
         #
-        set root_path [file normalize $directory]
+        set root_path [file normalize [string trim $directory]]
       }
 
       unset -nocomplain directory dummy exec pattern
@@ -945,6 +947,68 @@ if {![info exists no([file tail [info script]])]} then {
 
   tputs $test_channel [appendArgs "---- disabled options: " \
       [formatList [lsort [array names no]] <none>] \n]
+
+  #
+  # NOTE: Is the use of Fossil by the test suite allowed?
+  #
+  if {[canExecFossil]} then {
+    #
+    # NOTE: Get the source checkout and tags (i.e. of Eagle or whatever
+    #       project the Eagle binaries are being used by) using a Fossil
+    #       binary in the PATH, if available.
+    #
+    if {[catch {exec -- fossil info} exec] == 0} then {
+      set pattern {^checkout:\s+(.*?)$}
+
+      if {[regexp -line -- $pattern $exec dummy checkout]} then {
+        #
+        # NOTE: Remove any trailing newline.
+        #
+        set checkout [string trim $checkout]
+      } else {
+        #
+        # NOTE: We could not query the source checkout from Fossil.
+        #
+        set checkout <none>
+      }
+
+      set pattern {^tags:\s+(.*?)$}
+
+      if {[regexp -line -- $pattern $exec dummy tags]} then {
+        #
+        # NOTE: Remove any trailing newline.
+        #
+        set tags [string trim $tags]
+      } else {
+        #
+        # NOTE: We could not query the tags from Fossil.
+        #
+        set tags <none>
+      }
+    } else {
+      #
+      # NOTE: We could not query information from Fossil.
+      #
+      set checkout <none>
+      set tags <none>
+    }
+
+    unset -nocomplain dummy exec pattern
+  } else {
+    #
+    # NOTE: Use of Fossil by the test suite is forbidden.
+    #
+    set checkout <none>
+    set tags <none>
+  }
+
+  tputs $test_channel [appendArgs "---- checkout: " \
+      $checkout \n]
+
+  tputs $test_channel [appendArgs "---- tags: " \
+      $tags \n]
+
+  unset tags checkout
 
   #
   # NOTE: Initialize the Eagle test constraints.
@@ -3069,60 +3133,6 @@ if {![info exists no([file tail [info script]])]} then {
   #       the compile options.
   #
   if {[isEagle]} then {
-    #
-    # NOTE: Is the use of Fossil by the test suite allowed?
-    #
-    if {[canExecFossil]} then {
-      #
-      # NOTE: Get the source checkout and tags (i.e. of Eagle or whatever
-      #       project the Eagle binaries are being used by) using a Fossil
-      #       binary in the PATH, if available.
-      #
-      if {[catch {exec -- fossil info} exec] == 0} then {
-        set pattern {^checkout:\s+(.*?)\s+$}
-
-        if {![regexp -line -- $pattern $exec dummy checkout]} then {
-          #
-          # NOTE: We could not query the source checkout from Fossil.
-          #
-          set checkout <none>
-        }
-
-        set pattern {^tags:\s+(.*?)\s+$}
-
-        if {![regexp -line -- $pattern $exec dummy tags]} then {
-          #
-          # NOTE: We could not query the tags from Fossil.
-          #
-          set tags <none>
-        }
-      } else {
-        #
-        # NOTE: We could not query information from Fossil.
-        #
-        set checkout <none>
-        set tags <none>
-      }
-
-      unset -nocomplain dummy exec pattern
-    } else {
-      #
-      # NOTE: Use of Fossil by the test suite is forbidden.
-      #
-      set checkout <none>
-      set tags <none>
-    }
-
-    tputs $test_channel [appendArgs "---- checkout: " \
-        $checkout \n]
-
-    tputs $test_channel [appendArgs "---- tags: " \
-        $tags \n]
-
-    unset tags checkout
-
-    ###########################################################################
-
     set timeStamp [getPlatformInfo timeStamp ""]
 
     if {[string length $timeStamp] > 0} then {
