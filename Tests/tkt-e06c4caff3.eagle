@@ -25,17 +25,17 @@ runTest {test tkt-e06c4caff3-1.1 {NaN to NULL constraint failure} -setup {
 } -body {
   sql execute $db "CREATE TABLE t1(x REAL NOT NULL);"
 
-  sql execute $db "INSERT INTO t1 (x) VALUES(?);" \
-      [list param1 Double [set NaN [object invoke Double NaN]]]
+  list [catch {
+    sql execute $db "INSERT INTO t1 (x) VALUES(?);" \
+        [list param1 Double [set NaN [object invoke Double NaN]]]
+  } error] [extractSystemDataSQLiteExceptionMessage $error]
 } -cleanup {
   cleanupDb $fileName
 
-  unset -nocomplain NaN db fileName
+  unset -nocomplain NaN error db fileName
 } -constraints {eagle command.object monoBug40 command.sql compile.DATA SQLite\
-System.Data.SQLite} -returnCodes 1 -match regexp -result [string map [list \n\
-\r\n] {^System\.Data\.SQLite\.SQLiteException \(0x80004005\): constraint failed
-NOT NULL constraint failed: t1\.x
-.*$}]}
+System.Data.SQLite} -result \
+{1 {constraint failed -- NOT NULL constraint failed: t1.x}}}
 
 ###############################################################################
 

@@ -1297,17 +1297,15 @@ runTest {test data-1.23 {SQLiteFunction collation exception} -setup {
       [expr {[info exists errors] ? $errors : ""}] \
       [expr {$code eq "Ok" ? [catch {
         object invoke _Dynamic${id}.Test${id} Main
-      } result] : [set result ""]}] $result
+      } result] : [set result ""]}] \
+      [extractSystemDataSQLiteExceptionMessage $result]
 } -cleanup {
   cleanupDb $fileName
 
   unset -nocomplain result results errors code sql dataSource id db fileName
 } -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
 System.Data.SQLite compileCSharp} -match regexp -result {^Ok\
-System#CodeDom#Compiler#CompilerResults#\d+ \{\} 1\
-\{System\.Reflection\.TargetInvocationException: Exception has been thrown by\
-the target of an invocation\. ---> System\.Data\.SQLite\.SQLiteException:\
-interrupted.*$}}
+System#CodeDom#Compiler#CompilerResults#\d+ \{\} 1 interrupted$}}
 
 ###############################################################################
 
@@ -1953,19 +1951,23 @@ runTest {test data-1.39 {unencrypted database, with password} -setup {
   set result [list]
 
   lappend result [catch {sql execute -execute scalar $db \
-      "SELECT COUNT(*) FROM t1;"} error] $error
+      "SELECT COUNT(*) FROM t1;"} error] \
+      [extractSystemDataSQLiteExceptionMessage $error]
 
   lappend result [catch {sql execute $db \
-      "INSERT INTO t1 (x) VALUES(1);"} error] $error
+      "INSERT INTO t1 (x) VALUES(1);"} error] \
+      [extractSystemDataSQLiteExceptionMessage $error]
 
   cleanupDb $fileName db true false false
   setupDb $fileName "" "" "" "" "" true false
 
   lappend result [catch {sql execute $db \
-      "INSERT INTO t1 (x) VALUES(1);"} error] $error
+      "INSERT INTO t1 (x) VALUES(1);"} error] \
+      [extractSystemDataSQLiteExceptionMessage $error]
 
   lappend result [catch {sql execute -execute scalar $db \
-      "SELECT COUNT(*) FROM t1;"} error] $error
+      "SELECT COUNT(*) FROM t1;"} error] \
+      [extractSystemDataSQLiteExceptionMessage $error]
 
   set result
 } -cleanup {
@@ -1973,10 +1975,8 @@ runTest {test data-1.39 {unencrypted database, with password} -setup {
 
   unset -nocomplain error result db fileName
 } -constraints {eagle System.Data.SQLite.Encryption monoBug28 command.sql\
-compile.DATA SQLite System.Data.SQLite} -match regexp -result {^1\
-\{System\.Data\.SQLite\.SQLiteException \(0x80004005\): file is encrypted or is\
-not a database.*?\} 1 \{System\.Data\.SQLite\.SQLiteException \(0x80004005\):\
-file is encrypted or is not a database.*?\} 0 1 0 2$}}
+compile.DATA SQLite System.Data.SQLite} -result {1 {file is encrypted or is not\
+a database} 1 {file is encrypted or is not a database} 0 1 0 2}}
 
 ###############################################################################
 
@@ -1992,19 +1992,23 @@ runTest {test data-1.40 {encrypted database, wrong password} -setup {
   set result [list]
 
   lappend result [catch {sql execute -execute scalar $db \
-      "SELECT COUNT(*) FROM t1;"} error] $error
+      "SELECT COUNT(*) FROM t1;"} error] \
+      [extractSystemDataSQLiteExceptionMessage $error]
 
   lappend result [catch {sql execute $db \
-      "INSERT INTO t1 (x) VALUES(1);"} error] $error
+      "INSERT INTO t1 (x) VALUES(1);"} error] \
+      [extractSystemDataSQLiteExceptionMessage $error]
 
   cleanupDb $fileName db true false false
   setupDb $fileName "" "" "" "" "Password=12345;" true false
 
   lappend result [catch {sql execute $db \
-      "INSERT INTO t1 (x) VALUES(1);"} error] $error
+      "INSERT INTO t1 (x) VALUES(1);"} error] \
+      [extractSystemDataSQLiteExceptionMessage $error]
 
   lappend result [catch {sql execute -execute scalar $db \
-      "SELECT COUNT(*) FROM t1;"} error] $error
+      "SELECT COUNT(*) FROM t1;"} error] \
+      [extractSystemDataSQLiteExceptionMessage $error]
 
   set result
 } -cleanup {
@@ -2012,10 +2016,8 @@ runTest {test data-1.40 {encrypted database, wrong password} -setup {
 
   unset -nocomplain error result db fileName
 } -constraints {eagle System.Data.SQLite.Encryption monoBug28 command.sql\
-compile.DATA SQLite System.Data.SQLite} -match regexp -result {^1\
-\{System\.Data\.SQLite\.SQLiteException \(0x80004005\): file is encrypted or is\
-not a database.*?\} 1 \{System\.Data\.SQLite\.SQLiteException \(0x80004005\):\
-file is encrypted or is not a database.*?\} 0 1 0 2$}}
+compile.DATA SQLite System.Data.SQLite} -result {1 {file is encrypted or is not\
+a database} 1 {file is encrypted or is not a database} 0 1 0 2}}
 
 ###############################################################################
 
@@ -2067,19 +2069,23 @@ runTest {test data-1.42 {encrypted database, w/quoted-start-space} -setup {
   set result [list]
 
   lappend result [catch {sql execute -execute scalar $db \
-      "SELECT COUNT(*) FROM t1;"} error] $error
+      "SELECT COUNT(*) FROM t1;"} error] \
+      [extractSystemDataSQLiteExceptionMessage $error]
 
   lappend result [catch {sql execute $db \
-      "INSERT INTO t1 (x) VALUES(1);"} error] $error
+      "INSERT INTO t1 (x) VALUES(1);"} error] \
+      [extractSystemDataSQLiteExceptionMessage $error]
 
   cleanupDb $fileName db true false false
   setupDb $fileName "" "" "" "" "Password=\" 1234\";" true false
 
   lappend result [catch {sql execute $db \
-      "INSERT INTO t1 (x) VALUES(1);"} error] $error
+      "INSERT INTO t1 (x) VALUES(1);"} error] \
+      [extractSystemDataSQLiteExceptionMessage $error]
 
   lappend result [catch {sql execute -execute scalar $db \
-      "SELECT COUNT(*) FROM t1;"} error] $error
+      "SELECT COUNT(*) FROM t1;"} error] \
+      [extractSystemDataSQLiteExceptionMessage $error]
 
   set result
 } -cleanup {
@@ -2087,10 +2093,8 @@ runTest {test data-1.42 {encrypted database, w/quoted-start-space} -setup {
 
   unset -nocomplain error result db fileName
 } -constraints {eagle System.Data.SQLite.Encryption monoBug28 command.sql\
-compile.DATA SQLite System.Data.SQLite} -match regexp -result {^1\
-\{System\.Data\.SQLite\.SQLiteException \(0x80004005\): file is encrypted or is\
-not a database.*?\} 1 \{System\.Data\.SQLite\.SQLiteException \(0x80004005\):\
-file is encrypted or is not a database.*?\} 0 1 0 2$}}
+compile.DATA SQLite System.Data.SQLite} -result {1 {file is encrypted or is not\
+a database} 1 {file is encrypted or is not a database} 0 1 0 2}}
 
 ###############################################################################
 
@@ -2106,19 +2110,23 @@ runTest {test data-1.43 {encrypted database, password w/mid-space} -setup {
   set result [list]
 
   lappend result [catch {sql execute -execute scalar $db \
-      "SELECT COUNT(*) FROM t1;"} error] $error
+      "SELECT COUNT(*) FROM t1;"} error] \
+      [extractSystemDataSQLiteExceptionMessage $error]
 
   lappend result [catch {sql execute $db \
-      "INSERT INTO t1 (x) VALUES(1);"} error] $error
+      "INSERT INTO t1 (x) VALUES(1);"} error] \
+      [extractSystemDataSQLiteExceptionMessage $error]
 
   cleanupDb $fileName db true false false
   setupDb $fileName "" "" "" "" "Password=12 45;" true false
 
   lappend result [catch {sql execute $db \
-      "INSERT INTO t1 (x) VALUES(1);"} error] $error
+      "INSERT INTO t1 (x) VALUES(1);"} error] \
+      [extractSystemDataSQLiteExceptionMessage $error]
 
   lappend result [catch {sql execute -execute scalar $db \
-      "SELECT COUNT(*) FROM t1;"} error] $error
+      "SELECT COUNT(*) FROM t1;"} error] \
+      [extractSystemDataSQLiteExceptionMessage $error]
 
   set result
 } -cleanup {
@@ -2126,10 +2134,8 @@ runTest {test data-1.43 {encrypted database, password w/mid-space} -setup {
 
   unset -nocomplain error result db fileName
 } -constraints {eagle System.Data.SQLite.Encryption monoBug28 command.sql\
-compile.DATA SQLite System.Data.SQLite} -match regexp -result {^1\
-\{System\.Data\.SQLite\.SQLiteException \(0x80004005\): file is encrypted or is\
-not a database.*?\} 1 \{System\.Data\.SQLite\.SQLiteException \(0x80004005\):\
-file is encrypted or is not a database.*?\} 0 1 0 2$}}
+compile.DATA SQLite System.Data.SQLite} -result {1 {file is encrypted or is not\
+a database} 1 {file is encrypted or is not a database} 0 1 0 2}}
 
 ###############################################################################
 
@@ -2181,19 +2187,23 @@ runTest {test data-1.45 {encrypted database, w/quoted-end-space} -setup {
   set result [list]
 
   lappend result [catch {sql execute -execute scalar $db \
-      "SELECT COUNT(*) FROM t1;"} error] $error
+      "SELECT COUNT(*) FROM t1;"} error] \
+      [extractSystemDataSQLiteExceptionMessage $error]
 
   lappend result [catch {sql execute $db \
-      "INSERT INTO t1 (x) VALUES(1);"} error] $error
+      "INSERT INTO t1 (x) VALUES(1);"} error] \
+      [extractSystemDataSQLiteExceptionMessage $error]
 
   cleanupDb $fileName db true false false
   setupDb $fileName "" "" "" "" "Password=\"1234 \";" true false
 
   lappend result [catch {sql execute $db \
-      "INSERT INTO t1 (x) VALUES(1);"} error] $error
+      "INSERT INTO t1 (x) VALUES(1);"} error] \
+      [extractSystemDataSQLiteExceptionMessage $error]
 
   lappend result [catch {sql execute -execute scalar $db \
-      "SELECT COUNT(*) FROM t1;"} error] $error
+      "SELECT COUNT(*) FROM t1;"} error] \
+      [extractSystemDataSQLiteExceptionMessage $error]
 
   set result
 } -cleanup {
@@ -2201,10 +2211,8 @@ runTest {test data-1.45 {encrypted database, w/quoted-end-space} -setup {
 
   unset -nocomplain error result db fileName
 } -constraints {eagle System.Data.SQLite.Encryption monoBug28 command.sql\
-compile.DATA SQLite System.Data.SQLite} -match regexp -result {^1\
-\{System\.Data\.SQLite\.SQLiteException \(0x80004005\): file is encrypted or is\
-not a database.*?\} 1 \{System\.Data\.SQLite\.SQLiteException \(0x80004005\):\
-file is encrypted or is not a database.*?\} 0 1 0 2$}}
+compile.DATA SQLite System.Data.SQLite} -result {1 {file is encrypted or is not\
+a database} 1 {file is encrypted or is not a database} 0 1 0 2}}
 
 ###############################################################################
 
@@ -2326,30 +2334,33 @@ runTest {test data-1.49 {NoExtensionFunctions connection flag} -setup {
   set result [list]
 
   lappend result [catch {sql execute -execute scalar $db \
-      "SELECT replicate('1234', 2);"} output] $output
+      "SELECT replicate('1234', 2);"} error] \
+      [extractSystemDataSQLiteExceptionMessage $error]
 
   cleanupDb $fileName
   setupDb $fileName "" "" "" NoExtensionFunctions
 
   lappend result [catch {sql execute -execute scalar $db \
-      "SELECT replicate('1234', 3);"} output] $output
+      "SELECT replicate('1234', 3);"} error] \
+      [extractSystemDataSQLiteExceptionMessage $error]
 
   cleanupDb $fileName
   setupDb $fileName
 
   lappend result [catch {sql execute -execute scalar $db \
-      "SELECT replicate('1234', 4);"} output] $output
+      "SELECT replicate('1234', 4);"} error] \
+      [extractSystemDataSQLiteExceptionMessage $error]
 
   set result
 } -cleanup {
   cleanupDb $fileName
 
-  unset -nocomplain output result db fileName
+  unset -nocomplain error result db fileName
 } -constraints {eagle monoBug28 command.sql compile.DATA SQLite\
 System.Data.SQLite SQLiteInterop\
-defineConstant.System.Data.SQLite.INTEROP_EXTENSION_FUNCTIONS} -match regexp \
--result {^0 12341234 1 \{System\.Data\.SQLite\.SQLiteException \(0x80004005\):\
-SQL logic error or missing database.*?\} 0 1234123412341234$}}
+defineConstant.System.Data.SQLite.INTEROP_EXTENSION_FUNCTIONS} -result {0\
+12341234 1 {SQL logic error or missing database -- no such function: replicate}\
+0 1234123412341234}}
 
 ###############################################################################
 
@@ -2411,7 +2422,8 @@ runTest {test data-1.51 {nullable value types} -setup {
         [$dataReader GetName $x] [$dataReader GetValue $x] \
         [catch {$dataReader GetInt64 $x} d] [$dataReader Item x]] break
 
-    lappend result [list $x $a $b $c $d $e]
+    lappend result [list \
+        $x $a $b $c [extractSystemDataSQLiteExceptionMessage $d] $e]
   }
 
   set result
@@ -2572,28 +2584,25 @@ runTest {test data-1.54 {bind function to a connection} -setup {
       [expr {[info exists errors] ? $errors : ""}] \
       [expr {$code eq "Ok" ? [catch {
         object invoke _Dynamic${id}.Test${id} DoTest false
-      } result] : [set result ""]}] $result \
+      } result] : [set result ""]}] \
+      [extractSystemDataSQLiteExceptionMessage $result] \
       [expr {$code eq "Ok" ? [catch {
         object invoke _Dynamic${id}.Test${id} DoTest true
-      } result] : [set result ""]}] $result \
+      } result] : [set result ""]}] \
+      [extractSystemDataSQLiteExceptionMessage $result] \
       [expr {$code eq "Ok" ? [catch {
         object invoke _Dynamic${id}.Test${id} DoTest false
-      } result] : [set result ""]}] $result
+      } result] : [set result ""]}] \
+      [extractSystemDataSQLiteExceptionMessage $result]
 } -cleanup {
   cleanupDb $fileName
 
   unset -nocomplain result code results errors sql dataSource id fileName
 } -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
-System.Data.SQLite compileCSharp} -match regexp -result \
-[string map [list \n \r\n] {^Ok System#CodeDom#Compiler#CompilerResults#\d+\
-\{\} 1 \{System\.Reflection\.TargetInvocationException: Exception has been\
-thrown by the target of an invocation\. --->\
-System\.Data\.SQLite\.SQLiteException: SQL logic error or missing database
-no such function: MyRandom.*\} 0 (?:-)?\d+ 1\
-\{System\.Reflection\.TargetInvocationException: Exception has been thrown by\
-the target of an invocation\. ---> System\.Data\.SQLite\.SQLiteException: SQL\
-logic error or missing database
-no such function: MyRandom.*\}$}]}
+System.Data.SQLite compileCSharp} -match regexp -result {^Ok\
+System#CodeDom#Compiler#CompilerResults#\d+ \{\} 1 \{SQL logic error or missing\
+database -- no such function: MyRandom\} 0 (?:-)?\d+ 1 \{SQL logic error or\
+missing database -- no such function: MyRandom\}$}}
 
 ###############################################################################
 
@@ -3367,37 +3376,41 @@ runTest {test data-1.72 {unbind function from a connection} -setup {
       [expr {[info exists errors] ? $errors : ""}] \
       [expr {$code eq "Ok" ? [catch {
         object invoke _Dynamic${id}.Test${id} BindFunction
-      } result] : [set result ""]}] $result \
+      } result] : [set result ""]}] \
+      [extractSystemDataSQLiteExceptionMessage $result] \
       [expr {$code eq "Ok" ? [catch {
         object invoke _Dynamic${id}.Test${id} CallFunction
-      } result] : [set result ""]}] $result \
+      } result] : [set result ""]}] \
+      [extractSystemDataSQLiteExceptionMessage $result] \
       [expr {$code eq "Ok" ? [catch {
         object invoke _Dynamic${id}.Test${id} UnbindFunction
-      } result] : [set result ""]}] $result \
+      } result] : [set result ""]}] \
+      [extractSystemDataSQLiteExceptionMessage $result] \
       [expr {$code eq "Ok" ? [catch {
         object invoke _Dynamic${id}.Test${id} CallFunction
-      } result] : [set result ""]}] $result \
+      } result] : [set result ""]}] \
+      [extractSystemDataSQLiteExceptionMessage $result] \
       [expr {$code eq "Ok" ? [catch {
         object invoke _Dynamic${id}.Test${id} BindFunction
-      } result] : [set result ""]}] $result \
+      } result] : [set result ""]}] \
+      [extractSystemDataSQLiteExceptionMessage $result] \
       [expr {$code eq "Ok" ? [catch {
         object invoke _Dynamic${id}.Test${id} CallFunction
-      } result] : [set result ""]}] $result \
+      } result] : [set result ""]}] \
+      [extractSystemDataSQLiteExceptionMessage $result] \
       [expr {$code eq "Ok" ? [catch {
         object invoke _Dynamic${id}.Test${id} Uninitialize
-      } result] : [set result ""]}] $result
+      } result] : [set result ""]}] \
+      [extractSystemDataSQLiteExceptionMessage $result]
 } -cleanup {
   cleanupDb $fileName
 
   unset -nocomplain result code results errors sql dataSource id fileName
 } -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
-System.Data.SQLite compileCSharp} -match regexp -result \
-[string map [list \n \r\n] {^Ok System#CodeDom#Compiler#CompilerResults#\d+\
-\{\} 0 \{\} 0 (?:-)?\d+ 0 True 1\
-\{System\.Reflection\.TargetInvocationException: Exception has been thrown by\
-the target of an invocation\. ---> System\.Data\.SQLite\.SQLiteException: SQL\
-logic error or missing database
-no such function: MyRandom.*\} 0 \{\} 0 (?:-)?\d+ 0 \{\}$}]}
+System.Data.SQLite compileCSharp} -match regexp -result {^Ok\
+System#CodeDom#Compiler#CompilerResults#\d+ \{\} 0 \{\} 0 (?:-)?\d+ 0 True 1\
+\{SQL logic error or missing database -- no such function: MyRandom\} 0 \{\} 0\
+(?:-)?\d+ 0 \{\}$}}
 
 ###############################################################################
 
@@ -3521,37 +3534,41 @@ runTest {test data-1.73 {unbind functions from a connection on close} -setup {
       [expr {[info exists errors] ? $errors : ""}] \
       [expr {$code eq "Ok" ? [catch {
         object invoke _Dynamic${id}.Test${id} BindFunction
-      } result] : [set result ""]}] $result \
+      } result] : [set result ""]}] \
+      [extractSystemDataSQLiteExceptionMessage $result] \
       [expr {$code eq "Ok" ? [catch {
         object invoke _Dynamic${id}.Test${id} CallFunction
-      } result] : [set result ""]}] $result \
+      } result] : [set result ""]}] \
+      [extractSystemDataSQLiteExceptionMessage $result] \
       [expr {$code eq "Ok" ? [catch {
         object invoke _Dynamic${id}.Test${id} CloseAndReopen
-      } result] : [set result ""]}] $result \
+      } result] : [set result ""]}] \
+      [extractSystemDataSQLiteExceptionMessage $result] \
       [expr {$code eq "Ok" ? [catch {
         object invoke _Dynamic${id}.Test${id} CallFunction
-      } result] : [set result ""]}] $result \
+      } result] : [set result ""]}] \
+      [extractSystemDataSQLiteExceptionMessage $result] \
       [expr {$code eq "Ok" ? [catch {
         object invoke _Dynamic${id}.Test${id} BindFunction
-      } result] : [set result ""]}] $result \
+      } result] : [set result ""]}] \
+      [extractSystemDataSQLiteExceptionMessage $result] \
       [expr {$code eq "Ok" ? [catch {
         object invoke _Dynamic${id}.Test${id} CallFunction
-      } result] : [set result ""]}] $result \
+      } result] : [set result ""]}] \
+      [extractSystemDataSQLiteExceptionMessage $result] \
       [expr {$code eq "Ok" ? [catch {
         object invoke _Dynamic${id}.Test${id} Uninitialize
-      } result] : [set result ""]}] $result
+      } result] : [set result ""]}] \
+      [extractSystemDataSQLiteExceptionMessage $result]
 } -cleanup {
   cleanupDb $fileName
 
   unset -nocomplain result code results errors sql dataSource id fileName
 } -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
-System.Data.SQLite compileCSharp} -match regexp -result \
-[string map [list \n \r\n] {^Ok System#CodeDom#Compiler#CompilerResults#\d+\
-\{\} 0 \{\} 0 (?:-)?\d+ 0 \{\} 1\
-\{System\.Reflection\.TargetInvocationException: Exception has been thrown by\
-the target of an invocation\. ---> System\.Data\.SQLite\.SQLiteException: SQL\
-logic error or missing database
-no such function: MyRandom.*\} 0 \{\} 0 (?:-)?\d+ 0 \{\}$}]}
+System.Data.SQLite compileCSharp} -match regexp -result {^Ok\
+System#CodeDom#Compiler#CompilerResults#\d+ \{\} 0 \{\} 0 (?:-)?\d+ 0 \{\} 1\
+\{SQL logic error or missing database -- no such function: MyRandom\} 0 \{\} 0\
+(?:-)?\d+ 0 \{\}$}}
 
 ###############################################################################
 

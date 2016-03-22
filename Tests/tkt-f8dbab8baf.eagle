@@ -120,22 +120,21 @@ runTest {test tkt-f8dbab8baf-1.5 {SchemaOnly CREATE/SELECT success} -setup {
 runTest {test tkt-f8dbab8baf-1.6 {SchemaOnly CREATE/SELECT failure} -setup {
   setupDb [set fileName tkt-f8dbab8baf-1.6.db]
 } -body {
-  sql execute -execute reader -format none -behavior SchemaOnly $db \
-      "CREATE TABLE t1(x); SELECT x FROM t1;"
+  list [catch {
+    sql execute -execute reader -format none -behavior SchemaOnly $db \
+        "CREATE TABLE t1(x); SELECT x FROM t1;"
 
-  list [isTableInDb t1] \
-      [expr {[info exists rows(count)] ? $rows(count) : -1}] \
-      [expr {[info exists rows(names)] ? $rows(names) : ""}]
+    list [isTableInDb t1] \
+        [expr {[info exists rows(count)] ? $rows(count) : -1}] \
+        [expr {[info exists rows(names)] ? $rows(names) : ""}]
+  } error] [extractSystemDataSQLiteExceptionMessage $error]
 } -cleanup {
   cleanupDb $fileName
 
-  unset -nocomplain rows db fileName
+  unset -nocomplain error rows db fileName
 } -constraints \
-{eagle monoBug40 command.sql compile.DATA SQLite System.Data.SQLite} \
--returnCodes 1 -match regexp -result [string map [list \n \r\n] \
-{^System\.Data\.SQLite\.SQLiteException \(0x80004005\): SQL logic error or\
-missing database
-no such table: t1.*$}]}
+{eagle monoBug40 command.sql compile.DATA SQLite System.Data.SQLite} -result \
+{1 {SQL logic error or missing database -- no such table: t1}}}
 
 ###############################################################################
 

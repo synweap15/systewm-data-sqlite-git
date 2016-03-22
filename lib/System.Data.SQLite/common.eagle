@@ -1754,10 +1754,8 @@ namespace eval ::Eagle {
         #       code for the interpreter, and the error message up to the
         #       point where the stack trace should start.
         #
-        set index [string first "   at " $result]; # HACK: Reliable?
-
-        return [list $code $::errorCode [expr {$index != -1 ? \
-            [string trim [string range $result 0 $index]] : $result}]]
+        return [list $code $::errorCode \
+            [extractSystemDataSQLiteExceptionMessage $result]]
       }
     }
 
@@ -1842,6 +1840,36 @@ namespace eval ::Eagle {
       return [expr {
         [sql execute -execute scalar $db $sql [list param1 String $name]] > 0
       }]
+    }
+
+    proc extractSystemDataSQLiteExceptionMessage { value } {
+      #
+      # NOTE: If the string conforms to format of the normal exception
+      #       error strings, extract and return only the error message
+      #       portion itself.
+      #
+      set patterns [list \
+      {System\.Data\.SQLite\.SQLiteException \(0x80004005\): (.+?)  (?: )?at} \
+      {System\.Data\.SQLite\.SQLiteException: (.+?)  (?: )?at}]
+
+      foreach pattern $patterns {
+        if {[regexp -- $pattern $value dummy message]} then {
+          set message [string map [list \r\n \n] [string trim $message]]
+          set lines [split $message \n]
+
+          if {[llength $lines] == 2} then {
+            if {[lindex $lines 0] eq [lindex $lines 1]} then {
+              return [lindex $lines 0]
+            }
+
+            return [appendArgs [lindex $lines 0] " -- " [lindex $lines 1]]
+          }
+
+          return $message
+        }
+      }
+
+      return $value
     }
 
     proc trimSql { sql } {
@@ -3614,33 +3642,35 @@ namespace eval ::Eagle {
         foreach fileNameOnly [getCoreBinaryFileNamesOnly] {
           catch {
             tputs $::test_channel [appendArgs \
-                "---- file version of \"" $fileNameOnly "\"... " \
-                [file version [getBinaryFileName $fileNameOnly]] \n]
+                "---- file version of \"" $fileNameOnly "\"... \"" \
+                [file version [getBinaryFileName $fileNameOnly]] \"\n]
           }
         }
 
         catch {
           tputs $::test_channel [appendArgs \
-              "---- file version of \"SQLite.Interop.dll\"... " \
-              [file version [getBinaryFileName SQLite.Interop.dll]] \n]
+              "---- file version of \"SQLite.Interop.dll\"... \"" \
+              [file version [getBinaryFileName SQLite.Interop.dll]] \"\n]
         }
 
         catch {
           tputs $::test_channel [appendArgs \
-              "---- file version of \"System.Data.SQLite.dll\"... " \
-              [file version [getBinaryFileName System.Data.SQLite.dll]] \n]
+              "---- file version of \"System.Data.SQLite.dll\"... \"" \
+              [file version [getBinaryFileName System.Data.SQLite.dll]] \"\n]
         }
 
         catch {
           tputs $::test_channel [appendArgs \
-              "---- file version of \"System.Data.SQLite.Linq.dll\"... " \
-              [file version [getBinaryFileName System.Data.SQLite.Linq.dll]] \n]
+              "---- file version of \"System.Data.SQLite.Linq.dll\"... \"" \
+              [file version [getBinaryFileName System.Data.SQLite.Linq.dll]] \
+              \"\n]
         }
 
         catch {
           tputs $::test_channel [appendArgs \
-              "---- file version of \"System.Data.SQLite.EF6.dll\"... " \
-              [file version [getBinaryFileName System.Data.SQLite.EF6.dll]] \n]
+              "---- file version of \"System.Data.SQLite.EF6.dll\"... \"" \
+              [file version [getBinaryFileName System.Data.SQLite.EF6.dll]] \
+              \"\n]
         }
 
         if {[string length $platform] > 0} then {
@@ -3648,23 +3678,23 @@ namespace eval ::Eagle {
             catch {
               tputs $::test_channel [appendArgs \
                   "---- file version of \"" $platform \
-                  / $fileNameOnly "\"... " [file version \
-                  [getBinaryFileName $fileNameOnly $platform]] \n]
+                  / $fileNameOnly "\"... \"" [file version \
+                  [getBinaryFileName $fileNameOnly $platform]] \"\n]
             }
           }
 
           catch {
             tputs $::test_channel [appendArgs \
                 "---- file version of \"" $platform \
-                "/SQLite.Interop.dll\"... " [file version \
-                [getBinaryFileName SQLite.Interop.dll $platform]] \n]
+                "/SQLite.Interop.dll\"... \"" [file version \
+                [getBinaryFileName SQLite.Interop.dll $platform]] \"\n]
           }
 
           catch {
             tputs $::test_channel [appendArgs \
                 "---- file version of \"" $platform \
-                "/System.Data.SQLite.dll\"... " [file version \
-                [getBinaryFileName System.Data.SQLite.dll $platform]] \n]
+                "/System.Data.SQLite.dll\"... \"" [file version \
+                [getBinaryFileName System.Data.SQLite.dll $platform]] \"\n]
           }
         }
 
@@ -3673,23 +3703,24 @@ namespace eval ::Eagle {
             catch {
               tputs $::test_channel [appendArgs \
                   "---- file version of \"" $architecture \
-                  / $fileNameOnly "\"... " [file version \
-                  [getBinaryFileName $fileNameOnly $architecture]] \n]
+                  / $fileNameOnly "\"... \"" [file version \
+                  [getBinaryFileName $fileNameOnly $architecture]] \"\n]
             }
           }
 
           catch {
             tputs $::test_channel [appendArgs \
                 "---- file version of \"" $architecture \
-                "/SQLite.Interop.dll\"... " [file version \
-                [getBinaryFileName SQLite.Interop.dll $architecture]] \n]
+                "/SQLite.Interop.dll\"... \"" [file version \
+                [getBinaryFileName SQLite.Interop.dll $architecture]] \"\n]
           }
 
           catch {
             tputs $::test_channel [appendArgs \
                 "---- file version of \"" $architecture \
-                "/System.Data.SQLite.dll\"... " [file version \
-                [getBinaryFileName System.Data.SQLite.dll $architecture]] \n]
+                "/System.Data.SQLite.dll\"... \"" [file version \
+                [getBinaryFileName System.Data.SQLite.dll $architecture]] \
+                \"\n]
           }
         }
 

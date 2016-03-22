@@ -47,9 +47,11 @@ runTest {test tkt-ccfa69fc32-1.1 {LINQ Transaction Scope} -body {
     lappend result $code
 
     if {$code == 0} then {
-      lappend result [string trim $output]
+      lappend result [string trim \
+          [extractSystemDataSQLiteExceptionMessage $output]]
     } else {
-      lappend result [string trim $error]
+      lappend result [string trim \
+          [extractSystemDataSQLiteExceptionMessage $error]]
     }
   }
 
@@ -57,12 +59,10 @@ runTest {test tkt-ccfa69fc32-1.1 {LINQ Transaction Scope} -body {
 } -cleanup {
   unset -nocomplain code output error result add
 } -constraints {eagle monoToDo SQLite file_System.Data.SQLite.dll testExec\
-file_System.Data.SQLite.Linq.dll file_testlinq.exe file_northwindEF.db} -match \
-glob -result {0 {1581 1730 1833 2116 2139} 0\
-{System.Data.UpdateException: * --->\
-System.Data.SQLite.SQLiteException: constraint failed
-UNIQUE constraint failed: Territories.TerritoryID
-*} 0 {1 2 3 4 5 6 7 8 9 10 1576 1577 1578 1579 1580 1581 1730 1833 2116 2139}}}
+file_System.Data.SQLite.Linq.dll file_testlinq.exe file_northwindEF.db} \
+-result {0 {1581 1730 1833 2116 2139} 0 {constraint failed -- UNIQUE constraint\
+failed: Territories.TerritoryID} 0 {1 2 3 4 5 6 7 8 9 10 1576 1577 1578 1579\
+1580 1581 1730 1833 2116 2139}}}
 
 ###############################################################################
 
@@ -92,9 +92,11 @@ runTest {test tkt-ccfa69fc32-1.2 {EF6 Transaction Scope} -body {
     lappend result $code
 
     if {$code == 0} then {
-      lappend result [string trim $output]
+      lappend result [string trim \
+          [extractSystemDataSQLiteExceptionMessage $output]]
     } else {
-      lappend result [string trim $error]
+      lappend result [string trim \
+          [extractSystemDataSQLiteExceptionMessage $error]]
     }
   }
 
@@ -102,12 +104,10 @@ runTest {test tkt-ccfa69fc32-1.2 {EF6 Transaction Scope} -body {
 } -cleanup {
   unset -nocomplain code output error result add
 } -constraints {eagle monoToDo SQLite file_System.Data.SQLite.dll testExec\
-file_System.Data.SQLite.EF6.dll file_testef6.exe file_northwindEF.db} -match \
-glob -result {0 {1581 1730 1833 2116 2139} 0\
-{System.Data.Entity.Core.UpdateException: * --->\
-System.Data.SQLite.SQLiteException: constraint failed
-UNIQUE constraint failed: Territories.TerritoryID
-*} 0 {1 2 3 4 5 6 7 8 9 10 1576 1577 1578 1579 1580 1581 1730 1833 2116 2139}}}
+file_System.Data.SQLite.EF6.dll file_testef6.exe file_northwindEF.db} \
+-result {0 {1581 1730 1833 2116 2139} 0 {constraint failed -- UNIQUE constraint\
+failed: Territories.TerritoryID} 0 {1 2 3 4 5 6 7 8 9 10 1576 1577 1578 1579\
+1580 1581 1730 1833 2116 2139}}}
 
 ###############################################################################
 

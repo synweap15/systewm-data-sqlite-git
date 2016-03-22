@@ -39,24 +39,15 @@ set params(results) [list \
     1048576 1048576 10\\} 0\$" \
     "0 \\{1 1048576 1048576 1048576 1048576 1048576 1048576 1048576 1048576\
     1048576 1048576 10\\} 0\$" \
-    "1 \\{System\\.Reflection\\.TargetInvocationException: Exception has been\
-    thrown by the target of an invocation\\. --->\
-    System\\.Data\\.SQLite\\.SQLiteException: SQL logic error or missing\
-    database\\r\\nno such table: t1\\r\\n.*?" \
-    "1 \\{System\\.Reflection\\.TargetInvocationException: Exception has been\
-    thrown by the target of an invocation\\. --->\
-    System\\.Data\\.SQLite\\.SQLiteException: SQL logic error or missing\
-    database\\r\\nno such table: t1\\r\\n.*?" \
+    "1 \\{SQL logic error or missing database -- no such table: t1" \
+    "1 \\{SQL logic error or missing database -- no such table: t1" \
     "0 \\{1 1048576 1048576 1048576 1048576 1048576 1048576 1048576 1048576\
     1048576 1048576 10\\} 0\$" \
     "0 \\{1 1048576 1048576 1048576 1048576 1048576 1048576 1048576 1048576\
     1048576 1048576 10\\} 10283\$" \
     "0 \\{1 1048576 1048576 1048576 1048576 1048576 1048576 1048576 1048576\
     1048576 1048576 10\\} 0\$" \
-    "1 \\{System\\.Reflection\\.TargetInvocationException: Exception has been\
-    thrown by the target of an invocation\\. --->\
-    System\\.Data\\.SQLite\\.SQLiteException: SQL logic error or missing\
-    database\\r\\nno such table: t1\\r\\n.*?" \
+    "1 \\{SQL logic error or missing database -- no such table: t1" \
     "0 \\{1 1048576 1048576 1048576 1048576 1048576 1048576 1048576 1048576\
     1048576 1048576 10\\} \\{\\}\$" \
     "0 \\{1 1048576 1048576 1048576 1048576 1048576 1048576 1048576 1048576\
@@ -213,7 +204,8 @@ for {set i 0} {$i < [llength $params(pages)]} {incr i} {
         [expr {[info exists errors] ? $errors : ""}] \
         [expr {$code eq "Ok" ? [catch {
           object invoke _Dynamic${id}.Test${id} BackupAndGetData "" $memSource
-        } result] : [set result ""]}] $result $callbackResults
+        } result] : [set result ""]}] \
+        [extractSystemDataSQLiteExceptionMessage $result] $callbackResults
   } -cleanup {
     cleanupDb $fileName(2)
     cleanupDb $fileName(1) memDb
