@@ -1854,6 +1854,36 @@ namespace eval ::Eagle {
       }
     }
 
+    proc getDbDefaultCacheSize {} {
+      try {
+        set db [sql open -type SQLite {Data Source=:memory:;}]
+        return [sql execute -execute scalar $db "PRAGMA cache_size;"]
+      } finally {
+        if {[info exists db]} then {
+          catch {sql close $db}
+          unset -nocomplain db
+        }
+      }
+    }
+
+    proc useLegacyDbPageAndCacheSizes { varName } {
+      #
+      # NOTE: Refer to the specified variable (e.g. "db") in the context of our
+      #       caller.  It contains the database connection handle that will be
+      #       used to execute queries used to set the page and cache sizes.
+      #
+      upvar 1 $varName db
+
+      sql execute $db {
+        PRAGMA page_size = 1024;
+        PRAGMA cache_size = 2000;
+      }
+
+      return [list \
+          [sql execute -execute scalar $db "PRAGMA page_size;"] \
+          [sql execute -execute scalar $db "PRAGMA cache_size;"]]
+    }
+
     proc extractSystemDataSQLiteExceptionMessage { value } {
       #
       # NOTE: If the string conforms to format of the normal exception
