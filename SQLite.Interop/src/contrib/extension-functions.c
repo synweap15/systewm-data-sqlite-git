@@ -209,9 +209,11 @@ int double_cmp(const void *a, const void *b);
 
 #endif /* _MAP_H_ */
 
+#if !defined(SQLITE_CORE)
 typedef uint8_t         u8;
 /* typedef uint16_t        u16; */
 typedef int64_t         i64;
+#endif
 
 static char *sqlite3StrDup( const char *z ) {
     char *res = sqlite3_malloc( strlen(z)+1 );
@@ -1459,8 +1461,8 @@ static void modeStep(sqlite3_context *context, int argc, sqlite3_value **argv){
 **  Auxiliary function that iterates all elements in a map and finds the mode
 **  (most frequent value)
 */
-static void modeIterate(void* e, i64 c, void* pp){
-  i64 ei;
+static void modeIterate(void* e, int64_t c, void* pp){
+  int64_t ei;
   double ed;
   ModeCtx *p = (ModeCtx*)pp;
 
@@ -1492,8 +1494,8 @@ static void modeIterate(void* e, i64 c, void* pp){
 **  (the value such that the number of elements smaller is equal the the number of
 **  elements larger)
 */
-static void medianIterate(void* e, i64 c, void* pp){
-  i64 ei;
+static void medianIterate(void* e, int64_t c, void* pp){
+  int64_t ei;
   double ed;
   double iL;
   double iR;
@@ -1937,7 +1939,6 @@ void map_destroy(map *m){
 int int_cmp(const void *a, const void *b){
   int64_t aa = *(int64_t *)(a);
   int64_t bb = *(int64_t *)(b);
-  /* printf("cmp %d <=> %d\n",aa,bb); */
   if(aa==bb)
     return 0;
   else if(aa<bb)
@@ -1949,7 +1950,6 @@ int int_cmp(const void *a, const void *b){
 int double_cmp(const void *a, const void *b){
   double aa = *(double *)(a);
   double bb = *(double *)(b);
-  /* printf("cmp %d <=> %d\n",aa,bb); */
   if(aa==bb)
     return 0;
   else if(aa<bb)
@@ -1957,9 +1957,3 @@ int double_cmp(const void *a, const void *b){
   else
     return 1;
 }
-
-void print_elem(void *e, int64_t c, void* p){
-  int ee = *(int*)(e);
-  printf("%d => %lld\n", ee,c);
-}
-
