@@ -5,7 +5,7 @@
  * Released to the public domain, use at your own risk!
  ********************************************************/
 
-#if SQLITE_OS_WIN
+#ifdef _WIN32
 #define SQLITE_API __declspec(dllexport)
 #else
 #define WINAPI
