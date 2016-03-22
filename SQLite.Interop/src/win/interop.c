@@ -13,6 +13,10 @@
 
 #include "../core/sqlite3.c"
 
+#if !SQLITE_OS_WIN
+#include <wchar.h>
+#endif
+
 #if defined(INTEROP_INCLUDE_EXTRA)
 #include "../ext/extra.c"
 #endif
@@ -36,7 +40,6 @@
 extern int RegisterExtensionFunctions(sqlite3 *db);
 #endif
 
-#if SQLITE_OS_WIN
 #if defined(INTEROP_CODEC) && !defined(INTEROP_INCLUDE_SEE)
 #ifdef SQLITE_ENABLE_ZIPVFS
 #define INTEROP_CODEC_GET_PAGER(a,b,c) sqlite3PagerGet(a,b,c,0)
@@ -196,11 +199,11 @@ SQLITE_PRIVATE void sqlite3InteropDebug(const char *zFormat, ...){
   sqlite3VXPrintf(&acc, 0, zFormat, ap);
 #endif
   va_end(ap);
-#if SQLITE_VERSION_NUMBER >= 3007013
+#if SQLITE_OS_WIN && SQLITE_VERSION_NUMBER >= 3007013
   sqlite3_win32_write_debug(sqlite3StrAccumFinish(&acc), -1);
-#elif defined(SQLITE_WIN32_HAS_ANSI)
+#elif SQLITE_OS_WIN && defined(SQLITE_WIN32_HAS_ANSI)
   OutputDebugStringA(sqlite3StrAccumFinish(&acc));
-#elif defined(SQLITE_WIN32_HAS_WIDE)
+#elif SQLITE_OS_WIN && defined(SQLITE_WIN32_HAS_WIDE)
   {
     LPWSTR zWideMsg = utf8ToUnicode(sqlite3StrAccumFinish(&acc));
     if( zWideMsg ){
@@ -1058,7 +1061,6 @@ SQLITE_API int WINAPI sqlite3_cursor_rowid_interop(sqlite3_stmt *pstmt, int curs
 
   return ret;
 }
-#endif /* SQLITE_OS_WIN */
 
 /*****************************************************************************/
 
