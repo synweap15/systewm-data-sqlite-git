@@ -1902,39 +1902,33 @@ namespace System.Data.SQLite
 
     internal override string ColumnType(SQLiteStatement stmt, int index, ref TypeAffinity nAffinity)
     {
-      int len;
+        int len;
 #if !SQLITE_STANDARD
-      len = 0;
-      IntPtr p = UnsafeNativeMethods.sqlite3_column_decltype_interop(stmt._sqlite_stmt, index, ref len);
+        len = 0;
+        IntPtr p = UnsafeNativeMethods.sqlite3_column_decltype_interop(stmt._sqlite_stmt, index, ref len);
 #else
-      len = -1;
-      IntPtr p = UnsafeNativeMethods.sqlite3_column_decltype(stmt._sqlite_stmt, index);
+        len = -1;
+        IntPtr p = UnsafeNativeMethods.sqlite3_column_decltype(stmt._sqlite_stmt, index);
 #endif
-      nAffinity = ColumnAffinity(stmt, index);
+        nAffinity = ColumnAffinity(stmt, index);
 
-      if (p != IntPtr.Zero && ((len > 0) || (len == -1))) return UTF8ToString(p, len);
-      else
-      {
+        if ((p != IntPtr.Zero) && ((len > 0) || (len == -1)))
+        {
+            string declType = UTF8ToString(p, len);
+
+            if (!String.IsNullOrEmpty(declType))
+                return declType;
+        }
+
         string[] ar = stmt.TypeDefinitions;
+
         if (ar != null)
         {
-          if (index < ar.Length && ar[index] != null)
-            return ar[index];
+            if (index < ar.Length && ar[index] != null)
+                return ar[index];
         }
-        return String.Empty;
 
-        //switch (nAffinity)
-        //{
-        //  case TypeAffinity.Int64:
-        //    return "BIGINT";
-        //  case TypeAffinity.Double:
-        //    return "DOUBLE";
-        //  case TypeAffinity.Blob:
-        //    return "BLOB";
-        //  default:
-        //    return "TEXT";
-        //}
-      }
+        return String.Empty;
     }
 
     internal override int ColumnIndex(SQLiteStatement stmt, string columnName)
