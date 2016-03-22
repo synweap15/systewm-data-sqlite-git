@@ -1926,16 +1926,18 @@ runTest {test data-1.38 {serialization of SQLiteException} -body {
 
   set exception(2) [$serializer -alias Deserialize $stream]
 
-  list [$exception(1) ResultCode] [$exception(1) Message] \
-      [$exception(2) ResultCode] [$exception(2) Message] \
+  list [$exception(1) ResultCode] \
+      [string map [list \r\n \n] [$exception(1) Message]] \
+      [$exception(2) ResultCode] \
+      [string map [list \r\n \n] [$exception(2) Message]] \
       [expr {[$exception(1) ResultCode] eq [$exception(2) ResultCode]}] \
       [expr {[$exception(1) Message] eq [$exception(2) Message]}]
 } -cleanup {
   unset -nocomplain exception stream serializer
 } -constraints {eagle command.object SQLite System.Data.SQLite} -result \
-[string map [list \n \r\n] {CantOpen {unable to open database file
+{CantOpen {unable to open database file
 this is a test} CantOpen {unable to open database file
-this is a test} True True}]}
+this is a test} True True}}
 
 ###############################################################################
 

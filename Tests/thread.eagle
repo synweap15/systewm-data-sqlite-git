@@ -443,7 +443,8 @@ runTest {test thread-1.1 {Thread.Abort() impact on native resources} -setup {
         }
       }
     }
-  }] true true true results errors [list System.Data.SQLite.dll Eagle.dll]]
+  }] true true true results errors [list System.Data.SQLite.dll Eagle.dll] \
+      WarningLevel 0]
 
   list $code $results \
       [expr {[info exists errors] ? $errors : ""}] \
