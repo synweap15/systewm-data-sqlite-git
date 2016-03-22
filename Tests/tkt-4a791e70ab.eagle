@@ -60,7 +60,7 @@ runTest {test tkt-4a791e70ab-1.1 {SQLiteDataAdapter w/SelectCommand} -setup {
         }
       }
     }
-  }] true true true results errors System.Data.SQLite.dll]
+  }] true true true results errors System.Data.SQLite.dll WarningLevel 0]
 
   list $code $results \
       [expr {[info exists errors] ? $errors : ""}] \
