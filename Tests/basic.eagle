@@ -407,8 +407,8 @@ runTest {test data-1.7 {SQLITE_FCNTL_WIN32_AV_RETRY} -setup {
 
   unset -nocomplain result count interval savedCount savedInterval results \
       errors code dataSource id db fileName
-} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
-System.Data.SQLite compileCSharp} -match regexp -result {^Ok\
+} -constraints {eagle command.object windows monoBug28 command.sql compile.DATA\
+SQLite System.Data.SQLite compileCSharp} -match regexp -result {^Ok\
 System#CodeDom#Compiler#CompilerResults#\d+ \{\} 0 True$}}
 
 ###############################################################################
