@@ -1807,7 +1807,10 @@ int RegisterExtensionFunctions(sqlite3 *db){
 #if 1
     if( aFuncs[i].needCollSeq ){
       struct FuncDef *pFunc = sqlite3FindFunction(db, aFuncs[i].zName,
-          strlen(aFuncs[i].zName), aFuncs[i].nArg, aFuncs[i].eTextRep, 0);
+#if SQLITE_VERSION_NUMBER < 3012000
+          strlen(aFuncs[i].zName),
+#endif
+          aFuncs[i].nArg, aFuncs[i].eTextRep, 0);
       if( pFunc && aFuncs[i].needCollSeq ){
 #if SQLITE_VERSION_NUMBER >= 3008001
         pFunc->funcFlags |= SQLITE_FUNC_NEEDCOLL;
@@ -1832,7 +1835,10 @@ int RegisterExtensionFunctions(sqlite3 *db){
 #if 0
     if( aAggs[i].needCollSeq ){
       struct FuncDef *pFunc = sqlite3FindFunction( db, aAggs[i].zName,
-          strlen(aAggs[i].zName), aAggs[i].nArg, SQLITE_UTF8, 0);
+#if SQLITE_VERSION_NUMBER < 3012000
+          strlen(aAggs[i].zName),
+#endif
+          aAggs[i].nArg, SQLITE_UTF8, 0);
       if( pFunc && aAggs[i].needCollSeq ){
 #if SQLITE_VERSION_NUMBER >= 3008001
         pFunc->funcFlags |= SQLITE_FUNC_NEEDCOLL;
