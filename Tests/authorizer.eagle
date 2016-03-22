@@ -112,7 +112,7 @@ runTest {test authorizer-1.1 {SQLiteConnection Authorize event} -setup {
     Savepoint         {SAVEPOINT s1; RELEASE SAVEPOINT s1;} \
     Attach            {ATTACH DATABASE ':memory:' AS d1;} \
     Detach            {DETACH DATABASE d1;} \
-    CreateVtable      {CREATE VIRTUAL TABLE t3 USING fts4(x TEXT);} \
+    CreateVtable      {CREATE VIRTUAL TABLE t3 USING fts3(x TEXT);} \
     DropVtable        {DROP TABLE t3;} \
     CreateTable       {CREATE TABLE tDeny(x);}]
 
@@ -159,7 +159,7 @@ temp {}}} 0 0} {DropTempIndex {{0 DropTempIndex i2 t2 temp {}}} 0 0}\
 BEGIN {} {} {}} {0 Transaction COMMIT {} {} {}}} 0 -1} {Savepoint {{0 Savepoint\
 BEGIN s1 {} {}} {0 Savepoint RELEASE s1 {} {}}} 0 -1} {Attach {{0 Attach\
 :memory: {} {} {}}} 0 -1} {Detach {{0 Detach d1 {} {} {}}} 0 -1} {CreateVtable\
-{{0 CreateVtable t3 fts4 main {}}} 0 0} {DropVtable {{0 DropVtable t3 fts4 main\
+{{0 CreateVtable t3 fts3 main {}}} 0 0} {DropVtable {{0 DropVtable t3 fts3 main\
 {}}} 0 0} {CreateTable {{0 CreateTable tDeny {} main {}}} 1 {authorization\
 denied -- not authorized}} False}}
 

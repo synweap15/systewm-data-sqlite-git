@@ -479,7 +479,7 @@ namespace eval ::Eagle {
       return false
     }
 
-    proc getCoreBinaryFileNamesOnly {} {
+    proc getNativeLibraryFileNamesOnly {} {
       #
       # NOTE: First, check if the list of native library file names has been
       #       manually overridden.
@@ -582,7 +582,7 @@ namespace eval ::Eagle {
       #       library.  If this file exists, we should have everything we
       #       need.
       #
-      foreach fileNameOnly [getCoreBinaryFileNamesOnly] {
+      foreach fileNameOnly [getNativeLibraryFileNamesOnly] {
         set fileName [file nativename [file join $directory \
             $architecture $fileNameOnly]]
 
@@ -824,7 +824,7 @@ namespace eval ::Eagle {
         # NOTE: Attempt to determine the native-only standard SQLite library
         #       file name for this platform and then return it.
         #
-        foreach fileNameOnly [getCoreBinaryFileNamesOnly] {
+        foreach fileNameOnly [getNativeLibraryFileNamesOnly] {
           set fileName [file nativename \
               [file join [getBinaryDirectory] $platform $fileNameOnly]]
 
@@ -3401,7 +3401,7 @@ namespace eval ::Eagle {
         #       reason the "System.Data.SQLite.dll" file is included here is
         #       because it could be the mixed-mode assembly.
         #
-        set nativeFileNames [getCoreBinaryFileNamesOnly]
+        set nativeFileNames [getNativeLibraryFileNamesOnly]
         lappend nativeFileNames SQLite.Interop.dll System.Data.SQLite.dll
 
         #
@@ -3639,7 +3639,7 @@ namespace eval ::Eagle {
           }
         }
 
-        foreach fileNameOnly [getCoreBinaryFileNamesOnly] {
+        foreach fileNameOnly [getNativeLibraryFileNamesOnly] {
           catch {
             tputs $::test_channel [appendArgs \
                 "---- file version of \"" $fileNameOnly "\"... \"" \
@@ -3674,7 +3674,7 @@ namespace eval ::Eagle {
         }
 
         if {[string length $platform] > 0} then {
-          foreach fileNameOnly [getCoreBinaryFileNamesOnly] {
+          foreach fileNameOnly [getNativeLibraryFileNamesOnly] {
             catch {
               tputs $::test_channel [appendArgs \
                   "---- file version of \"" $platform \
@@ -3699,7 +3699,7 @@ namespace eval ::Eagle {
         }
 
         if {[string length $architecture] > 0} then {
-          foreach fileNameOnly [getCoreBinaryFileNamesOnly] {
+          foreach fileNameOnly [getNativeLibraryFileNamesOnly] {
             catch {
               tputs $::test_channel [appendArgs \
                   "---- file version of \"" $architecture \
@@ -3943,7 +3943,7 @@ namespace eval ::Eagle {
             #
             set fileName [file normalize [$module FileName]]
 
-            if {[lsearch -exact -nocase -- [getCoreBinaryFileNamesOnly] \
+            if {[lsearch -exact -nocase -- [getNativeLibraryFileNamesOnly] \
                 [file tail $fileName]] != -1} then {
               tputs $::test_channel [appendArgs \
                   "---- found loaded SQLite native library module: " \
