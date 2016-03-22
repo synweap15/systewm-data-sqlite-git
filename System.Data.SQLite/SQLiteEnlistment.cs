@@ -31,7 +31,7 @@ namespace System.Data.SQLite
 
       _scope = scope;
 
-      _scope.EnlistVolatile(this, System.Transactions.EnlistmentOptions.None);
+      _scope.EnlistVolatile(this, EnlistmentOptions.None);
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -64,8 +64,7 @@ namespace System.Data.SQLite
             return defaultIsolationLevel;
         }
 
-        System.Transactions.IsolationLevel isolationLevel =
-            transaction.IsolationLevel;
+        IsolationLevel isolationLevel = transaction.IsolationLevel;
 
         //
         // TODO: Are these isolation level mappings actually correct?
