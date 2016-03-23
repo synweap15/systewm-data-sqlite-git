@@ -82,6 +82,18 @@ namespace System.Data.SQLite
 
 #if INTEROP_VIRTUAL_TABLE
     /// <summary>
+    /// This is the name of the native library file that contains the
+    /// "vtshim" extension [wrapper].
+    /// </summary>
+    protected string _shimExtensionFileName = UnsafeNativeMethods.SQLITE_DLL;
+
+    /// <summary>
+    /// This is the name of the native entry point for the "vtshim"
+    /// extension [wrapper].
+    /// </summary>
+    protected string _shimExtensionProcName = "sqlite3_vtshim_init";
+
+    /// <summary>
     /// The modules created using this connection.
     /// </summary>
     protected Dictionary<string, SQLiteModule> _modules;
@@ -2442,7 +2454,7 @@ namespace System.Data.SQLite
             throw new SQLiteException("connection has an invalid handle");
 
         SetLoadExtension(true);
-        LoadExtension(UnsafeNativeMethods.SQLITE_DLL, "sqlite3_vtshim_init");
+        LoadExtension(_shimExtensionFileName, _shimExtensionProcName);
 
         if (module.CreateDisposableModule(_sql))
         {
