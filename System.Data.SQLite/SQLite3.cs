@@ -85,12 +85,14 @@ namespace System.Data.SQLite
     /// This is the name of the native library file that contains the
     /// "vtshim" extension [wrapper].
     /// </summary>
-    protected string _shimExtensionFileName =
-#if (SQLITE_STANDARD || USE_INTEROP_DLL || PLATFORM_COMPACTFRAMEWORK) && PRELOAD_NATIVE_LIBRARY
-        UnsafeNativeMethods.GetNativeLibraryFileNameOnly();
-#else
-        UnsafeNativeMethods.SQLITE_DLL;
-#endif
+    protected string _shimExtensionFileName = null;
+
+    /// <summary>
+    /// This is the flag indicate whether the native library file that
+    /// contains the "vtshim" extension must be dynamically loaded by
+    /// this class prior to use.
+    /// </summary>
+    protected bool? _shimIsLoadNeeded = null;
 
     /// <summary>
     /// This is the name of the native entry point for the "vtshim"
@@ -2435,6 +2437,41 @@ namespace System.Data.SQLite
 
 #if INTEROP_VIRTUAL_TABLE
     /// <summary>
+    /// Determines the file name of the native library containing the native
+    /// "vtshim" extension -AND- whether it should be dynamically loaded by
+    /// this class.
+    /// </summary>
+    /// <param name="isLoadNeeded">
+    /// This output parameter will be set to non-zero if the returned native
+    /// library file name should be dynamically loaded prior to attempting
+    /// the creation of native disposable extension modules.
+    /// </param>
+    /// <returns>
+    /// The file name of the native library containing the native "vtshim"
+    /// extension -OR- null if it cannot be determined.
+    /// </returns>
+    private string GetShimExtensionFileName(
+        ref bool isLoadNeeded /* out */
+        )
+    {
+        if (_shimIsLoadNeeded != null)
+            isLoadNeeded = (bool)_shimIsLoadNeeded;
+        else
+            isLoadNeeded = UnsafeNativeMethods.IsWindows(); /* COMPAT */
+
+        string fileName = _shimExtensionFileName;
+
+        if (fileName != null)
+            return fileName;
+
+#if (SQLITE_STANDARD || USE_INTEROP_DLL || PLATFORM_COMPACTFRAMEWORK) && PRELOAD_NATIVE_LIBRARY
+        return UnsafeNativeMethods.GetNativeLibraryFileNameOnly(); /* COMPAT */
+#else
+        return null;
+#endif
+    }
+
+    /// <summary>
     /// Calls the native SQLite core library in order to create a disposable
     /// module containing the implementation of a virtual table.
     /// </summary>
@@ -2458,14 +2495,20 @@ namespace System.Data.SQLite
         if (_sql == null)
             throw new SQLiteException("connection has an invalid handle");
 
-        if (_shimExtensionFileName == null)
-            throw new SQLiteException("the file name for the \"vtshim\" extension is unknown");
+        bool isLoadNeeded = false;
+        string fileName = GetShimExtensionFileName(ref isLoadNeeded);
 
-        if (_shimExtensionProcName == null)
-            throw new SQLiteException("the entry point for the \"vtshim\" extension is unknown");
+        if (isLoadNeeded)
+        {
+            if (fileName == null)
+                throw new SQLiteException("the file name for the \"vtshim\" extension is unknown");
 
-        SetLoadExtension(true);
-        LoadExtension(_shimExtensionFileName, _shimExtensionProcName);
+            if (_shimExtensionProcName == null)
+                throw new SQLiteException("the entry point for the \"vtshim\" extension is unknown");
+
+            SetLoadExtension(true);
+            LoadExtension(fileName, _shimExtensionProcName);
+        }
 
         if (module.CreateDisposableModule(_sql))
         {

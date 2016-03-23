@@ -165,6 +165,30 @@ namespace System.Data.SQLite
       /////////////////////////////////////////////////////////////////////////
 
       /// <summary>
+      /// Determines if the current process is running on one of the Windows
+      /// [sub-]platforms.
+      /// </summary>
+      /// <returns>
+      /// Non-zero when running on Windows; otherwise, zero.
+      /// </returns>
+      internal static bool IsWindows()
+      {
+          PlatformID platformId = Environment.OSVersion.Platform;
+
+          if ((platformId == PlatformID.Win32S) ||
+              (platformId == PlatformID.Win32Windows) ||
+              (platformId == PlatformID.Win32NT) ||
+              (platformId == PlatformID.WinCE))
+          {
+              return true;
+          }
+
+          return false;
+      }
+
+      /////////////////////////////////////////////////////////////////////////
+
+      /// <summary>
       /// This is a wrapper around the
       /// <see cref="String.Format(IFormatProvider,String,Object[])" /> method.
       /// On Mono, it has to call the method overload without the
@@ -878,7 +902,7 @@ namespace System.Data.SQLite
       /// <summary>
       /// The native module file name for the native SQLite library or null.
       /// </summary>
-      private static string _SQLiteNativeModuleFileName = null;
+      internal static string _SQLiteNativeModuleFileName = null;
 
       /////////////////////////////////////////////////////////////////////////
       /// <summary>
@@ -905,7 +929,7 @@ namespace System.Data.SQLite
           if (fileNameOnly != null)
               return fileNameOnly;
 
-          return SQLITE_DLL;
+          return SQLITE_DLL; /* COMPAT */
       }
 
       /////////////////////////////////////////////////////////////////////////
@@ -1066,12 +1090,7 @@ namespace System.Data.SQLite
       {
           if (!String.IsNullOrEmpty(fileName))
           {
-              PlatformID platformId = Environment.OSVersion.Platform;
-
-              if ((platformId == PlatformID.Win32S) ||
-                  (platformId == PlatformID.Win32Windows) ||
-                  (platformId == PlatformID.Win32NT) ||
-                  (platformId == PlatformID.WinCE))
+              if (IsWindows())
               {
                   if (!fileName.EndsWith(DllFileExtension,
                           StringComparison.OrdinalIgnoreCase))
@@ -1398,8 +1417,7 @@ namespace System.Data.SQLite
               nativeModuleFileName = fileName;
 
 #if !PLATFORM_COMPACTFRAMEWORK
-              if ((Environment.OSVersion.Platform == PlatformID.Unix) ||
-                  (Environment.OSVersion.Platform == PlatformID.MacOSX))
+              if (!IsWindows())
               {
                   nativeModuleHandle = dlopen(fileName, RTLD_DEFAULT);
               }
