@@ -2925,7 +2925,7 @@ namespace eval ::Eagle {
         foreach name [list connectionCount statementCount backupCount] {
           if {[catch {
             object invoke -flags +NonPublic \
-                System.Data.SQLite.UnsafeNativeMethods $name
+                System.Data.SQLite.DebugData $name
           } value] == 0} then {
             if {!$quiet} then {
               tputs $channel [appendArgs \

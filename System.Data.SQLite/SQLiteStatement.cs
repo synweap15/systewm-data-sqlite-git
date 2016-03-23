@@ -85,7 +85,7 @@ namespace System.Data.SQLite
           s = _sql.Bind_ParamName(this, _flags, x + 1);
           if (String.IsNullOrEmpty(s))
           {
-            s = UnsafeNativeMethods.StringFormat(CultureInfo.InvariantCulture, ";{0}", nCmdStart);
+            s = HelperMethods.StringFormat(CultureInfo.InvariantCulture, ";{0}", nCmdStart);
             nCmdStart++;
             _unnamedParameters++;
           }
@@ -258,7 +258,7 @@ namespace System.Data.SQLite
       {
           IntPtr handle = _sqlite_stmt;
 
-          SQLiteLog.LogMessage(UnsafeNativeMethods.StringFormat(
+          SQLiteLog.LogMessage(HelperMethods.StringFormat(
               CultureInfo.CurrentCulture,
               "Binding statement {0} paramter #{1} with database type {2} and raw value {{{3}}}...",
               handle, index, objType, obj));
