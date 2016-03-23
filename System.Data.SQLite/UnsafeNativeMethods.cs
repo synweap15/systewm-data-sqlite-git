@@ -84,6 +84,7 @@ namespace System.Data.SQLite
       /////////////////////////////////////////////////////////////////////////
 
       #region Public Methods
+#if DEBUG
       /// <summary>
       /// Creates the dictionary used to store the read counts for each of the
       /// runtime configuration settings.  These numbers are used for debugging
@@ -132,6 +133,7 @@ namespace System.Data.SQLite
               }
           }
       }
+#endif
       #endregion
   }
 #endif
