@@ -36,6 +36,7 @@ SET YEARS=2008 2013
 SET NOUSER=1
 SET MSBUILD_ARGS=/property:UseSqliteStandardLibraryName=true
 SET MSBUILD_ARGS=%MSBUILD_ARGS% /property:InteropCodec=false
+SET MSBUILD_ARGS=%MSBUILD_ARGS% /property:InteropLog=false
 
 CALL :fn_ResetErrorLevel
 
