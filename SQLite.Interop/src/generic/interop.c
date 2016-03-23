@@ -48,7 +48,7 @@ extern int RegisterExtensionFunctions(sqlite3 *db);
 #else
 #define INTEROP_CODEC_GET_PAGER(a,b,c) sqlite3PagerGet(a,b,c)
 #endif
-#include "crypt.c"
+#include "../win/crypt.c"
 #endif
 
 #include "interop.h"

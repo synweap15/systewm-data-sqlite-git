@@ -370,10 +370,10 @@ IF NOT DEFINED NOPROPS (
 
 IF NOT DEFINED NOTAG (
   IF EXIST Externals\Eagle\bin\EagleShell.exe (
-    %__ECHO% Externals\Eagle\bin\EagleShell.exe -file Setup\sourceTag.eagle SourceIdMode SQLite.Interop\src\win\interop.h
+    %__ECHO% Externals\Eagle\bin\EagleShell.exe -file Setup\sourceTag.eagle SourceIdMode SQLite.Interop\src\generic\interop.h
 
     IF ERRORLEVEL 1 (
-      ECHO Source tagging of "SQLite.Interop\src\win\interop.h" failed.
+      ECHO Source tagging of "SQLite.Interop\src\generic\interop.h" failed.
       GOTO errors
     )
 

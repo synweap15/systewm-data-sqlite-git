@@ -502,7 +502,7 @@
     <ClCompile Include="src\ext\vtshim.c">
       <ExcludedFromBuild>true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="src\win\interop.c" />
+    <ClCompile Include="src\generic\interop.c" />
     <ClCompile Include="src\core\sqlite3.c">
       <ExcludedFromBuild>true</ExcludedFromBuild>
     </ClCompile>
@@ -514,7 +514,7 @@
   <ItemGroup>
     <ClInclude Include="src\core\sqlite3.h" />
     <ClInclude Include="src\core\sqlite3ext.h" />
-    <ClInclude Include="src\win\interop.h" />
+    <ClInclude Include="src\generic\interop.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="src\win\SQLite.Interop.rc" />

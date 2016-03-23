@@ -1417,7 +1417,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\src\win\interop.c"
+				RelativePath=".\src\generic\interop.c"
 				>
 			</File>
 			<File
@@ -1503,7 +1503,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\src\win\interop.h"
+				RelativePath=".\src\generic\interop.h"
 				>
 			</File>
 		</Filter>
