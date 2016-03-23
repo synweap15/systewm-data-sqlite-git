@@ -507,6 +507,20 @@ namespace eval ::Eagle {
       }
     }
 
+    proc getNativeLibraryFileName { {default ""} } {
+      set directory [file dirname [getCoreBinaryFileName]]
+
+      foreach fileNameOnly [getNativeLibraryFileNamesOnly] {
+        set fileName [file join $directory $fileNameOnly]
+
+        if {[file exists $fileName]} then {
+          return $fileName
+        }
+      }
+
+      return $default
+    }
+
     proc isBuildAvailable { native directory {varName ""} } {
       #
       # NOTE: Build the fully qualified file name for the primary assembly
