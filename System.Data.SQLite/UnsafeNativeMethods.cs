@@ -836,6 +836,26 @@ namespace System.Data.SQLite
 
       /////////////////////////////////////////////////////////////////////////
       /// <summary>
+      /// Determines the base file name (without any directory information)
+      /// for the native SQLite library to be pre-loaded by this class.
+      /// </summary>
+      /// <returns>
+      /// The base file name for the native SQLite library to be pre-loaded by
+      /// this class -OR- null if its value cannot be determined.
+      /// </returns>
+      internal static string GetNativeModuleFileNameOnly()
+      {
+          string fileNameOnly = GetSettingValue(
+              "PreLoadSQLite_ModuleFileNameOnly", null);
+
+          if (fileNameOnly != null)
+              return fileNameOnly;
+
+          return SQLITE_DLL;
+      }
+
+      /////////////////////////////////////////////////////////////////////////
+      /// <summary>
       /// Searches for the native SQLite library in the directory containing
       /// the assembly currently being executed as well as the base directory
       /// for the current application domain.
@@ -865,6 +885,15 @@ namespace System.Data.SQLite
           }
 
           //
+          // NOTE: Determine the base file name for the native SQLite library.
+          //       If this is not known by this class, we cannot continue.
+          //
+          string fileNameOnly = GetNativeModuleFileNameOnly();
+
+          if (fileNameOnly == null)
+              return false;
+
+          //
           // NOTE: Build the list of base directories and processor/platform
           //       names.  These lists will be used to help locate the native
           //       SQLite core library (or interop assembly) to pre-load into
@@ -892,7 +921,8 @@ namespace System.Data.SQLite
                       continue;
 
                   string fileName = FixUpDllFileName(MaybeCombinePath(
-                      MaybeCombinePath(directory, subDirectory), SQLITE_DLL));
+                      MaybeCombinePath(directory, subDirectory),
+                      fileNameOnly));
 
                   //
                   // NOTE: If the SQLite DLL file exists, return success.
@@ -1215,11 +1245,20 @@ namespace System.Data.SQLite
               return false;
 
           //
+          // NOTE: Determine the base file name for the native SQLite library.
+          //       If this is not known by this class, we cannot continue.
+          //
+          string fileNameOnly = GetNativeModuleFileNameOnly();
+
+          if (fileNameOnly == null)
+              return false;
+
+          //
           // NOTE: If the native SQLite library exists in the base directory
           //       itself, stop now.
           //
-          string fileName = FixUpDllFileName(MaybeCombinePath(
-              baseDirectory, SQLITE_DLL));
+          string fileName = FixUpDllFileName(MaybeCombinePath(baseDirectory,
+              fileNameOnly));
 
           if (File.Exists(fileName))
               return false;
@@ -1242,7 +1281,7 @@ namespace System.Data.SQLite
           //       library using the processor architecture name.
           //
           fileName = FixUpDllFileName(MaybeCombinePath(MaybeCombinePath(
-              baseDirectory, processorArchitecture), SQLITE_DLL));
+              baseDirectory, processorArchitecture), fileNameOnly));
 
           //
           // NOTE: If the file name based on the processor architecture name
@@ -1267,7 +1306,7 @@ namespace System.Data.SQLite
               //       library using the platform name.
               //
               fileName = FixUpDllFileName(MaybeCombinePath(MaybeCombinePath(
-                  baseDirectory, platformName), SQLITE_DLL));
+                  baseDirectory, platformName), fileNameOnly));
 
               //
               // NOTE: If the file does not exist, skip trying to load it.

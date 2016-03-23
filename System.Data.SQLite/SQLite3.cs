@@ -85,7 +85,8 @@ namespace System.Data.SQLite
     /// This is the name of the native library file that contains the
     /// "vtshim" extension [wrapper].
     /// </summary>
-    protected string _shimExtensionFileName = UnsafeNativeMethods.SQLITE_DLL;
+    protected string _shimExtensionFileName =
+        UnsafeNativeMethods.GetNativeModuleFileNameOnly();
 
     /// <summary>
     /// This is the name of the native entry point for the "vtshim"
@@ -2452,6 +2453,12 @@ namespace System.Data.SQLite
 
         if (_sql == null)
             throw new SQLiteException("connection has an invalid handle");
+
+        if (_shimExtensionFileName == null)
+            throw new SQLiteException("the file name for the \"vtshim\" extension is unknown");
+
+        if (_shimExtensionProcName == null)
+            throw new SQLiteException("the entry point for the \"vtshim\" extension is unknown");
 
         SetLoadExtension(true);
         LoadExtension(_shimExtensionFileName, _shimExtensionProcName);
