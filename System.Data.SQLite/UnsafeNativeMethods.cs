@@ -761,6 +761,60 @@ namespace System.Data.SQLite
           SetLastError = true)]
       private static extern IntPtr LoadLibrary(string fileName);
 
+#if !PLATFORM_COMPACTFRAMEWORK
+      /////////////////////////////////////////////////////////////////////////
+      /// <summary>
+      /// This is the P/Invoke method that wraps the native Unix dlopen
+      /// function.  See the POSIX documentation for full details on what it
+      /// does.
+      /// </summary>
+      /// <param name="fileName">
+      /// The name of the executable library.
+      /// </param>
+      /// <param name="mode">
+      /// This must be a combination of the individual bit flags RTLD_LAZY,
+      /// RTLD_NOW, RTLD_GLOBAL, and/or RTLD_LOCAL.
+      /// </param>
+      /// <returns>
+      /// The native module handle upon success -OR- IntPtr.Zero on failure.
+      /// </returns>
+      [DllImport("__Internal", EntryPoint = "dlopen",
+          CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi,
+          BestFitMapping = false, ThrowOnUnmappableChar = true,
+          SetLastError = true)]
+      private static extern IntPtr dlopen(string fileName, int mode);
+
+      /////////////////////////////////////////////////////////////////////////
+      /// <summary>
+      /// For use with dlopen(), bind function calls lazily.
+      /// </summary>
+      private const int RTLD_LAZY = 0x1;
+
+      /////////////////////////////////////////////////////////////////////////
+      /// <summary>
+      /// For use with dlopen(), bind function calls immediately.
+      /// </summary>
+      private const int RTLD_NOW = 0x2;
+
+      /////////////////////////////////////////////////////////////////////////
+      /// <summary>
+      /// For use with dlopen(), make symbols globally available.
+      /// </summary>
+      private const int RTLD_GLOBAL = 0x100;
+
+      /////////////////////////////////////////////////////////////////////////
+      /// <summary>
+      /// For use with dlopen(), opposite of RTLD_GLOBAL, and the default.
+      /// </summary>
+      private const int RTLD_LOCAL = 0x000;
+
+      /////////////////////////////////////////////////////////////////////////
+      /// <summary>
+      /// For use with dlopen(), the defaults used by this class.
+      /// </summary>
+      private const int RTLD_DEFAULT = RTLD_NOW | RTLD_GLOBAL;
+#endif
+
       /////////////////////////////////////////////////////////////////////////
 
 #if PLATFORM_COMPACTFRAMEWORK
@@ -843,10 +897,10 @@ namespace System.Data.SQLite
       /// The base file name for the native SQLite library to be pre-loaded by
       /// this class -OR- null if its value cannot be determined.
       /// </returns>
-      internal static string GetNativeModuleFileNameOnly()
+      internal static string GetNativeLibraryFileNameOnly()
       {
           string fileNameOnly = GetSettingValue(
-              "PreLoadSQLite_ModuleFileNameOnly", null);
+              "PreLoadSQLite_LibraryFileNameOnly", null);
 
           if (fileNameOnly != null)
               return fileNameOnly;
@@ -888,7 +942,7 @@ namespace System.Data.SQLite
           // NOTE: Determine the base file name for the native SQLite library.
           //       If this is not known by this class, we cannot continue.
           //
-          string fileNameOnly = GetNativeModuleFileNameOnly();
+          string fileNameOnly = GetNativeLibraryFileNameOnly();
 
           if (fileNameOnly == null)
               return false;
@@ -1248,7 +1302,7 @@ namespace System.Data.SQLite
           // NOTE: Determine the base file name for the native SQLite library.
           //       If this is not known by this class, we cannot continue.
           //
-          string fileNameOnly = GetNativeModuleFileNameOnly();
+          string fileNameOnly = GetNativeLibraryFileNameOnly();
 
           if (fileNameOnly == null)
               return false;
@@ -1338,10 +1392,22 @@ namespace System.Data.SQLite
               //
               // NOTE: Attempt to load the native library.  This will either
               //       return a valid native module handle, return IntPtr.Zero,
-              //       or throw an exception.
+              //       or throw an exception.  This must use the appropriate
+              //       P/Invoke method for the current operating system.
               //
               nativeModuleFileName = fileName;
-              nativeModuleHandle = LoadLibrary(fileName);
+
+#if !PLATFORM_COMPACTFRAMEWORK
+              if ((Environment.OSVersion.Platform == PlatformID.Unix) ||
+                  (Environment.OSVersion.Platform == PlatformID.MacOSX))
+              {
+                  nativeModuleHandle = dlopen(fileName, RTLD_DEFAULT);
+              }
+              else
+#endif
+              {
+                  nativeModuleHandle = LoadLibrary(fileName);
+              }
 
               return (nativeModuleHandle != IntPtr.Zero);
           }

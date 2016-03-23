@@ -86,7 +86,7 @@ namespace System.Data.SQLite
     /// "vtshim" extension [wrapper].
     /// </summary>
     protected string _shimExtensionFileName =
-        UnsafeNativeMethods.GetNativeModuleFileNameOnly();
+        UnsafeNativeMethods.GetNativeLibraryFileNameOnly();
 
     /// <summary>
     /// This is the name of the native entry point for the "vtshim"
