@@ -1116,7 +1116,8 @@ runTest {test data-1.20 {SQLiteConvert ToUnixEpoch (Utc)} -body {
   #
   expr {round([object invoke System.Data.SQLite.SQLiteConvert ToUnixEpoch \
       "2012-01-01 12:00:00Z"])}
-} -constraints {eagle command.object System.Data.SQLite} -result {1325390400}}
+} -constraints {eagle command.object monoBug42 System.Data.SQLite} -result \
+{1325390400}}
 
 ###############################################################################
 
@@ -2508,8 +2509,8 @@ runTest {test data-1.53 {BindAllAsText w/DateTime} -setup {
   cleanupDb $fileName
 
   unset -nocomplain dateTime db fileName
-} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
-System.Data.SQLite} -result {1 630874007980000000}}
+} -constraints {eagle command.object monoBug28 monoBug42 command.sql\
+compile.DATA SQLite System.Data.SQLite} -result {1 630874007980000000}}
 
 ###############################################################################
 

@@ -54,8 +54,8 @@ runTest {test tkt-a7d04fb111-1.1 {Bind DateTime Utc Ticks} -setup {
   cleanupDb $fileName
 
   unset -nocomplain result dateTimeValue db fileName
-} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
-System.Data.SQLite} -result \
+} -constraints {eagle command.object monoBug28 monoBug42 command.sql\
+compile.DATA SQLite System.Data.SQLite} -result \
 {635598144000000000 635598144000000000 635598432000000000 True False False}}
 
 ###############################################################################
@@ -90,8 +90,8 @@ runTest {test tkt-a7d04fb111-1.2 {Bind DateTime Local Ticks} -setup {
   cleanupDb $fileName
 
   unset -nocomplain result dateTimeValue db fileName
-} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
-System.Data.SQLite} -result \
+} -constraints {eagle command.object monoBug28 monoBug42 command.sql\
+compile.DATA SQLite System.Data.SQLite} -result \
 {635598144000000000 635597856000000000 635598144000000000 False True False}}
 
 ###############################################################################
@@ -126,9 +126,9 @@ runTest {test tkt-a7d04fb111-1.3 {Bind DateTime Utc ISO8601} -setup {
   cleanupDb $fileName
 
   unset -nocomplain result dateTimeValue db fileName
-} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
-System.Data.SQLite} -result {{2015-02-18 00:00:00Z} {2015-02-18 00:00:00Z}\
-{2015-02-18 08:00:00Z} True False False}}
+} -constraints {eagle command.object monoBug28 monoBug42 command.sql\
+compile.DATA SQLite System.Data.SQLite} -result {{2015-02-18 00:00:00Z}\
+{2015-02-18 00:00:00Z} {2015-02-18 08:00:00Z} True False False}}
 
 ###############################################################################
 
@@ -162,9 +162,9 @@ runTest {test tkt-a7d04fb111-1.4 {Bind DateTime Local ISO8601} -setup {
   cleanupDb $fileName
 
   unset -nocomplain result dateTimeValue db fileName
-} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
-System.Data.SQLite} -result {{2015-02-18 00:00:00} {2015-02-17 16:00:00}\
-{2015-02-18 00:00:00} False True False}}
+} -constraints {eagle command.object monoBug28 monoBug42 command.sql\
+compile.DATA SQLite System.Data.SQLite} -result {{2015-02-18 00:00:00}\
+{2015-02-17 16:00:00} {2015-02-18 00:00:00} False True False}}
 
 ###############################################################################
 
@@ -198,8 +198,9 @@ runTest {test tkt-a7d04fb111-1.5 {Bind DateTime Utc JulianDay} -setup {
   cleanupDb $fileName
 
   unset -nocomplain result dateTimeValue db fileName
-} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
-System.Data.SQLite} -result {2457071.5 2457071.5 2457071.83 True False False}}
+} -constraints {eagle command.object monoBug28 monoBug42 command.sql\
+compile.DATA SQLite System.Data.SQLite} -result {2457071.5 2457071.5 2457071.83\
+True False False}}
 
 ###############################################################################
 
@@ -233,8 +234,9 @@ runTest {test tkt-a7d04fb111-1.6 {Bind DateTime Local JulianDay} -setup {
   cleanupDb $fileName
 
   unset -nocomplain result dateTimeValue db fileName
-} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
-System.Data.SQLite} -result {2457071.5 2457071.17 2457071.5 False True False}}
+} -constraints {eagle command.object monoBug28 monoBug42 command.sql\
+compile.DATA SQLite System.Data.SQLite} -result {2457071.5 2457071.17 2457071.5\
+False True False}}
 
 ###############################################################################
 
@@ -268,8 +270,9 @@ runTest {test tkt-a7d04fb111-1.7 {Bind DateTime Utc UnixEpoch} -setup {
   cleanupDb $fileName
 
   unset -nocomplain result dateTimeValue db fileName
-} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
-System.Data.SQLite} -result {1424217600 1424217600 1424246400 True False False}}
+} -constraints {eagle command.object monoBug28 monoBug42 command.sql\
+compile.DATA SQLite System.Data.SQLite} -result {1424217600 1424217600\
+1424246400 True False False}}
 
 ###############################################################################
 
@@ -303,8 +306,9 @@ runTest {test tkt-a7d04fb111-1.8 {Bind DateTime Local UnixEpoch} -setup {
   cleanupDb $fileName
 
   unset -nocomplain result dateTimeValue db fileName
-} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
-System.Data.SQLite} -result {1424217600 1424188800 1424217600 False True False}}
+} -constraints {eagle command.object monoBug28 monoBug42 command.sql\
+compile.DATA SQLite System.Data.SQLite} -result {1424217600 1424188800\
+1424217600 False True False}}
 
 ###############################################################################
 
@@ -338,8 +342,8 @@ runTest {test tkt-a7d04fb111-1.9 {Bind DateTime Utc Invariant} -setup {
   cleanupDb $fileName
 
   unset -nocomplain result dateTimeValue db fileName
-} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
-System.Data.SQLite} -result {2015-02-18T00:00:00.0000000\
+} -constraints {eagle command.object monoBug28 monoBug42 command.sql\
+compile.DATA SQLite System.Data.SQLite} -result {2015-02-18T00:00:00.0000000\
 2015-02-18T00:00:00.0000000Z 2015-02-18T08:00:00.0000000Z False False False}}
 
 ###############################################################################
@@ -374,8 +378,8 @@ runTest {test tkt-a7d04fb111-1.10 {Bind DateTime Local Invariant} -setup {
   cleanupDb $fileName
 
   unset -nocomplain result dateTimeValue db fileName
-} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
-System.Data.SQLite} -result {2015-02-18T00:00:00.0000000\
+} -constraints {eagle command.object monoBug28 monoBug42 command.sql\
+compile.DATA SQLite System.Data.SQLite} -result {2015-02-18T00:00:00.0000000\
 2015-02-17T16:00:00.0000000-08:00 2015-02-18T00:00:00.0000000-08:00 False False\
 False}}
 
