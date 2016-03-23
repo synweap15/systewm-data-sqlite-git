@@ -1470,7 +1470,7 @@ namespace System.Data.SQLite
     //
     internal const string SQLITE_DLL = "sqlite3";
 #elif USE_INTEROP_DLL
-      //
+    //
     // NOTE: Otherwise, if the native SQLite interop assembly is enabled,
     //       use it.
     //

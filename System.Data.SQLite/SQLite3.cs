@@ -86,7 +86,11 @@ namespace System.Data.SQLite
     /// "vtshim" extension [wrapper].
     /// </summary>
     protected string _shimExtensionFileName =
+#if (SQLITE_STANDARD || USE_INTEROP_DLL || PLATFORM_COMPACTFRAMEWORK) && PRELOAD_NATIVE_LIBRARY
         UnsafeNativeMethods.GetNativeLibraryFileNameOnly();
+#else
+        UnsafeNativeMethods.SQLITE_DLL;
+#endif
 
     /// <summary>
     /// This is the name of the native entry point for the "vtshim"
