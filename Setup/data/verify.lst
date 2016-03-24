@@ -18,6 +18,7 @@
 set sds_manifests(source) {
   data/
   data/exclude_bin.txt
+  data/exclude_full_src.txt
   data/exclude_src.txt
   Doc/
   Doc/buildChm.tcl
@@ -264,6 +265,8 @@ set sds_manifests(source) {
   Setup/build_mono.bat
   Setup/build_nuget.bat
   Setup/clean.bat
+  Setup/compile-interop-assembly-debug.sh
+  Setup/compile-interop-assembly-release.sh
   Setup/data/
   Setup/data/CheckForNetFx.pas
   Setup/data/InitializeSetup.pas
@@ -275,6 +278,8 @@ set sds_manifests(source) {
   Setup/release_ce_200x.bat
   Setup/release_ce_2013.bat
   Setup/release_static.bat
+  Setup/run-mono-tests-debug.sh
+  Setup/run-mono-tests-release.sh
   Setup/set_2005.bat
   Setup/set_2008.bat
   Setup/set_2010.bat
@@ -860,6 +865,35 @@ set sds_manifests(source) {
   tools/install/Resources/manifest.xml
 }
 
+#
+# NOTE: This is the list of Eagle files that should be present in the full
+#       source code archive.  These files are needed only to run the test
+#       suite.
+#
+set sds_manifests(eagle) {
+  Externals/Eagle/bin/Eagle.dll
+  Externals/Eagle/bin/EagleShell.exe
+  Externals/Eagle/bin/EagleShell32.exe
+  Externals/Eagle/bin/x64/
+  Externals/Eagle/bin/x64/Spilornis.dll
+  Externals/Eagle/bin/x86/
+  Externals/Eagle/bin/x86/Spilornis.dll
+  Externals/Eagle/lib/Eagle1.0/embed.eagle
+  Externals/Eagle/lib/Eagle1.0/init.eagle
+  Externals/Eagle/lib/Eagle1.0/pkgIndex.eagle
+  Externals/Eagle/lib/Eagle1.0/pkgIndex.tcl
+  Externals/Eagle/lib/Eagle1.0/safe.eagle
+  Externals/Eagle/lib/Eagle1.0/shell.eagle
+  Externals/Eagle/lib/Eagle1.0/test.eagle
+  Externals/Eagle/lib/Eagle1.0/word.tcl
+  Externals/Eagle/lib/Test1.0/all.eagle
+  Externals/Eagle/lib/Test1.0/constraints.eagle
+  Externals/Eagle/lib/Test1.0/epilogue.eagle
+  Externals/Eagle/lib/Test1.0/pkgIndex.eagle
+  Externals/Eagle/lib/Test1.0/pkgIndex.tcl
+  Externals/Eagle/lib/Test1.0/prologue.eagle
+}
+
 ###############################################################################
 #
 # NOTE: This is the list of core files that should be present in all binary
@@ -1199,6 +1233,9 @@ set sds_manifests(setupX64Vs2015) {
 
 set manifests(sqlite-netFx-source-.zip) [list sds \
     source]
+
+set manifests(sqlite-netFx-full-source-.zip) [list sds \
+    source eagle]
 
 ###############################################################################
 ################### Visual Studio 2005 / .NET Framework 2.0 ###################

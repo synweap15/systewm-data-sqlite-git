@@ -360,8 +360,21 @@
   <li>Change the current directory to &quot;&lt;root&gt;\Setup&quot;.</li>
 
   <li>
-    Enter the following command to build all the source release packages:
+    Enter the following command to build the &quot;standard&quot; source
+    release package:
     <br />
+    <br />
+    <b>SET ARCHIVE_FULL=</b>
+    <br />
+    <b>archive.bat</b>
+  </li>
+
+  <li>
+    Enter the following command to build the &quot;full&quot; source
+    release package:
+    <br />
+    <br />
+    <b>SET ARCHIVE_FULL=1</b>
     <br />
     <b>archive.bat</b>
   </li>

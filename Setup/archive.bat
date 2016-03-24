@@ -82,7 +82,15 @@ IF NOT EXIST Setup\Output (
   )
 )
 
-%__ECHO% zip.exe -v -r Setup\Output\sqlite-netFx-source-%VERSION%.zip * -x @data\exclude_src.txt
+IF DEFINED ARCHIVE_FULL (
+  SET EXCLUDE_SRC=@data\exclude_full_src.txt
+  SET PREFIX=sqlite-netFx-full-source
+) ELSE (
+  SET EXCLUDE_SRC=@data\exclude_src.txt
+  SET PREFIX=sqlite-netFx-source
+)
+
+%__ECHO% zip.exe -v -r "Setup\Output\%PREFIX%-%VERSION%.zip" * -x "%EXCLUDE_SRC%"
 
 IF ERRORLEVEL 1 (
   ECHO Failed to archive source files.
