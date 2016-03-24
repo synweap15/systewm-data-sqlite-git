@@ -639,6 +639,10 @@ typedef sqlite3_uint64 u64;
 
 #endif
 
+/* Truncate very long tokens to this many bytes. Hard limit is 
+** (65536-1-1-4-9)==65521 bytes. The limiting factor is the 16-bit offset
+** field that occurs at the start of each leaf page (see fts5_index.c). */
+#define FTS5_MAX_TOKEN_SIZE 32768
 
 /*
 ** Maximum number of prefix indexes on single FTS5 table. This must be
@@ -6097,6 +6101,7 @@ static int fts5ParseTokenize(
 
   /* If an error has already occurred, this is a no-op */
   if( pCtx->rc!=SQLITE_OK ) return pCtx->rc;
+  if( nToken>FTS5_MAX_TOKEN_SIZE ) nToken = FTS5_MAX_TOKEN_SIZE;
 
   if( pPhrase && pPhrase->nTerm>0 && (tflags & FTS5_TOKEN_COLOCATED) ){
     Fts5ExprTerm *pSyn;
@@ -7099,6 +7104,7 @@ static int fts5ExprPopulatePoslistsCb(
 
   UNUSED_PARAM2(iUnused1, iUnused2);
 
+  if( nToken>FTS5_MAX_TOKEN_SIZE ) nToken = FTS5_MAX_TOKEN_SIZE;
   if( (tflags & FTS5_TOKEN_COLOCATED)==0 ) p->iOff++;
   for(i=0; i<pExpr->nPhrase; i++){
     Fts5ExprTerm *pTerm;
@@ -10111,6 +10117,18 @@ static void fts5LeafSeek(
   fts5SegIterLoadNPos(p, pIter);
 }
 
+static sqlite3_stmt *fts5IdxSelectStmt(Fts5Index *p){
+  if( p->pIdxSelect==0 ){
+    Fts5Config *pConfig = p->pConfig;
+    fts5IndexPrepareStmt(p, &p->pIdxSelect, sqlite3_mprintf(
+          "SELECT pgno FROM '%q'.'%q_idx' WHERE "
+          "segid=? AND term<=? ORDER BY term DESC LIMIT 1",
+          pConfig->zDb, pConfig->zName
+    ));
+  }
+  return p->pIdxSelect;
+}
+
 /*
 ** Initialize the object pIter to point to term pTerm/nTerm within segment
 ** pSeg. If there is no such term in the index, the iterator is set to EOF.
@@ -10128,6 +10146,7 @@ static void fts5SegIterSeekInit(
   int iPg = 1;
   int bGe = (flags & FTS5INDEX_QUERY_SCAN);
   int bDlidx = 0;                 /* True if there is a doclist-index */
+  sqlite3_stmt *pIdxSelect = 0;
 
   assert( bGe==0 || (flags & FTS5INDEX_QUERY_DESC)==0 );
   assert( pTerm && nTerm );
@@ -10136,23 +10155,16 @@ static void fts5SegIterSeekInit(
 
   /* This block sets stack variable iPg to the leaf page number that may
   ** contain term (pTerm/nTerm), if it is present in the segment. */
-  if( p->pIdxSelect==0 ){
-    Fts5Config *pConfig = p->pConfig;
-    fts5IndexPrepareStmt(p, &p->pIdxSelect, sqlite3_mprintf(
-          "SELECT pgno FROM '%q'.'%q_idx' WHERE "
-          "segid=? AND term<=? ORDER BY term DESC LIMIT 1",
-          pConfig->zDb, pConfig->zName
-    ));
-  }
+  pIdxSelect = fts5IdxSelectStmt(p);
   if( p->rc ) return;
-  sqlite3_bind_int(p->pIdxSelect, 1, pSeg->iSegid);
-  sqlite3_bind_blob(p->pIdxSelect, 2, pTerm, nTerm, SQLITE_STATIC);
-  if( SQLITE_ROW==sqlite3_step(p->pIdxSelect) ){
-    i64 val = sqlite3_column_int(p->pIdxSelect, 0);
+  sqlite3_bind_int(pIdxSelect, 1, pSeg->iSegid);
+  sqlite3_bind_blob(pIdxSelect, 2, pTerm, nTerm, SQLITE_STATIC);
+  if( SQLITE_ROW==sqlite3_step(pIdxSelect) ){
+    i64 val = sqlite3_column_int(pIdxSelect, 0);
     iPg = (int)(val>>1);
     bDlidx = (val & 0x0001);
   }
-  p->rc = sqlite3_reset(p->pIdxSelect);
+  p->rc = sqlite3_reset(pIdxSelect);
 
   if( iPg<pSeg->pgnoFirst ){
     iPg = pSeg->pgnoFirst;
@@ -11342,6 +11354,17 @@ static int fts5AllocateSegid(Fts5Index *p, Fts5Structure *pStruct){
         }
       }
       assert( iSegid>0 && iSegid<=FTS5_MAX_SEGMENT );
+
+      {
+        sqlite3_stmt *pIdxSelect = fts5IdxSelectStmt(p);
+        if( p->rc==SQLITE_OK ){
+          u8 aBlob[2] = {0xff, 0xff};
+          sqlite3_bind_int(pIdxSelect, 1, iSegid);
+          sqlite3_bind_blob(pIdxSelect, 2, aBlob, 2, SQLITE_STATIC);
+          assert( sqlite3_step(pIdxSelect)!=SQLITE_ROW );
+          p->rc = sqlite3_reset(pIdxSelect);
+        }
+      }
 #endif
     }
   }
@@ -11587,6 +11610,9 @@ static void fts5WriteFlushLeaf(Fts5Index *p, Fts5SegWriter *pWriter){
   static const u8 zero[] = { 0x00, 0x00, 0x00, 0x00 };
   Fts5PageWriter *pPage = &pWriter->writer;
   i64 iRowid;
+
+static int nCall = 0;
+nCall++;
 
   assert( (pPage->pgidx.n==0)==(pWriter->bFirstTermInPage) );
 
@@ -16848,7 +16874,7 @@ static void fts5SourceIdFunc(
 ){
   assert( nArg==0 );
   UNUSED_PARAM2(nArg, apUnused);
-  sqlite3_result_text(pCtx, "fts5: 2016-03-22 15:26:03 142cd359d37f1d8d53de32e329523d9a93c7d6e5", -1, SQLITE_TRANSIENT);
+  sqlite3_result_text(pCtx, "fts5: 2016-03-24 20:36:47 e0737f5236ed3e85bd03203c880ee41b34619137", -1, SQLITE_TRANSIENT);
 }
 
 static int fts5Init(sqlite3 *db){
@@ -17336,6 +17362,7 @@ static int fts5StorageInsertCallback(
   Fts5InsertCtx *pCtx = (Fts5InsertCtx*)pContext;
   Fts5Index *pIdx = pCtx->pStorage->pIndex;
   UNUSED_PARAM2(iUnused1, iUnused2);
+  if( nToken>FTS5_MAX_TOKEN_SIZE ) nToken = FTS5_MAX_TOKEN_SIZE;
   if( (tflags & FTS5_TOKEN_COLOCATED)==0 || pCtx->szCol==0 ){
     pCtx->szCol++;
   }
@@ -17782,6 +17809,7 @@ static int fts5StorageIntegrityCallback(
   int iCol;
 
   UNUSED_PARAM2(iUnused1, iUnused2);
+  if( nToken>FTS5_MAX_TOKEN_SIZE ) nToken = FTS5_MAX_TOKEN_SIZE;
 
   if( (tflags & FTS5_TOKEN_COLOCATED)==0 || pCtx->szCol==0 ){
     pCtx->szCol++;
