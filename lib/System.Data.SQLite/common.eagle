@@ -3036,7 +3036,7 @@ namespace eval ::Eagle {
       if {[haveSQLiteObjectCommand] && \
           [haveConstraint buildConfiguration.Debug] && [catch {
         object invoke -flags +NonPublic -alias \
-            System.Data.SQLite.UnsafeNativeMethods settingReadCounts
+            System.Data.SQLite.DebugData settingReadCounts
       } settingReadCounts] == 0} then {
         set nameCount [$settingReadCounts Count]
         set valueCount 0
