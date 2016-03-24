@@ -771,46 +771,54 @@ if {![info exists no([file tail [info script]])]} then {
         [info processors] \n]
 
     if {[llength [info commands object]] > 0} then {
-      catch {object invoke Console.InputEncoding WebName} encoding
+      set encoding(0) [catch {
+        object invoke Console.InputEncoding WebName
+      } encoding(1)]
     } else {
-      set encoding unavailable
+      set encoding(0) 0; set encoding(1) unavailable
     }
 
     tputs $test_channel [appendArgs "---- input encoding: " \
-        $encoding \n]
+        [expr {$encoding(0) == 0 ? $encoding(1) : "<none>"}] \n]
 
     if {[llength [info commands object]] > 0} then {
-      catch {object invoke Console.OutputEncoding WebName} encoding
+      set encoding(0) [catch {
+        object invoke Console.OutputEncoding WebName
+      } encoding(1)]
     } else {
-      set encoding unavailable
+      set encoding(0) 0; set encoding(1) unavailable
     }
 
     tputs $test_channel [appendArgs "---- output encoding: " \
-        $encoding \n]
+        [expr {$encoding(0) == 0 ? $encoding(1) : "<none>"}] \n]
 
     unset encoding
-    catch {host query} host
+    set host(0) [catch {host query} host(1)]
 
     tputs $test_channel [appendArgs "---- host query: " \
-        [formatListAsDict $host <none>] \n]
+        [formatListAsDict [expr {$host(0) == 0 ? $host(1) : ""}] \
+        <none>] \n]
 
     unset host
-    catch {debug memory} memory
+    set memory(0) [catch {debug memory} memory(1)]
 
     tputs $test_channel [appendArgs "---- starting memory: " \
-        [formatListAsDict $memory <none>] \n]
+        [formatListAsDict [expr {$memory(0) == 0 ? $memory(1) : ""}] \
+        <none>] \n]
 
     unset memory
-    catch {debug stack true} stack
+    set stack(0) [catch {debug stack true} stack(1)]
 
     tputs $test_channel [appendArgs "---- starting stack: " \
-        [formatListAsDict $stack <none>] \n]
+        [formatListAsDict [expr {$stack(0) == 0 ? $stack(1) : ""}] \
+        <none>] \n]
 
     unset stack
-    catch {file drive} drive
+    set drive(0) [catch {file drive} drive(1)]
 
     tputs $test_channel [appendArgs "---- system drive: " \
-        [formatListAsDict $drive <none>] \n]
+        [formatListAsDict [expr {$drive(0) == 0 ? $drive(1) : ""}] \
+        <none>] \n]
 
     unset drive
   }

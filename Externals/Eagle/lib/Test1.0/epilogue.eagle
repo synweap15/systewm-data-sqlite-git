@@ -127,20 +127,22 @@ if {![info exists no([file tail [info script]])]} then {
     #
     # NOTE: Show the current state of the memory.
     #
-    catch {debug memory} memory
+    set memory(0) [catch {debug memory} memory(1)]
 
     tputs $test_channel [appendArgs "---- ending memory: " \
-        [formatListAsDict $memory <none>] \n]
+        [formatListAsDict [expr {$memory(0) == 0 ? $memory(1) : ""}] \
+        <none>] \n]
 
     unset memory
 
     #
     # NOTE: Show the current state of the native stack.
     #
-    catch {debug stack true} stack
+    set stack(0) [catch {debug stack true} stack(1)]
 
     tputs $test_channel [appendArgs "---- ending stack: " \
-        [formatListAsDict $stack <none>] \n]
+        [formatListAsDict [expr {$stack(0) == 0 ? $stack(1) : ""}] \
+        <none>] \n]
 
     unset stack
 
