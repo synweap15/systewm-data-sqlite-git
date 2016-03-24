@@ -2886,7 +2886,7 @@ namespace System.Data.SQLite
     internal bool primary;
   }
 
-  internal sealed class TypeNameStringComparer : IEqualityComparer<string>
+  internal sealed class TypeNameStringComparer : IEqualityComparer<string>, IComparer<string>
   {
     #region IEqualityComparer<string> Members
     public bool Equals(
@@ -2917,6 +2917,25 @@ namespace System.Data.SQLite
 #endif
       else
         throw new ArgumentNullException("value");
+    }
+    #endregion
+
+    ///////////////////////////////////////////////////////////////////////////
+
+    #region IComparer<string> Members
+    public int Compare(
+      string x,
+      string y
+      )
+    {
+      if ((x == null) && (y == null))
+        return 0;
+      else if (x == null)
+        return -1;
+      else if (y == null)
+        return 1;
+      else
+        return x.CompareTo(y);
     }
     #endregion
   }
