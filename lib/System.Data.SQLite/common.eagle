@@ -527,7 +527,7 @@ namespace eval ::Eagle {
         #       Mac OS X file name, since we do not currently have an easy
         #       way to detect which of those platforms we are running on.
         #
-        return [list libsqlite3.so libsqlite3.dylib]
+        return [list libsqlite3.dylib libsqlite3.so]
       }
     }
 
@@ -555,9 +555,7 @@ namespace eval ::Eagle {
         #       Mac OS X file name, since we do not currently have an easy
         #       way to detect which of those platforms we are running on.
         #
-        return [list \
-            SQLite.Interop.dll.so SQLite.Interop.so \
-            SQLite.Interop.dylib SQLite.Interop.dll.dylib]
+        return [list libSQLite.Interop.dylib libSQLite.Interop.so]
       }
     }
 

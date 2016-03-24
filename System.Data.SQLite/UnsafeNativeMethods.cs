@@ -1684,7 +1684,7 @@ namespace System.Data.SQLite
 #if SQLITE_STANDARD_LIBRARY_NAME
     internal const string SQLITE_DLL = "sqlite3";
 #else
-    internal const string SQLITE_DLL = "SQLite.Interop.100.dll";
+    internal const string SQLITE_DLL = "SQLite.Interop.100";
 #endif
 #elif SQLITE_STANDARD
     //
@@ -1699,13 +1699,13 @@ namespace System.Data.SQLite
 #if SQLITE_STANDARD_LIBRARY_NAME
     internal const string SQLITE_DLL = "sqlite3";
 #else
-    internal const string SQLITE_DLL = "SQLite.Interop.dll";
+    internal const string SQLITE_DLL = "SQLite.Interop";
 #endif
 #else
     //
     // NOTE: Finally, assume that the mixed-mode assembly is being used.
     //
-    internal const string SQLITE_DLL = "System.Data.SQLite.dll";
+    internal const string SQLITE_DLL = "System.Data.SQLite";
 #endif
 
     // This section uses interop calls that also fetch text length to optimize conversion.

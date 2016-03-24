@@ -3,11 +3,11 @@
 scriptdir=`dirname "$BASH_SOURCE"`
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
-  libname=libsqlite3.dylib
+  libname=libSQLite.Interop.dylib
 else
-  libname=libsqlite3.so.0
+  libname=libSQLite.Interop.so
 fi
 
 pushd "$scriptdir/.."
-mono Externals/Eagle/bin/EagleShell.exe -preInitialize "set test_configuration Debug; set build_directory {bin/2013/Debug/bin}; set native_library_file_names $libname" -file Tests/all.eagle
+mono Externals/Eagle/bin/EagleShell.exe -preInitialize "set test_configuration Debug; set build_directory {bin/2013/Debug/bin}; set interop_assembly_file_names $libname" -file Tests/all.eagle
 popd
