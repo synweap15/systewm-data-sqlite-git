@@ -12,10 +12,10 @@
 REM
 REM NOTE: Enables the extra debug code helpful in troubleshooting issues.
 REM
-SET MSBUILD_ARGS=/p:CheckState=true
-SET MSBUILD_ARGS=%MSBUILD_ARGS% /p:CountHandle=true
-SET MSBUILD_ARGS=%MSBUILD_ARGS% /p:TraceConnection=true
-SET MSBUILD_ARGS=%MSBUILD_ARGS% /p:TraceDetection=true
-SET MSBUILD_ARGS=%MSBUILD_ARGS% /p:TraceHandle=true
-SET MSBUILD_ARGS=%MSBUILD_ARGS% /p:TraceStatement=true
-SET MSBUILD_ARGS=%MSBUILD_ARGS% /p:TrackMemoryBytes=true
+SET MSBUILD_ARGS=/property:CheckState=true
+SET MSBUILD_ARGS=%MSBUILD_ARGS% /property:CountHandle=true
+SET MSBUILD_ARGS=%MSBUILD_ARGS% /property:TraceConnection=true
+SET MSBUILD_ARGS=%MSBUILD_ARGS% /property:TraceDetection=true
+SET MSBUILD_ARGS=%MSBUILD_ARGS% /property:TraceHandle=true
+SET MSBUILD_ARGS=%MSBUILD_ARGS% /property:TraceStatement=true
+SET MSBUILD_ARGS=%MSBUILD_ARGS% /property:TrackMemoryBytes=true

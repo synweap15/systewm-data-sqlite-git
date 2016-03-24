@@ -390,12 +390,15 @@ IF NOT DEFINED NOTAG (
   ECHO WARNING: Source tagging skipped, disabled via NOTAG environment variable.
 )
 
+CALL :fn_CopyVariable MSBUILD_ARGS_%BASE_CONFIGURATION% MSBUILD_ARGS_CFG
+
 %_VECHO% Logging = '%LOGGING%'
 %_VECHO% BuildArgs = '%BUILD_ARGS%'
 %_VECHO% MsBuildArgs = '%MSBUILD_ARGS%'
+%_VECHO% MsBuildArgsCfg = '%MSBUILD_ARGS_CFG%'
 
 IF NOT DEFINED NOBUILD (
-  %__ECHO% "%MSBUILD%" "%SOLUTION%" "/target:%TARGET%" "/property:Configuration=%CONFIGURATION%" "/property:Platform=%PLATFORM%" %LOGGING% %BUILD_ARGS% %MSBUILD_ARGS%
+  %__ECHO% "%MSBUILD%" "%SOLUTION%" "/target:%TARGET%" "/property:Configuration=%CONFIGURATION%" "/property:Platform=%PLATFORM%" %LOGGING% %BUILD_ARGS% %MSBUILD_ARGS% %MSBUILD_ARGS_CFG%
 
   IF ERRORLEVEL 1 (
     ECHO Build failed.
