@@ -3334,7 +3334,7 @@ namespace eval ::Eagle {
       #       the actual result of the function does not matter as long as no
       #       directory is changed).
       #
-      if {[catch {
+      if {[isWindows] && [catch {
         object invoke -flags +NonPublic \
             System.Data.SQLite.UnsafeNativeMethods \
             sqlite3_win32_set_directory 0 null
