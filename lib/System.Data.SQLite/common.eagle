@@ -507,15 +507,41 @@ namespace eval ::Eagle {
       }
     }
 
-    proc getNativeLibraryFileName { {default ""} } {
-      set directory [file dirname [getCoreBinaryFileName]]
+    proc getInteropAssemblyFileNamesOnly {} {
+      #
+      # NOTE: First, check if the list of interop assembly file names has been
+      #       manually overridden.
+      #
+      if {[info exists ::interop_assembly_file_names] && \
+          [llength $::interop_assembly_file_names] > 0} then {
+        #
+        # NOTE: The list of interop assembly file names has been overridden;
+        #       therefore, use it verbatim.
+        #
+        return $::interop_assembly_file_names
+      } elseif {[isWindows]} then {
+        #
+        # NOTE: Otherwise, on Windows, always use the default file name
+        #       "SQLite.Interop.dll".
+        #
+        return [list SQLite.Interop.dll]
+      } else {
+        #
+        # NOTE: Otherwise, return both the generic POSIX file name and the
+        #       Mac OS X file name, since we do not currently have an easy
+        #       way to detect which of those platforms we are running on.
+        #
+        return [list \
+            SQLite.Interop.dll.so SQLite.Interop.so \
+            SQLite.Interop.dylib SQLite.Interop.dll.dylib]
+      }
+    }
+
+    proc getCoreExtensionBinaryFileName { {default ""} } {
+      set fileName [getCoreBinaryFileName]
 
-      foreach fileNameOnly [getNativeLibraryFileNamesOnly] {
-        set fileName [file join $directory $fileNameOnly]
-
-        if {[file exists $fileName]} then {
-          return $fileName
-        }
+      if {[file exists $fileName]} then {
+        return $fileName
       }
 
       return $default
@@ -570,25 +596,27 @@ namespace eval ::Eagle {
       #       containing the System.Data.SQLite native components.  If this
       #       file exists, we should have everything we need.
       #
-      set fileName [file nativename [file join $directory \
-          $architecture SQLite.Interop.dll]]
+      foreach fileNameOnly [getInteropAssemblyFileNamesOnly] {
+        set fileName [file nativename [file join $directory \
+            $architecture $fileNameOnly]]
 
-      if {[file exists $fileName]} then {
-        return true
-      }
+        if {[file exists $fileName]} then {
+          return true
+        }
 
-      set fileName [file nativename [file join $directory \
-          $platform SQLite.Interop.dll]]
+        set fileName [file nativename [file join $directory \
+            $platform $fileNameOnly]]
 
-      if {[file exists $fileName]} then {
-        return true
-      }
+        if {[file exists $fileName]} then {
+          return true
+        }
 
-      set fileName [file nativename [file join $directory \
-          SQLite.Interop.dll]]
+        set fileName [file nativename [file join $directory \
+            $fileNameOnly]]
 
-      if {[file exists $fileName]} then {
-        return true
+        if {[file exists $fileName]} then {
+          return true
+        }
       }
 
       #
@@ -855,7 +883,21 @@ namespace eval ::Eagle {
             [file join [getBinaryDirectory] $platform sqlite3.dll]]
       } else {
         #
-        # NOTE: Return the native-only interop assembly file name.
+        # NOTE: Attempt to determine the native-only interop assembly file
+        #       name for this platform and then return it.
+        #
+        foreach fileNameOnly [getInteropAssemblyFileNamesOnly] {
+          set fileName [file nativename \
+              [file join [getBinaryDirectory] $platform $fileNameOnly]]
+
+          if {[file exists $fileName]} then {
+            return $fileName
+          }
+        }
+
+        #
+        # NOTE: Fallback to returning the native-only interop assembly file
+        #       name for Windows.
         #
         return [file nativename \
             [file join [getBinaryDirectory] $platform SQLite.Interop.dll]]
@@ -3457,8 +3499,12 @@ namespace eval ::Eagle {
         #       reason the "System.Data.SQLite.dll" file is included here is
         #       because it could be the mixed-mode assembly.
         #
-        set nativeFileNames [getNativeLibraryFileNamesOnly]
-        lappend nativeFileNames SQLite.Interop.dll System.Data.SQLite.dll
+        set nativeFileNames [list]
+
+        eval lappend nativeFileNames [getNativeLibraryFileNamesOnly]
+        eval lappend nativeFileNames [getInteropAssemblyFileNamesOnly]
+
+        lappend nativeFileNames System.Data.SQLite.dll
 
         #
         # NOTE: Build the list of managed assembly files that we handle.
@@ -3703,10 +3749,12 @@ namespace eval ::Eagle {
           }
         }
 
-        catch {
-          tputs $::test_channel [appendArgs \
-              "---- file version of \"SQLite.Interop.dll\"... \"" \
-              [file version [getBinaryFileName SQLite.Interop.dll]] \"\n]
+        foreach fileNameOnly [getInteropAssemblyFileNamesOnly] {
+          catch {
+            tputs $::test_channel [appendArgs \
+                "---- file version of \"" $fileNameOnly "\"... \"" \
+                [file version [getBinaryFileName $fileNameOnly]] \"\n]
+          }
         }
 
         catch {
@@ -3739,11 +3787,13 @@ namespace eval ::Eagle {
             }
           }
 
-          catch {
-            tputs $::test_channel [appendArgs \
-                "---- file version of \"" $platform \
-                "/SQLite.Interop.dll\"... \"" [file version \
-                [getBinaryFileName SQLite.Interop.dll $platform]] \"\n]
+          foreach fileNameOnly [getInteropAssemblyFileNamesOnly] {
+            catch {
+              tputs $::test_channel [appendArgs \
+                  "---- file version of \"" $platform \
+                  / $fileNameOnly "\"... \"" [file version \
+                  [getBinaryFileName $fileNameOnly $platform]] \"\n]
+            }
           }
 
           catch {
@@ -3767,8 +3817,8 @@ namespace eval ::Eagle {
           catch {
             tputs $::test_channel [appendArgs \
                 "---- file version of \"" $architecture \
-                "/SQLite.Interop.dll\"... \"" [file version \
-                [getBinaryFileName SQLite.Interop.dll $architecture]] \"\n]
+                / $fileNameOnly "\"... \"" [file version \
+                [getBinaryFileName $fileNameOnly $architecture]] \"\n]
           }
 
           catch {
@@ -3998,14 +4048,15 @@ namespace eval ::Eagle {
             # NOTE: The module file name here must be normalized.
             #
             set fileName [file normalize [$module FileName]]
+            set fileNameOnly [file tail $fileName]
 
-            if {[lsearch -exact -nocase -- [getNativeLibraryFileNamesOnly] \
-                [file tail $fileName]] != -1} then {
+            if {[lsearch -exact -nocase -- \
+                [getNativeLibraryFileNamesOnly] $fileNameOnly] != -1} then {
               tputs $::test_channel [appendArgs \
                   "---- found loaded SQLite native library module: " \
                   $fileName \n]
-            } elseif {[string match \
-                -nocase */SQLite.Interop.dll $fileName]} then {
+            } elseif {[lsearch -exact -nocase -- \
+                [getInteropAssemblyFileNamesOnly] $fileNameOnly] != -1} then {
               tputs $::test_channel [appendArgs \
                   "---- found loaded SQLite interop assembly module: " \
                   $fileName \n]
