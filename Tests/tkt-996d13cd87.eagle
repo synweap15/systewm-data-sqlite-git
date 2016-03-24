@@ -287,9 +287,9 @@ for {set i 1} {$i < 11} {incr i} {
         poolCounts havePoolCounts fileName
 
     rename getPoolCounts ""
-  } -constraints {eagle command.object monoBug28 command.sql compile.DATA\
-SQLite System.Data.SQLite compileCSharp} -match regexp -result {^Ok\
-System#CodeDom#Compiler#CompilerResults#\d+ \{\} 0 \d+ \{\} True True$}}
+  } -constraints {eagle command.object monoBug28 monoCrash211 command.sql\
+compile.DATA SQLite System.Data.SQLite compileCSharp} -match regexp -result \
+{^Ok System#CodeDom#Compiler#CompilerResults#\d+ \{\} 0 \d+ \{\} True True$}}
 }
 
 ###############################################################################

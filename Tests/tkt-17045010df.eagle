@@ -28,7 +28,7 @@ runTest {test tkt-17045010df-1.1 {EnableExtensions & LoadExtension} -setup {
   lappend result [catchAndReturn {$connection EnableExtensions false}]
 
   lappend result [catchAndReturn {$connection LoadExtension \
-      [getNativeLibraryFileName null] interop_test_extension_init}]
+      [getCoreExtensionBinaryFileName null] interop_test_extension_init}]
 
   lappend result [catchAndReturn {sql execute -execute scalar $db \
       "SELECT interopTest('test1');"}]
@@ -38,7 +38,7 @@ runTest {test tkt-17045010df-1.1 {EnableExtensions & LoadExtension} -setup {
   lappend result [catchAndReturn {$connection EnableExtensions true}]
 
   lappend result [catchAndReturn {$connection LoadExtension \
-      [getNativeLibraryFileName null] interop_test_extension_init}]
+      [getCoreExtensionBinaryFileName null] interop_test_extension_init}]
 
   lappend result [catchAndReturn {sql execute -execute scalar $db \
       "SELECT interopTest('test2');"}]

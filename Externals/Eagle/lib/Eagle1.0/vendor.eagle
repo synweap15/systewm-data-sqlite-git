@@ -337,13 +337,14 @@ namespace eval ::Eagle {
     checkForTestOverrides stdout [expr {[info exists test_overrides] ? \
         $test_overrides : [list binary_directory build_base_directory \
         build_directory common_directory connection_flags database_directory \
-        datetime_format execute_on_setup native_library_file_names \
-        release_version scratch_directory temporary_directory test_clr \
-        test_clr_v2 test_clr_v4 test_configuration test_configurations \
-        test_constraints test_machine test_net_fx test_net_fx_2005 \
-        test_net_fx_2008 test_net_fx_2010 test_net_fx_2012 test_net_fx_2013 \
-        test_net_fx_2015 test_overrides test_platform test_suite test_year \
-        test_years test_year_clr_v2 test_year_clr_v4 vendor_directory \
+        datetime_format define_constant_prefix execute_on_setup \
+        interop_assembly_file_names native_library_file_names release_version \
+        scratch_directory temporary_directory test_clr test_clr_v2 \
+        test_clr_v4 test_configuration test_configurations test_constraints \
+        test_machine test_net_fx test_net_fx_2005 test_net_fx_2008 \
+        test_net_fx_2010 test_net_fx_2012 test_net_fx_2013 test_net_fx_2015 \
+        test_overrides test_platform test_suite test_year test_years \
+        test_year_clr_v2 test_year_clr_v4 vendor_directory \
         vendor_test_directory]}] false
 
     #

@@ -18,6 +18,30 @@ namespace eval ::Eagle {
     ############################ BEGIN Eagle ONLY #############################
     ###########################################################################
 
+    proc getSQLiteDefineConstantPrefix {} {
+      #
+      # NOTE: See if the define constant prefix setting has been overridden
+      #       by the user (e.g. on the command line).
+      #
+      if {[info exists ::define_constant_prefix] && \
+          [string length $::define_constant_prefix] > 0} then {
+        #
+        # NOTE: Use the specified define constant prefix.
+        #
+        return $::define_constant_prefix
+      } else {
+        #
+        # NOTE: Use the default define constant prefix.
+        #
+        return defineConstant.System.Data.SQLite.
+      }
+    }
+
+    proc haveSQLiteDefineConstant { name } {
+      return [haveConstraint \
+          [appendArgs [getSQLiteDefineConstantPrefix] $name]]
+    }
+
     proc getBuildYear {} {
       #
       # NOTE: See if the "year" setting has been overridden by the user (e.g.
@@ -507,15 +531,41 @@ namespace eval ::Eagle {
       }
     }
 
-    proc getNativeLibraryFileName { {default ""} } {
-      set directory [file dirname [getCoreBinaryFileName]]
+    proc getInteropAssemblyFileNamesOnly {} {
+      #
+      # NOTE: First, check if the list of interop assembly file names has been
+      #       manually overridden.
+      #
+      if {[info exists ::interop_assembly_file_names] && \
+          [llength $::interop_assembly_file_names] > 0} then {
+        #
+        # NOTE: The list of interop assembly file names has been overridden;
+        #       therefore, use it verbatim.
+        #
+        return $::interop_assembly_file_names
+      } elseif {[isWindows]} then {
+        #
+        # NOTE: Otherwise, on Windows, always use the default file name
+        #       "SQLite.Interop.dll".
+        #
+        return [list SQLite.Interop.dll]
+      } else {
+        #
+        # NOTE: Otherwise, return both the generic POSIX file name and the
+        #       Mac OS X file name, since we do not currently have an easy
+        #       way to detect which of those platforms we are running on.
+        #
+        return [list \
+            SQLite.Interop.dll.so SQLite.Interop.so \
+            SQLite.Interop.dylib SQLite.Interop.dll.dylib]
+      }
+    }
+
+    proc getCoreExtensionBinaryFileName { {default ""} } {
+      set fileName [getCoreBinaryFileName]
 
-      foreach fileNameOnly [getNativeLibraryFileNamesOnly] {
-        set fileName [file join $directory $fileNameOnly]
-
-        if {[file exists $fileName]} then {
-          return $fileName
-        }
+      if {[file exists $fileName]} then {
+        return $fileName
       }
 
       return $default
@@ -570,25 +620,27 @@ namespace eval ::Eagle {
       #       containing the System.Data.SQLite native components.  If this
       #       file exists, we should have everything we need.
       #
-      set fileName [file nativename [file join $directory \
-          $architecture SQLite.Interop.dll]]
+      foreach fileNameOnly [getInteropAssemblyFileNamesOnly] {
+        set fileName [file nativename [file join $directory \
+            $architecture $fileNameOnly]]
 
-      if {[file exists $fileName]} then {
-        return true
-      }
+        if {[file exists $fileName]} then {
+          return true
+        }
 
-      set fileName [file nativename [file join $directory \
-          $platform SQLite.Interop.dll]]
+        set fileName [file nativename [file join $directory \
+            $platform $fileNameOnly]]
 
-      if {[file exists $fileName]} then {
-        return true
-      }
+        if {[file exists $fileName]} then {
+          return true
+        }
 
-      set fileName [file nativename [file join $directory \
-          SQLite.Interop.dll]]
+        set fileName [file nativename [file join $directory \
+            $fileNameOnly]]
 
-      if {[file exists $fileName]} then {
-        return true
+        if {[file exists $fileName]} then {
+          return true
+        }
       }
 
       #
@@ -807,7 +859,7 @@ namespace eval ::Eagle {
           [file join [getBinaryDirectory] $platform [file tail $fileName]]]
     }
 
-    proc getCoreBinaryFileName { {platform ""} {standard false} } {
+    proc getCoreBinaryFileName { {platform ""} {standard ""} } {
       #
       # NOTE: Returns the full path for the file containing the SQLite core
       #       native library code for this platform.  First, check and see if
@@ -827,13 +879,48 @@ namespace eval ::Eagle {
         return $fileName
       }
 
+      #
+      # NOTE: If the "native" runtime option has been set, always return the
+      #       file name for the mixed-mode assembly.
+      #
       if {[hasRuntimeOption native]} then {
         #
         # NOTE: Return the mixed-mode assembly file name.
         #
         return [file nativename \
             [file join [getBinaryDirectory] $platform System.Data.SQLite.dll]]
-      } elseif {$standard} then {
+      }
+
+      #
+      # NOTE: Are we attempting to automatically detect whether or not the
+      #       interop assembly should be used?
+      #
+      set automatic [expr {[string length $standard] == 0}]
+
+      #
+      # NOTE: First, in either "automatic" or "non-standard" modes, attempt
+      #       to find the native-only interop assembly.
+      #
+      if {$automatic || !$standard} then {
+        #
+        # NOTE: Attempt to determine the native-only interop assembly file
+        #       name for this platform and then return it.
+        #
+        foreach fileNameOnly [getInteropAssemblyFileNamesOnly] {
+          set fileName [file nativename \
+              [file join [getBinaryDirectory] $platform $fileNameOnly]]
+
+          if {[file exists $fileName]} then {
+            return $fileName
+          }
+        }
+      }
+
+      #
+      # NOTE: Then, in either "automatic" or "standard" modes, attempt to
+      #       find the standard SQLite library.
+      #
+      if {$automatic || $standard} then {
         #
         # NOTE: Attempt to determine the native-only standard SQLite library
         #       file name for this platform and then return it.
@@ -846,19 +933,39 @@ namespace eval ::Eagle {
             return $fileName
           }
         }
+      }
 
+      #
+      # NOTE: Was the managed assembly compiled expecting to deal with the
+      #       standard core library?
+      #
+      if {[haveSQLiteDefineConstant SQLITE_STANDARD] || \
+          [haveSQLiteDefineConstant SQLITE_STANDARD_LIBRARY_NAME]} then {
         #
         # NOTE: Fallback to returning the native-only standard SQLite library
-        #       file name for Windows.
+        #       file name for the platform.
         #
-        return [file nativename \
-            [file join [getBinaryDirectory] $platform sqlite3.dll]]
+        set fileNamesOnly [getNativeLibraryFileNamesOnly]
+
+        if {[llength $fileNamesOnly] == 0} then {
+          return ""
+        }
+
+        return [file nativename [file join \
+            [getBinaryDirectory] $platform [lindex $fileNamesOnly 0]]]
       } else {
         #
-        # NOTE: Return the native-only interop assembly file name.
+        # NOTE: Fallback to returning the native-only interop assembly file
+        #       name for the platform.
         #
-        return [file nativename \
-            [file join [getBinaryDirectory] $platform SQLite.Interop.dll]]
+        set fileNamesOnly [getInteropAssemblyFileNamesOnly]
+
+        if {[llength $fileNamesOnly] == 0} then {
+          return ""
+        }
+
+        return [file nativename [file join \
+            [getBinaryDirectory] $platform [lindex $fileNamesOnly 0]]]
       }
     }
 
@@ -1393,7 +1500,7 @@ namespace eval ::Eagle {
               INTEROP_TOTYPE_EXTENSION INTEROP_VIRTUAL_TABLE \
               USE_INTEROP_DLL] {
             addConstraint [appendArgs \
-                defineConstant.System.Data.SQLite. $defineConstant]
+                [getSQLiteDefineConstantPrefix] $defineConstant]
           }
         }
 
@@ -1691,7 +1798,7 @@ namespace eval ::Eagle {
           # NOTE: Yes, this define constant was enabled when the managed
           #       assembly was compiled.
           #
-          addConstraint [appendArgs defineConstant.System.Data.SQLite. $name]
+          addConstraint [appendArgs [getSQLiteDefineConstantPrefix] $name]
 
           tputs $channel yes\n
         } else {
@@ -2917,8 +3024,8 @@ namespace eval ::Eagle {
     proc getSQLiteHandleCounts { channel {quiet false} } {
       set result [list]
 
-      if {[haveSQLiteObjectCommand] && [haveConstraint \
-              defineConstant.System.Data.SQLite.COUNT_HANDLE]} then {
+      if {[haveSQLiteObjectCommand] && \
+          [haveSQLiteDefineConstant COUNT_HANDLE]} then {
         #
         # NOTE: Add each critical handle count to the resulting list.
         #
@@ -3036,7 +3143,7 @@ namespace eval ::Eagle {
       if {[haveSQLiteObjectCommand] && \
           [haveConstraint buildConfiguration.Debug] && [catch {
         object invoke -flags +NonPublic -alias \
-            System.Data.SQLite.UnsafeNativeMethods settingReadCounts
+            System.Data.SQLite.DebugData settingReadCounts
       } settingReadCounts] == 0} then {
         set nameCount [$settingReadCounts Count]
         set valueCount 0
@@ -3067,10 +3174,9 @@ namespace eval ::Eagle {
         }
       }
 
-      if {[haveSQLiteObjectCommand] && [haveConstraint \
-              defineConstant.System.Data.SQLite.INTEROP_VIRTUAL_TABLE] && \
-          [haveConstraint \
-              defineConstant.System.Data.SQLite.TRACK_MEMORY_BYTES]} then {
+      if {[haveSQLiteObjectCommand] && \
+          [haveSQLiteDefineConstant INTEROP_VIRTUAL_TABLE] && \
+          [haveSQLiteDefineConstant TRACK_MEMORY_BYTES]} then {
         if {!$quiet} then {
           tputs $channel "---- current memory in use by SQLiteMemory... "
         }
@@ -3457,8 +3563,12 @@ namespace eval ::Eagle {
         #       reason the "System.Data.SQLite.dll" file is included here is
         #       because it could be the mixed-mode assembly.
         #
-        set nativeFileNames [getNativeLibraryFileNamesOnly]
-        lappend nativeFileNames SQLite.Interop.dll System.Data.SQLite.dll
+        set nativeFileNames [list]
+
+        eval lappend nativeFileNames [getNativeLibraryFileNamesOnly]
+        eval lappend nativeFileNames [getInteropAssemblyFileNamesOnly]
+
+        lappend nativeFileNames System.Data.SQLite.dll
 
         #
         # NOTE: Build the list of managed assembly files that we handle.
@@ -3703,10 +3813,12 @@ namespace eval ::Eagle {
           }
         }
 
-        catch {
-          tputs $::test_channel [appendArgs \
-              "---- file version of \"SQLite.Interop.dll\"... \"" \
-              [file version [getBinaryFileName SQLite.Interop.dll]] \"\n]
+        foreach fileNameOnly [getInteropAssemblyFileNamesOnly] {
+          catch {
+            tputs $::test_channel [appendArgs \
+                "---- file version of \"" $fileNameOnly "\"... \"" \
+                [file version [getBinaryFileName $fileNameOnly]] \"\n]
+          }
         }
 
         catch {
@@ -3739,11 +3851,13 @@ namespace eval ::Eagle {
             }
           }
 
-          catch {
-            tputs $::test_channel [appendArgs \
-                "---- file version of \"" $platform \
-                "/SQLite.Interop.dll\"... \"" [file version \
-                [getBinaryFileName SQLite.Interop.dll $platform]] \"\n]
+          foreach fileNameOnly [getInteropAssemblyFileNamesOnly] {
+            catch {
+              tputs $::test_channel [appendArgs \
+                  "---- file version of \"" $platform \
+                  / $fileNameOnly "\"... \"" [file version \
+                  [getBinaryFileName $fileNameOnly $platform]] \"\n]
+            }
           }
 
           catch {
@@ -3767,8 +3881,8 @@ namespace eval ::Eagle {
           catch {
             tputs $::test_channel [appendArgs \
                 "---- file version of \"" $architecture \
-                "/SQLite.Interop.dll\"... \"" [file version \
-                [getBinaryFileName SQLite.Interop.dll $architecture]] \"\n]
+                / $fileNameOnly "\"... \"" [file version \
+                [getBinaryFileName $fileNameOnly $architecture]] \"\n]
           }
 
           catch {
@@ -3903,10 +4017,8 @@ namespace eval ::Eagle {
         # NOTE: Check if the System.Data.SQLite provider was compiled with
         #       support for any encrypted databases.
         #
-        if {[haveConstraint \
-                defineConstant.System.Data.SQLite.INTEROP_CODEC] || \
-            [haveConstraint \
-                defineConstant.System.Data.SQLite.INTEROP_INCLUDE_SEE]} then {
+        if {[haveSQLiteDefineConstant INTEROP_CODEC] || \
+            [haveSQLiteDefineConstant INTEROP_INCLUDE_SEE]} then {
           #
           # NOTE: Yes, add generic constraint for use by the test suite.
           #
@@ -3998,14 +4110,15 @@ namespace eval ::Eagle {
             # NOTE: The module file name here must be normalized.
             #
             set fileName [file normalize [$module FileName]]
+            set fileNameOnly [file tail $fileName]
 
-            if {[lsearch -exact -nocase -- [getNativeLibraryFileNamesOnly] \
-                [file tail $fileName]] != -1} then {
+            if {[lsearch -exact -nocase -- \
+                [getNativeLibraryFileNamesOnly] $fileNameOnly] != -1} then {
               tputs $::test_channel [appendArgs \
                   "---- found loaded SQLite native library module: " \
                   $fileName \n]
-            } elseif {[string match \
-                -nocase */SQLite.Interop.dll $fileName]} then {
+            } elseif {[lsearch -exact -nocase -- \
+                [getInteropAssemblyFileNamesOnly] $fileNameOnly] != -1} then {
               tputs $::test_channel [appendArgs \
                   "---- found loaded SQLite interop assembly module: " \
                   $fileName \n]

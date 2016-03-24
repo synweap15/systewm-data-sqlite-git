@@ -37,6 +37,13 @@ SET NOUSER=1
 SET MSBUILD_ARGS=/property:UseSqliteStandardLibraryName=true
 SET MSBUILD_ARGS=%MSBUILD_ARGS% /property:InteropCodec=false
 SET MSBUILD_ARGS=%MSBUILD_ARGS% /property:InteropLog=false
+SET MSBUILD_ARGS_DEBUG=/property:CheckState=true
+SET MSBUILD_ARGS_DEBUG=%MSBUILD_ARGS_DEBUG% /property:CountHandle=true
+SET MSBUILD_ARGS_DEBUG=%MSBUILD_ARGS_DEBUG% /property:TraceConnection=true
+SET MSBUILD_ARGS_DEBUG=%MSBUILD_ARGS_DEBUG% /property:TraceDetection=true
+SET MSBUILD_ARGS_DEBUG=%MSBUILD_ARGS_DEBUG% /property:TraceHandle=true
+SET MSBUILD_ARGS_DEBUG=%MSBUILD_ARGS_DEBUG% /property:TraceStatement=true
+SET MSBUILD_ARGS_DEBUG=%MSBUILD_ARGS_DEBUG% /property:TrackMemoryBytes=true
 
 CALL :fn_ResetErrorLevel
 
