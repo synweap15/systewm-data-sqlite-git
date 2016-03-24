@@ -795,20 +795,25 @@ namespace System.Data.SQLite
         bool resetOkLocal = false;
 
 #if !DEBUG && WINDOWS // NOTE: Should be "WIN32HEAP && !MEMDEBUG && WINDOWS"
-        if ((rc == SQLiteErrorCode.Ok) && reset)
+        if (HelperMethods.IsWindows())
         {
-            rc = UnsafeNativeMethods.sqlite3_win32_reset_heap();
+            if ((rc == SQLiteErrorCode.Ok) && reset)
+            {
+                rc = UnsafeNativeMethods.sqlite3_win32_reset_heap();
 
-            if (rc == SQLiteErrorCode.Ok)
-                resetOkLocal = true;
+                if (rc == SQLiteErrorCode.Ok)
+                    resetOkLocal = true;
+            }
+
+            if ((rc == SQLiteErrorCode.Ok) && compact)
+                rc = UnsafeNativeMethods.sqlite3_win32_compact_heap(ref nLargestLocal);
         }
-
-        if ((rc == SQLiteErrorCode.Ok) && compact)
-            rc = UnsafeNativeMethods.sqlite3_win32_compact_heap(ref nLargestLocal);
-#else
-        if (reset || compact)
-            rc = SQLiteErrorCode.NotFound;
+        else
 #endif
+        if (reset || compact)
+        {
+            rc = SQLiteErrorCode.NotFound;
+        }
 
         nFree = nFreeLocal;
         nLargest = nLargestLocal;
@@ -846,17 +851,22 @@ namespace System.Data.SQLite
         if (directories)
         {
 #if WINDOWS
-            if (rc == SQLiteErrorCode.Ok)
-                rc = UnsafeNativeMethods.sqlite3_win32_set_directory(1, null);
+            if (HelperMethods.IsWindows())
+            {
+                if (rc == SQLiteErrorCode.Ok)
+                    rc = UnsafeNativeMethods.sqlite3_win32_set_directory(1, null);
 
-            if (rc == SQLiteErrorCode.Ok)
-                rc = UnsafeNativeMethods.sqlite3_win32_set_directory(2, null);
-#else
+                if (rc == SQLiteErrorCode.Ok)
+                    rc = UnsafeNativeMethods.sqlite3_win32_set_directory(2, null);
+            }
+            else
+#endif
+            {
 #if !NET_COMPACT_20 && TRACE_CONNECTION
-            Trace.WriteLine(
-                "Shutdown: Cannot reset directories on this platform.");
+                Trace.WriteLine(
+                    "Shutdown: Cannot reset directories on this platform.");
 #endif
-#endif
+            }
         }
 
         if (rc == SQLiteErrorCode.Ok)

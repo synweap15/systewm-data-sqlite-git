@@ -282,7 +282,7 @@ runTest {test tkt-72905c9a77-1.1 {StaticIsInitialized race condition} -setup {
   unset -nocomplain result code results errors dataSource fileName
 } -constraints \
 [fixConstraints {fail.false eagle command.object monoBug28\
-configuration.Release !defineConstant.System.Data.SQLite.INTEROP_LOG\
+buildConfiguration.Release !defineConstant.System.Data.SQLite.INTEROP_LOG\
 command.sql compile.DATA SQLite System.Data.SQLite compileCSharp}] -match \
 regexp -result [appendArgs \
 "^Ok System#CodeDom#Compiler#CompilerResults#\\d+ \\{\\} 0 \\{" \
