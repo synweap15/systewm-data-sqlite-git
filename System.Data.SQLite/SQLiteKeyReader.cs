@@ -58,7 +58,7 @@ namespace System.Data.SQLite
                     columns[n] = builder.QuoteIdentifier(columns[n]);
                 }
             }
-            _command.CommandText = UnsafeNativeMethods.StringFormat(CultureInfo.InvariantCulture, "SELECT {0} FROM [{1}].[{2}] WHERE ROWID = ?", String.Join(",", columns), database, table);
+            _command.CommandText = HelperMethods.StringFormat(CultureInfo.InvariantCulture, "SELECT {0} FROM [{1}].[{2}] WHERE ROWID = ?", String.Join(",", columns), database, table);
             _command.Parameters.AddWithValue(null, (long)0);
         }
 

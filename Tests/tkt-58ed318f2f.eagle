@@ -23,7 +23,7 @@ runSQLiteTestPrologue
 proc getSettingReadCount { name } {
   if {[haveConstraint buildConfiguration.Debug] && [catch {
     object invoke -flags +NonPublic -alias \
-        System.Data.SQLite.UnsafeNativeMethods settingReadCounts
+        System.Data.SQLite.DebugData settingReadCounts
   } settingReadCounts] == 0} then {
     if {[$settingReadCounts TryGetValue $name value]} then {
       tputs $::test_channel [appendArgs \

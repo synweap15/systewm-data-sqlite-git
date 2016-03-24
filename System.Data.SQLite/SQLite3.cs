@@ -82,6 +82,25 @@ namespace System.Data.SQLite
 
 #if INTEROP_VIRTUAL_TABLE
     /// <summary>
+    /// This is the name of the native library file that contains the
+    /// "vtshim" extension [wrapper].
+    /// </summary>
+    protected string _shimExtensionFileName = null;
+
+    /// <summary>
+    /// This is the flag indicate whether the native library file that
+    /// contains the "vtshim" extension must be dynamically loaded by
+    /// this class prior to use.
+    /// </summary>
+    protected bool? _shimIsLoadNeeded = null;
+
+    /// <summary>
+    /// This is the name of the native entry point for the "vtshim"
+    /// extension [wrapper].
+    /// </summary>
+    protected string _shimExtensionProcName = "sqlite3_vtshim_init";
+
+    /// <summary>
     /// The modules created using this connection.
     /// </summary>
     protected Dictionary<string, SQLiteModule> _modules;
@@ -248,7 +267,7 @@ namespace System.Data.SQLite
                       if (SQLiteFunction.UnbindAllFunctions(this, _flags, false))
                       {
 #if !NET_COMPACT_20 && TRACE_CONNECTION
-                          Trace.WriteLine(UnsafeNativeMethods.StringFormat(
+                          Trace.WriteLine(HelperMethods.StringFormat(
                               CultureInfo.CurrentCulture,
                               "UnbindFunctions (Pool) Success: {0}",
                               HandleToString()));
@@ -257,7 +276,7 @@ namespace System.Data.SQLite
                       else
                       {
 #if !NET_COMPACT_20 && TRACE_CONNECTION
-                          Trace.WriteLine(UnsafeNativeMethods.StringFormat(
+                          Trace.WriteLine(HelperMethods.StringFormat(
                               CultureInfo.CurrentCulture,
                               "UnbindFunctions (Pool) Failure: {0}",
                               HandleToString()));
@@ -277,7 +296,7 @@ namespace System.Data.SQLite
                       typeof(SQLite3), canThrow, _fileName, _poolVersion }));
 
 #if !NET_COMPACT_20 && TRACE_CONNECTION
-                  Trace.WriteLine(UnsafeNativeMethods.StringFormat(
+                  Trace.WriteLine(HelperMethods.StringFormat(
                       CultureInfo.CurrentCulture,
                       "Close (Pool) Success: {0}",
                       HandleToString()));
@@ -286,7 +305,7 @@ namespace System.Data.SQLite
 #if !NET_COMPACT_20 && TRACE_CONNECTION
               else
               {
-                  Trace.WriteLine(UnsafeNativeMethods.StringFormat(
+                  Trace.WriteLine(HelperMethods.StringFormat(
                       CultureInfo.CurrentCulture,
                       "Close (Pool) Failure: {0}",
                       HandleToString()));
@@ -300,7 +319,7 @@ namespace System.Data.SQLite
                   if (SQLiteFunction.UnbindAllFunctions(this, _flags, false))
                   {
 #if !NET_COMPACT_20 && TRACE_CONNECTION
-                      Trace.WriteLine(UnsafeNativeMethods.StringFormat(
+                      Trace.WriteLine(HelperMethods.StringFormat(
                           CultureInfo.CurrentCulture,
                           "UnbindFunctions Success: {0}",
                           HandleToString()));
@@ -309,7 +328,7 @@ namespace System.Data.SQLite
                   else
                   {
 #if !NET_COMPACT_20 && TRACE_CONNECTION
-                      Trace.WriteLine(UnsafeNativeMethods.StringFormat(
+                      Trace.WriteLine(HelperMethods.StringFormat(
                           CultureInfo.CurrentCulture,
                           "UnbindFunctions Failure: {0}",
                           HandleToString()));
@@ -909,7 +928,7 @@ namespace System.Data.SQLite
             openFlags, maxPoolSize, usePool, _poolVersion }));
 
 #if !NET_COMPACT_20 && TRACE_CONNECTION
-        Trace.WriteLine(UnsafeNativeMethods.StringFormat(
+        Trace.WriteLine(HelperMethods.StringFormat(
             CultureInfo.CurrentCulture,
             "Open (Pool): {0}", HandleToString()));
 #endif
@@ -940,7 +959,7 @@ namespace System.Data.SQLite
           }
 
 #if !NET_COMPACT_20 && TRACE_CONNECTION
-          Trace.WriteLine(UnsafeNativeMethods.StringFormat(
+          Trace.WriteLine(HelperMethods.StringFormat(
               CultureInfo.CurrentCulture,
               "Open: {0}", db));
 #endif
@@ -1266,11 +1285,11 @@ namespace System.Data.SQLite
         if (!String.IsNullOrEmpty(baseSchemaName))
         {
           strSql = strSql.Replace(
-              UnsafeNativeMethods.StringFormat(CultureInfo.InvariantCulture,
+              HelperMethods.StringFormat(CultureInfo.InvariantCulture,
               "[{0}].", baseSchemaName), String.Empty);
 
           strSql = strSql.Replace(
-              UnsafeNativeMethods.StringFormat(CultureInfo.InvariantCulture,
+              HelperMethods.StringFormat(CultureInfo.InvariantCulture,
               "{0}.", baseSchemaName), String.Empty);
         }
       }
@@ -1287,7 +1306,7 @@ namespace System.Data.SQLite
           if ((strSql == null) || (strSql.Length == 0) || (strSql.Trim().Length == 0))
               SQLiteLog.LogMessage("Preparing {<nothing>}...");
           else
-              SQLiteLog.LogMessage(UnsafeNativeMethods.StringFormat(
+              SQLiteLog.LogMessage(HelperMethods.StringFormat(
                   CultureInfo.CurrentCulture, "Preparing {{{0}}}...", strSql));
       }
 
@@ -1334,7 +1353,7 @@ namespace System.Data.SQLite
 #endif
 
 #if !NET_COMPACT_20 && TRACE_STATEMENT
-            Trace.WriteLine(UnsafeNativeMethods.StringFormat(
+            Trace.WriteLine(HelperMethods.StringFormat(
                 CultureInfo.CurrentCulture,
                 "Prepare ({0}): {1}", n, stmt));
 #endif
@@ -1470,7 +1489,7 @@ namespace System.Data.SQLite
     {
         IntPtr handleIntPtr = handle;
 
-        SQLiteLog.LogMessage(UnsafeNativeMethods.StringFormat(
+        SQLiteLog.LogMessage(HelperMethods.StringFormat(
             CultureInfo.CurrentCulture,
             "Binding statement {0} paramter #{1} as NULL...",
             handleIntPtr, index));
@@ -1480,7 +1499,7 @@ namespace System.Data.SQLite
     {
         IntPtr handleIntPtr = handle;
 
-        SQLiteLog.LogMessage(UnsafeNativeMethods.StringFormat(
+        SQLiteLog.LogMessage(HelperMethods.StringFormat(
             CultureInfo.CurrentCulture,
             "Binding statement {0} paramter #{1} as type {2} with value {{{3}}}...",
             handleIntPtr, index, value.GetType(), value));
@@ -1503,7 +1522,7 @@ namespace System.Data.SQLite
     {
         IntPtr handleIntPtr = handle;
 
-        SQLiteLog.LogMessage(UnsafeNativeMethods.StringFormat(
+        SQLiteLog.LogMessage(HelperMethods.StringFormat(
             CultureInfo.CurrentCulture,
             "Binding statement {0} paramter #{1} as type {2} with value {{{3}}}...",
             handleIntPtr, index, typeof(DateTime), FormatDateTime(value)));
@@ -1513,7 +1532,7 @@ namespace System.Data.SQLite
     {
         IntPtr handleIntPtr = handle;
 
-        SQLiteLog.LogMessage(UnsafeNativeMethods.StringFormat(
+        SQLiteLog.LogMessage(HelperMethods.StringFormat(
             CultureInfo.CurrentCulture,
             "Binding statement {0} paramter #{1} as type {2} with value {{{3}}}...",
             handleIntPtr, index, typeof(String), (value != null) ? value : "<null>"));
@@ -1540,7 +1559,7 @@ namespace System.Data.SQLite
     {
         IntPtr handleIntPtr = handle;
 
-        SQLiteLog.LogMessage(UnsafeNativeMethods.StringFormat(
+        SQLiteLog.LogMessage(HelperMethods.StringFormat(
             CultureInfo.CurrentCulture,
             "Binding statement {0} paramter #{1} as type {2} with value {{{3}}}...",
             handleIntPtr, index, typeof(Byte[]), (value != null) ? ToHexadecimalString(value) : "<null>"));
@@ -1821,7 +1840,7 @@ namespace System.Data.SQLite
         {
             IntPtr handleIntPtr = handle;
 
-            SQLiteLog.LogMessage(UnsafeNativeMethods.StringFormat(
+            SQLiteLog.LogMessage(HelperMethods.StringFormat(
                 CultureInfo.CurrentCulture,
                 "Statement {0} paramter count is {1}.",
                 handleIntPtr, value));
@@ -1846,7 +1865,7 @@ namespace System.Data.SQLite
         {
             IntPtr handleIntPtr = handle;
 
-            SQLiteLog.LogMessage(UnsafeNativeMethods.StringFormat(
+            SQLiteLog.LogMessage(HelperMethods.StringFormat(
                 CultureInfo.CurrentCulture,
                 "Statement {0} paramter #{1} name is {{{2}}}.",
                 handleIntPtr, index, name));
@@ -1864,7 +1883,7 @@ namespace System.Data.SQLite
         {
             IntPtr handleIntPtr = handle;
 
-            SQLiteLog.LogMessage(UnsafeNativeMethods.StringFormat(
+            SQLiteLog.LogMessage(HelperMethods.StringFormat(
                 CultureInfo.CurrentCulture,
                 "Statement {0} paramter index of name {{{1}}} is #{2}.",
                 handleIntPtr, paramName, index));
@@ -1902,39 +1921,33 @@ namespace System.Data.SQLite
 
     internal override string ColumnType(SQLiteStatement stmt, int index, ref TypeAffinity nAffinity)
     {
-      int len;
+        int len;
 #if !SQLITE_STANDARD
-      len = 0;
-      IntPtr p = UnsafeNativeMethods.sqlite3_column_decltype_interop(stmt._sqlite_stmt, index, ref len);
+        len = 0;
+        IntPtr p = UnsafeNativeMethods.sqlite3_column_decltype_interop(stmt._sqlite_stmt, index, ref len);
 #else
-      len = -1;
-      IntPtr p = UnsafeNativeMethods.sqlite3_column_decltype(stmt._sqlite_stmt, index);
+        len = -1;
+        IntPtr p = UnsafeNativeMethods.sqlite3_column_decltype(stmt._sqlite_stmt, index);
 #endif
-      nAffinity = ColumnAffinity(stmt, index);
+        nAffinity = ColumnAffinity(stmt, index);
 
-      if (p != IntPtr.Zero) return UTF8ToString(p, len);
-      else
-      {
+        if ((p != IntPtr.Zero) && ((len > 0) || (len == -1)))
+        {
+            string declType = UTF8ToString(p, len);
+
+            if (!String.IsNullOrEmpty(declType))
+                return declType;
+        }
+
         string[] ar = stmt.TypeDefinitions;
+
         if (ar != null)
         {
-          if (index < ar.Length && ar[index] != null)
-            return ar[index];
+            if (index < ar.Length && ar[index] != null)
+                return ar[index];
         }
-        return String.Empty;
 
-        //switch (nAffinity)
-        //{
-        //  case TypeAffinity.Int64:
-        //    return "BIGINT";
-        //  case TypeAffinity.Double:
-        //    return "DOUBLE";
-        //  case TypeAffinity.Blob:
-        //    return "BLOB";
-        //  default:
-        //    return "TEXT";
-        //}
-      }
+        return String.Empty;
     }
 
     internal override int ColumnIndex(SQLiteStatement stmt, string columnName)
@@ -2424,6 +2437,41 @@ namespace System.Data.SQLite
 
 #if INTEROP_VIRTUAL_TABLE
     /// <summary>
+    /// Determines the file name of the native library containing the native
+    /// "vtshim" extension -AND- whether it should be dynamically loaded by
+    /// this class.
+    /// </summary>
+    /// <param name="isLoadNeeded">
+    /// This output parameter will be set to non-zero if the returned native
+    /// library file name should be dynamically loaded prior to attempting
+    /// the creation of native disposable extension modules.
+    /// </param>
+    /// <returns>
+    /// The file name of the native library containing the native "vtshim"
+    /// extension -OR- null if it cannot be determined.
+    /// </returns>
+    private string GetShimExtensionFileName(
+        ref bool isLoadNeeded /* out */
+        )
+    {
+        if (_shimIsLoadNeeded != null)
+            isLoadNeeded = (bool)_shimIsLoadNeeded;
+        else
+            isLoadNeeded = HelperMethods.IsWindows(); /* COMPAT */
+
+        string fileName = _shimExtensionFileName;
+
+        if (fileName != null)
+            return fileName;
+
+#if (SQLITE_STANDARD || USE_INTEROP_DLL || PLATFORM_COMPACTFRAMEWORK) && PRELOAD_NATIVE_LIBRARY
+        return UnsafeNativeMethods.GetNativeLibraryFileNameOnly(); /* COMPAT */
+#else
+        return null;
+#endif
+    }
+
+    /// <summary>
     /// Calls the native SQLite core library in order to create a disposable
     /// module containing the implementation of a virtual table.
     /// </summary>
@@ -2447,8 +2495,20 @@ namespace System.Data.SQLite
         if (_sql == null)
             throw new SQLiteException("connection has an invalid handle");
 
-        SetLoadExtension(true);
-        LoadExtension(UnsafeNativeMethods.SQLITE_DLL, "sqlite3_vtshim_init");
+        bool isLoadNeeded = false;
+        string fileName = GetShimExtensionFileName(ref isLoadNeeded);
+
+        if (isLoadNeeded)
+        {
+            if (fileName == null)
+                throw new SQLiteException("the file name for the \"vtshim\" extension is unknown");
+
+            if (_shimExtensionProcName == null)
+                throw new SQLiteException("the entry point for the \"vtshim\" extension is unknown");
+
+            SetLoadExtension(true);
+            LoadExtension(fileName, _shimExtensionProcName);
+        }
 
         if (module.CreateDisposableModule(_sql))
         {
@@ -2462,7 +2522,7 @@ namespace System.Data.SQLite
                 _usePool = false;
 
 #if !NET_COMPACT_20 && TRACE_CONNECTION
-                Trace.WriteLine(UnsafeNativeMethods.StringFormat(
+                Trace.WriteLine(HelperMethods.StringFormat(
                     CultureInfo.CurrentCulture,
                     "CreateModule (Pool) Disabled: {0}",
                     HandleToString()));
@@ -2715,7 +2775,7 @@ namespace System.Data.SQLite
         _usePool = false;
 
 #if !NET_COMPACT_20 && TRACE_CONNECTION
-        Trace.WriteLine(UnsafeNativeMethods.StringFormat(
+        Trace.WriteLine(HelperMethods.StringFormat(
           CultureInfo.CurrentCulture,
           "SetPassword (Pool) Disabled: {0}",
           HandleToString()));
@@ -2733,7 +2793,7 @@ namespace System.Data.SQLite
         _usePool = false;
 
 #if !NET_COMPACT_20 && TRACE_CONNECTION
-        Trace.WriteLine(UnsafeNativeMethods.StringFormat(
+        Trace.WriteLine(HelperMethods.StringFormat(
           CultureInfo.CurrentCulture,
           "ChangePassword (Pool) Disabled: {0}",
           HandleToString()));

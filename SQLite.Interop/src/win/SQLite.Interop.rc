@@ -16,7 +16,7 @@
 #endif /* !defined(VS_FF_NONE) */
 
 #include "..\core\sqlite3.h"
-#include "interop.h"
+#include "..\generic\interop.h"
 
 /*
 ** English (U.S.) resources

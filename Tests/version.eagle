@@ -1084,7 +1084,7 @@ set fileNames [list \
     [file join SQLite.Interop props SQLite.Interop.2015.props] \
     [file join SQLite.Interop props SQLite.Interop.2015.props] \
     [file join SQLite.Interop props SQLite.Interop.2015.props] \
-    [file join SQLite.Interop src win interop.h] \
+    [file join SQLite.Interop src generic interop.h] \
     [file join System.Data.SQLite AssemblyInfo.cs] \
     [file join System.Data.SQLite AssemblyInfo.cs] \
     [file join System.Data.SQLite SQLite3.cs] \

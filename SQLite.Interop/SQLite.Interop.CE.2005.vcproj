@@ -1099,7 +1099,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\src\win\interop.c"
+				RelativePath=".\src\generic\interop.c"
 				>
 			</File>
 			<File
@@ -1161,7 +1161,7 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath=".\src\win\interop.h"
+				RelativePath=".\src\generic\interop.h"
 				>
 			</File>
 			<File

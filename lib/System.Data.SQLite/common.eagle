@@ -507,6 +507,20 @@ namespace eval ::Eagle {
       }
     }
 
+    proc getNativeLibraryFileName { {default ""} } {
+      set directory [file dirname [getCoreBinaryFileName]]
+
+      foreach fileNameOnly [getNativeLibraryFileNamesOnly] {
+        set fileName [file join $directory $fileNameOnly]
+
+        if {[file exists $fileName]} then {
+          return $fileName
+        }
+      }
+
+      return $default
+    }
+
     proc isBuildAvailable { native directory {varName ""} } {
       #
       # NOTE: Build the fully qualified file name for the primary assembly
@@ -1854,6 +1868,36 @@ namespace eval ::Eagle {
       }
     }
 
+    proc getDbDefaultCacheSize {} {
+      try {
+        set db [sql open -type SQLite {Data Source=:memory:;}]
+        return [sql execute -execute scalar $db "PRAGMA cache_size;"]
+      } finally {
+        if {[info exists db]} then {
+          catch {sql close $db}
+          unset -nocomplain db
+        }
+      }
+    }
+
+    proc useLegacyDbPageAndCacheSizes { varName } {
+      #
+      # NOTE: Refer to the specified variable (e.g. "db") in the context of our
+      #       caller.  It contains the database connection handle that will be
+      #       used to execute queries used to set the page and cache sizes.
+      #
+      upvar 1 $varName db
+
+      sql execute $db {
+        PRAGMA page_size = 1024;
+        PRAGMA cache_size = 2000;
+      }
+
+      return [list \
+          [sql execute -execute scalar $db "PRAGMA page_size;"] \
+          [sql execute -execute scalar $db "PRAGMA cache_size;"]]
+    }
+
     proc extractSystemDataSQLiteExceptionMessage { value } {
       #
       # NOTE: If the string conforms to format of the normal exception
@@ -2881,7 +2925,7 @@ namespace eval ::Eagle {
         foreach name [list connectionCount statementCount backupCount] {
           if {[catch {
             object invoke -flags +NonPublic \
-                System.Data.SQLite.UnsafeNativeMethods $name
+                System.Data.SQLite.DebugData $name
           } value] == 0} then {
             if {!$quiet} then {
               tputs $channel [appendArgs \
@@ -3844,9 +3888,9 @@ namespace eval ::Eagle {
             INTEROP_TOTYPE_EXTENSION INTEROP_VIRTUAL_TABLE NET_20 NET_35 \
             NET_40 NET_45 NET_451 NET_452 NET_46 NET_461 NET_COMPACT_20 \
             PLATFORM_COMPACTFRAMEWORK PRELOAD_NATIVE_LIBRARY RETARGETABLE \
-            SQLITE_STANDARD THROW_ON_DISPOSED TRACE TRACE_CONNECTION \
-            TRACE_DETECTION TRACE_HANDLE TRACE_PRELOAD TRACE_SHARED \
-            TRACE_STATEMENT TRACE_WARNING TRACK_MEMORY_BYTES \
+            SQLITE_STANDARD SQLITE_STANDARD_LIBRARY_NAME THROW_ON_DISPOSED \
+            TRACE TRACE_CONNECTION TRACE_DETECTION TRACE_HANDLE TRACE_PRELOAD \
+            TRACE_SHARED TRACE_STATEMENT TRACE_WARNING TRACK_MEMORY_BYTES \
             USE_ENTITY_FRAMEWORK_6 USE_INTEROP_DLL USE_PREPARE_V2 WINDOWS] {
           #
           # NOTE: Check if the compile-time option is listed in the list of

@@ -68,9 +68,9 @@ runTest {test tkt-5251bd0878-1.1 {indexed expressions schema} -setup {
   freeDbConnection
 
   unset -nocomplain column row result connection db fileName
-} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
-System.Data.SQLite} -result {{ColumnName x} {IsKey True} {ColumnName y} {IsKey\
-False}}}
+} -constraints {eagle command.object monoBug28 monoBug211 command.sql\
+compile.DATA SQLite System.Data.SQLite} -result {{ColumnName x} {IsKey True}\
+{ColumnName y} {IsKey False}}}
 
 ###############################################################################
 

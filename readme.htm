@@ -213,6 +213,8 @@ released versions of System.Data.SQLite.
 </p>
 <ul>
     <li>Updated to <a href="https://www.sqlite.org/draft/releaselog/3_12_0.html">SQLite 3.12.0</a>.</li>
+    <li>Support compiling and using the interop assembly on Linux and Mac OS X.</li>
+    <li>Support running the test suite under Mono on Linux and Mac OS X.</li>
     <li>Properly handle NULL values in the &quot;name&quot; column of the results returned by PRAGMA index_info(). Fix for [5251bd0878].</li>
     <li>For column types that resolve to boolean, recognize case-insensitive prefixes of &quot;True&quot; and &quot;False&quot;. Fix for [dbd65441a5].</li>
     <li>Add NoVerifyTextAffinity connection flag to skip type affinity checking when fetching a column value as a string. Pursuant to [dbd65441a5].</li>

@@ -82,7 +82,11 @@ for {set i 0} {$i < [llength $params(pages)]} {incr i} {
     setupDb [set fileName(1) :memory:] "" "" "" "" "" \
         false false false true memDb
 
+    useLegacyDbPageAndCacheSizes memDb
+
     setupDb [set fileName(2) [appendArgs backup-1. $i .db]]
+
+    useLegacyDbPageAndCacheSizes db
   } -body {
     set id [object invoke Interpreter.GetActive NextId]
     set dataSource [file join [getDatabaseDirectory] $fileName(2)]

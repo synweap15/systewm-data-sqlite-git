@@ -55,10 +55,10 @@ runTest {test tkt-7714b60d61-1.1 {SQLite3.GetValue with BOOLEAN} -setup {
   cleanupDb $fileName
 
   unset -nocomplain connection db fileName
-} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
-System.Data.SQLite} -result {{{x 1} y} {{x 2} {y False}} {{x 3} {y True}} {{x\
-4} {y False}} {{x 5} {y True}} {{x 6} {y False}} {{x 7} {y True}} {{x 8} {y\
-False}} {{x 9} {y True}}}}
+} -constraints {eagle command.object monoBug28 monoBug211 command.sql\
+compile.DATA SQLite System.Data.SQLite} -result {{{x 1} y} {{x 2} {y False}}\
+{{x 3} {y True}} {{x 4} {y False}} {{x 5} {y True}} {{x 6} {y False}} {{x 7}\
+{y True}} {{x 8} {y False}} {{x 9} {y True}}}}
 
 ###############################################################################
 

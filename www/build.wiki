@@ -160,7 +160,7 @@
         <li>&lt;root&gt;\SQLite.Interop\props\SQLite.Interop.2012.props</li>
         <li>&lt;root&gt;\SQLite.Interop\props\SQLite.Interop.2013.props</li>
         <li>&lt;root&gt;\SQLite.Interop\props\SQLite.Interop.2015.props</li>
-        <li>&lt;root&gt;\SQLite.Interop\src\win\interop.h</li>
+        <li>&lt;root&gt;\SQLite.Interop\src\generic\interop.h</li>
         <li>&lt;root&gt;\System.Data.SQLite\AssemblyInfo.cs</li>
         <li>&lt;root&gt;\System.Data.SQLite\SQLite3.cs</li>
         <li>&lt;root&gt;\System.Data.SQLite\UnsafeNativeMethods.cs</li>

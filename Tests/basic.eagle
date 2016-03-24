@@ -407,8 +407,8 @@ runTest {test data-1.7 {SQLITE_FCNTL_WIN32_AV_RETRY} -setup {
 
   unset -nocomplain result count interval savedCount savedInterval results \
       errors code dataSource id db fileName
-} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
-System.Data.SQLite compileCSharp} -match regexp -result {^Ok\
+} -constraints {eagle command.object windows monoBug28 command.sql compile.DATA\
+SQLite System.Data.SQLite compileCSharp} -match regexp -result {^Ok\
 System#CodeDom#Compiler#CompilerResults#\d+ \{\} 0 True$}}
 
 ###############################################################################
@@ -1116,7 +1116,8 @@ runTest {test data-1.20 {SQLiteConvert ToUnixEpoch (Utc)} -body {
   #
   expr {round([object invoke System.Data.SQLite.SQLiteConvert ToUnixEpoch \
       "2012-01-01 12:00:00Z"])}
-} -constraints {eagle command.object System.Data.SQLite} -result {1325390400}}
+} -constraints {eagle command.object monoBug42 System.Data.SQLite} -result \
+{1325390400}}
 
 ###############################################################################
 
@@ -1686,7 +1687,7 @@ runTest {test data-1.33 {SQLiteConnection.Open with SetDefaults=False} -setup {
   unset -nocomplain result db fileName
 } -constraints \
 {eagle monoBug28 command.sql compile.DATA SQLite System.Data.SQLite} -result \
-{1024 1073741823 0 2 2000 delete 0}}
+[list [getDbDefaultPageSize] 1073741823 0 2 [getDbDefaultCacheSize] delete 0]}
 
 ###############################################################################
 
@@ -1710,7 +1711,7 @@ runTest {test data-1.34 {SQLiteConnection.Open with SetDefaults=True} -setup {
   unset -nocomplain result db fileName
 } -constraints \
 {eagle monoBug28 command.sql compile.DATA SQLite System.Data.SQLite} -result \
-{1024 1073741823 0 2 2000 delete 0}}
+[list [getDbDefaultPageSize] 1073741823 0 2 [getDbDefaultCacheSize] delete 0]}
 
 ###############################################################################
 
@@ -1734,7 +1735,7 @@ runTest {test data-1.35 {SQLiteConnection.Open without SetDefaults} -setup {
   unset -nocomplain result db fileName
 } -constraints \
 {eagle monoBug28 command.sql compile.DATA SQLite System.Data.SQLite} -result \
-{1024 1073741823 0 2 2000 delete 0}}
+[list [getDbDefaultPageSize] 1073741823 0 2 [getDbDefaultCacheSize] delete 0]}
 
 ###############################################################################
 
@@ -1826,7 +1827,8 @@ runTest {test data-1.37 {sqlite3_win32_set_directory function} -setup {
   sql execute $db "CREATE TABLE t1(x NOT NULL);"
 
   for {set i 1} {$i < 100} {incr i} {
-    sql execute $db "INSERT INTO t1 (x) VALUES(?);" [list param1 String $i]
+    sql execute $db "INSERT INTO t1 (x) VALUES(?);" \
+        [list param1 String [expr {randstr(1024)}]]
   }
 
   set found(data) [expr \
@@ -1840,7 +1842,8 @@ runTest {test data-1.37 {sqlite3_win32_set_directory function} -setup {
     # NOTE: Execute a query that should force the creation of a temporary file
     #       for its statement journal.
     #
-    sql execute $db "UPDATE t1 SET x = ?;" [list param1 String $i]
+    sql execute $db "UPDATE t1 SET x = ?;" \
+        [list param1 String [expr {randstr(1024)}]]
 
     #
     # NOTE: Give the other thread some time to notice the temporary file.
@@ -2506,8 +2509,8 @@ runTest {test data-1.53 {BindAllAsText w/DateTime} -setup {
   cleanupDb $fileName
 
   unset -nocomplain dateTime db fileName
-} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
-System.Data.SQLite} -result {1 630874007980000000}}
+} -constraints {eagle command.object monoBug28 monoBug42 command.sql\
+compile.DATA SQLite System.Data.SQLite} -result {1 630874007980000000}}
 
 ###############################################################################
 
@@ -2655,7 +2658,9 @@ runTest {test data-1.56 {totype extension} -setup {
   set result [list]
 
   $connection EnableExtensions true
-  $connection LoadExtension [getCoreBinaryFileName] sqlite3_totype_init
+
+  $connection LoadExtension \
+      [getNativeLibraryFileName null] sqlite3_totype_init
 
   lappend result [sql execute -execute scalar $db "SELECT tointeger('1');"]
   lappend result [sql execute -execute scalar $db "SELECT tointeger('1x');"]
@@ -2686,7 +2691,9 @@ runTest {test data-1.57 {regexp extension} -setup {
   set result(1) [list]
 
   $connection EnableExtensions true
-  $connection LoadExtension [getCoreBinaryFileName] sqlite3_regexp_init
+
+  $connection LoadExtension \
+      [getNativeLibraryFileName null] sqlite3_regexp_init
 
   set pattern(1) {^\d+ [A-Z]{1,3}$}; # valid
   set pattern(2) {^\d+ [C]($}; # invalid
@@ -2784,7 +2791,7 @@ runTest {test data-1.58 {SQLiteConnection.ReleaseMemory method} -setup {
   cleanupDb $fileName
 
   unset -nocomplain nLargest resetOk nFree code result db fileName
-} -constraints {eagle command.object monoBug28 configuration.Release\
+} -constraints {eagle command.object windows monoBug28 configuration.Release\
 command.sql compile.DATA SQLite System.Data.SQLite} -match regexp -result \
 {^\{Busy 0 False 0\} \{Busy \d+ False 0\} \{Ok 0 True \d+\}$}}
 
@@ -2797,7 +2804,9 @@ runTest {test data-1.59 {percentile extension} -setup {
   set result [list]
 
   $connection EnableExtensions true
-  $connection LoadExtension [getCoreBinaryFileName] sqlite3_percentile_init
+
+  $connection LoadExtension \
+      [getNativeLibraryFileName null] sqlite3_percentile_init
 
   lappend result [sql execute $db "CREATE TABLE t1(x);"]
   lappend result [sql execute $db "INSERT INTO t1 VALUES(1),(2),(3),(4);"]
@@ -3103,7 +3112,7 @@ runTest {test data-1.66 {SQLiteConnection.SetChunkSize default} -setup {
   unset -nocomplain db fileName
 } -constraints \
 {eagle monoBug28 command.sql compile.DATA SQLite System.Data.SQLite} -result \
-{2048}}
+[expr {[getDbDefaultPageSize] * 2}]}
 
 ###############################################################################
 
@@ -3228,7 +3237,9 @@ runTest {test data-1.71 {fts5 extension} -setup {
   set result [list]
 
   $connection EnableExtensions true
-  $connection LoadExtension [getCoreBinaryFileName] sqlite3_fts5_init
+
+  $connection LoadExtension \
+      [getNativeLibraryFileName null] sqlite3_fts5_init
 
   lappend result [sql execute -execute scalar $db "SELECT fts5_source_id();"]
 
@@ -3938,7 +3949,9 @@ runTest {test data-1.77 {json1 extension} -setup {
   set result [list]
 
   $connection EnableExtensions true
-  $connection LoadExtension [getCoreBinaryFileName] sqlite3_json_init
+
+  $connection LoadExtension \
+      [getNativeLibraryFileName null] sqlite3_json_init
 
   lappend result [sql execute -execute scalar $db \
       {SELECT json('{ "this" : "is", "a": [ "test" ] }');}]
@@ -4053,7 +4066,7 @@ runTest {test data-1.80 {page size using PRAGMA} -setup {
   }]
 
   lappend result [sql execute $db {
-    PRAGMA page_size=4096;
+    PRAGMA page_size=8192;
   }]
 
   lappend result [sql execute $db {
@@ -4069,7 +4082,7 @@ runTest {test data-1.80 {page size using PRAGMA} -setup {
   unset -nocomplain result db fileName
 } -constraints \
 {eagle monoBug28 command.sql compile.DATA SQLite System.Data.SQLite} -result \
-{1024 -1 1 4096}}
+[list [getDbDefaultPageSize] -1 1 8192]}
 
 ###############################################################################
 

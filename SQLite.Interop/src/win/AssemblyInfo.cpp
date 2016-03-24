@@ -9,7 +9,7 @@ using namespace System::Reflection;
 using namespace System::Resources;
 using namespace System::Runtime::InteropServices;
 
-#include "interop.h"
+#include "../generic/interop.h"
 
 [assembly:AssemblyTitleAttribute("SQLite.Interop")];
 [assembly:AssemblyCompanyAttribute("https://system.data.sqlite.org/")];

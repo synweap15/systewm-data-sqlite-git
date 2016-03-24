@@ -34,12 +34,9 @@ SET BUILD_CONFIGURATIONS=DebugManagedOnly ReleaseManagedOnly
 SET PLATFORMS="Any CPU"
 SET YEARS=2008 2013
 SET NOUSER=1
-SET MSBUILD_ARGS=/property:UseInteropDll=false
-SET MSBUILD_ARGS=%MSBUILD_ARGS% /property:UseSqliteStandard=true
+SET MSBUILD_ARGS=/property:UseSqliteStandardLibraryName=true
 SET MSBUILD_ARGS=%MSBUILD_ARGS% /property:InteropCodec=false
-SET MSBUILD_ARGS=%MSBUILD_ARGS% /property:InteropExtensionFunctions=false
-SET MSBUILD_ARGS=%MSBUILD_ARGS% /property:InteropVirtualTable=false
-SET MSBUILD_ARGS=%MSBUILD_ARGS% /property:InteropTestExtension=false
+SET MSBUILD_ARGS=%MSBUILD_ARGS% /property:InteropLog=false
 
 CALL :fn_ResetErrorLevel
 

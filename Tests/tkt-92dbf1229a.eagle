@@ -48,9 +48,10 @@ runTest {test tkt-92dbf1229a-1.1 {GetSchemaTable w/non-table columns} -setup {
   cleanupDb $fileName
 
   unset -nocomplain column row result db fileName
-} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
-System.Data.SQLite} -result {{ColumnName x} {IsKey True} {ColumnName y} {IsKey\
-True} {ColumnName w} {IsKey False} {ColumnName z} {IsKey False}}}
+} -constraints {eagle command.object monoBug28 monoBug211 command.sql\
+compile.DATA SQLite System.Data.SQLite} -result {{ColumnName x} {IsKey True}\
+{ColumnName y} {IsKey True} {ColumnName w} {IsKey False} {ColumnName z} {IsKey\
+False}}}
 
 ###############################################################################
 

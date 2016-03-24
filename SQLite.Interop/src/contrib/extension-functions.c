@@ -90,12 +90,14 @@ Original code 2006 June 05 by relicoder.
 */
 
 /* #include "config.h" */
-#include <windows.h>
+#if defined(_WIN32)
+#  include <windows.h>
+#endif
 
 /* #define COMPILE_SQLITE_EXTENSIONS_AS_LOADABLE_MODULE */
 
 /* NOTE: More functions are available with MSVC 2013. */
-#if defined(_MSC_VER) && _MSC_VER >= 1800
+#if !defined(_WIN32) || (defined(_MSC_VER) && _MSC_VER >= 1800)
 #  define HAVE_ACOSH		1
 #  define HAVE_ASINH		1
 #  define HAVE_ATANH		1
@@ -125,10 +127,12 @@ SQLITE_EXTENSION_INIT1
 #include <stdio.h>
 
 #if !defined(_WIN32_WCE) || defined(HAVE_ERRNO_H)
-#include <errno.h>		/* LMH 2007-03-25 */
-#else
+#  include <errno.h>		/* LMH 2007-03-25 */
+#elif defined(_WIN32)
 int errno;
-#define strerror(x)		""
+#  define strerror(x)		""
+#else
+#  include <errno.h>
 #endif
 
 #include <stdlib.h>
@@ -137,8 +141,7 @@ int errno;
 #ifndef _MAP_H_
 #define _MAP_H_
 
-/* #include <stdint.h> */
-
+#if defined(_WIN32)
 typedef signed char int8_t;
 typedef unsigned char uint8_t;
 typedef signed int int16_t;
@@ -147,6 +150,9 @@ typedef signed long int int32_t;
 typedef unsigned long int uint32_t;
 typedef signed long long int int64_t;
 typedef unsigned long long int uint64_t;
+#else
+#  include <stdint.h>
+#endif
 
 /*
 ** Simple binary tree implementation to use in median, mode and quartile calculations
@@ -203,9 +209,11 @@ int double_cmp(const void *a, const void *b);
 
 #endif /* _MAP_H_ */
 
+#if !defined(SQLITE_CORE)
 typedef uint8_t         u8;
 /* typedef uint16_t        u16; */
 typedef int64_t         i64;
+#endif
 
 static char *sqlite3StrDup( const char *z ) {
     char *res = sqlite3_malloc( strlen(z)+1 );
@@ -1453,8 +1461,8 @@ static void modeStep(sqlite3_context *context, int argc, sqlite3_value **argv){
 **  Auxiliary function that iterates all elements in a map and finds the mode
 **  (most frequent value)
 */
-static void modeIterate(void* e, i64 c, void* pp){
-  i64 ei;
+static void modeIterate(void* e, int64_t c, void* pp){
+  int64_t ei;
   double ed;
   ModeCtx *p = (ModeCtx*)pp;
 
@@ -1486,8 +1494,8 @@ static void modeIterate(void* e, i64 c, void* pp){
 **  (the value such that the number of elements smaller is equal the the number of
 **  elements larger)
 */
-static void medianIterate(void* e, i64 c, void* pp){
-  i64 ei;
+static void medianIterate(void* e, int64_t c, void* pp){
+  int64_t ei;
   double ed;
   double iL;
   double iR;
@@ -1937,7 +1945,6 @@ void map_destroy(map *m){
 int int_cmp(const void *a, const void *b){
   int64_t aa = *(int64_t *)(a);
   int64_t bb = *(int64_t *)(b);
-  /* printf("cmp %d <=> %d\n",aa,bb); */
   if(aa==bb)
     return 0;
   else if(aa<bb)
@@ -1949,7 +1956,6 @@ int int_cmp(const void *a, const void *b){
 int double_cmp(const void *a, const void *b){
   double aa = *(double *)(a);
   double bb = *(double *)(b);
-  /* printf("cmp %d <=> %d\n",aa,bb); */
   if(aa==bb)
     return 0;
   else if(aa<bb)
@@ -1957,9 +1963,3 @@ int double_cmp(const void *a, const void *b){
   else
     return 1;
 }
-
-void print_elem(void *e, int64_t c, void* p){
-  int ee = *(int*)(e);
-  printf("%d => %lld\n", ee,c);
-}
-

@@ -433,9 +433,9 @@ runTest {test tkt-343d392b51-3.2 {adapter, attached db, table names} -setup {
 
   unset -nocomplain result code results errors i sql otherTable otherDbName \
       otherDataSource dataSource id otherFileName
-} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
-System.Data.SQLite compileCSharp} -match regexp -result {^Ok\
-System#CodeDom#Compiler#CompilerResults#\d+ \{\} 0 \{\}$}}
+} -constraints {eagle command.object monoBug28 monoBug211 command.sql\
+compile.DATA SQLite System.Data.SQLite compileCSharp} -match regexp -result \
+{^Ok System#CodeDom#Compiler#CompilerResults#\d+ \{\} 0 \{\}$}}
 
 ###############################################################################
 
