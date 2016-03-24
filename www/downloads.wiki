@@ -457,6 +457,24 @@
     </tr>
 
     <tr>
+      <td width="10">&nbsp;</td>
+      <td width="30%" valign="top" align="right">
+        <a name="sqlite-netFx-full-source"></a>
+        <a href="/downloads/1.0.99.0/sqlite-netFx-full-source-1.0.99.0.zip">sqlite-netFx-full-source-1.0.99.0.zip</a>
+        <br />
+        (0.00 MiB)
+      </td>
+      <td width="5"></td>
+      <td valign="top">
+        This ZIP archive contains all current source code for System.Data.SQLite
+        1.0.99.0 (3.9.2) and the extra files needed to run the unit test suite,
+        combined into a single archive file.
+        <br />
+        (sha1: 0000000000000000000000000000000000000000)
+      </td>
+    </tr>
+
+    <tr>
       <td colspan="4">
         <b>Setups for 32-bit Windows (.NET Framework 2.0 SP2)</b>
       </td>
