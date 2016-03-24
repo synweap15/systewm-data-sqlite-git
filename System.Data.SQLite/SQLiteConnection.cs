@@ -301,13 +301,13 @@ namespace System.Data.SQLite
   /// <description>
   /// If the argument N is positive then the suggested cache size is set to N.
   /// If the argument N is negative, then the number of cache pages is adjusted
-  /// to use approximately abs(N*1024) bytes of memory. Backwards compatibility
+  /// to use approximately abs(N*4096) bytes of memory. Backwards compatibility
   /// note: The behavior of cache_size with a negative N was different in SQLite
   /// versions prior to 3.7.10. In version 3.7.9 and earlier, the number of
   /// pages in the cache was set to the absolute value of N.
   /// </description>
   /// <description>N</description>
-  /// <description>2000</description>
+  /// <description>-2000</description>
   /// </item>
   /// <item>
   /// <description>Synchronous</description>
@@ -325,7 +325,7 @@ namespace System.Data.SQLite
   /// <description>Page Size</description>
   /// <description>{size in bytes}</description>
   /// <description>N</description>
-  /// <description>1024</description>
+  /// <description>4096</description>
   /// </item>
   /// <item>
   /// <description>Password</description>
@@ -559,9 +559,9 @@ namespace System.Data.SQLite
     private const string DefaultHexPassword = null;
     private const string DefaultPassword = null;
     private const int DefaultVersion = 3;
-    private const int DefaultPageSize = 1024;
+    private const int DefaultPageSize = 4096;
     private const int DefaultMaxPageCount = 0;
-    private const int DefaultCacheSize = 2000;
+    private const int DefaultCacheSize = -2000;
     private const int DefaultMaxPoolSize = 100;
     private const int DefaultConnectionTimeout = 30;
     private const int DefaultBusyTimeout = 0;

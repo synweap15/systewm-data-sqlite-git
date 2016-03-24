@@ -760,7 +760,12 @@ SQLITE_API int WINAPI sqlite3_create_function_interop(sqlite3 *psql, const char 
   {
     if (needCollSeq)
     {
-      FuncDef *pFunc = sqlite3FindFunction(psql, zFunctionName, strlen(zFunctionName), nArg, eTextRep, 0);
+      FuncDef *pFunc = sqlite3FindFunction(
+          psql, zFunctionName,
+#if SQLITE_VERSION_NUMBER < 3012000
+          strlen(zFunctionName),
+#endif
+          nArg, eTextRep, 0);
       if( pFunc )
       {
 #if SQLITE_VERSION_NUMBER >= 3008001
