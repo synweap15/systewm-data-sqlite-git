@@ -18,6 +18,30 @@ namespace eval ::Eagle {
     ############################ BEGIN Eagle ONLY #############################
     ###########################################################################
 
+    proc getSQLiteDefineConstantPrefix {} {
+      #
+      # NOTE: See if the define constant prefix setting has been overridden
+      #       by the user (e.g. on the command line).
+      #
+      if {[info exists ::define_constant_prefix] && \
+          [string length $::define_constant_prefix] > 0} then {
+        #
+        # NOTE: Use the specified define constant prefix.
+        #
+        return $::define_constant_prefix
+      } else {
+        #
+        # NOTE: Use the default define constant prefix.
+        #
+        return defineConstant.System.Data.SQLite.
+      }
+    }
+
+    proc haveSQLiteDefineConstant { name } {
+      return [haveConstraint \
+          [appendArgs [getSQLiteDefineConstantPrefix] $name]]
+    }
+
     proc getBuildYear {} {
       #
       # NOTE: See if the "year" setting has been overridden by the user (e.g.
@@ -835,7 +859,7 @@ namespace eval ::Eagle {
           [file join [getBinaryDirectory] $platform [file tail $fileName]]]
     }
 
-    proc getCoreBinaryFileName { {platform ""} {standard false} } {
+    proc getCoreBinaryFileName { {platform ""} {standard ""} } {
       #
       # NOTE: Returns the full path for the file containing the SQLite core
       #       native library code for this platform.  First, check and see if
@@ -855,33 +879,29 @@ namespace eval ::Eagle {
         return $fileName
       }
 
+      #
+      # NOTE: If the "native" runtime option has been set, always return the
+      #       file name for the mixed-mode assembly.
+      #
       if {[hasRuntimeOption native]} then {
         #
         # NOTE: Return the mixed-mode assembly file name.
         #
         return [file nativename \
             [file join [getBinaryDirectory] $platform System.Data.SQLite.dll]]
-      } elseif {$standard} then {
-        #
-        # NOTE: Attempt to determine the native-only standard SQLite library
-        #       file name for this platform and then return it.
-        #
-        foreach fileNameOnly [getNativeLibraryFileNamesOnly] {
-          set fileName [file nativename \
-              [file join [getBinaryDirectory] $platform $fileNameOnly]]
+      }
 
-          if {[file exists $fileName]} then {
-            return $fileName
-          }
-        }
+      #
+      # NOTE: Are we attempting to automatically detect whether or not the
+      #       interop assembly should be used?
+      #
+      set automatic [expr {[string length $standard] == 0}]
 
-        #
-        # NOTE: Fallback to returning the native-only standard SQLite library
-        #       file name for Windows.
-        #
-        return [file nativename \
-            [file join [getBinaryDirectory] $platform sqlite3.dll]]
-      } else {
+      #
+      # NOTE: First, in either "automatic" or "non-standard" modes, attempt
+      #       to find the native-only interop assembly.
+      #
+      if {$automatic || !$standard} then {
         #
         # NOTE: Attempt to determine the native-only interop assembly file
         #       name for this platform and then return it.
@@ -894,13 +914,58 @@ namespace eval ::Eagle {
             return $fileName
           }
         }
+      }
 
+      #
+      # NOTE: Then, in either "automatic" or "standard" modes, attempt to
+      #       find the standard SQLite library.
+      #
+      if {$automatic || $standard} then {
+        #
+        # NOTE: Attempt to determine the native-only standard SQLite library
+        #       file name for this platform and then return it.
+        #
+        foreach fileNameOnly [getNativeLibraryFileNamesOnly] {
+          set fileName [file nativename \
+              [file join [getBinaryDirectory] $platform $fileNameOnly]]
+
+          if {[file exists $fileName]} then {
+            return $fileName
+          }
+        }
+      }
+
+      #
+      # NOTE: Was the managed assembly compiled expecting to deal with the
+      #       standard core library?
+      #
+      if {[haveSQLiteDefineConstant SQLITE_STANDARD] || \
+          [haveSQLiteDefineConstant SQLITE_STANDARD_LIBRARY_NAME]} then {
+        #
+        # NOTE: Fallback to returning the native-only standard SQLite library
+        #       file name for the platform.
+        #
+        set fileNamesOnly [getNativeLibraryFileNamesOnly]
+
+        if {[llength $fileNamesOnly] == 0} then {
+          return ""
+        }
+
+        return [file nativename [file join \
+            [getBinaryDirectory] $platform [lindex $fileNamesOnly 0]]]
+      } else {
         #
         # NOTE: Fallback to returning the native-only interop assembly file
-        #       name for Windows.
+        #       name for the platform.
         #
-        return [file nativename \
-            [file join [getBinaryDirectory] $platform SQLite.Interop.dll]]
+        set fileNamesOnly [getInteropAssemblyFileNamesOnly]
+
+        if {[llength $fileNamesOnly] == 0} then {
+          return ""
+        }
+
+        return [file nativename [file join \
+            [getBinaryDirectory] $platform [lindex $fileNamesOnly 0]]]
       }
     }
 
@@ -1435,7 +1500,7 @@ namespace eval ::Eagle {
               INTEROP_TOTYPE_EXTENSION INTEROP_VIRTUAL_TABLE \
               USE_INTEROP_DLL] {
             addConstraint [appendArgs \
-                defineConstant.System.Data.SQLite. $defineConstant]
+                [getSQLiteDefineConstantPrefix] $defineConstant]
           }
         }
 
@@ -1733,7 +1798,7 @@ namespace eval ::Eagle {
           # NOTE: Yes, this define constant was enabled when the managed
           #       assembly was compiled.
           #
-          addConstraint [appendArgs defineConstant.System.Data.SQLite. $name]
+          addConstraint [appendArgs [getSQLiteDefineConstantPrefix] $name]
 
           tputs $channel yes\n
         } else {
@@ -2959,8 +3024,8 @@ namespace eval ::Eagle {
     proc getSQLiteHandleCounts { channel {quiet false} } {
       set result [list]
 
-      if {[haveSQLiteObjectCommand] && [haveConstraint \
-              defineConstant.System.Data.SQLite.COUNT_HANDLE]} then {
+      if {[haveSQLiteObjectCommand] && \
+          [haveSQLiteDefineConstant COUNT_HANDLE]} then {
         #
         # NOTE: Add each critical handle count to the resulting list.
         #
@@ -3109,10 +3174,9 @@ namespace eval ::Eagle {
         }
       }
 
-      if {[haveSQLiteObjectCommand] && [haveConstraint \
-              defineConstant.System.Data.SQLite.INTEROP_VIRTUAL_TABLE] && \
-          [haveConstraint \
-              defineConstant.System.Data.SQLite.TRACK_MEMORY_BYTES]} then {
+      if {[haveSQLiteObjectCommand] && \
+          [haveSQLiteDefineConstant INTEROP_VIRTUAL_TABLE] && \
+          [haveSQLiteDefineConstant TRACK_MEMORY_BYTES]} then {
         if {!$quiet} then {
           tputs $channel "---- current memory in use by SQLiteMemory... "
         }
@@ -3953,10 +4017,8 @@ namespace eval ::Eagle {
         # NOTE: Check if the System.Data.SQLite provider was compiled with
         #       support for any encrypted databases.
         #
-        if {[haveConstraint \
-                defineConstant.System.Data.SQLite.INTEROP_CODEC] || \
-            [haveConstraint \
-                defineConstant.System.Data.SQLite.INTEROP_INCLUDE_SEE]} then {
+        if {[haveSQLiteDefineConstant INTEROP_CODEC] || \
+            [haveSQLiteDefineConstant INTEROP_INCLUDE_SEE]} then {
           #
           # NOTE: Yes, add generic constraint for use by the test suite.
           #
