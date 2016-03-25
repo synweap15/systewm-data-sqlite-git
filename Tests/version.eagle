@@ -786,7 +786,7 @@ lappend patterns \
 ###############################################################################
 
 lappend patterns \
-    [appendArgs \"SQLite.Interop. [format %03d $version(build)] .dll\"]
+    [appendArgs \"SQLite.Interop. [format %03d $version(build)] (?:.dll)?\"]
 
 ###############################################################################
 # System.Data.SQLite.Linq/AssemblyInfo.cs
