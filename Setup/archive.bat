@@ -90,6 +90,9 @@ IF DEFINED ARCHIVE_FULL (
   SET PREFIX=sqlite-netFx-source
 )
 
+%_VECHO% ExcludeSrc = '%EXCLUDE_SRC%'
+%_VECHO% Prefix = '%PREFIX%'
+
 %__ECHO% zip.exe -v -r "Setup\Output\%PREFIX%-%VERSION%.zip" * -x "%EXCLUDE_SRC%"
 
 IF ERRORLEVEL 1 (
