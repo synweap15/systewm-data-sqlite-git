@@ -140,10 +140,6 @@ namespace System.Data.SQLite
             "SQLITE_STANDARD",
 #endif
 
-#if SQLITE_STANDARD_LIBRARY_NAME
-            "SQLITE_STANDARD_LIBRARY_NAME",
-#endif
-
 #if THROW_ON_DISPOSED
             "THROW_ON_DISPOSED",
 #endif

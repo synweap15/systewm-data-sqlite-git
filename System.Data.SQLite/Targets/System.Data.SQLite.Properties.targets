@@ -153,15 +153,6 @@
   </PropertyGroup>
 
   <!--
-      NOTE: For interaction with the native SQLite implementation, use the
-            standard DLL file name (i.e. "sqlite3.dll") even when compiled
-            to use the interop DLL?
-  -->
-  <PropertyGroup Condition="'$(UseSqliteStandardLibraryName)' != 'false'">
-    <DefineConstants>$(DefineConstants);SQLITE_STANDARD_LIBRARY_NAME</DefineConstants>
-  </PropertyGroup>
-
-  <!--
       NOTE: Is the project being built to support the .NET Compact Framework?
   -->
   <PropertyGroup Condition="'$(IsCompactFramework)' != 'false'">
