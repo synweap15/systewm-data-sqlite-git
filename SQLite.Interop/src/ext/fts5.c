@@ -15066,7 +15066,7 @@ static void fts5SourceIdFunc(
   sqlite3_value **apVal           /* Function arguments */
 ){
   assert( nArg==0 );
-  sqlite3_result_text(pCtx, "fts5: 2015-11-02 18:31:45 bda77dda9697c463c3d0704014d51627fceee328", -1, SQLITE_TRANSIENT);
+  sqlite3_result_text(pCtx, "fts5: 2016-03-31 21:36:06 dfbfd34b3ff4d6da6f2db56e4664d7058f10c098", -1, SQLITE_TRANSIENT);
 }
 
 static int fts5Init(sqlite3 *db){

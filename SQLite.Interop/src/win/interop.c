@@ -36,7 +36,7 @@ extern int RegisterExtensionFunctions(sqlite3 *db);
 #if defined(INTEROP_CODEC) && !defined(INTEROP_INCLUDE_SEE)
 #ifdef SQLITE_ENABLE_ZIPVFS
 #define INTEROP_CODEC_GET_PAGER(a,b,c) sqlite3PagerGet(a,b,c,0)
-#elif SQLITE_VERSION_NUMBER > 3009002
+#elif SQLITE_VERSION_NUMBER >= 3010000
 #define INTEROP_CODEC_GET_PAGER(a,b,c) sqlite3PagerGet(a,b,c,0)
 #else
 #define INTEROP_CODEC_GET_PAGER(a,b,c) sqlite3PagerGet(a,b,c)
