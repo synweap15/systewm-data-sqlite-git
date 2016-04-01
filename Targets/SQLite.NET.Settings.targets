@@ -767,8 +767,8 @@
               the output does not end up where it expects the output to be.  The
               value of this property must have a trailing backslash.
     -->
-    <BaseIntermediateOutputPath Condition="'$(ConfigurationSuffix)' == ''">$(SQLiteNetDir)\obj\$(ConfigurationYear)\</BaseIntermediateOutputPath>
-    <BaseIntermediateOutputPath Condition="'$(ConfigurationSuffix)' != ''">$(SQLiteNetDir)\obj\$(ConfigurationYear)\$(ConfigurationSuffix)\</BaseIntermediateOutputPath>
+    <BaseIntermediateOutputPath Condition="'$(ConfigurationSuffix)' == ''">$(SQLiteNetDir)\obj\$(ConfigurationYear)\$(MSBuildProjectName)\</BaseIntermediateOutputPath>
+    <BaseIntermediateOutputPath Condition="'$(ConfigurationSuffix)' != ''">$(SQLiteNetDir)\obj\$(ConfigurationYear)\$(MSBuildProjectName)\$(ConfigurationSuffix)\</BaseIntermediateOutputPath>
   </PropertyGroup>
 
   <!--
