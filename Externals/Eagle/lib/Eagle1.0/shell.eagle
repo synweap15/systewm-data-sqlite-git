@@ -30,6 +30,11 @@ namespace eval ::Eagle {
     #       environment should be placed here.
     #
     proc help { args } {
+      # <help>
+      # Displays interactive command help using the interactive "#help"
+      # command.
+      # </help>
+
       host result Break [appendArgs \
           "\nFor interactive help please use: #help " $args \
           "\nFor commercial support, please use: #support\n"]

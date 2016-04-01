@@ -1150,6 +1150,7 @@ if {![info exists no([file tail [info script]])]} then {
       checkForMachine $test_channel 32 arm;   # (i.e. arm)
       checkForMachine $test_channel 64 ia64;  # (i.e. itanium)
       checkForMachine $test_channel 64 amd64; # (i.e. x64)
+      checkForMachine $test_channel 64 arm64; # (i.e. arm64)
     }
 
     #
@@ -1178,6 +1179,13 @@ if {![info exists no([file tail [info script]])]} then {
     #
     if {![info exists no(softwareUpdate)]} then {
       checkForSoftwareUpdateTrust $test_channel
+    }
+
+    #
+    # NOTE: Has library assembly name detection support been disabled?
+    #
+    if {![info exists no(libraryAssemblyName)]} then {
+      checkForLibraryAssemblyName $test_channel
     }
 
     #
@@ -1297,7 +1305,7 @@ if {![info exists no([file tail [info script]])]} then {
     # NOTE: Has symbol testing support been disabled?
     #
     if {![info exists no(assemblySymbols)]} then {
-      checkForSymbols $test_channel [lindex [info assembly] end]
+      checkForSymbols $test_channel [lindex [info assembly] end] assembly
     }
 
     #
@@ -1590,7 +1598,7 @@ if {![info exists no([file tail [info script]])]} then {
 
         #
         # NOTE: Has runtime license checking support been disabled (at
-        #       compile-time).  This only applies to third-party plugins
+        #       compile-time)?  This only applies to third-party plugins
         #       and applications.
         #
         if {![info exists no(compileLicensing)]} then {
@@ -1598,6 +1606,18 @@ if {![info exists no([file tail [info script]])]} then {
           # NOTE: This is not currently used by any tests.
           #
           checkForCompileOption $test_channel LICENSING
+        }
+
+        #
+        # NOTE: Has runtime "limited edition" checking support been
+        #       disabled (at compile-time)?  This only applies to
+        #       third-party plugins and applications.
+        #
+        if {![info exists no(compileLimitedEdition)]} then {
+          #
+          # NOTE: This is not currently used by any tests.
+          #
+          checkForCompileOption $test_channel LIMITED_EDITION
         }
       }
     }
@@ -1724,6 +1744,31 @@ if {![info exists no([file tail [info script]])]} then {
             *TestComplainCallbackNoThrow*
       }
 
+      #
+      # NOTE: Has custom match mode testing been disabled?
+      #
+      if {![info exists no(testMatchMode)]} then {
+        #
+        # NOTE: For test "stringMatch-101.1".
+        #
+        checkForObjectMember $test_channel Eagle._Tests.Default \
+            *TestSetMatchCallback*
+      }
+
+      #
+      # NOTE: Has web client testing been disabled?
+      #
+      if {![info exists no(testWebClient)]} then {
+        #
+        # NOTE: For test "socket-3.50".
+        #
+        checkForObjectMember $test_channel Eagle._Tests.Default \
+            *TestHasNewScriptWebClientCallback*
+
+        checkForObjectMember $test_channel Eagle._Tests.Default \
+            *TestSetNewScriptWebClientCallback*
+      }
+
       if {![info exists no(testLoad)]} then {
         #
         # NOTE: For tests "load-1.6" and "load-1.7".
@@ -1734,7 +1779,7 @@ if {![info exists no([file tail [info script]])]} then {
 
       if {![info exists no(testPermute)]} then {
         #
-        # NOTE: For test "lpermute-1.3".
+        # NOTE: For tests "lpermute-1.3" and "lpermute-1.4".
         #
         checkForObjectMember $test_channel Eagle._Tests.Default \
             *TestPermute*
@@ -2169,6 +2214,48 @@ if {![info exists no([file tail [info script]])]} then {
         #
         checkForObjectMember $test_channel Eagle._Tests.Default+Disposable \
             *ToString* Eagle._Tests.Default.Disposable.ToString
+      }
+
+      #
+      # NOTE: Has ISubCommand testing support been disabled?
+      #
+      if {![info exists no(testSubCommand)]} then {
+        #
+        # NOTE: For tests "redefine-2.*".
+        #
+        checkForObjectMember $test_channel Eagle._Tests.Default+SubCommand \
+            *ToString* Eagle._Tests.Default.SubCommand.ToString
+      }
+
+      #
+      # NOTE: Has IResolve testing support been disabled?
+      #
+      if {![info exists no(testResolve)]} then {
+        #
+        # NOTE: For tests "resolver-1.*".
+        #
+        checkForObjectMember $test_channel Eagle._Tests.Default+Resolve \
+            *ToString* Eagle._Tests.Default.Resolve.ToString
+      }
+
+      #
+      # NOTE: Has TraceListener testing support been disabled?
+      #
+      if {![info exists no(testTraceListener)]} then {
+        #
+        # NOTE: For test "basic-1.74".
+        #
+        checkForObjectMember $test_channel Eagle._Tests.Default+Listener \
+            *WriteLine* Eagle._Tests.Default.Listener.WriteLine
+
+        checkForObjectMember $test_channel Eagle._Tests.Default+Listener \
+            *Flush* Eagle._Tests.Default.Listener.Flush
+
+        #
+        # NOTE: For test "basic-1.75".
+        #
+        checkForObjectMember $test_channel Eagle._Tests.Default+Listener \
+            * Eagle._Tests.Default.Listener
       }
     }
 
@@ -2809,6 +2896,10 @@ if {![info exists no([file tail [info script]])]} then {
     checkForBigLists $test_channel
   }
 
+  if {![info exists no(checkForProcessorIntensive)]} then {
+    checkForProcessorIntensive $test_channel
+  }
+
   if {![info exists no(checkForTimeIntensive)]} then {
     checkForTimeIntensive $test_channel
   }
@@ -2823,6 +2914,10 @@ if {![info exists no([file tail [info script]])]} then {
 
   if {![info exists no(checkForStackIntensive)]} then {
     checkForStackIntensive $test_channel
+  }
+
+  if {![info exists no(checkForStackSize)]} then {
+    checkForStackSize $test_channel
   }
 
   if {![info exists no(windowsCommandProcessor)]} then {
@@ -2853,8 +2948,8 @@ if {![info exists no([file tail [info script]])]} then {
     checkForLogFile $test_channel
   }
 
-  if {![info exists no(symbols)]} then {
-    checkForSymbols $test_channel [info nameofexecutable]
+  if {![info exists no(executableSymbols)]} then {
+    checkForSymbols $test_channel [info nameofexecutable] executable
   }
 
   if {![info exists no(garuda)]} then {
@@ -2863,6 +2958,10 @@ if {![info exists no([file tail [info script]])]} then {
 
   if {![info exists no(shell)]} then {
     checkForShell $test_channel
+  }
+
+  if {![info exists no(officialStableReleaseInProgress)]} then {
+    checkForOfficialStableReleaseInProgress $test_channel
   }
 
   if {![info exists no(debug)]} then {
@@ -2888,6 +2987,10 @@ if {![info exists no([file tail [info script]])]} then {
   #
   if {![info exists no(callbackCommand)]} then {
     checkForCommand $test_channel callback
+  }
+
+  if {![info exists no(lgetCommand)]} then {
+    checkForCommand $test_channel lget
   }
 
   if {![info exists no(libraryCommand)]} then {
@@ -2955,6 +3058,10 @@ if {![info exists no([file tail [info script]])]} then {
 
   if {![info exists no(tip429)]} then {
     checkForTip429 $test_channel
+  }
+
+  if {![info exists no(tip440)]} then {
+    checkForTip440 $test_channel
   }
 
   #
