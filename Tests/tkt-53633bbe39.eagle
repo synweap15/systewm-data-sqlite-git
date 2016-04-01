@@ -1,0 +1,68 @@
+###############################################################################
+#
+# tkt-53633bbe39.eagle --
+#
+# Written by Joe Mistachkin.
+# Released to the public domain, use at your own risk!
+#
+###############################################################################
+
+package require Eagle
+package require Eagle.Library
+package require Eagle.Test
+
+runTestPrologue
+
+###############################################################################
+
+package require System.Data.SQLite.Test
+runSQLiteTestPrologue
+
+###############################################################################
+
+runTest {test tkt-53633bbe39-1.1 {column affinity overrides} -setup {
+  saveSQLiteConnectionEnvironment
+  saveSQLiteConvertEnvironment
+
+  set env(DefaultFlags_SQLiteConnection) "DetectTextAffinity, DetectStringType"
+  set env(Use_SQLiteConvert_DefaultDbType) String
+  set env(Use_SQLiteConvert_DefaultTypeName) TEXT
+
+  setupDb [set fileName tkt-53633bbe39-1.1.db]
+} -body {
+  sql execute $db {
+    CREATE TABLE t1(x);
+    INSERT INTO t1 (x) VALUES(NULL);
+    INSERT INTO t1 (x) VALUES(1);
+    INSERT INTO t1 (x) VALUES(2.0);
+    INSERT INTO t1 (x) VALUES(3.14159);
+  }
+
+  set dataReader [sql execute -execute reader -format datareader \
+      -alias $db "SELECT x FROM t1 ORDER BY x;"]
+
+  set results [list]
+
+  while {[$dataReader Read]} {
+    set result [list]
+
+    lappend result [catch {$dataReader GetString 0} result] $result
+    lappend result [catch {$dataReader GetValue 0} result] $result
+
+    lappend results $result
+  }
+
+  set results
+} -cleanup {
+  cleanupDb $fileName
+  restoreSQLiteConvertEnvironment
+  restoreSQLiteConnectionEnvironment
+
+  unset -nocomplain result results db fileName savedEnv
+} -constraints \
+{eagle monoBug28 command.sql compile.DATA SQLite System.Data.SQLite} -result {}}
+
+###############################################################################
+
+runSQLiteTestEpilogue
+runTestEpilogue
