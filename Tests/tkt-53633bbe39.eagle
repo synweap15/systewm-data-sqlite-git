@@ -24,7 +24,9 @@ runTest {test tkt-53633bbe39-1.1 {column affinity overrides} -setup {
   saveSQLiteConnectionEnvironment
   saveSQLiteConvertEnvironment
 
-  set env(DefaultFlags_SQLiteConnection) "DetectTextAffinity, DetectStringType"
+  set env(DefaultFlags_SQLiteConnection) \
+      "DetectTextAffinity, DetectStringType, NoVerifyTextAffinity"
+
   set env(Use_SQLiteConvert_DefaultDbType) String
   set env(Use_SQLiteConvert_DefaultTypeName) TEXT
 
@@ -44,23 +46,27 @@ runTest {test tkt-53633bbe39-1.1 {column affinity overrides} -setup {
   set results [list]
 
   while {[$dataReader Read]} {
-    set result [list]
+    set result(0) [list]
 
-    lappend result [catch {$dataReader GetString 0} result] $result
-    lappend result [catch {$dataReader GetValue 0} result] $result
+    lappend result(0) [catch {$dataReader GetString 0} result(1)] $result(1)
+    lappend result(0) [catch {$dataReader GetValue 0} result(1)] $result(1)
 
-    lappend results $result
+    lappend results $result(0)
   }
 
   set results
 } -cleanup {
+  unset -nocomplain dataReader
+
   cleanupDb $fileName
   restoreSQLiteConvertEnvironment
   restoreSQLiteConnectionEnvironment
 
   unset -nocomplain result results db fileName savedEnv
 } -constraints \
-{eagle monoBug28 command.sql compile.DATA SQLite System.Data.SQLite} -result {}}
+{eagle monoBug28 command.sql compile.DATA SQLite System.Data.SQLite} -match \
+regexp -result {^\{0 \{\} 0 System#DBNull#\d+\} \{0 1 0 1\} \{0 2\.0 0 2\.0\}\
+\{0 3\.14159 0 3\.14159\}$}}
 
 ###############################################################################
 
