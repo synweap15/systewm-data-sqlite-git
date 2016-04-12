@@ -288,6 +288,10 @@ GOTO no_errors
     SET HAVE_LINQ=1
     SET HAVE_EF6=1
   )
+  IF /I "%1" == "2015" (
+    SET HAVE_LINQ=1
+    SET HAVE_EF6=1
+  )
   GOTO :EOF
 
 :fn_UnsetVariable
