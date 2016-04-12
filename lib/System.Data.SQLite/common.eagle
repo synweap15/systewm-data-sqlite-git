@@ -527,7 +527,7 @@ namespace eval ::Eagle {
         #       Mac OS X file name, since we do not currently have an easy
         #       way to detect which of those platforms we are running on.
         #
-        return [list libsqlite3.so libsqlite3.dylib]
+        return [list libsqlite3.dylib libsqlite3.so]
       }
     }
 
@@ -555,9 +555,7 @@ namespace eval ::Eagle {
         #       Mac OS X file name, since we do not currently have an easy
         #       way to detect which of those platforms we are running on.
         #
-        return [list \
-            SQLite.Interop.dll.so SQLite.Interop.so \
-            SQLite.Interop.dylib SQLite.Interop.dll.dylib]
+        return [list libSQLite.Interop.dylib libSQLite.Interop.so]
       }
     }
 
@@ -939,8 +937,7 @@ namespace eval ::Eagle {
       # NOTE: Was the managed assembly compiled expecting to deal with the
       #       standard core library?
       #
-      if {[haveSQLiteDefineConstant SQLITE_STANDARD] || \
-          [haveSQLiteDefineConstant SQLITE_STANDARD_LIBRARY_NAME]} then {
+      if {[haveSQLiteDefineConstant SQLITE_STANDARD]} then {
         #
         # NOTE: Fallback to returning the native-only standard SQLite library
         #       file name for the platform.
@@ -4002,9 +3999,9 @@ namespace eval ::Eagle {
             INTEROP_TOTYPE_EXTENSION INTEROP_VIRTUAL_TABLE NET_20 NET_35 \
             NET_40 NET_45 NET_451 NET_452 NET_46 NET_461 NET_COMPACT_20 \
             PLATFORM_COMPACTFRAMEWORK PRELOAD_NATIVE_LIBRARY RETARGETABLE \
-            SQLITE_STANDARD SQLITE_STANDARD_LIBRARY_NAME THROW_ON_DISPOSED \
-            TRACE TRACE_CONNECTION TRACE_DETECTION TRACE_HANDLE TRACE_PRELOAD \
-            TRACE_SHARED TRACE_STATEMENT TRACE_WARNING TRACK_MEMORY_BYTES \
+            SQLITE_STANDARD THROW_ON_DISPOSED TRACE TRACE_CONNECTION \
+            TRACE_DETECTION TRACE_HANDLE TRACE_PRELOAD TRACE_SHARED \
+            TRACE_STATEMENT TRACE_WARNING TRACK_MEMORY_BYTES \
             USE_ENTITY_FRAMEWORK_6 USE_INTEROP_DLL USE_PREPARE_V2 WINDOWS] {
           #
           # NOTE: Check if the compile-time option is listed in the list of

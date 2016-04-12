@@ -212,6 +212,19 @@ namespace eval ::Eagle {
         $::eagle_platform($name) : $default}]
   }
 
+  proc getPluginName { pattern } {
+    #
+    # NOTE: This should work properly in both Tcl and Eagle.
+    #
+    foreach loaded [info loaded] {
+      if {[regexp -- $pattern [lindex $loaded end]]} then {
+        return [lindex $loaded 1]
+      }
+    }
+
+    return ""
+  }
+
   proc getPluginPath { pattern } {
     #
     # NOTE: This should work properly in both Tcl and Eagle.
@@ -835,6 +848,61 @@ namespace eval ::Eagle {
       }
 
       return $default
+    }
+
+    proc addRuntimeOption { name } {
+      #
+      # NOTE: Returns non-zero if the specified runtime option was added.
+      #
+      if {[llength [info commands debug]] > 0} then {
+        if {[llength [info subcommands debug runtimeoption]] > 0} then {
+          if {[catch {debug runtimeoption add $name} result] == 0} then {
+            return $result
+          }
+        }
+      }
+
+      if {[llength [info commands object]] > 0} then {
+        if {[catch {
+          object invoke Interpreter.GetActive AddRuntimeOption $name
+        } result] == 0} then {
+          return $result
+        }
+      }
+
+      return false
+    }
+
+    proc removeRuntimeOption { name } {
+      #
+      # NOTE: Returns non-zero if the specified runtime option was removed.
+      #
+      if {[llength [info commands debug]] > 0} then {
+        if {[llength [info subcommands debug runtimeoption]] > 0} then {
+          if {[catch {debug runtimeoption remove $name} result] == 0} then {
+            return $result
+          }
+        }
+      }
+
+      if {[llength [info commands object]] > 0} then {
+        if {[catch {
+          object invoke Interpreter.GetActive RemoveRuntimeOption $name
+        } result] == 0} then {
+          return $result
+        }
+      }
+
+      return false
+    }
+
+    proc getBasePath {} {
+      set assembly [object invoke -flags +NonPublic \
+          Eagle._Components.Private.GlobalState GetAssembly]
+
+      return [object invoke -flags +NonPublic \
+          Eagle._Components.Private.PathOps GetBasePath $assembly \
+          [file dirname [lindex [info assembly] 1]]]
     }
 
     proc getPluginFlags { pattern } {
@@ -1467,7 +1535,7 @@ namespace eval ::Eagle {
         #
         # NOTE: Download the script file from the web site.
         #
-        return [interp readorgetscriptfile $uri]; # synchronous.
+        return [interp readorgetscriptfile -- "" $uri]; # synchronous.
       } finally {
         if {$trusted && \
             [lindex [uri softwareupdates] end] eq "trusted"} then {
@@ -1477,6 +1545,13 @@ namespace eval ::Eagle {
           uri softwareupdates false
         }
       }
+    }
+
+    proc getDownloadBaseUri {} {
+      #
+      # NOTE: Just return the current base URI for downloads.
+      #
+      return [info engine DownloadBaseUri]; # NOTE: Current.
     }
 
     #
@@ -1713,7 +1788,7 @@ namespace eval ::Eagle {
                 set baseUri [lindex $fields 6]
 
                 if {$checkBuild && [string length $baseUri] == 0} then {
-                  set baseUri [info engine Uri]; # primary site.
+                  set baseUri [getDownloadBaseUri]; # primary site.
                 }
 
                 #
@@ -1739,7 +1814,7 @@ namespace eval ::Eagle {
                       $updateUriType " build " $patchLevel ", dated " \
                       $dateTime ", is newer than the running build " \
                       $enginePatchLevel ", dated " $engineDateTime \
-                      ", based on data from " $updateBaseUri]
+                      ", based on the data from " $updateBaseUri]
 
                   if {$prompt && [isInteractive]} then {
                     #
@@ -1747,13 +1822,23 @@ namespace eval ::Eagle {
                     #       this cannot be done.
                     #
                     if {[llength [info commands object]] > 0} then {
-                      set caption [appendArgs \
-                          [info engine Name] " " [lindex [info level 0] 0]]
+                      set messageCaption [appendArgs \
+                          [info engine Name] " (" [lindex [info level 0] 0] \
+                          " script)"]
+
+                      set messageText [appendArgs \
+                          "The " $text \n\n "Run the updater now?"]
+
+                      if {$automatic} then {
+                        append messageText \n\n \
+                            "WARNING: The updater process will be run " \
+                            "in automatic mode and there will be no " \
+                            "further prompts."
+                      }
 
                       if {[object invoke -flags +NonPublic \
                           Eagle._Components.Private.WindowOps YesOrNo \
-                          [appendArgs $text \n\n "Run the updater now?"] \
-                          $caption false]} then {
+                          $messageText $messageCaption false]} then {
                         #
                         # NOTE: Ok, run the updater now and then exit.
                         #
@@ -1943,8 +2028,14 @@ namespace eval ::Eagle {
                   #       [info script] to refer back to the originally
                   #       read script base URI.
                   #
-                  object invoke -flags +NonPublic Interpreter.GetActive \
-                      PushScriptLocation $baseUri true
+                  set pushed false
+
+                  if {[llength [info commands object]] > 0} then {
+                    object invoke -flags +NonPublic Interpreter.GetActive \
+                        PushScriptLocation $baseUri true
+
+                    set pushed true
+                  }
 
                   try {
                     #
@@ -1957,8 +2048,10 @@ namespace eval ::Eagle {
                     # NOTE: Reset manual override of the script file name
                     #       to be returned by [info script].
                     #
-                    object invoke -flags +NonPublic Interpreter.GetActive \
-                        PopScriptLocation true
+                    if {$pushed} then {
+                      object invoke -flags +NonPublic Interpreter.GetActive \
+                          PopScriptLocation true
+                    }
                   }
 
                   #
@@ -1985,7 +2078,7 @@ namespace eval ::Eagle {
                     "running build " $enginePatchLevel ", dated " \
                     $engineDateTime ", is newer than the " $updateUriType \
                     " build " $patchLevel ", dated " $dateTime \
-                    ", based on data " "from " $updateBaseUri]]
+                    ", based on the data " "from " $updateBaseUri]]
               } elseif {$checkBuild} then {
                 #
                 # NOTE: The patch levels are equal, we are up-to-date.
@@ -1993,7 +2086,7 @@ namespace eval ::Eagle {
                 return [list [appendArgs \
                     "running build " $enginePatchLevel ", dated " \
                     $engineDateTime ", is the " $updateUriType \
-                    " build, based on " "data from " $updateBaseUri]]
+                    " build, based on the data from " $updateBaseUri]]
               }
             }
           }
@@ -2222,6 +2315,18 @@ namespace eval ::Eagle {
       return [uplevel 1 [list $command $name $description] $args]
     }
 
+    proc getStringFromObjectHandle { value {default ""} } {
+      if {[isObjectHandle $value]} then {
+        return [object invoke $value ToString]
+      }
+
+      if {[string length $default] > 0} then {
+        return $default
+      }
+
+      return $value
+    }
+
     proc isObjectHandle { value } {
       set pattern [string map [list \\ \\\\ \[ \\\[ \] \\\]] $value]
       set objects [info objects $pattern]
@@ -2341,7 +2446,7 @@ namespace eval ::Eagle {
       #
       # TODO: Add support for auto-loading packages here in the future?
       #
-      if {[hasRuntimeOption unknownObjectInvoke] && \
+      if {[hasRuntimeOption eagleUnknownObjectInvoke] && \
           [llength [info commands object]] > 0} then {
         #
         # NOTE: In the context of the caller, attempt to invoke a static
@@ -2856,7 +2961,7 @@ namespace eval ::Eagle {
     exportAndImportPackageCommands [namespace current] [list \
         isEagle isWindows isInteractive haveGaruda isTclThread isMono \
         isSameFileName getEnvironmentVariable combineFlags getCompileInfo \
-        getPlatformInfo getPluginPath appendArgs lappendArgs \
+        getPlatformInfo getPluginName getPluginPath appendArgs lappendArgs \
         getDictionaryValue getColumnValue getRowColumnValue tqputs tqlog \
         readFile readSharedFile writeFile appendFile appendLogFile \
         appendSharedFile appendSharedLogFile readAsciiFile writeAsciiFile \

@@ -343,15 +343,6 @@
     <UseSqliteStandard Condition="'$(UseSqliteStandard)' == ''">false</UseSqliteStandard>
 
     <!--
-        NOTE: For interaction with the native SQLite implementation, use the
-              standard DLL file name (i.e. "sqlite3.dll") even when compiled
-              to use the interop DLL??  By default, this is disabled.  This
-              should always be disabled in the project file that builds the
-              NetModule target.
-    -->
-    <UseSqliteStandardLibraryName Condition="'$(UseSqliteStandardLibraryName)' == ''">false</UseSqliteStandardLibraryName>
-
-    <!--
         NOTE: Is the project being built to support the .NET Compact Framework?
     -->
     <IsCompactFramework Condition="'$(IsCompactFramework)' == ''">false</IsCompactFramework>
@@ -776,8 +767,8 @@
               the output does not end up where it expects the output to be.  The
               value of this property must have a trailing backslash.
     -->
-    <BaseIntermediateOutputPath Condition="'$(ConfigurationSuffix)' == ''">$(SQLiteNetDir)\obj\$(ConfigurationYear)\</BaseIntermediateOutputPath>
-    <BaseIntermediateOutputPath Condition="'$(ConfigurationSuffix)' != ''">$(SQLiteNetDir)\obj\$(ConfigurationYear)\$(ConfigurationSuffix)\</BaseIntermediateOutputPath>
+    <BaseIntermediateOutputPath Condition="'$(ConfigurationSuffix)' == ''">$(SQLiteNetDir)\obj\$(ConfigurationYear)\$(MSBuildProjectName)\</BaseIntermediateOutputPath>
+    <BaseIntermediateOutputPath Condition="'$(ConfigurationSuffix)' != ''">$(SQLiteNetDir)\obj\$(ConfigurationYear)\$(MSBuildProjectName)\$(ConfigurationSuffix)\</BaseIntermediateOutputPath>
   </PropertyGroup>
 
   <!--

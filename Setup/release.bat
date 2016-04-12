@@ -174,25 +174,31 @@ IF NOT EXIST Setup\Output (
   )
 )
 
+SET EXCLUDE_BIN=@data\exclude_bin.txt
+SET PREFIX=sqlite
+
+%_VECHO% ExcludeBin = '%EXCLUDE_BIN%'
+%_VECHO% Prefix = '%PREFIX%'
+
 IF DEFINED BASE_CONFIGURATIONSUFFIX (
   FOR /F "delims=" %%F IN ('DIR /B /S /AD "bin\%YEAR%\%BASE_CONFIGURATION%%BASE_CONFIGURATIONSUFFIX%\bin" 2^> NUL') DO (
     %__ECHO% RMDIR /S /Q "%%F"
   )
-  %__ECHO% zip.exe -v -j -r "Setup\Output\sqlite-%FRAMEWORK%-%TYPE%-%BASE_PLATFORM%%EXTRA_PLATFORM%-%YEAR%-%VERSION%.zip" "bin\%YEAR%\%BASE_CONFIGURATION%%BASE_CONFIGURATIONSUFFIX%\bin" -x @data\exclude_bin.txt
+  %__ECHO% zip.exe -v -j -r "Setup\Output\%PREFIX%-%FRAMEWORK%-%TYPE%-%BASE_PLATFORM%%EXTRA_PLATFORM%-%YEAR%-%VERSION%.zip" "bin\%YEAR%\%BASE_CONFIGURATION%%BASE_CONFIGURATIONSUFFIX%\bin" -x "%EXCLUDE_BIN%"
 ) ELSE (
   FOR /F "delims=" %%F IN ('DIR /B /S /AD "bin\%YEAR%\%BASE_CONFIGURATION%\bin" 2^> NUL') DO (
     %__ECHO% RMDIR /S /Q "%%F"
   )
-  %__ECHO% zip.exe -v -j -r "Setup\Output\sqlite-%FRAMEWORK%-%TYPE%-%BASE_PLATFORM%%EXTRA_PLATFORM%-%YEAR%-%VERSION%.zip" "bin\%YEAR%\%BASE_CONFIGURATION%\bin" -x @data\exclude_bin.txt
+  %__ECHO% zip.exe -v -j -r "Setup\Output\%PREFIX%-%FRAMEWORK%-%TYPE%-%BASE_PLATFORM%%EXTRA_PLATFORM%-%YEAR%-%VERSION%.zip" "bin\%YEAR%\%BASE_CONFIGURATION%\bin" -x "%EXCLUDE_BIN%"
 )
 
 IF /I "%CONFIGURATION%" == "%BASE_CONFIGURATION%" (
   IF NOT DEFINED BASE_CONFIGURATIONSUFFIX (
-    %__ECHO% zip -v -d "Setup\Output\sqlite-%FRAMEWORK%-%TYPE%-%BASE_PLATFORM%%EXTRA_PLATFORM%-%YEAR%-%VERSION%.zip" SQLite.Interop.*
+    %__ECHO% zip.exe -v -d "Setup\Output\%PREFIX%-%FRAMEWORK%-%TYPE%-%BASE_PLATFORM%%EXTRA_PLATFORM%-%YEAR%-%VERSION%.zip" SQLite.Interop.*
   )
 )
 
-%__ECHO% zip.exe -v -j -r "Setup\Output\sqlite-%FRAMEWORK%-%TYPE%-%BASE_PLATFORM%%EXTRA_PLATFORM%-%YEAR%-%VERSION%.zip" "bin\%YEAR%\%PLATFORM%\%CONFIGURATION%%CONFIGURATIONSUFFIX%" -x @data\exclude_bin.txt
+%__ECHO% zip.exe -v -j -r "Setup\Output\%PREFIX%-%FRAMEWORK%-%TYPE%-%BASE_PLATFORM%%EXTRA_PLATFORM%-%YEAR%-%VERSION%.zip" "bin\%YEAR%\%PLATFORM%\%CONFIGURATION%%CONFIGURATIONSUFFIX%" -x "%EXCLUDE_BIN%"
 
 IF ERRORLEVEL 1 (
   ECHO Failed to archive binary files.

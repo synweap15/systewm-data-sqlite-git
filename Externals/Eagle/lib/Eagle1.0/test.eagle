@@ -216,6 +216,20 @@ namespace eval ::Eagle {
     return $result
   }
 
+  proc fixTimingConstraints { constraints } {
+    #
+    # HACK: In Eagle, when the right test constraint is present, *any* tests
+    #       where PASSED / FAILED results can vary non-deterministically due
+    #       to timing issues (e.g. performance) are forbidden from causing
+    #       the overall test run to fail.
+    #
+    if {[isEagle] && [haveConstraint officialStableReleaseInProgress]} then {
+      return [fixConstraints [concat $constraints [list fail.false]]]
+    } else {
+      return [fixConstraints $constraints]
+    }
+  }
+
   proc testDebugBreak {} {
     if {[isEagle]} then {
       #
@@ -805,7 +819,7 @@ namespace eval ::Eagle {
     #
     set names [list]
 
-    foreach name [list TEMP TMP] {
+    foreach name [list EAGLE_TEST_TEMP EAGLE_TEMP TEMP TMP] {
       #
       # NOTE: Make sure we handle all the reasonable "cases" of
       #       the environment variable names.
@@ -959,9 +973,16 @@ namespace eval ::Eagle {
   }
 
   proc getDefaultTestLog {} {
-    return [file join [getTemporaryPath] [appendArgs \
-        [file tail [info nameofexecutable]] [getTestLogId] \
-        .test. [pid] .log]]
+    set executable [info nameofexecutable]
+
+    if {![info exists ::no(temporaryTestLog)]} then {
+      set path [getTemporaryPath]
+    } else {
+      set path [file dirname $executable]
+    }
+
+    return [file join $path [appendArgs \
+        [file tail $executable] [getTestLogId] .test. [pid] .log]]
   }
 
   proc getTestLog {} {
@@ -1203,6 +1224,14 @@ namespace eval ::Eagle {
     }
 
     return [list]
+  }
+
+  proc getTestAssemblyName {} {
+    if {[isEagle]} then {
+      return [lindex [split [lindex [info assembly] 0] ,] 0]
+    } else {
+      return Eagle
+    }
   }
 
   #
@@ -1497,8 +1526,14 @@ namespace eval ::Eagle {
             must be -body, -cleanup, -constraints, -errorOutput,\
             -match, -output, -result, -returnCodes, or -setup$}
 
-        if {[isEagle] || ![regexp -- $badOptionPattern $result]} then {
-          tputs $::test_channel [appendArgs "ERROR (runTest): " $result \n]
+        set badMatchValuePattern {^bad -match value ".*?": must be\
+            exact, glob, or regexp$}
+
+        if {[isEagle] || \
+            (![regexp -- $badOptionPattern $result] && \
+             ![regexp -- $badMatchValuePattern $result])} then {
+          tputs $::test_channel [appendArgs \
+              "ERROR (runTest): " $result \n]
         }
       }
 
@@ -1622,6 +1657,7 @@ namespace eval ::Eagle {
       #       to zero and then try to query each one individually below
       #       wrapped in a catch.
       #
+      set array(previousPid,$index) 0
       set array(scopes,$index) 0
       set array(assemblies,$index) 0
       set array(processes,$index) 0
@@ -1631,6 +1667,7 @@ namespace eval ::Eagle {
       set array(objectInterfaces,$index) 0
       set array(objectNamespaces,$index) 0
 
+      catch {set array(previousPid,$index) [expr {[info previouspid] != 0}]}
       catch {set array(scopes,$index) [llength [scope list]]}
       catch {set array(assemblies,$index) [llength [object assemblies]]}
       catch {set array(processes,$index) [llength [getProcesses ""]]}
@@ -1698,7 +1735,8 @@ namespace eval ::Eagle {
     }
   }
 
-  proc reportTestStatistics { channel fileName statsVarName filesVarName } {
+  proc reportTestStatistics {
+          channel fileName stop statsVarName filesVarName } {
     set statistics [list afters variables commands procedures namespaces \
         files temporaryFiles channels aliases interpreters environment \
         loaded]
@@ -1710,9 +1748,10 @@ namespace eval ::Eagle {
       #       down the entire application domain.
       #
       lappend statistics \
-          scopes assemblies processes objects objectCallbacks objectTypes \
-          objectInterfaces objectNamespaces connections transactions modules \
-          delegates tcl tclInterps tclThreads tclCommands scriptThreads
+          previousPid scopes assemblies processes objects objectCallbacks \
+          objectTypes objectInterfaces objectNamespaces connections \
+          transactions modules delegates tcl tclInterps tclThreads \
+          tclCommands scriptThreads
     }
 
     #
@@ -1781,7 +1820,11 @@ namespace eval ::Eagle {
     #       a leak is detected, do it now.
     #
     if {$count > 0} then {
-      if {[isStopOnLeak]} then {
+      #
+      # BUGFIX: Is we are already stopping (e.g. due to a test failure), do
+      #         not try to stop again.
+      #
+      if {!$stop && [isStopOnLeak]} then {
         tresult Error "OVERALL RESULT: STOP-ON-LEAK\n"
 
         unset -nocomplain ::test_suite_running
@@ -2057,13 +2100,15 @@ namespace eval ::Eagle {
     # NOTE: Show the exact arguments we received since they may not
     #       have been displayed by the caller (or anybody else).
     #
-    tputs $channel [appendArgs "---- test run path: \"" $path \"\n]
+    if {![info exists ::no(runMetadata)]} then {
+      tputs $channel [appendArgs "---- test run path: \"" $path \"\n]
 
-    tputs $channel [appendArgs "---- test run file names: " \
-        [formatList [removePathFromFileNames $path $fileNames]] \n]
+      tputs $channel [appendArgs "---- test run file names: " \
+          [formatList [removePathFromFileNames $path $fileNames]] \n]
 
-    tputs $channel [appendArgs "---- test run skip file names: " \
-        [formatList $skipFileNames] \n]
+      tputs $channel [appendArgs "---- test run skip file names: " \
+          [formatList $skipFileNames] \n]
+    }
 
     #
     # NOTE: Keep going unless this becomes true (i.e. if one of the
@@ -2095,8 +2140,10 @@ namespace eval ::Eagle {
           [expr {$total != 0 ? 100.0 * ($count / double($total)) : 100}]]
 
       if {$percent != $lastPercent} then {
-        reportTestPercent $channel $percent \
-            $total [llength $failed] [llength $leaked]
+        if {![info exists ::no(runPercent)]} then {
+          reportTestPercent $channel $percent \
+              $total [llength $failed] [llength $leaked]
+        }
 
         set lastPercent $percent
       }
@@ -2231,22 +2278,38 @@ namespace eval ::Eagle {
             if {![info exists ::no(preWait)]} then {
               if {[info exists ::test_wait(pre)] && \
                   [string is integer -strict $::test_wait(pre)]} then {
-                tputs $channel [appendArgs \
-                    "---- waiting for " $::test_wait(pre) \
-                    " milliseconds before test file...\n"]
+                if {![info exists ::no(runMetadata)]} then {
+                  tputs $channel [appendArgs \
+                      "---- waiting for " $::test_wait(pre) \
+                      " milliseconds before test file...\n"]
+                }
 
                 after $::test_wait(pre); # NOTE: Sleep.
               }
             }
 
             #
+            # NOTE: Log that this test file has started.
+            #
+            if {![info exists ::no(runStartFile)]} then {
+              tputs $channel [appendArgs "==== \"" $fileName "\" START\n"]
+            }
+
+            #
             # NOTE: Evaluate the file in the context of the caller,
-            #       catching any errors.  If an error is raised and the
-            #       stop-on-failure flag is set, assume it was a test
-            #       failure and that we need to stop any and all further
-            #       processing of test files.
+            #       catching any errors.  If an error is raised and
+            #       the stop-on-failure flag is set, assume it was
+            #       a test failure and that we need to stop any and
+            #       all further processing of test files.
             #
             uplevel 1 [list source $fileName]
+
+            #
+            # NOTE: Log that this test file has ended.
+            #
+            if {![info exists ::no(runEndFile)]} then {
+              tputs $channel [appendArgs "==== \"" $fileName "\" END\n"]
+            }
 
             #
             # NOTE: Are we being prevented from waiting after the file?
@@ -2254,9 +2317,11 @@ namespace eval ::Eagle {
             if {![info exists ::no(postWait)]} then {
               if {[info exists ::test_wait(post)] && \
                   [string is integer -strict $::test_wait(post)]} then {
-                tputs $channel [appendArgs \
-                    "---- waiting for " $::test_wait(post) \
-                    " milliseconds after test file...\n"]
+                if {![info exists ::no(runMetadata)]} then {
+                  tputs $channel [appendArgs \
+                      "---- waiting for " $::test_wait(post) \
+                      " milliseconds after test file...\n"]
+                }
 
                 after $::test_wait(post); # NOTE: Sleep.
               }
@@ -2267,8 +2332,10 @@ namespace eval ::Eagle {
             #       incorrect code in-between the tests themselves.  We
             #       need to report this.
             #
-            tputs $channel [appendArgs "==== \"" $fileName "\" ERROR \"" \
-                $error \"\n]
+            if {![info exists ::no(runErrorFile)]} then {
+              tputs $channel [appendArgs "==== \"" $fileName "\" ERROR \"" \
+                  $error \"\n]
+            }
 
             #
             # NOTE: Stop further processing after this loop iteration?
@@ -2331,8 +2398,10 @@ namespace eval ::Eagle {
               [expr {$total != 0 ? 100.0 * ($count / double($total)) : 100}]]
 
           if {$percent != $lastPercent} then {
-            reportTestPercent $channel $percent \
-                $total [llength $failed] [llength $leaked]
+            if {![info exists ::no(runPercent)]} then {
+              reportTestPercent $channel $percent \
+                  $total [llength $failed] [llength $leaked]
+            }
 
             set lastPercent $percent
           }
@@ -2352,18 +2421,23 @@ namespace eval ::Eagle {
             #
             recordTestStatistics leaks after
 
-            #
-            # NOTE: Determine if any resource leaks have occurred and
-            #       output diagnostics as necessary if they have.
-            #
-            reportTestStatistics $channel $fileName leaks leaked
+            if {![info exists ::no(runStatistics)]} then {
+              #
+              # NOTE: Determine if any resource leaks have occurred and
+              #       output diagnostics as necessary if they have.
+              #
+              reportTestStatistics $channel $fileName $stop leaks leaked
+            }
           }
         } else {
           #
           # NOTE: This entire file has been skipped.  Record that fact in the
           #       test suite log file.
           #
-          tputs $channel [appendArgs "==== \"" $fileName "\" NON_TEST_FILE\n"]
+          if {![info exists ::no(runNonTestFile)]} then {
+            tputs $channel [appendArgs \
+                "==== \"" $fileName "\" NON_TEST_FILE\n"]
+          }
 
           #
           # NOTE: This file does not actually count towards the total (i.e.
@@ -2379,8 +2453,10 @@ namespace eval ::Eagle {
             [expr {$total != 0 ? 100.0 * ($count / double($total)) : 100}]]
 
         if {$percent != $lastPercent} then {
-          reportTestPercent $channel $percent \
-              $total [llength $failed] [llength $leaked]
+          if {![info exists ::no(runPercent)]} then {
+            reportTestPercent $channel $percent \
+                $total [llength $failed] [llength $leaked]
+          }
 
           set lastPercent $percent
         }
@@ -2398,7 +2474,9 @@ namespace eval ::Eagle {
         # NOTE: This entire file has been skipped.  Record that fact in the
         #       test suite log file.
         #
-        tputs $channel [appendArgs "==== \"" $fileName "\" SKIPPED\n"]
+        if {![info exists ::no(runSkippedFile)]} then {
+          tputs $channel [appendArgs "==== \"" $fileName "\" SKIPPED\n"]
+        }
 
         #
         # NOTE: This file does not actually count towards the total (i.e.
@@ -2414,8 +2492,10 @@ namespace eval ::Eagle {
           [expr {$total != 0 ? 100.0 * ($count / double($total)) : 100}]]
 
       if {$percent != $lastPercent} then {
-        reportTestPercent $channel $percent \
-            $total [llength $failed] [llength $leaked]
+        if {![info exists ::no(runPercent)]} then {
+          reportTestPercent $channel $percent \
+              $total [llength $failed] [llength $leaked]
+        }
 
         set lastPercent $percent
       }
@@ -2425,25 +2505,31 @@ namespace eval ::Eagle {
     # NOTE: Reset the host title because we may have changed it in the for
     #       loop (above).
     #
-    clearTestPercent $channel
-
-    tputs $channel [appendArgs "---- sourced " $count " test " \
-        [expr {$count > 1 ? "files" : "file"}] \n]
-
-    #
-    # NOTE: Show the files that had failing and/or leaking tests.
-    #
-    if {[llength $failed] > 0} then {
-      tputs $channel [appendArgs "---- files with failing tests: " \
-          [formatList $failed] \n]
+    if {![info exists ::no(runPercent)]} then {
+      clearTestPercent $channel
     }
 
-    if {[llength $leaked] > 0} then {
-      tputs $channel [appendArgs "---- files with leaking tests: " \
-          [formatList $leaked] \n]
+    if {![info exists ::no(runMetadata)]} then {
+      tputs $channel [appendArgs "---- sourced " $count " test " \
+          [expr {$count > 1 ? "files" : "file"}] \n]
+
+      #
+      # NOTE: Show the files that had failing and/or leaking tests.
+      #
+      if {[llength $failed] > 0} then {
+        tputs $channel [appendArgs "---- files with failing tests: " \
+            [formatList $failed] \n]
+      }
+
+      if {[llength $leaked] > 0} then {
+        tputs $channel [appendArgs "---- files with leaking tests: " \
+            [formatList $leaked] \n]
+      }
     }
 
-    reportTestStatisticCounts $channel leaks
+    if {![info exists ::no(runStatisticCounts)]} then {
+      reportTestStatisticCounts $channel leaks
+    }
   }
 
   proc isTestSuiteRunning {} {
@@ -2830,6 +2916,9 @@ namespace eval ::Eagle {
       ia32_on_win64 {
         return wow64
       }
+      arm64 {
+        return arm64
+      }
       default {
         return unknown
       }
@@ -2865,6 +2954,9 @@ namespace eval ::Eagle {
       ia32_on_win64 -
       wow64 {
         return ia32_on_win64
+      }
+      arm64 {
+        return arm64
       }
       default {
         return unknown
@@ -3188,6 +3280,18 @@ namespace eval ::Eagle {
 
       tputs $channel [appendArgs \
           "---- cleanup \"" $name "\" results: " $result \n]
+
+      catch {uplevel 1 [list object invoke -flags +NonPublic \
+          Eagle._Components.Private.EnumOps ClearEnumCache]} result
+
+      tputs $channel [appendArgs \
+          "---- EnumOps cleanup results: " $result \n]
+
+      catch {uplevel 1 [list object invoke -flags +NonPublic \
+          Eagle._Components.Private.HelpOps ClearHelpCache]} result
+
+      tputs $channel [appendArgs \
+          "---- HelpOps cleanup results: " $result \n]
     }
 
     proc evalWithTimeout { script {milliseconds 2000} {resultVarName ""} } {
@@ -3254,7 +3358,7 @@ namespace eval ::Eagle {
       }
     }
 
-    proc tclLoadForTest { {varName ""} } {
+    proc tclLoadForTest { {varName ""} {findFlags ""} {loadFlags ""} } {
       if {[string length $varName] > 0} then {
         upvar 1 $varName loaded
       }
@@ -3262,7 +3366,17 @@ namespace eval ::Eagle {
       set loaded 0
 
       if {![tcl ready]} then {
-        uplevel 1 [list tcl load]; set loaded 1
+        set command [list tcl load]
+
+        if {[string length $findFlags] > 0} then {
+          lappend command -findflags $findFlags
+        }
+
+        if {[string length $loadFlags] > 0} then {
+          lappend command -loadflags $loadFlags
+        }
+
+        uplevel 1 $command; set loaded 1
 
         set module [tcl module]
         set interp [tcl master]
@@ -3368,16 +3482,21 @@ namespace eval ::Eagle {
         }
       } finally {
         #
-        # NOTE: Did we create a temporary file?
+        # NOTE: Should we delete the temporary file we created, if any?
         #
-        if {[info exists fileName] && \
-            [string length $fileName] > 0 && \
-            [file exists $fileName]} then {
+        if {![info exists ::no(deleteTestExecTclFile)]} then {
           #
-          # NOTE: Delete the temporary file we used to query the machine
-          #       type for the native Tcl shell.
+          # NOTE: Did we create a temporary file to hold the Tcl script?
           #
-          catch {file delete $fileName}
+          if {[info exists fileName] && \
+              [string length $fileName] > 0 && \
+              [file exists $fileName]} then {
+            #
+            # NOTE: Delete the temporary file we used to query the machine
+            #       type for the native Tcl shell.
+            #
+            catch {file delete $fileName}
+          }
         }
       }
     }
@@ -3603,12 +3722,13 @@ namespace eval ::Eagle {
     exportAndImportPackageCommands [namespace current] [list \
         tputs ttclLog tlog getSoftwareRegistryKey haveConstraint \
         addConstraint haveOrAddConstraint getConstraints removeConstraint \
-        fixConstraints calculateBogoCops calculateRelativePerformance \
-        formatTimeStamp formatElapsedTime sourceIfValid processTestArguments \
-        getTclShellFileName getTemporaryPath getFiles getTestFiles \
-        getTestRunId getTestLogId getDefaultTestLog getTestLog getLastTestLog \
-        getTestSuite getTestMachine getTestPlatform getTestConfiguration \
-        getTestSuffix getTestUncountedLeaks testExec testClrExec \
+        fixConstraints fixTimingConstraints calculateBogoCops \
+        calculateRelativePerformance formatTimeStamp formatElapsedTime \
+        sourceIfValid processTestArguments getTclShellFileName \
+        getTemporaryPath getFiles getTestFiles getTestRunId getTestLogId \
+        getDefaultTestLog getTestLog getLastTestLog getTestSuite \
+        getTestMachine getTestPlatform getTestConfiguration getTestSuffix \
+        getTestUncountedLeaks getTestAssemblyName testExec testClrExec \
         execTestShell isRandomOrder isBreakOnLeak isStopOnFailure \
         isStopOnLeak isExitOnComplete returnInfoScript runTestPrologue \
         runTestEpilogue hookPuts unhookPuts runTest testDebugBreak \

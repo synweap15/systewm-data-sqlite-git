@@ -1681,11 +1681,7 @@ namespace System.Data.SQLite
     //       System.Data.SQLite functionality (e.g. being able to bind
     //       parameters and handle column values of types Int64 and Double).
     //
-#if SQLITE_STANDARD_LIBRARY_NAME
-    internal const string SQLITE_DLL = "sqlite3";
-#else
     internal const string SQLITE_DLL = "SQLite.Interop.100.dll";
-#endif
 #elif SQLITE_STANDARD
     //
     // NOTE: Otherwise, if the standard SQLite library is enabled, use it.
@@ -1696,11 +1692,7 @@ namespace System.Data.SQLite
     // NOTE: Otherwise, if the native SQLite interop assembly is enabled,
     //       use it.
     //
-#if SQLITE_STANDARD_LIBRARY_NAME
-    internal const string SQLITE_DLL = "sqlite3";
-#else
     internal const string SQLITE_DLL = "SQLite.Interop.dll";
-#endif
 #else
     //
     // NOTE: Finally, assume that the mixed-mode assembly is being used.
