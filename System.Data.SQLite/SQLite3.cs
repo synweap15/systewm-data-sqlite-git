@@ -2467,7 +2467,11 @@ namespace System.Data.SQLite
         if (_shimIsLoadNeeded != null)
             isLoadNeeded = (bool)_shimIsLoadNeeded;
         else
+#if SQLITE_STANDARD || USE_INTEROP_DLL || PLATFORM_COMPACTFRAMEWORK
             isLoadNeeded = HelperMethods.IsWindows(); /* COMPAT */
+#else
+            isLoadNeeded = false; /* mixed-mode assembly */
+#endif
 
         string fileName = _shimExtensionFileName;
 
