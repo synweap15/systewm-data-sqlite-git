@@ -39,12 +39,9 @@ runTest {test tkt-da685c0bac-1.1 {GetXmlConfigFileName path handling} -setup \
       System.Data.SQLite.UnsafeNativeMethods GetXmlConfigFileName
 } -cleanup {
   moveSystemDataSQLiteDllConfig true true
-} -isolationLevel AppDomain -constraints {eagle command.object\
-compile.ISOLATED_INTERPRETERS System.Data.SQLite} -constraintExpression \
-{[haveConstraint defineConstant.System.Data.SQLite.SQLITE_STANDARD] || \
-[haveConstraint defineConstant.System.Data.SQLite.USE_INTEROP_DLL] || \
-[haveConstraint defineConstant.System.Data.SQLite.PLATFORM_COMPACTFRAMEWORK]} \
--result {}}
+} -isolationLevel AppDomain -constraints \
+{eagle command.object compile.ISOLATED_INTERPRETERS System.Data.SQLite\
+defineConstant.System.Data.SQLite.USE_INTEROP_DLL} -result {}}
 
 ###############################################################################
 
