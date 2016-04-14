@@ -261,7 +261,7 @@ begin
   begin
     Result := ExtractAndInstallVcRuntime(ResultCode);
 
-    if not Result or (ResultCode <> 0) then
+    if not Result or ((ResultCode <> 0) and (ResultCode <> 5100)) then
     begin
       MsgBox('Failed to install Microsoft Visual C++ Runtime: ' +
           VcRuntimeRedistributable + ', ' + SysErrorMessage(ResultCode),
