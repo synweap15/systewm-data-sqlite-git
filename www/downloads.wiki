@@ -2438,6 +2438,8 @@
     <ol>
       <li><b>sqlite-netFx-source-</b>version<b>.zip</b></li>
       <li><b>sqlite-netFx-source-</b>version<b>.tar.gz</b></li>
+      <li><b>sqlite-netFx-full-source-</b>version<b>.zip</b></li>
+      <li><b>sqlite-netFx-full-source-</b>version<b>.tar.gz</b></li>
       <li><b>sqlite-</b>framework<b>-setup-</b>cpu<b>-</b>year<b>-</b>version<b>.exe</b></li>
       <li><b>sqlite-</b>framework<b>-setup-bundle-</b>cpu<b>-</b>year<b>-</b>version<b>.exe</b></li>
       <li><b>sqlite-</b>framework<b>-binary-</b>platform<b>-</b>year<b>-</b>version<b>.zip</b></li>
@@ -2445,6 +2447,7 @@
       <li><b>sqlite-</b>framework<b>-static-binary-</b>platform<b>-</b>year<b>-</b>version<b>.zip</b></li>
       <li><b>sqlite-</b>framework<b>-static-binary-bundle-</b>platform<b>-</b>year<b>-</b>version<b>.zip</b></li>
       <li><b>sqlite-netFx-source-</b>date<b>.zip</b></li>
+      <li><b>sqlite-netFx-full-source-</b>date<b>.zip</b></li>
       <li><b>System.Data.SQLite.</b>version<b>.nupkg</b></li>
       <li><b>System.Data.SQLite.</b>variant<b>.</b>version<b>.nupkg</b></li>
       <li><b>System.Data.SQLite.</b>variant<b>.</b>releaseType<b>.</b>version<b>.nupkg</b></li>
@@ -2467,42 +2470,42 @@
   </p>
 
   <p>
-    The <b>framework</b> in templates (3), (4), (5), (6), (7), and (8) will be
-    one of netFx20, netFx35, netFx40, netFx45, netFx451, netFx452, netFx46,
+    The <b>framework</b> in templates (5), (6), (7), (8), (9), and (10) will
+    be one of netFx20, netFx35, netFx40, netFx45, netFx451, netFx452, netFx46,
     netFx461.
   </p>
 
   <p>
-    The <b>cpu</b> in templates (3) and (4) will be one of x86, x64, arm, ia64.
+    The <b>cpu</b> in templates (5) and (6) will be one of x86, x64, arm, ia64.
   </p>
 
   <p>
-    The <b>platform</b> in templates (5), (6), (7), and (8) will be one of
+    The <b>platform</b> in templates (7), (8), (9), and (10) will be one of
     Win32, x64, PocketPC, PocketPC-ARM, PocketPC-x86, WinCE-ARM, WinCE-x86.
   </p>
 
   <p>
-    The <b>year</b> in templates (3), (4), (5), (6), (7), and (8) will be one of
-    2005, 2008, 2010, 2012, 2013, 2015, 20XX.
+    The <b>year</b> in templates (5), (6), (7), (8), (9), and (10) will be
+    one of 2005, 2008, 2010, 2012, 2013, 2015, 20XX.
   </p>
 
   <p>
-    The <b>version</b> in templates (1), (2), (3), (4), (5), (6), (7), and (8)
-    is the dot-delimited version number of the primary System.Data.SQLite
-    assembly.
+    The <b>version</b> in templates (1), (2), (3), (4), (5), (6), (7), (8),
+    (9), (10), (13), (14), and (15) is the dot-delimited version number of
+    the primary System.Data.SQLite assembly.
   </p>
 
   <p>
-    The <b>date</b> in template (9) is of the form: YYYYMMDDHHMM
+    The <b>date</b> in template (11) and (12) is of the form: YYYYMMDDHHMM
   </p>
 
   <p>
-    The <b>variant</b> in template (11) will be MSIL, x86, or x64.
+    The <b>variant</b> in template (14) and (15) will be MSIL, x86, or x64.
     Alternatively, it may be absent, which represents the default variant.
   </p>
 
   <p>
-    The <b>releaseType</b> in template (12) will be Beta or Test.
+    The <b>releaseType</b> in template (15) will be Beta or Test.
     Alternatively, it may be absent, which represents the default release type.
     <ul>
     <li>The &quot;Beta&quot; release type is used to indicate that the package
