@@ -2432,7 +2432,7 @@
   <h3>Build Product Names</h3>
 
   <p>
-    Beginning with System.Data.SQLite version 1.0.74.0 (3.7.7.1), the following
+    Beginning with System.Data.SQLite version 1.0.100.0 (3.12.1), the following
     templates will be used for the names of the build products:
 
     <ol>
@@ -2455,18 +2455,35 @@
   </p>
 
   <p>
-    Templates (1) and (2) are used for source-code packages.  Template (1) is
-    used for generic source-code packages and template (2) is used for
-    source-code packages that are generally only useful on unix-like platforms.
-    Template (3) is used for the setup package.  Template (4) is used for the
-    setup package containing the mixed-mode assembly.  Template (5) is used for
-    the precompiled binary package.  Template (6) is used for the precompiled
-    binary package containing the mixed-mode assembly.  Template (7) is used for
-    the precompiled binary package statically linked to the Visual C++ runtime.
+    Templates (1), (2), (3), and (4) are used for source-code packages.
+    Templates (1) and (3) are used for generic source-code packages and
+    templates (2) and (4) are used for source-code packages that are generally
+    only useful on unix-like platforms.  Templates (3) and (4) are used for
+    source-code packages that include the extra files needed to run the unit
+    test suite.
+  </p>
+
+  <p>
+    Templates (5) and (6) are used for the setup packages.  Template (6) is
+    used for the setup package containing the mixed-mode assembly.
+  </p>
+
+  <p>
+    Templates (7) and (8) are used for the precompiled binary packages.
     Template (8) is used for the precompiled binary package containing the
-    mixed-mode assembly statically linked to the Visual C++ runtime.  Template
-    (9) is used for unofficial pre-release &quot;snapshots&quot; of source code.
-    Templates (10) and (11) are used for the official NuGet packages.
+    mixed-mode assembly.  Templates (9) and (10) are used for the precompiled
+    binary packages statically linked to the Visual C++ runtime.  Template (10)
+    is used for the precompiled binary package containing the mixed-mode
+    assembly statically linked to the Visual C++ runtime.
+  </p>
+
+  <p>
+    Templates (11) and (12) are used for unofficial pre-release
+    &quot;snapshots&quot; of source code.
+  </p>
+
+  <p>
+    Templates (13), (14), and (15) are used for the official NuGet packages.
   </p>
 
   <p>
