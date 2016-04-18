@@ -87,6 +87,10 @@
     CE:
     <br />
     <br />
+    <b>SET BUILD_FULL=1</b>
+    <br />
+    <b>SET BUILD_DEBUG=1</b>
+    <br />
     <b>build_ce_200x.bat</b>
     <br />
     <br />
@@ -99,6 +103,10 @@
     Enter the following command to build all the binaries available for Windows
     Embedded Compact 2013:
     <br />
+    <br />
+    <b>SET BUILD_FULL=1</b>
+    <br />
+    <b>SET BUILD_DEBUG=1</b>
     <br />
     <b>build_ce_2013.bat</b>
     <br />
@@ -132,6 +140,8 @@
     Enter the following command to test all the binaries available for Windows
     CE:
     <br />
+    <br />
+    <b>SET TEST_DEBUG=1</b>
     <br />
     <b>test_ce_200x.bat</b>
   </li>
@@ -343,6 +353,29 @@
     <b>SET RELEASE_DEBUG=1</b>
     <br />
     <b>release_ce_2013.bat</b>
+  </li>
+
+  <li>
+    Make sure everything succeeds with no errors; the console output may be
+    checked if any errors should occur.
+  </li>
+</ol>
+
+<a name="buildMonoBinaryPackages"></a>
+<h2>Build Mono Release Packages</h2>
+
+<ol>
+  <li>Open a normal command prompt window with &quot;cmd.exe&quot;.</li>
+
+  <li>Change the current directory to &quot;&lt;root&gt;\Setup&quot;.</li>
+
+  <li>
+    Enter the following commands to build all the Mono release packages:
+    <br />
+    <br />
+    <b>SET RELEASE_DEBUG=1</b>
+    <br />
+    <b>release_mono.bat</b>
   </li>
 
   <li>

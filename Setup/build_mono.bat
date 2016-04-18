@@ -34,7 +34,8 @@ SET BUILD_CONFIGURATIONS=DebugManagedOnly ReleaseManagedOnly
 SET PLATFORMS="Any CPU"
 SET YEARS=2013
 SET NOUSER=1
-SET MSBUILD_ARGS=/property:InteropCodec=false
+SET MSBUILD_ARGS=/property:ConfigurationSuffix=MonoOnPosix
+SET MSBUILD_ARGS=%MSBUILD_ARGS% /property:InteropCodec=false
 SET MSBUILD_ARGS=%MSBUILD_ARGS% /property:InteropLog=false
 SET MSBUILD_ARGS_DEBUG=/property:CheckState=true
 SET MSBUILD_ARGS_DEBUG=%MSBUILD_ARGS_DEBUG% /property:CountHandle=true
