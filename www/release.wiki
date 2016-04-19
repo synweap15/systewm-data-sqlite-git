@@ -221,7 +221,7 @@
     Enter the following command to build all the binaries available for Mono:
     <br />
     <br />
-    <b>SET BUILD_FULL=1</b>
+    <b>SET BUILD_FULL=</b>
     <br />
     <b>SET BUILD_DEBUG=1</b>
     <br />
