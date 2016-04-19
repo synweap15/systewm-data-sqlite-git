@@ -209,6 +209,31 @@
   </li>
 </ol>
 
+<a name="buildMonoBinaries"></a>
+<h2>Build Mono Binaries</h2>
+
+<ol>
+  <li>Open a normal command prompt window with &quot;cmd.exe&quot;.</li>
+
+  <li>Change the current directory to &quot;&lt;root&gt;\Setup&quot;.</li>
+
+  <li>
+    Enter the following command to build all the binaries available for Mono:
+    <br />
+    <br />
+    <b>SET BUILD_FULL=1</b>
+    <br />
+    <b>SET BUILD_DEBUG=1</b>
+    <br />
+    <b>build_mono.bat</b>
+  </li>
+
+  <li>
+    Make sure everything succeeds with no errors; the console output may be
+    checked if any errors should occur.
+  </li>
+</ol>
+
 <a name="updateDocumentation"></a>
 <h2>Update Documentation</h2>
 
