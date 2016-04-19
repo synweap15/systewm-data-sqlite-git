@@ -381,6 +381,8 @@
 
 <p>
   This is documented on the [./build.wiki#mono | build procedures] page.
+  Alternatively, there is now a pre-built binary package for Mono on the
+  [./downloads.wiki#sqlite-netFx451-binary-Mono-2013 | download] page.
 </p>
 
 <hr>
