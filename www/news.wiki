@@ -3,6 +3,13 @@
 <b>Version History</b>
 
 <p>
+    <b>1.0.101.0 - April 19, 2016</b>
+</p>
+<ul>
+    <li>Updated to [https://www.sqlite.org/releaselog/3_12_2.html|SQLite 3.12.2].</li>
+    <li>Add binary package release for Mono on POSIX.</li>
+</ul>
+<p>
     <b>1.0.100.0 - April 15, 2016</b>
 </p>
 <ul>
