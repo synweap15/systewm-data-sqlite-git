@@ -1582,6 +1582,11 @@ set manifests(sqlite-netFx451-static-binary-bundle-x64-2013-.zip) [list sds \
     binaryCore binaryLinq binaryEf6 binaryExtra]
 
 ###############################################################################
+
+set manifests(sqlite-netFx451-binary-Mono-2013-.zip) [list sds \
+    binaryCore binaryLinq binaryEf6 binaryExtra]
+
+###############################################################################
 ################## Visual Studio 2013 / .NET Framework 4.5.1 ##################
 ############################### Setup Packages ################################
 ###############################################################################
