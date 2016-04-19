@@ -1596,6 +1596,31 @@
 
     <tr>
       <td colspan="4">
+        <b>Precompiled Binaries for Mono on POSIX (.NET Framework 4.5.1)</b>
+      </td>
+    </tr>
+
+    <tr>
+      <td width="10">&nbsp;</td>
+      <td width="30%" valign="top" align="right">
+        <a name="sqlite-netFx451-binary-Mono-2013"></a>
+        <a href="/downloads/1.0.100.0/sqlite-netFx451-binary-Mono-2013-1.0.100.0.zip">sqlite-netFx451-binary-Mono-2013-1.0.100.0.zip</a>
+        <br />
+        (0.00 MiB)
+      </td>
+      <td width="5"></td>
+      <td valign="top">
+        This binary package contains all the managed binaries for the Mono
+        version of the System.Data.SQLite 1.0.100.0 (3.12.1) package.  The
+        <a href="https://www.mono-project.com/">Mono runtime</a> (4.2.3.4 or
+        higher) is required.
+        <br />
+        (sha1: 0000000000000000000000000000000000000000)
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="4">
         <b>Precompiled Statically-Linked Binaries for 32-bit Windows (.NET Framework 2.0 SP2)</b>
       </td>
     </tr>
