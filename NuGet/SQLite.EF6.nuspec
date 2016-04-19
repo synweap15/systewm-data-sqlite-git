@@ -11,7 +11,7 @@
   <metadata>
     <id>System.Data.SQLite.EF6</id>
     <title>System.Data.SQLite EF6</title>
-    <version>1.0.100.0</version>
+    <version>1.0.101.0</version>
     <authors>SQLite Development Team</authors>
     <description>Support for Entity Framework 6 using System.Data.SQLite.</description>
     <language>en-US</language>
