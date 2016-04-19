@@ -2498,7 +2498,8 @@
 
   <p>
     The <b>platform</b> in templates (7), (8), (9), and (10) will be one of
-    Win32, x64, PocketPC, PocketPC-ARM, PocketPC-x86, WinCE-ARM, WinCE-x86.
+    Win32, x64, PocketPC, PocketPC-ARM, PocketPC-x86, WinCE-ARM, WinCE-x86,
+    Mono.
   </p>
 
   <p>

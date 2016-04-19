@@ -81,11 +81,19 @@ IF NOT DEFINED BASE_PLATFORM (
 %_VECHO% ExtraPlatform = '%EXTRA_PLATFORM%'
 
 IF NOT DEFINED TYPE (
-  IF /I "%CONFIGURATION%" == "%BASE_CONFIGURATION%" (
-    IF /I "%BASE_CONFIGURATION%" == "Debug" (
-      SET TYPE=%TYPE_PREFIX%binary-debug-bundle
+  IF NOT DEFINED NOBUNDLE (
+    IF /I "%CONFIGURATION%" == "%BASE_CONFIGURATION%" (
+      IF /I "%BASE_CONFIGURATION%" == "Debug" (
+        SET TYPE=%TYPE_PREFIX%binary-debug-bundle
+      ) ELSE (
+        SET TYPE=%TYPE_PREFIX%binary-bundle
+      )
     ) ELSE (
-      SET TYPE=%TYPE_PREFIX%binary-bundle
+      IF /I "%BASE_CONFIGURATION%" == "Debug" (
+        SET TYPE=%TYPE_PREFIX%binary-debug
+      ) ELSE (
+        SET TYPE=%TYPE_PREFIX%binary
+      )
     )
   ) ELSE (
     IF /I "%BASE_CONFIGURATION%" == "Debug" (
