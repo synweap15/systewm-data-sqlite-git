@@ -2700,8 +2700,21 @@ namespace System.Data.SQLite
     /// </param>
     internal override void SetLoadExtension(bool bOnOff)
     {
-        SQLiteErrorCode n = UnsafeNativeMethods.sqlite3_enable_load_extension(
-            _sql, (bOnOff ? -1 : 0));
+        SQLiteErrorCode n;
+
+        if (SQLiteVersionNumber >= 3013000)
+        {
+            int result = 0; /* NOT USED */
+
+            n = UnsafeNativeMethods.sqlite3_db_config_int_refint(
+                _sql, SQLiteConfigDbOpsEnum.SQLITE_DBCONFIG_ENABLE_LOAD_EXTENSION,
+                (bOnOff ? 1 : 0), ref result);
+        }
+        else
+        {
+            n = UnsafeNativeMethods.sqlite3_enable_load_extension(
+                _sql, (bOnOff ? -1 : 0));
+        }
 
         if (n != SQLiteErrorCode.Ok) throw new SQLiteException(n, GetLastError());
     }

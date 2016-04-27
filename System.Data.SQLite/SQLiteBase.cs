@@ -1213,6 +1213,17 @@ namespace System.Data.SQLite
       DefaultAndLogAll = Default | LogAll
   }
 
+  // These are the options to the internal sqlite3_db_config call.
+  internal enum SQLiteConfigDbOpsEnum
+  {
+    SQLITE_DBCONFIG_NONE = 0, // nil
+    SQLITE_DBCONFIG_LOOKASIDE = 1001, // void* int int
+    SQLITE_DBCONFIG_ENABLE_FKEY = 1002, // int int*
+    SQLITE_DBCONFIG_ENABLE_TRIGGER = 1003, // int int*
+    SQLITE_DBCONFIG_ENABLE_FTS3_TOKENIZER = 1004, // int int*
+    SQLITE_DBCONFIG_ENABLE_LOAD_EXTENSION = 1005 // int int*
+  }
+
   // These are the options to the internal sqlite3_config call.
   internal enum SQLiteConfigOpsEnum
   {

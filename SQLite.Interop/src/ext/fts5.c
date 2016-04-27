@@ -7612,11 +7612,11 @@ static int sqlite3Fts5HashWrite(
         if( pHash->eDetail==FTS5_DETAIL_FULL ){
           pPtr[p->nData++] = 0x01;
           p->nData += sqlite3Fts5PutVarint(&pPtr[p->nData], iCol);
-          p->iCol = iCol;
+          p->iCol = (i16)iCol;
           p->iPos = 0;
         }else{
           bNew = 1;
-          p->iCol = iPos = iCol;
+          p->iCol = (i16)(iPos = iCol);
         }
       }
 
@@ -11040,7 +11040,7 @@ static void fts5IterSetOutputs_Col100(Fts5Iter *pIter, Fts5SegIter *pSeg){
         if( aiCol==aiColEnd ) goto setoutputs_col_out;
       }
       if( *aiCol==iPrev ){
-        *aOut++ = (iPrev - iPrevOut) + 2;
+        *aOut++ = (u8)((iPrev - iPrevOut) + 2);
         iPrevOut = iPrev;
       }
     }
@@ -16874,7 +16874,7 @@ static void fts5SourceIdFunc(
 ){
   assert( nArg==0 );
   UNUSED_PARAM2(nArg, apUnused);
-  sqlite3_result_text(pCtx, "fts5: 2016-04-18 17:30:31 92dc59fd5ad66f646666042eb04195e3a61a9e8e", -1, SQLITE_TRANSIENT);
+  sqlite3_result_text(pCtx, "fts5: 2016-04-27 15:24:13 0065fe97cb8e5076acae1bf1560fd2f69dab9014", -1, SQLITE_TRANSIENT);
 }
 
 static int fts5Init(sqlite3 *db){
