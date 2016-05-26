@@ -1612,12 +1612,10 @@ namespace System.Data.SQLite
     {
         SQLiteStatementHandle handle = stmt._sqlite_stmt;
 
-#if !PLATFORM_COMPACTFRAMEWORK
         if ((flags & SQLiteConnectionFlags.LogBind) == SQLiteConnectionFlags.LogBind)
         {
             LogBind(handle, index, value);
         }
-#endif
 
         SQLiteErrorCode n;
 
@@ -1644,12 +1642,12 @@ namespace System.Data.SQLite
     {
         SQLiteStatementHandle handle = stmt._sqlite_stmt;
 
-#if !PLATFORM_COMPACTFRAMEWORK
         if ((flags & SQLiteConnectionFlags.LogBind) == SQLiteConnectionFlags.LogBind)
         {
             LogBind(handle, index, value);
         }
 
+#if !PLATFORM_COMPACTFRAMEWORK
         SQLiteErrorCode n = UnsafeNativeMethods.sqlite3_bind_int64(handle, index, value);
         if (n != SQLiteErrorCode.Ok) throw new SQLiteException(n, GetLastError());
 #elif !SQLITE_STANDARD
@@ -1664,12 +1662,12 @@ namespace System.Data.SQLite
     {
         SQLiteStatementHandle handle = stmt._sqlite_stmt;
 
-#if !PLATFORM_COMPACTFRAMEWORK
         if ((flags & SQLiteConnectionFlags.LogBind) == SQLiteConnectionFlags.LogBind)
         {
             LogBind(handle, index, value);
         }
 
+#if !PLATFORM_COMPACTFRAMEWORK
         SQLiteErrorCode n = UnsafeNativeMethods.sqlite3_bind_uint64(handle, index, value);
         if (n != SQLiteErrorCode.Ok) throw new SQLiteException(n, GetLastError());
 #elif !SQLITE_STANDARD
@@ -1680,25 +1678,36 @@ namespace System.Data.SQLite
 #endif
     }
 
-    internal override void Bind_Text(SQLiteStatement stmt, SQLiteConnectionFlags flags, int index, string value)
+    internal override void Bind_Boolean(SQLiteStatement stmt, SQLiteConnectionFlags flags, int index, bool value)
     {
         SQLiteStatementHandle handle = stmt._sqlite_stmt;
 
-#if !PLATFORM_COMPACTFRAMEWORK
         if ((flags & SQLiteConnectionFlags.LogBind) == SQLiteConnectionFlags.LogBind)
         {
             LogBind(handle, index, value);
         }
-#endif
+
+        int value2 = value ? 1 : 0;
+
+        SQLiteErrorCode n = UnsafeNativeMethods.sqlite3_bind_int(handle, index, value2);
+        if (n != SQLiteErrorCode.Ok) throw new SQLiteException(n, GetLastError());
+    }
+
+    internal override void Bind_Text(SQLiteStatement stmt, SQLiteConnectionFlags flags, int index, string value)
+    {
+        SQLiteStatementHandle handle = stmt._sqlite_stmt;
+
+        if ((flags & SQLiteConnectionFlags.LogBind) == SQLiteConnectionFlags.LogBind)
+        {
+            LogBind(handle, index, value);
+        }
 
         byte[] b = ToUTF8(value);
 
-#if !PLATFORM_COMPACTFRAMEWORK
         if ((flags & SQLiteConnectionFlags.LogBind) == SQLiteConnectionFlags.LogBind)
         {
             LogBind(handle, index, b);
         }
-#endif
 
         SQLiteErrorCode n = UnsafeNativeMethods.sqlite3_bind_text(handle, index, b, b.Length - 1, (IntPtr)(-1));
         if (n != SQLiteErrorCode.Ok) throw new SQLiteException(n, GetLastError());
@@ -1708,12 +1717,10 @@ namespace System.Data.SQLite
     {
         SQLiteStatementHandle handle = stmt._sqlite_stmt;
 
-#if !PLATFORM_COMPACTFRAMEWORK
         if ((flags & SQLiteConnectionFlags.LogBind) == SQLiteConnectionFlags.LogBind)
         {
             LogBind(handle, index, dt);
         }
-#endif
 
         if ((flags & SQLiteConnectionFlags.BindDateTimeWithKind) == SQLiteConnectionFlags.BindDateTimeWithKind)
         {
@@ -1734,12 +1741,12 @@ namespace System.Data.SQLite
                 {
                     long value = dt.Ticks;
 
-#if !PLATFORM_COMPACTFRAMEWORK
                     if ((flags & SQLiteConnectionFlags.LogBind) == SQLiteConnectionFlags.LogBind)
                     {
                         LogBind(handle, index, value);
                     }
 
+#if !PLATFORM_COMPACTFRAMEWORK
                     SQLiteErrorCode n = UnsafeNativeMethods.sqlite3_bind_int64(handle, index, value);
                     if (n != SQLiteErrorCode.Ok) throw new SQLiteException(n, GetLastError());
                     break;
@@ -1755,12 +1762,12 @@ namespace System.Data.SQLite
                 {
                     double value = ToJulianDay(dt);
 
-#if !PLATFORM_COMPACTFRAMEWORK
                     if ((flags & SQLiteConnectionFlags.LogBind) == SQLiteConnectionFlags.LogBind)
                     {
                         LogBind(handle, index, value);
                     }
 
+#if !PLATFORM_COMPACTFRAMEWORK
                     SQLiteErrorCode n = UnsafeNativeMethods.sqlite3_bind_double(handle, index, value);
                     if (n != SQLiteErrorCode.Ok) throw new SQLiteException(n, GetLastError());
                     break;
@@ -1776,12 +1783,12 @@ namespace System.Data.SQLite
                 {
                     long value = Convert.ToInt64(dt.Subtract(UnixEpoch).TotalSeconds);
 
-#if !PLATFORM_COMPACTFRAMEWORK
                     if ((flags & SQLiteConnectionFlags.LogBind) == SQLiteConnectionFlags.LogBind)
                     {
                         LogBind(handle, index, value);
                     }
 
+#if !PLATFORM_COMPACTFRAMEWORK
                     SQLiteErrorCode n = UnsafeNativeMethods.sqlite3_bind_int64(handle, index, value);
                     if (n != SQLiteErrorCode.Ok) throw new SQLiteException(n, GetLastError());
                     break;
@@ -1797,12 +1804,10 @@ namespace System.Data.SQLite
                 {
                     byte[] b = ToUTF8(dt);
 
-#if !PLATFORM_COMPACTFRAMEWORK
                     if ((flags & SQLiteConnectionFlags.LogBind) == SQLiteConnectionFlags.LogBind)
                     {
                         LogBind(handle, index, b);
                     }
-#endif
 
                     SQLiteErrorCode n = UnsafeNativeMethods.sqlite3_bind_text(handle, index, b, b.Length - 1, (IntPtr)(-1));
                     if (n != SQLiteErrorCode.Ok) throw new SQLiteException(n, GetLastError());
@@ -1815,12 +1820,10 @@ namespace System.Data.SQLite
     {
         SQLiteStatementHandle handle = stmt._sqlite_stmt;
 
-#if !PLATFORM_COMPACTFRAMEWORK
         if ((flags & SQLiteConnectionFlags.LogBind) == SQLiteConnectionFlags.LogBind)
         {
             LogBind(handle, index, blobData);
         }
-#endif
 
         SQLiteErrorCode n = UnsafeNativeMethods.sqlite3_bind_blob(handle, index, blobData, blobData.Length, (IntPtr)(-1));
         if (n != SQLiteErrorCode.Ok) throw new SQLiteException(n, GetLastError());
@@ -1830,12 +1833,10 @@ namespace System.Data.SQLite
     {
         SQLiteStatementHandle handle = stmt._sqlite_stmt;
 
-#if !PLATFORM_COMPACTFRAMEWORK
         if ((flags & SQLiteConnectionFlags.LogBind) == SQLiteConnectionFlags.LogBind)
         {
             LogBind(handle, index);
         }
-#endif
 
         SQLiteErrorCode n = UnsafeNativeMethods.sqlite3_bind_null(handle, index);
         if (n != SQLiteErrorCode.Ok) throw new SQLiteException(n, GetLastError());

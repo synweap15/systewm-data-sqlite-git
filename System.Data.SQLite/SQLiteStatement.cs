@@ -308,7 +308,7 @@ namespace System.Data.SQLite
               _sql.ToDateTime((string)obj) : Convert.ToDateTime(obj, cultureInfo));
           break;
         case DbType.Boolean:
-          _sql.Bind_Int32(this, _flags, index, SQLiteConvert.ToBoolean(obj, cultureInfo, true) ? 1 : 0);
+          _sql.Bind_Boolean(this, _flags, index, SQLiteConvert.ToBoolean(obj, cultureInfo, true));
           break;
         case DbType.SByte:
           _sql.Bind_Int32(this, _flags, index, Convert.ToSByte(obj, cultureInfo));
