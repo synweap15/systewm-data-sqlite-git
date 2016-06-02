@@ -4086,6 +4086,95 @@ runTest {test data-1.80 {page size using PRAGMA} -setup {
 
 ###############################################################################
 
+runTest {test data-1.81 {SQLiteCommand.VerifyOnly method} -setup {
+  setupDb [set fileName data-1.81.db]
+} -body {
+  set connection [getDbConnection]
+
+  sql execute $db {
+    CREATE TABLE t1(x);
+    INSERT INTO t1 (x) VALUES(1);
+    INSERT INTO t1 (x) VALUES(2);
+    INSERT INTO t1 (x) VALUES(3);
+  }
+
+  set command [$connection -alias CreateCommand]
+
+  set code(1) [catch {
+    $command CommandText null
+    $command VerifyOnly
+  } result(1)]
+
+  set code(2) [catch {
+    $command CommandText ""
+    $command VerifyOnly
+  } result(2)]
+
+  set code(3) [catch {
+    $command CommandText "SELECT * FROM t1;"
+    $command VerifyOnly
+  } result(3)]
+
+  set code(4) [catch {
+    $command CommandText "SELECT * FROM t2;"
+    $command VerifyOnly; # throw
+  } result(4)]
+
+  set code(5) [catch {
+    $command CommandText "BAD COMMAND;"
+    $command VerifyOnly; # throw
+  } result(5)]
+
+  set code(6) [catch {
+    $command CommandText "INSERT INTO t1 (x) VALUES(4); SELECT * FROM t1;"
+    $command VerifyOnly
+  } result(6)]
+
+  set code(7) [catch {
+    $command CommandText "INSERT INTO t1 (x) VALUES(5); SELECT * FROM t2;"
+    $command VerifyOnly; # throw
+  } result(7)]
+
+  set code(8) [catch {
+    $command CommandText "BAD COMMAND; INSERT INTO t1 (x) VALUES(6);"
+    $command VerifyOnly; # throw
+  } result(8)]
+
+  set code(9) [catch {
+    $command CommandText "SELECT * FROM t2; INSERT INTO t1 (x) VALUES(7);"
+    $command VerifyOnly; # throw
+  } result(9)]
+
+  set result(10) [sql execute -execute reader -format list $db {
+    SELECT * FROM t1 ORDER BY x;
+  }]
+
+  list $code(1) [extractSystemDataSQLiteExceptionMessage $result(1)] \
+      $code(2) [extractSystemDataSQLiteExceptionMessage $result(2)] \
+      $code(3) [extractSystemDataSQLiteExceptionMessage $result(3)] \
+      $code(4) [extractSystemDataSQLiteExceptionMessage $result(4)] \
+      $code(5) [extractSystemDataSQLiteExceptionMessage $result(5)] \
+      $code(6) [extractSystemDataSQLiteExceptionMessage $result(6)] \
+      $code(7) [extractSystemDataSQLiteExceptionMessage $result(7)] \
+      $code(8) [extractSystemDataSQLiteExceptionMessage $result(8)] \
+      $code(9) [extractSystemDataSQLiteExceptionMessage $result(9)] \
+      $result(10)
+} -cleanup {
+  cleanupDb $fileName
+
+  freeDbConnection
+
+  unset -nocomplain result code command connection db fileName
+} -constraints \
+{eagle monoBug28 command.sql compile.DATA SQLite System.Data.SQLite} -result \
+{0 {} 0 {} 0 {} 1 {SQL logic error or missing database -- no such table: t2} 1\
+{SQL logic error or missing database -- near "BAD": syntax error} 0 {} 1 {SQL\
+logic error or missing database -- no such table: t2} 1 {SQL logic error or\
+missing database -- near "BAD": syntax error} 1 {SQL logic error or missing\
+database -- no such table: t2} {1 2 3}}}
+
+###############################################################################
+
 reportSQLiteResources $test_channel
 
 ###############################################################################
