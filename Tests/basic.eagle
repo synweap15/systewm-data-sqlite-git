@@ -4032,8 +4032,6 @@ bar main t1 z MYTYPE System.String}}}
 runTest {test data-1.79 {DateTime using Int64} -setup {
   setupDb [set fileName data-1.79.db] "" UnixEpoch
 } -body {
-  set result [list]
-
   sql execute $db {
     CREATE TABLE t1(x INTEGER, y DATETIME);
     INSERT INTO t1 (x, y) VALUES(1, strftime('%s', '2038-01-20'));
@@ -4044,7 +4042,7 @@ runTest {test data-1.79 {DateTime using Int64} -setup {
 } -cleanup {
   cleanupDb $fileName
 
-  unset -nocomplain result db fileName
+  unset -nocomplain db fileName
 } -constraints \
 {eagle monoBug28 command.sql compile.DATA SQLite System.Data.SQLite} -result \
 {1 {2038-01-20 00:00:00}}}
