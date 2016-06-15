@@ -1023,7 +1023,7 @@ namespace System.Data.SQLite
       using (SQLiteDataReader reader = ExecuteReader(behavior |
           CommandBehavior.SingleRow | CommandBehavior.SingleResult))
       {
-        if (reader.Read())
+        if (reader.Read() && (reader.FieldCount > 0))
           return reader[0];
       }
       return null;

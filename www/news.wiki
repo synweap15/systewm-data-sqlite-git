@@ -8,6 +8,7 @@
 <ul>
     <li>Updated to [https://www.sqlite.org/releaselog/3_13_0.html|SQLite 3.13.0].</li>
     <li>Update the SQLiteConnection.EnableExtensions method to make use of the new SQLITE_DBCONFIG_ENABLE_LOAD_EXTENSION option, when available.&nbsp;<b>** Potentially Incompatible Change **</b></li>
+    <li>Prevent the SQLiteCommand.ExecuteScalar method from throwing an exception when there are no result columns.&nbsp;<b>** Potentially Incompatible Change **</b></li>
     <li>Add VerifyOnly method to the SQLiteCommand class.</li>
 </ul>
 <p>
