@@ -34,6 +34,7 @@ namespace eval ::Eagle {
         BREAK_ON_EXITING BREAKPOINTS CACHE_ARGUMENT_TOSTRING \
         CACHE_ARGUMENTLIST_TOSTRING CACHE_DICTIONARY CACHE_RESULT_TOSTRING \
         CACHE_STATISTICS CACHE_STRINGLIST_TOSTRING CALLBACK_QUEUE CAS_POLICY \
+        CERTIFICATE_PLUGIN CERTIFICATE_POLICY CERTIFICATE_RENEWAL \
         CODE_ANALYSIS COM_TYPE_CACHE CONSOLE DAEMON DATA DEAD_CODE DEBUG \
         DEBUGGER DEBUGGER_ARGUMENTS DEBUGGER_ENGINE DEBUGGER_EXECUTE \
         DEBUGGER_EXPRESSION DEBUGGER_VARIABLE DEBUG_TRACE DEBUG_WRITE DRAWING \
@@ -41,8 +42,8 @@ namespace eval ::Eagle {
         EXPRESSION_FLAGS FAST_ERRORCODE FAST_ERRORINFO FOR_TEST_USE_ONLY \
         HAVE_SIZEOF HISTORY IA64 INTERACTIVE_COMMANDS INTERNALS_VISIBLE_TO \
         ISOLATED_INTERPRETERS ISOLATED_PLUGINS LIBRARY LICENSING \
-        LIMITED_EDITION LIST_CACHE MONO MONO_BUILD MONO_HACKS MONO_LEGACY \
-        NATIVE NATIVE_PACKAGE NATIVE_THREAD_ID NATIVE_UTILITY \
+        LICENSE_MANAGER LIMITED_EDITION LIST_CACHE MONO MONO_BUILD MONO_HACKS \
+        MONO_LEGACY NATIVE NATIVE_PACKAGE NATIVE_THREAD_ID NATIVE_UTILITY \
         NATIVE_UTILITY_BSTR NETWORK NET_20 NET_20_FAST_ENUM NET_20_ONLY \
         NET_20_SP1 NET_20_SP2 NET_30 NET_35 NET_40 NET_45 NET_451 NET_452 \
         NET_46 NET_461 NON_WORKING_CODE NOTIFY NOTIFY_ACTIVE NOTIFY_ARGUMENTS \
@@ -51,8 +52,8 @@ namespace eval ::Eagle {
         PLUGIN_COMMANDS POLICY_TRACE PREVIOUS_RESULT RANDOMIZE_ID REMOTING \
         SAMPLE SECURITY SERIALIZATION SHARED_ID_POOL SHELL SOURCE_ID \
         SOURCE_TIMESTAMP STATIC TCL TCL_KITS TCL_THREADED TCL_THREADS \
-        TCL_UNICODE TCL_WRAPPER TEST THREADING THROW_ON_DISPOSED TRACE \
-        TYPE_CACHE UNIX USE_APPDOMAIN_FOR_ID USE_NAMESPACES VERBOSE WEB \
+        TCL_UNICODE TCL_WRAPPER TEST TEST_PLUGIN THREADING THROW_ON_DISPOSED \
+        TRACE TYPE_CACHE UNIX USE_APPDOMAIN_FOR_ID USE_NAMESPACES VERBOSE WEB \
         WINDOWS WINFORMS WIX_30 WIX_35 WIX_36 WIX_37 WIX_38 WIX_39 WIX_310 \
         X64 X86 XML]
   }
@@ -2167,6 +2168,28 @@ namespace eval ::Eagle {
     ############################ BEGIN Eagle ONLY #############################
     ###########################################################################
 
+    proc checkForSecurity { channel } {
+      tputs $channel "---- checking for security... "
+
+      if {[catch {
+        object invoke -flags +NonPublic Interpreter.GetActive HasSecurity
+      } security] == 0} then {
+        if {$security} then {
+          addConstraint security.enabled
+
+          tputs $channel yes\n
+        } else {
+          addConstraint security.disabled
+
+          tputs $channel no\n
+        }
+      } else {
+        addConstraint security.unavailable
+
+        tputs $channel unavailable\n
+      }
+    }
+
     proc checkForSoftwareUpdateTrust { channel } {
       tputs $channel "---- checking for software update trust... "
 

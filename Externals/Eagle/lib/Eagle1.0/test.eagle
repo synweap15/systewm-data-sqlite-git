@@ -1489,7 +1489,7 @@ namespace eval ::Eagle {
       # NOTE: Display and/or log the results for the test that we just
       #       completed.
       #
-      if {[shouldWriteTestData]} then {
+      if {[shouldWriteTestData $code]} then {
         tresult $code $result
       } else {
         tlog $result
@@ -3137,10 +3137,10 @@ namespace eval ::Eagle {
       }
     }
 
-    proc shouldWriteTestData {} {
+    proc shouldWriteTestData { code } {
       if {[llength [info commands object]] > 0 && [catch {
         object invoke -flags +NonPublic \
-            Eagle._Components.Private.TestOps ShouldWriteTestData ""
+            Eagle._Components.Private.TestOps ShouldWriteTestData "" $code
       } writeTestData] == 0 && $writeTestData} then {
         return false
       }
@@ -3292,6 +3292,12 @@ namespace eval ::Eagle {
 
       tputs $channel [appendArgs \
           "---- HelpOps cleanup results: " $result \n]
+
+      catch {uplevel 1 [list object invoke -flags +NonPublic \
+          Eagle._Components.Private.StringOps ClearPreambleEncodings]} result
+
+      tputs $channel [appendArgs \
+          "---- StringOps cleanup results: " $result \n]
     }
 
     proc evalWithTimeout { script {milliseconds 2000} {resultVarName ""} } {

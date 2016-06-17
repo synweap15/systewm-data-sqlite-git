@@ -1054,7 +1054,7 @@ if {![info exists no([file tail [info script]])]} then {
     if {![info exists no(quiet)]} then {
       #
       # NOTE: For tests "basic-1.36", "benchmark-1.*", "debug-1.3",
-      #       "debug-1.4", "glob-99.*", "object-10.*", "perf-2.2",
+      #       "debug-1.4.*", "glob-99.*", "object-10.*", "perf-2.2",
       #       and various other places within the test suite code
       #       itself.
       #
@@ -1172,6 +1172,13 @@ if {![info exists no([file tail [info script]])]} then {
     #
     if {![info exists no(threadCulture)]} then {
       checkForThreadCulture $test_channel
+    }
+
+    #
+    # NOTE: Has security detection support been disabled?
+    #
+    if {![info exists no(security)]} then {
+      checkForSecurity $test_channel
     }
 
     #
@@ -1385,10 +1392,31 @@ if {![info exists no([file tail [info script]])]} then {
         #
         if {![info exists no(compileDebugger)]} then {
           #
-          # NOTE: For tests "debug-1.1", "debug-2.1", "debug-3.1" and
-          #       "debug-4.1".
+          # NOTE: For tests "debug-1.1", "debug-2.1", "debug-3.1",
+          #       "debug-4.1", and "proc-2.1".
           #
           checkForCompileOption $test_channel DEBUGGER
+        }
+
+        #
+        # NOTE: Has script debugger arguments support been enabled (at
+        #       compile-time)?
+        #
+        if {![info exists no(compileDebuggerArguments)]} then {
+          #
+          # NOTE: For tests "object-5.1.*".
+          #
+          checkForCompileOption $test_channel DEBUGGER_ARGUMENTS
+        }
+
+        #
+        # NOTE: Has script breakpoint support been enabled (at compile-time)?
+        #
+        if {![info exists no(compileBreakpoints)]} then {
+          #
+          # NOTE: For test "proc-2.1".
+          #
+          checkForCompileOption $test_channel BREAKPOINTS
         }
 
         #
@@ -1474,6 +1502,16 @@ if {![info exists no([file tail [info script]])]} then {
         }
 
         #
+        # NOTE: Has native library support been enabled (at compile-time)?
+        #
+        if {![info exists no(compileLibrary)]} then {
+          #
+          # NOTE: For tests "commands-1.*".
+          #
+          checkForCompileOption $test_channel LIBRARY
+        }
+
+        #
         # NOTE: Has native code support been enabled (at compile-time)?
         #
         if {![info exists no(compileNative)]} then {
@@ -1502,6 +1540,27 @@ if {![info exists no([file tail [info script]])]} then {
           #       "socket-3.1".
           #
           checkForCompileOption $test_channel NETWORK
+        }
+
+        #
+        # NOTE: Has notification support been enabled (at compile-time)?
+        #
+        if {![info exists no(compileNotify)]} then {
+          #
+          # NOTE: For test "basic-1.75".
+          #
+          checkForCompileOption $test_channel NOTIFY
+        }
+
+        #
+        # NOTE: Has notification argument support been enabled (at
+        #       compile-time)?
+        #
+        if {![info exists no(compileNotifyArguments)]} then {
+          #
+          # NOTE: For test "basic-1.75".
+          #
+          checkForCompileOption $test_channel NOTIFY_ARGUMENTS
         }
 
         #
@@ -1671,6 +1730,23 @@ if {![info exists no([file tail [info script]])]} then {
     #
     if {![info exists no(core)] && ![info exists no(test)]} then {
       #
+      # NOTE: Has ExecuteCallback testing support been disabled?
+      #
+      if {![info exists no(testExecuteCallback)]} then {
+        #
+        # NOTE: For tests "executeCallback-1.*".
+        #
+        checkForObjectMember $test_channel Eagle._Tests.Default \
+            *TestAddExecuteCallback*
+
+        checkForObjectMember $test_channel Eagle._Tests.Default \
+            *TestExecuteCallback1*
+
+        checkForObjectMember $test_channel Eagle._Tests.Default \
+            *TestExecuteCallback2*
+      }
+
+      #
       # NOTE: Has WriteHeader testing support been disabled?
       #
       if {![info exists no(testWriteHeader)]} then {
@@ -1742,6 +1818,20 @@ if {![info exists no([file tail [info script]])]} then {
 
         checkForObjectMember $test_channel Eagle._Tests.Default \
             *TestComplainCallbackNoThrow*
+      }
+
+      #
+      # NOTE: Has new interpreter callback testing support been disabled?
+      #
+      if {![info exists no(testNewInterpreter)]} then {
+        #
+        # NOTE: For tests "interp-1.101" and "interp-1.102".
+        #
+        checkForObjectMember $test_channel Eagle._Tests.Default \
+            *TestSetNewInterpreterCallback*
+
+        checkForObjectMember $test_channel Eagle._Tests.Default \
+            *TestNewInterpreterCallback*
       }
 
       #
@@ -2985,8 +3075,48 @@ if {![info exists no([file tail [info script]])]} then {
   #
   # NOTE: Check for various extra commands that may be present.
   #
+  if {![info exists no(base64Command)]} then {
+    checkForCommand $test_channel base64
+  }
+
+  if {![info exists no(bgerrorCommand)]} then {
+    checkForCommand $test_channel bgerror
+  }
+
   if {![info exists no(callbackCommand)]} then {
     checkForCommand $test_channel callback
+  }
+
+  if {![info exists no(debugCommand)]} then {
+    checkForCommand $test_channel debug
+  }
+
+  if {![info exists no(doCommand)]} then {
+    checkForCommand $test_channel do
+  }
+
+  if {![info exists no(downlevelCommand)]} then {
+    checkForCommand $test_channel downlevel
+  }
+
+  if {![info exists no(guidCommand)]} then {
+    checkForCommand $test_channel guid
+  }
+
+  if {![info exists no(hashCommand)]} then {
+    checkForCommand $test_channel hash
+  }
+
+  if {![info exists no(hostCommand)]} then {
+    checkForCommand $test_channel host
+  }
+
+  if {![info exists no(invokeCommand)]} then {
+    checkForCommand $test_channel invoke
+  }
+
+  if {![info exists no(killCommand)]} then {
+    checkForCommand $test_channel kill
   }
 
   if {![info exists no(lgetCommand)]} then {
@@ -2997,8 +3127,24 @@ if {![info exists no([file tail [info script]])]} then {
     checkForCommand $test_channel library
   }
 
+  if {![info exists no(lremoveCommand)]} then {
+    checkForCommand $test_channel lremove
+  }
+
+  if {![info exists no(nopCommand)]} then {
+    checkForCommand $test_channel nop
+  }
+
   if {![info exists no(objectCommand)]} then {
     checkForCommand $test_channel object
+  }
+
+  if {![info exists no(parseCommand)]} then {
+    checkForCommand $test_channel parse
+  }
+
+  if {![info exists no(scopeCommand)]} then {
+    checkForCommand $test_channel scope
   }
 
   if {![info exists no(socketCommand)]} then {
@@ -3011,6 +3157,26 @@ if {![info exists no([file tail [info script]])]} then {
 
   if {![info exists no(tclCommand)]} then {
     checkForCommand $test_channel tcl
+  }
+
+  if {![info exists no(throwCommand)]} then {
+    checkForCommand $test_channel throw
+  }
+
+  if {![info exists no(truncateCommand)]} then {
+    checkForCommand $test_channel truncate
+  }
+
+  if {![info exists no(tryCommand)]} then {
+    checkForCommand $test_channel try
+  }
+
+  if {![info exists no(uriCommand)]} then {
+    checkForCommand $test_channel uri
+  }
+
+  if {![info exists no(versionCommand)]} then {
+    checkForCommand $test_channel version
   }
 
   if {![info exists no(xmlCommand)]} then {

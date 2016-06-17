@@ -724,10 +724,21 @@ namespace eval ::Eagle {
   }
 
   proc execShell { options args } {
+    #
+    # NOTE: Start out with just the base [exec] command.
+    #
     set command [list exec]
 
-    if {[llength $options] > 0} then {eval lappend command $options}
+    #
+    # NOTE: Add options for the [exec] command, if any.
+    #
+    if {[llength $options] > 0} then {
+      eval lappend command $options
+    }
 
+    #
+    # NOTE: Always add the end-of-options marker.
+    #
     lappend command --
 
     #
@@ -740,8 +751,30 @@ namespace eval ::Eagle {
       lappend command [info nameofexecutable]
     }
 
-    if {[llength $args] > 0} then {eval lappend command $args}
+    #
+    # NOTE: If possible, check if the current interpreter has security
+    #       enabled; if so, add the appropriate command line option for
+    #       the sub-process.
+    #
+    if {[llength [info commands object]] > 0} then {
+      if {[catch {
+        object invoke -flags +NonPublic Interpreter.GetActive HasSecurity
+      } security] == 0 && $security} then {
+        lappend command -security true
+      }
+    }
 
+    #
+    # NOTE: Add command line arguments to the shell command, if any.
+    #
+    if {[llength $args] > 0} then {
+      eval lappend command $args
+    }
+
+    #
+    # NOTE: Finally, execute the resulting [exec] command in the context
+    #       of the caller, returning its result.
+    #
     return [uplevel 1 $command]
   }
 
@@ -2716,6 +2749,15 @@ namespace eval ::Eagle {
     }
 
     proc loadWordTcl { directory } {
+      if {([string length $directory] == 0 || $directory eq ".") && \
+          [info exists ::tcl_library]} then {
+        #
+        # NOTE: The directory specified by the caller contains no useful
+        #       information, use the Tcl library directory instead.
+        #
+        set directory $::tcl_library
+      }
+
       uplevel 1 [list source [file join $directory word.tcl]]
     }
 
