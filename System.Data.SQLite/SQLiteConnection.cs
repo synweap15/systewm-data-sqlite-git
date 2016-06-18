@@ -3185,6 +3185,31 @@ namespace System.Data.SQLite
     }
 
     /// <summary>
+    /// Checks if this connection to the specified database should be considered
+    /// read-only.  An exception will be thrown if the database name specified
+    /// via <paramref name="name" /> cannot be found.
+    /// </summary>
+    /// <param name="name">
+    /// The name of a database associated with this connection -OR- null for the
+    /// main database.
+    /// </param>
+    /// <returns>
+    /// Non-zero if this connection to the specified database should be considered
+    /// read-only.
+    /// </returns>
+    public bool IsReadOnly(
+        string name
+        )
+    {
+        CheckDisposed();
+
+        if (_sql == null)
+            throw new InvalidOperationException("Database connection not valid for checking read-only status.");
+
+        return _sql.IsReadOnly(name);
+    }
+
+    /// <summary>
     /// Returns non-zero if the given database connection is in autocommit mode.
     /// Autocommit mode is on by default.  Autocommit mode is disabled by a BEGIN
     /// statement.  Autocommit mode is re-enabled by a COMMIT or ROLLBACK.

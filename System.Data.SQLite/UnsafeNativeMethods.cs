@@ -2663,6 +2663,13 @@ namespace System.Data.SQLite
     internal static extern IntPtr sqlite3_db_filename(IntPtr db, IntPtr dbName);
 
 #if !PLATFORM_COMPACTFRAMEWORK
+    [DllImport(SQLITE_DLL, CallingConvention = CallingConvention.Cdecl)]
+#else
+    [DllImport(SQLITE_DLL)]
+#endif
+    internal static extern int sqlite3_db_readonly(IntPtr db, IntPtr dbName);
+
+#if !PLATFORM_COMPACTFRAMEWORK
     [DllImport(SQLITE_DLL, EntryPoint = "sqlite3_db_filename", CallingConvention = CallingConvention.Cdecl)]
 #else
     [DllImport(SQLITE_DLL, EntryPoint = "sqlite3_db_filename")]

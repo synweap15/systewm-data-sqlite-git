@@ -4173,6 +4173,68 @@ database -- no such table: t2} {1 2 3}}}
 
 ###############################################################################
 
+runTest {test data-1.82 {IsReadOnly method} -setup {
+  set fileName data-1.82.db
+} -body {
+  set result [list]
+
+  setupDb $fileName
+  set connection [getDbConnection]
+
+  lappend result [catch {$connection IsReadOnly null} error] \
+      [extractSystemDataSQLiteExceptionMessage $error]
+
+  lappend result [catch {$connection IsReadOnly wrong} error] \
+      [extractSystemDataSQLiteExceptionMessage $error]
+
+  sql execute $db {
+    SELECT * FROM sqlite_master WHERE 1 = 0;
+  }; # NOTE: Force file creation.
+
+  freeDbConnection
+  cleanupDb $fileName db true false false
+
+  setupDb $fileName "" "" "" "" "Read Only=True;" true false
+  set connection [getDbConnection]
+
+  lappend result [catch {$connection IsReadOnly null} error] \
+      [extractSystemDataSQLiteExceptionMessage $error]
+
+  lappend result [catch {$connection IsReadOnly wrong} error] \
+      [extractSystemDataSQLiteExceptionMessage $error]
+
+  freeDbConnection
+  cleanupDb $fileName db true false false
+
+  setupDb $fileName "" "" "" "" "Read Only=False;" true false
+  set connection [getDbConnection]
+
+  lappend result [catch {$connection IsReadOnly null} error] \
+      [extractSystemDataSQLiteExceptionMessage $error]
+
+  lappend result [catch {$connection IsReadOnly wrong} error] \
+      [extractSystemDataSQLiteExceptionMessage $error]
+
+  freeDbConnection
+  cleanupDb $fileName db true false false
+
+  set result
+} -cleanup {
+  freeDbConnection
+
+  unset -nocomplain connection
+
+  cleanupDb $fileName
+
+  unset -nocomplain error result db fileName
+} -constraints \
+{eagle monoBug28 command.sql compile.DATA SQLite System.Data.SQLite} -result {0\
+False 1 {unknown error -- database "wrong" not found} 0 True 1 {unknown error\
+-- database "wrong" not found} 0 False 1 {unknown error -- database "wrong" not\
+found}}}
+
+###############################################################################
+
 reportSQLiteResources $test_channel
 
 ###############################################################################

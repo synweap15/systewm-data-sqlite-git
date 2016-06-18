@@ -42,6 +42,10 @@ namespace System.Data.SQLite
     /// </summary>
     internal abstract int VersionNumber { get; }
     /// <summary>
+    /// Returns non-zero if this connection to the database is read-only.
+    /// </summary>
+    internal abstract bool IsReadOnly(string name);
+    /// <summary>
     /// Returns the rowid of the most recent successful INSERT into the database from this connection.
     /// </summary>
     internal abstract long LastInsertRowId { get; }

@@ -626,6 +626,38 @@ namespace System.Data.SQLite
       }
     }
 
+    internal override bool IsReadOnly(
+        string name
+        )
+    {
+        IntPtr pDbName = IntPtr.Zero;
+
+        try
+        {
+            if (name != null)
+                pDbName = SQLiteString.Utf8IntPtrFromString(name);
+
+            int result = UnsafeNativeMethods.sqlite3_db_readonly(
+                _sql, pDbName);
+
+            if (result == -1) /* database not found */
+            {
+                throw new SQLiteException(String.Format(
+                    "database \"{0}\" not found", name));
+            }
+
+            return result == 0 ? false : true;
+        }
+        finally
+        {
+            if (pDbName != IntPtr.Zero)
+            {
+                SQLiteMemory.Free(pDbName);
+                pDbName = IntPtr.Zero;
+            }
+        }
+    }
+
     internal override long LastInsertRowId
     {
       get
