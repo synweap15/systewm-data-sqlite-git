@@ -22,6 +22,480 @@ namespace System.Data.SQLite
   /////////////////////////////////////////////////////////////////////////////////////////////////
 
   /// <summary>
+  /// This class represents a single value to be returned
+  /// from the <see cref="SQLiteDataReader" /> class via
+  /// its <see cref="SQLiteDataReader.GetBoolean" />,
+  /// <see cref="SQLiteDataReader.GetByte" />,
+  /// <see cref="SQLiteDataReader.GetBytes" />,
+  /// <see cref="SQLiteDataReader.GetChar" />,
+  /// <see cref="SQLiteDataReader.GetChars" />,
+  /// <see cref="SQLiteDataReader.GetDateTime" />,
+  /// <see cref="SQLiteDataReader.GetDecimal" />,
+  /// <see cref="SQLiteDataReader.GetDouble" />,
+  /// <see cref="SQLiteDataReader.GetFloat" />,
+  /// <see cref="SQLiteDataReader.GetGuid" />,
+  /// <see cref="SQLiteDataReader.GetInt16" />,
+  /// <see cref="SQLiteDataReader.GetInt32" />,
+  /// <see cref="SQLiteDataReader.GetInt64" />,
+  /// <see cref="SQLiteDataReader.GetString" />, or
+  /// <see cref="SQLiteDataReader.GetValue" /> method.  If the value of the
+  /// associated public field of this class is null upon returning from the
+  /// callback, the null value will only be used if the return type for the
+  /// <see cref="SQLiteDataReader" /> method called is not a value type.
+  /// If the value to be returned from the <see cref="SQLiteDataReader" />
+  /// method is unsuitable (e.g. null with a value type), an exception will
+  /// be thrown.
+  /// </summary>
+  public sealed class SQLiteDataReaderValue
+  {
+      /// <summary>
+      /// The value to be returned from the
+      /// <see cref="SQLiteDataReader.GetBoolean" /> method -OR- null to
+      /// indicate an error.
+      /// </summary>
+      public bool? BooleanValue;
+
+      /// <summary>
+      /// The value to be returned from the
+      /// <see cref="SQLiteDataReader.GetByte" /> method -OR- null to
+      /// indicate an error.
+      /// </summary>
+      public byte? ByteValue;
+
+      /// <summary>
+      /// The value to be returned from the
+      /// <see cref="SQLiteDataReader.GetBytes" /> method.
+      /// </summary>
+      public byte[] BytesValue;
+
+      /// <summary>
+      /// The value to be returned from the
+      /// <see cref="SQLiteDataReader.GetChar" /> method -OR- null to
+      /// indicate an error.
+      /// </summary>
+      public char? CharValue;
+
+      /// <summary>
+      /// The value to be returned from the
+      /// <see cref="SQLiteDataReader.GetChars" /> method.
+      /// </summary>
+      public char[] CharsValue;
+
+      /// <summary>
+      /// The value to be returned from the
+      /// <see cref="SQLiteDataReader.GetDateTime" /> method -OR- null to
+      /// indicate an error.
+      /// </summary>
+      public DateTime? DateTimeValue;
+
+      /// <summary>
+      /// The value to be returned from the
+      /// <see cref="SQLiteDataReader.GetDecimal" /> method -OR- null to
+      /// indicate an error.
+      /// </summary>
+      public decimal? DecimalValue;
+
+      /// <summary>
+      /// The value to be returned from the
+      /// <see cref="SQLiteDataReader.GetDouble" /> method -OR- null to
+      /// indicate an error.
+      /// </summary>
+      public double? DoubleValue;
+
+      /// <summary>
+      /// The value to be returned from the
+      /// <see cref="SQLiteDataReader.GetFloat" /> method -OR- null to
+      /// indicate an error.
+      /// </summary>
+      public float? FloatValue;
+
+      /// <summary>
+      /// The value to be returned from the
+      /// <see cref="SQLiteDataReader.GetGuid" /> method -OR- null to
+      /// indicate an error.
+      /// </summary>
+      public Guid? GuidValue;
+
+      /// <summary>
+      /// The value to be returned from the
+      /// <see cref="SQLiteDataReader.GetInt16" /> method -OR- null to
+      /// indicate an error.
+      /// </summary>
+      public short? Int16Value;
+
+      /// <summary>
+      /// The value to be returned from the
+      /// <see cref="SQLiteDataReader.GetInt32" /> method -OR- null to
+      /// indicate an error.
+      /// </summary>
+      public int? Int32Value;
+
+      /// <summary>
+      /// The value to be returned from the
+      /// <see cref="SQLiteDataReader.GetInt64" /> method -OR- null to
+      /// indicate an error.
+      /// </summary>
+      public long? Int64Value;
+
+      /// <summary>
+      /// The value to be returned from the
+      /// <see cref="SQLiteDataReader.GetString" /> method.
+      /// </summary>
+      public string StringValue;
+
+      /// <summary>
+      /// The value to be returned from the
+      /// <see cref="SQLiteDataReader.GetValue" /> method.
+      /// </summary>
+      public object Value;
+  }
+
+  /////////////////////////////////////////////////////////////////////////////////////////////////
+
+  /// <summary>
+  /// This class represents the parameters that are provided
+  /// to the <see cref="SQLiteDataReader.GetBytes" /> and
+  /// <see cref="SQLiteDataReader.GetChars" /> methods, with
+  /// the exception of the column index (provided separately).
+  /// </summary>
+  public class SQLiteReadArrayEventArgs : EventArgs
+  {
+      #region Private Data
+      /// <summary>
+      /// Provides the underlying storage for the
+      /// <see cref="DataOffset" /> property.
+      /// </summary>
+      private long dataOffset;
+
+      /// <summary>
+      /// Provides the underlying storage for the
+      /// <see cref="ByteBuffer" /> property.
+      /// </summary>
+      private byte[] byteBuffer;
+
+      /// <summary>
+      /// Provides the underlying storage for the
+      /// <see cref="CharBuffer" /> property.
+      /// </summary>
+      private char[] charBuffer;
+
+      /// <summary>
+      /// Provides the underlying storage for the
+      /// <see cref="BufferOffset" /> property.
+      /// </summary>
+      private int bufferOffset;
+
+      /// <summary>
+      /// Provides the underlying storage for the
+      /// <see cref="Length" /> property.
+      /// </summary>
+      private int length;
+      #endregion
+
+      /////////////////////////////////////////////////////////////////////////
+
+      #region Private Constructors
+      /// <summary>
+      /// Constructs an instance of this class to pass into a user-defined
+      /// callback associated with the <see cref="SQLiteDataReader.GetBytes" />
+      /// method.
+      /// </summary>
+      /// <param name="dataOffset">
+      /// The value that was originally specified for the "dataOffset"
+      /// parameter to the <see cref="SQLiteDataReader.GetBytes" /> or
+      /// <see cref="SQLiteDataReader.GetChars" /> methods.
+      /// </param>
+      /// <param name="byteBuffer">
+      /// The value that was originally specified for the "buffer"
+      /// parameter to the <see cref="SQLiteDataReader.GetBytes" />
+      /// method.
+      /// </param>
+      /// <param name="bufferOffset">
+      /// The value that was originally specified for the "bufferOffset"
+      /// parameter to the <see cref="SQLiteDataReader.GetBytes" /> or
+      /// <see cref="SQLiteDataReader.GetChars" /> methods.
+      /// </param>
+      /// <param name="length">
+      /// The value that was originally specified for the "length"
+      /// parameter to the <see cref="SQLiteDataReader.GetBytes" /> or
+      /// <see cref="SQLiteDataReader.GetChars" /> methods.
+      /// </param>
+      internal SQLiteReadArrayEventArgs(
+          long dataOffset,
+          byte[] byteBuffer,
+          int bufferOffset,
+          int length
+          )
+      {
+          this.dataOffset = dataOffset;
+          this.byteBuffer = byteBuffer;
+          this.bufferOffset = bufferOffset;
+          this.length = length;
+      }
+
+      /////////////////////////////////////////////////////////////////////////
+
+      /// <summary>
+      /// Constructs an instance of this class to pass into a user-defined
+      /// callback associated with the <see cref="SQLiteDataReader.GetChars" />
+      /// method.
+      /// </summary>
+      /// <param name="dataOffset">
+      /// The value that was originally specified for the "dataOffset"
+      /// parameter to the <see cref="SQLiteDataReader.GetBytes" /> or
+      /// <see cref="SQLiteDataReader.GetChars" /> methods.
+      /// </param>
+      /// <param name="charBuffer">
+      /// The value that was originally specified for the "buffer"
+      /// parameter to the <see cref="SQLiteDataReader.GetChars" />
+      /// method.
+      /// </param>
+      /// <param name="bufferOffset">
+      /// The value that was originally specified for the "bufferOffset"
+      /// parameter to the <see cref="SQLiteDataReader.GetBytes" /> or
+      /// <see cref="SQLiteDataReader.GetChars" /> methods.
+      /// </param>
+      /// <param name="length">
+      /// The value that was originally specified for the "length"
+      /// parameter to the <see cref="SQLiteDataReader.GetBytes" /> or
+      /// <see cref="SQLiteDataReader.GetChars" /> methods.
+      /// </param>
+      internal SQLiteReadArrayEventArgs(
+          long dataOffset,
+          char[] charBuffer,
+          int bufferOffset,
+          int length
+          )
+      {
+          this.dataOffset = dataOffset;
+          this.charBuffer = charBuffer;
+          this.bufferOffset = bufferOffset;
+          this.length = length;
+      }
+      #endregion
+
+      /////////////////////////////////////////////////////////////////////////
+
+      #region Public Properties
+      /// <summary>
+      /// The value that was originally specified for the "dataOffset"
+      /// parameter to the <see cref="SQLiteDataReader.GetBytes" /> or
+      /// <see cref="SQLiteDataReader.GetChars" /> methods.
+      /// </summary>
+      public long DataOffset
+      {
+          get { return dataOffset; }
+      }
+
+      /////////////////////////////////////////////////////////////////////////
+
+      /// <summary>
+      /// The value that was originally specified for the "buffer"
+      /// parameter to the <see cref="SQLiteDataReader.GetBytes" />
+      /// method.
+      /// </summary>
+      public byte[] ByteBuffer
+      {
+          get { return byteBuffer; }
+      }
+
+      /////////////////////////////////////////////////////////////////////////
+
+      /// <summary>
+      /// The value that was originally specified for the "buffer"
+      /// parameter to the <see cref="SQLiteDataReader.GetChars" />
+      /// method.
+      /// </summary>
+      public char[] CharBuffer
+      {
+          get { return charBuffer; }
+      }
+
+      /////////////////////////////////////////////////////////////////////////
+
+      /// <summary>
+      /// The value that was originally specified for the "bufferOffset"
+      /// parameter to the <see cref="SQLiteDataReader.GetBytes" /> or
+      /// <see cref="SQLiteDataReader.GetChars" /> methods.
+      /// </summary>
+      public int BufferOffset
+      {
+          get { return bufferOffset; }
+      }
+
+      /////////////////////////////////////////////////////////////////////////
+
+      /// <summary>
+      /// The value that was originally specified for the "length"
+      /// parameter to the <see cref="SQLiteDataReader.GetBytes" /> or
+      /// <see cref="SQLiteDataReader.GetChars" /> methods.
+      /// </summary>
+      public int Length
+      {
+          get { return length; }
+      }
+      #endregion
+  }
+
+  /////////////////////////////////////////////////////////////////////////////////////////////////
+
+  /// <summary>
+  /// This class represents the parameters and return values for the
+  /// <see cref="SQLiteDataReader.GetBoolean" />,
+  /// <see cref="SQLiteDataReader.GetByte" />,
+  /// <see cref="SQLiteDataReader.GetBytes" />,
+  /// <see cref="SQLiteDataReader.GetChar" />,
+  /// <see cref="SQLiteDataReader.GetChars" />,
+  /// <see cref="SQLiteDataReader.GetDateTime" />,
+  /// <see cref="SQLiteDataReader.GetDecimal" />,
+  /// <see cref="SQLiteDataReader.GetDouble" />,
+  /// <see cref="SQLiteDataReader.GetFloat" />,
+  /// <see cref="SQLiteDataReader.GetGuid" />,
+  /// <see cref="SQLiteDataReader.GetInt16" />,
+  /// <see cref="SQLiteDataReader.GetInt32" />,
+  /// <see cref="SQLiteDataReader.GetInt64" />,
+  /// <see cref="SQLiteDataReader.GetString" />, and
+  /// <see cref="SQLiteDataReader.GetValue" /> methods.
+  /// </summary>
+  public class SQLiteReadValueEventArgs : EventArgs
+  {
+      #region Private Data
+      /// <summary>
+      /// Provides the underlying storage for the
+      /// <see cref="ArrayEventArgs" /> property.
+      /// </summary>
+      private SQLiteReadArrayEventArgs arrayEventArgs;
+
+      /// <summary>
+      /// Provides the underlying storage for the
+      /// <see cref="Value" /> property.
+      /// </summary>
+      private SQLiteDataReaderValue value;
+      #endregion
+
+      /////////////////////////////////////////////////////////////////////////
+
+      #region Private Constructors
+      /// <summary>
+      /// Constructs a new instance of this class.  Depending on the method
+      /// being called, one or both of the parameters may be null.
+      /// </summary>
+      /// <param name="arrayEventArgs">
+      /// If the <see cref="SQLiteDataReader.GetBytes" /> or
+      /// <see cref="SQLiteDataReader.GetChars" /> method is being called,
+      /// this object will contain the parameters for that method.
+      /// </param>
+      /// <param name="value">
+      /// This will be modified by the callback to contain the return value
+      /// for the called <see cref="SQLiteDataReader" /> method.
+      /// </param>
+      internal SQLiteReadValueEventArgs(
+          SQLiteReadArrayEventArgs arrayEventArgs,
+          SQLiteDataReaderValue value
+          )
+      {
+          this.arrayEventArgs = arrayEventArgs;
+          this.value = value;
+      }
+      #endregion
+
+      /////////////////////////////////////////////////////////////////////////
+
+      #region Public Properties
+      /// <summary>
+      /// If the <see cref="SQLiteDataReader.GetBytes" /> or
+      /// <see cref="SQLiteDataReader.GetChars" /> method is being called,
+      /// this object will contain the parameters for that method.
+      /// </summary>
+      public SQLiteReadArrayEventArgs ArrayEventArgs
+      {
+          get { return arrayEventArgs; }
+      }
+
+      /////////////////////////////////////////////////////////////////////////
+
+      /// <summary>
+      /// This will be modified by the callback to contain the return value
+      /// for the called <see cref="SQLiteDataReader" /> method.
+      /// </summary>
+      public SQLiteDataReaderValue Value
+      {
+          get { return value; }
+      }
+      #endregion
+  }
+
+  /////////////////////////////////////////////////////////////////////////////////////////////////
+
+  /// <summary>
+  /// This represents a method that will be called in response to a request to bind a parameter
+  /// to a command.
+  /// </summary>
+  /// <param name="convert">
+  /// The <see cref="SQLiteConvert" /> instance in use.
+  /// </param>
+  /// <param name="command">
+  /// The <see cref="SQLiteCommand" /> instance in use.
+  /// </param>
+  /// <param name="flags">
+  /// The flags associated with the <see cref="SQLiteConnection" /> instance in use.
+  /// </param>
+  /// <param name="parameter">
+  /// The <see cref="SQLiteParameter" /> instance being bound to the command.
+  /// </param>
+  /// <param name="index">
+  /// The ordinal of the parameter being bound to the command.
+  /// </param>
+  /// <param name="complete">
+  /// Non-zero if the default handling for the parameter binding call should be skipped.
+  /// </param>
+  public delegate void SQLiteBindValueCallback(
+      SQLiteConvert convert,
+      SQLiteCommand command,
+      SQLiteConnectionFlags flags,
+      SQLiteParameter parameter,
+      int index,
+      out bool complete
+  );
+
+  /////////////////////////////////////////////////////////////////////////////////////////////////
+
+  /// <summary>
+  /// This represents a method that will be called in response to a request to read a value
+  /// from a data reader.
+  /// </summary>
+  /// <param name="convert">
+  /// The <see cref="SQLiteConvert" /> instance in use.
+  /// </param>
+  /// <param name="dataReader">
+  /// The <see cref="SQLiteDataReader" /> instance in use.
+  /// </param>
+  /// <param name="flags">
+  /// The flags associated with the <see cref="SQLiteConnection" /> instance in use.
+  /// </param>
+  /// <param name="eventArgs">
+  /// The parameter and return type data for the column being read from the data reader.
+  /// </param>
+  /// <param name="index">
+  /// The zero based index of the column being read from the data reader.
+  /// </param>
+  /// <param name="complete">
+  /// Non-zero if the default handling for the data reader call should be skipped.  If this
+  /// is set to non-zero and the necessary return value is unavailable or unsuitable, an
+  /// exception will be thrown.
+  /// </param>
+  public delegate void SQLiteReadValueCallback(
+      SQLiteConvert convert,
+      SQLiteDataReader dataReader,
+      SQLiteConnectionFlags flags,
+      SQLiteReadValueEventArgs eventArgs,
+      int index,
+      out bool complete
+  );
+
+  /////////////////////////////////////////////////////////////////////////////////////////////////
+
+  /// <summary>
   /// Event data for connection event handlers.
   /// </summary>
   public class ConnectionEventArgs : EventArgs
