@@ -504,6 +504,161 @@ namespace System.Data.SQLite
   /////////////////////////////////////////////////////////////////////////////////////////////////
 
   /// <summary>
+  /// This class represents the custom data type handling callbacks
+  /// for a single type name.
+  /// </summary>
+  public sealed class SQLiteTypeCallbacks
+  {
+      #region Private Data
+      /// <summary>
+      /// Provides the underlying storage for the
+      /// <see cref="TypeName" /> property.
+      /// </summary>
+      private string typeName;
+
+      /// <summary>
+      /// Provides the underlying storage for the
+      /// <see cref="BindValueCallback" /> property.
+      /// </summary>
+      private SQLiteBindValueCallback bindValueCallback;
+
+      /// <summary>
+      /// Provides the underlying storage for the
+      /// <see cref="ReadValueCallback" /> property.
+      /// </summary>
+      private SQLiteReadValueCallback readValueCallback;
+
+      /// <summary>
+      /// Provides the underlying storage for the
+      /// <see cref="BindValueUserData" /> property.
+      /// </summary>
+      private object bindValueUserData;
+
+      /// <summary>
+      /// Provides the underlying storage for the
+      /// <see cref="ReadValueUserData" /> property.
+      /// </summary>
+      private object readValueUserData;
+      #endregion
+
+      /////////////////////////////////////////////////////////////////////////
+
+      #region Private Constructors
+      /// <summary>
+      /// Constructs an instance of this class.
+      /// </summary>
+      /// <param name="typeName">
+      /// The database type name that the callbacks contained in this class
+      /// will apply to.  This parameter may not be null.
+      /// </param>
+      /// <param name="bindValueCallback">
+      /// The custom paramater binding callback.  This parameter may be null.
+      /// </param>
+      /// <param name="readValueCallback">
+      /// The custom data reader value callback.  This parameter may be null.
+      /// </param>
+      /// <param name="bindValueUserData">
+      /// The extra data to pass into the parameter binding callback.  This
+      /// parameter may be null.
+      /// </param>
+      /// <param name="readValueUserData">
+      /// The extra data to pass into the data reader value callback.  This
+      /// parameter may be null.
+      /// </param>
+      internal SQLiteTypeCallbacks(
+          string typeName,
+          SQLiteBindValueCallback bindValueCallback,
+          SQLiteReadValueCallback readValueCallback,
+          object bindValueUserData,
+          object readValueUserData
+          )
+      {
+          this.typeName = typeName;
+          this.bindValueCallback = bindValueCallback;
+          this.readValueCallback = readValueCallback;
+          this.bindValueUserData = bindValueUserData;
+          this.readValueUserData = readValueUserData;
+      }
+      #endregion
+
+      /////////////////////////////////////////////////////////////////////////
+
+      #region Public Properties
+      /// <summary>
+      /// The database type name that the callbacks contained in this class
+      /// will apply to.  This value may not be null.
+      /// </summary>
+      public string TypeName
+      {
+          get { return typeName; }
+      }
+
+      /////////////////////////////////////////////////////////////////////////
+
+      /// <summary>
+      /// The custom paramater binding callback.  This value may be null.
+      /// </summary>
+      public SQLiteBindValueCallback BindValueCallback
+      {
+          get { return bindValueCallback; }
+      }
+
+      /////////////////////////////////////////////////////////////////////////
+
+      /// <summary>
+      /// The custom data reader value callback.  This value may be null.
+      /// </summary>
+      public SQLiteReadValueCallback ReadValueCallback
+      {
+          get { return readValueCallback; }
+      }
+
+      /////////////////////////////////////////////////////////////////////////
+
+      /// <summary>
+      /// The extra data to pass into the parameter binding callback.  This
+      /// value may be null.
+      /// </summary>
+      public object BindValueUserData
+      {
+          get { return bindValueCallback; }
+      }
+
+      /////////////////////////////////////////////////////////////////////////
+
+      /// <summary>
+      /// The extra data to pass into the data reader value callback.  This
+      /// value may be null.
+      /// </summary>
+      public object ReadValueUserData
+      {
+          get { return readValueUserData; }
+      }
+      #endregion
+  }
+
+  /////////////////////////////////////////////////////////////////////////////////////////////////
+
+  /// <summary>
+  /// This class represents the mappings between database type names
+  /// and their associated custom data type handling callbacks.
+  /// </summary>
+  internal sealed class SQLiteTypeCallbacksMap
+      : Dictionary<string, SQLiteTypeCallbacks>
+  {
+      /// <summary>
+      /// Constructs an (empty) instance of this class.
+      /// </summary>
+      public SQLiteTypeCallbacksMap()
+          : base(new TypeNameStringComparer())
+      {
+          // do nothing.
+      }
+  }
+
+  /////////////////////////////////////////////////////////////////////////////////////////////////
+
+  /// <summary>
   /// Event data for connection event handlers.
   /// </summary>
   public class ConnectionEventArgs : EventArgs
@@ -1161,6 +1316,12 @@ namespace System.Data.SQLite
     internal SQLiteDbTypeMap _typeNames;
 
     /// <summary>
+    /// The per-connection mappings between type names and optional callbacks
+    /// for parameter binding and value reading.
+    /// </summary>
+    private SQLiteTypeCallbacksMap _typeCallbacks;
+
+    /// <summary>
     /// The base SQLite object to interop with
     /// </summary>
     internal SQLiteBase _sql;
@@ -1384,6 +1545,7 @@ namespace System.Data.SQLite
           new TypeNameStringComparer());
 
       _typeNames = new SQLiteDbTypeMap();
+      _typeCallbacks = new SQLiteTypeCallbacksMap();
       _parseViaFramework = parseViaFramework;
       _flags = SQLiteConnectionFlags.None;
       _defaultDbType = null;
@@ -1864,6 +2026,100 @@ namespace System.Data.SQLite
         }
 
         return result;
+    }
+    #endregion
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+
+    #region Per-Connection Type Callbacks
+    /// <summary>
+    /// Clears the per-connection type callbacks.
+    /// </summary>
+    /// <returns>
+    /// The total number of per-connection type callbacks cleared.
+    /// </returns>
+    public int ClearTypeCallbacks()
+    {
+        CheckDisposed();
+
+        int result = -1; /* NO CALLBACKS */
+
+        if (_typeCallbacks != null)
+        {
+            result = _typeCallbacks.Count;
+            _typeCallbacks.Clear();
+        }
+
+        return result;
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+
+    /// <summary>
+    /// Attempts to get the per-connection type callbacks for the specified
+    /// database type name.
+    /// </summary>
+    /// <param name="typeName">
+    /// The database type name.
+    /// </param>
+    /// <param name="callbacks">
+    /// Upon success, this parameter will contain the object holding the
+    /// callbacks for the database type name.  Upon failure, this parameter
+    /// will be null.
+    /// </param>
+    /// <returns>
+    /// Non-zero upon success; otherwise, zero.
+    /// </returns>
+    public bool TryGetTypeCallbacks(
+        string typeName,
+        out SQLiteTypeCallbacks callbacks
+        )
+    {
+        if (typeName == null)
+            throw new ArgumentNullException("typeName");
+
+        if (_typeCallbacks == null)
+        {
+            callbacks = null;
+            return false;
+        }
+
+        return _typeCallbacks.TryGetValue(typeName, out callbacks);
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+
+    /// <summary>
+    /// Sets, resets, or clears the per-connection type callbacks for the
+    /// specified database type name.
+    /// </summary>
+    /// <param name="typeName">
+    /// The database type name.
+    /// </param>
+    /// <param name="callbacks">
+    /// The object holding the callbacks for the database type name.  If
+    /// this parameter is null, any callbacks for the database type name
+    /// will be removed if they are present.
+    /// </param>
+    /// <returns>
+    /// Non-zero if callbacks were set or removed; otherwise, zero.
+    /// </returns>
+    public bool SetTypeCallbacks(
+        string typeName,
+        SQLiteTypeCallbacks callbacks
+        )
+    {
+        if (typeName == null)
+            throw new ArgumentNullException("typeName");
+
+        if (_typeCallbacks == null)
+            return false;
+
+        if (callbacks == null)
+            return _typeCallbacks.Remove(typeName);
+
+        _typeCallbacks[typeName] = callbacks;
+        return true;
     }
     #endregion
 
