@@ -444,7 +444,7 @@ namespace System.Data.SQLite
   /// The <see cref="SQLiteParameter" /> instance being bound to the command.
   /// </param>
   /// <param name="typeName">
-  /// The database type name associated with thi callback.
+  /// The database type name associated with this callback.
   /// </param>
   /// <param name="index">
   /// The ordinal of the parameter being bound to the command.
@@ -487,7 +487,7 @@ namespace System.Data.SQLite
   /// The parameter and return type data for the column being read from the data reader.
   /// </param>
   /// <param name="typeName">
-  /// The database type name associated with thi callback.
+  /// The database type name associated with this callback.
   /// </param>
   /// <param name="index">
   /// The zero based index of the column being read from the data reader.
