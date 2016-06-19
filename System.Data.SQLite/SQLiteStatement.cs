@@ -239,6 +239,124 @@ namespace System.Data.SQLite
     }
 
     /// <summary>
+    /// This method attempts to query the database connection associated with
+    /// the statement in use.  If the underlying command or connection is
+    /// unavailable, a null value will be returned.
+    /// </summary>
+    /// <returns>
+    /// The connection object -OR- null if it is unavailable.
+    /// </returns>
+    private static SQLiteConnection GetConnection(
+        SQLiteStatement statement
+        )
+    {
+        try
+        {
+            if (statement != null)
+            {
+                SQLiteCommand command = statement._command;
+
+                if (command != null)
+                {
+                    SQLiteConnection connection = command.Connection;
+
+                    if (connection != null)
+                        return connection;
+                }
+            }
+        }
+        catch (ObjectDisposedException)
+        {
+            // do nothing.
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Invokes the parameter binding callback configured for the database
+    /// type name associated with the specified column.  If no parameter
+    /// binding callback is available for the database type name, do
+    /// nothing.
+    /// </summary>
+    /// <param name="index">
+    /// The index of the column being read.
+    /// </param>
+    /// <param name="parameter">
+    /// The <see cref="SQLiteParameter" /> instance being bound to the
+    /// command.
+    /// </param>
+    /// <param name="complete">
+    /// Non-zero if the default handling for the parameter binding call
+    /// should be skipped.
+    /// </param>
+    private void InvokeBindValueCallback(
+        int index,
+        SQLiteParameter parameter,
+        out bool complete
+        )
+    {
+        complete = false;
+        _flags &= ~SQLiteConnectionFlags.UseConnectionBindValueCallbacks;
+
+        try
+        {
+            if (parameter == null)
+                return;
+
+            SQLiteConnection connection = GetConnection(this);
+
+            if (connection == null)
+                return;
+
+            string typeName = parameter.TypeName;
+
+            if (typeName == null)
+            {
+                //
+                // NOTE: Are we allowed to fallback to using the database type
+                //       name translated from the DbType?  If not, there is
+                //       nothing else we can do.
+                //
+                if ((_flags & SQLiteConnectionFlags.UseParameterDbTypeForTypeName)
+                        != SQLiteConnectionFlags.UseParameterDbTypeForTypeName)
+                {
+                    return;
+                }
+
+                typeName = SQLiteConvert.DbTypeToTypeName(
+                    connection, parameter.DbType, _flags);
+            }
+
+            if (typeName == null)
+                return;
+
+            SQLiteTypeCallbacks callbacks;
+
+            if (!connection.TryGetTypeCallbacks(typeName, out callbacks) ||
+                (callbacks == null))
+            {
+                return;
+            }
+
+            SQLiteBindValueCallback callback = callbacks.BindValueCallback;
+
+            if (callback == null)
+                return;
+
+            object userData = callbacks.BindValueUserData;
+
+            callback(
+                _sql, _command, _flags, parameter, index, userData,
+                out complete); /* throw */
+        }
+        finally
+        {
+            _flags |= SQLiteConnectionFlags.UseConnectionBindValueCallbacks;
+        }
+    }
+
+    /// <summary>
     /// Perform the bind operation for an individual parameter
     /// </summary>
     /// <param name="index">The index of the parameter to bind</param>
@@ -247,6 +365,16 @@ namespace System.Data.SQLite
     {
       if (param == null)
         throw new SQLiteException("Insufficient parameters supplied to the command");
+
+      if ((_flags & SQLiteConnectionFlags.UseConnectionBindValueCallbacks) == SQLiteConnectionFlags.UseConnectionBindValueCallbacks)
+      {
+          bool complete;
+
+          InvokeBindValueCallback(index, param, out complete);
+
+          if (complete)
+              return;
+      }
 
       object obj = param.Value;
       DbType objType = param.DbType;

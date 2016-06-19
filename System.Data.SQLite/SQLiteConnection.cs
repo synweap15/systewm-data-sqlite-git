@@ -543,7 +543,7 @@ namespace System.Data.SQLite
 
       /////////////////////////////////////////////////////////////////////////
 
-      #region Private Constructors
+      #region Public Constructors
       /// <summary>
       /// Constructs an instance of this class.
       /// </summary>
@@ -565,7 +565,7 @@ namespace System.Data.SQLite
       /// The extra data to pass into the data reader value callback.  This
       /// parameter may be null.
       /// </param>
-      internal SQLiteTypeCallbacks(
+      public SQLiteTypeCallbacks(
           string typeName,
           SQLiteBindValueCallback bindValueCallback,
           SQLiteReadValueCallback readValueCallback,

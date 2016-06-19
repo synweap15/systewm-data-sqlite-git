@@ -215,6 +215,8 @@ released versions of System.Data.SQLite.
     <li>Updated to <a href="https://www.sqlite.org/releaselog/3_13_0.html">SQLite 3.13.0</a>.</li>
     <li>Update the SQLiteConnection.EnableExtensions method to make use of the new SQLITE_DBCONFIG_ENABLE_LOAD_EXTENSION option, when available.&nbsp;<b>** Potentially Incompatible Change **</b></li>
     <li>Prevent the SQLiteCommand.ExecuteScalar method from throwing an exception when there are no result columns.&nbsp;<b>** Potentially Incompatible Change **</b></li>
+    <li>Support per-connection customization for binding parameters and reading values, based on the database type name.</li>
+    <li>Add TypeName property to the SQLiteParameter class.</li>
     <li>Add VerifyOnly method to the SQLiteCommand class.</li>
     <li>Add IsReadOnly method to the SQLiteConnection class.</li>
 </ul>
