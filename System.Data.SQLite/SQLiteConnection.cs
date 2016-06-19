@@ -446,6 +446,9 @@ namespace System.Data.SQLite
   /// <param name="index">
   /// The ordinal of the parameter being bound to the command.
   /// </param>
+  /// <param name="userData">
+  /// The data originally used when registering this callback.
+  /// </param>
   /// <param name="complete">
   /// Non-zero if the default handling for the parameter binding call should be skipped.
   /// </param>
@@ -455,6 +458,7 @@ namespace System.Data.SQLite
       SQLiteConnectionFlags flags,
       SQLiteParameter parameter,
       int index,
+      object userData,
       out bool complete
   );
 
@@ -479,6 +483,9 @@ namespace System.Data.SQLite
   /// <param name="index">
   /// The zero based index of the column being read from the data reader.
   /// </param>
+  /// <param name="userData">
+  /// The data originally used when registering this callback.
+  /// </param>
   /// <param name="complete">
   /// Non-zero if the default handling for the data reader call should be skipped.  If this
   /// is set to non-zero and the necessary return value is unavailable or unsuitable, an
@@ -490,6 +497,7 @@ namespace System.Data.SQLite
       SQLiteConnectionFlags flags,
       SQLiteReadValueEventArgs eventArgs,
       int index,
+      object userData,
       out bool complete
   );
 
