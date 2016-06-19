@@ -298,6 +298,7 @@ namespace System.Data.SQLite
         )
     {
         complete = false;
+        SQLiteConnectionFlags oldFlags = _flags;
         _flags &= ~SQLiteConnectionFlags.UseConnectionBindValueCallbacks;
 
         try
@@ -348,7 +349,7 @@ namespace System.Data.SQLite
             object userData = callbacks.BindValueUserData;
 
             callback(
-                _sql, _command, _flags, parameter, typeName, index,
+                _sql, _command, oldFlags, parameter, typeName, index,
                 userData, out complete); /* throw */
         }
         finally

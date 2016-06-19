@@ -452,6 +452,7 @@ namespace System.Data.SQLite
         )
     {
         complete = false;
+        SQLiteConnectionFlags oldFlags = _flags;
         _flags &= ~SQLiteConnectionFlags.UseConnectionReadValueCallbacks;
 
         try
@@ -482,7 +483,7 @@ namespace System.Data.SQLite
             object userData = callbacks.ReadValueUserData;
 
             callback(
-                _activeStatement._sql, this, _flags, eventArgs, typeName,
+                _activeStatement._sql, this, oldFlags, eventArgs, typeName,
                 index, userData, out complete); /* throw */
         }
         finally
