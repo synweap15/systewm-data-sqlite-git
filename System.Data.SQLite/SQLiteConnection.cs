@@ -443,6 +443,9 @@ namespace System.Data.SQLite
   /// <param name="parameter">
   /// The <see cref="SQLiteParameter" /> instance being bound to the command.
   /// </param>
+  /// <param name="typeName">
+  /// The database type name associated with thi callback.
+  /// </param>
   /// <param name="index">
   /// The ordinal of the parameter being bound to the command.
   /// </param>
@@ -459,6 +462,7 @@ namespace System.Data.SQLite
       SQLiteCommand command,
       SQLiteConnectionFlags flags,
       SQLiteParameter parameter,
+      string typeName,
       int index,
       object userData,
       out bool complete
@@ -482,6 +486,9 @@ namespace System.Data.SQLite
   /// <param name="eventArgs">
   /// The parameter and return type data for the column being read from the data reader.
   /// </param>
+  /// <param name="typeName">
+  /// The database type name associated with thi callback.
+  /// </param>
   /// <param name="index">
   /// The zero based index of the column being read from the data reader.
   /// </param>
@@ -498,6 +505,7 @@ namespace System.Data.SQLite
       SQLiteDataReader dataReader,
       SQLiteConnectionFlags flags,
       SQLiteReadValueEventArgs eventArgs,
+      string typeName,
       int index,
       object userData,
       out bool complete

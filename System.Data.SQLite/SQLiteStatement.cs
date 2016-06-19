@@ -348,8 +348,8 @@ namespace System.Data.SQLite
             object userData = callbacks.BindValueUserData;
 
             callback(
-                _sql, _command, _flags, parameter, index, userData,
-                out complete); /* throw */
+                _sql, _command, _flags, parameter, typeName, index,
+                userData, out complete); /* throw */
         }
         finally
         {

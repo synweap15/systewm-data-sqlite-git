@@ -482,8 +482,8 @@ namespace System.Data.SQLite
             object userData = callbacks.ReadValueUserData;
 
             callback(
-                _activeStatement._sql, this, _flags, eventArgs, index,
-                userData, out complete); /* throw */
+                _activeStatement._sql, this, _flags, eventArgs, typeName,
+                index, userData, out complete); /* throw */
         }
         finally
         {
