@@ -384,7 +384,8 @@ namespace System.Data.SQLite
       #region Private Constructors
       /// <summary>
       /// Constructs a new instance of this class.  Depending on the method
-      /// being called, one or both of the parameters may be null.
+      /// being called, the <paramref name="arrayEventArgs" /> and/or
+      /// <paramref name="value" /> parameters may be null.
       /// </summary>
       /// <param name="methodName">
       /// The name of the <see cref="SQLiteDataReader" /> method that was
@@ -393,11 +394,12 @@ namespace System.Data.SQLite
       /// <param name="arrayEventArgs">
       /// If the <see cref="SQLiteDataReader.GetBytes" /> or
       /// <see cref="SQLiteDataReader.GetChars" /> method is being called,
-      /// this object will contain the parameters for that method.
+      /// this object will contain the array related parameters for that
+      /// method.
       /// </param>
       /// <param name="value">
-      /// This will be modified by the callback to contain the return value
-      /// for the called <see cref="SQLiteDataReader" /> method.
+      /// This may be used by the callback to set the return value for the
+      /// called <see cref="SQLiteDataReader" /> method.
       /// </param>
       internal SQLiteReadValueEventArgs(
           string methodName,
@@ -428,7 +430,8 @@ namespace System.Data.SQLite
       /// <summary>
       /// If the <see cref="SQLiteDataReader.GetBytes" /> or
       /// <see cref="SQLiteDataReader.GetChars" /> method is being called,
-      /// this object will contain the parameters for that method.
+      /// this object will contain the array related parameters for that
+      /// method.
       /// </summary>
       public SQLiteReadArrayEventArgs ArrayEventArgs
       {
@@ -438,8 +441,8 @@ namespace System.Data.SQLite
       /////////////////////////////////////////////////////////////////////////
 
       /// <summary>
-      /// This will be modified by the callback to contain the return value
-      /// for the called <see cref="SQLiteDataReader" /> method.
+      /// This may be used by the callback to set the return value for the
+      /// called <see cref="SQLiteDataReader" /> method.
       /// </summary>
       public SQLiteDataReaderValue Value
       {
