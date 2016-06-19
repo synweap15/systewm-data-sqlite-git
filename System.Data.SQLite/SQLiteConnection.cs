@@ -362,6 +362,12 @@ namespace System.Data.SQLite
       #region Private Data
       /// <summary>
       /// Provides the underlying storage for the
+      /// <see cref="MethodName" /> property.
+      /// </summary>
+      private string methodName;
+
+      /// <summary>
+      /// Provides the underlying storage for the
       /// <see cref="ArrayEventArgs" /> property.
       /// </summary>
       private SQLiteReadArrayEventArgs arrayEventArgs;
@@ -380,6 +386,10 @@ namespace System.Data.SQLite
       /// Constructs a new instance of this class.  Depending on the method
       /// being called, one or both of the parameters may be null.
       /// </summary>
+      /// <param name="methodName">
+      /// The name of the <see cref="SQLiteDataReader" /> method that was
+      /// responsible for invoking this callback.
+      /// </param>
       /// <param name="arrayEventArgs">
       /// If the <see cref="SQLiteDataReader.GetBytes" /> or
       /// <see cref="SQLiteDataReader.GetChars" /> method is being called,
@@ -390,10 +400,12 @@ namespace System.Data.SQLite
       /// for the called <see cref="SQLiteDataReader" /> method.
       /// </param>
       internal SQLiteReadValueEventArgs(
+          string methodName,
           SQLiteReadArrayEventArgs arrayEventArgs,
           SQLiteDataReaderValue value
           )
       {
+          this.methodName = methodName;
           this.arrayEventArgs = arrayEventArgs;
           this.value = value;
       }
@@ -402,6 +414,17 @@ namespace System.Data.SQLite
       /////////////////////////////////////////////////////////////////////////
 
       #region Public Properties
+      /// <summary>
+      /// The name of the <see cref="SQLiteDataReader" /> method that was
+      /// responsible for invoking this callback.
+      /// </summary>
+      public string MethodName
+      {
+          get { return methodName; }
+      }
+
+      /////////////////////////////////////////////////////////////////////////
+
       /// <summary>
       /// If the <see cref="SQLiteDataReader.GetBytes" /> or
       /// <see cref="SQLiteDataReader.GetChars" /> method is being called,

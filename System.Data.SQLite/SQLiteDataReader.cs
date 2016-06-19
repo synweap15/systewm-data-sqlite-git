@@ -507,7 +507,7 @@ namespace System.Data.SQLite
             bool complete;
 
             InvokeReadValueCallback(i, new SQLiteReadValueEventArgs(
-                null, value), out complete);
+                "GetBoolean", null, value), out complete);
 
             if (complete)
             {
@@ -541,7 +541,7 @@ namespace System.Data.SQLite
             bool complete;
 
             InvokeReadValueCallback(i, new SQLiteReadValueEventArgs(
-                null, value), out complete);
+                "GetByte", null, value), out complete);
 
             if (complete)
             {
@@ -582,8 +582,8 @@ namespace System.Data.SQLite
             bool complete;
 
             InvokeReadValueCallback(i, new SQLiteReadValueEventArgs(
-                new SQLiteReadArrayEventArgs(fieldOffset, buffer,
-                    bufferoffset, length), value), out complete);
+                "GetBytes", new SQLiteReadArrayEventArgs(fieldOffset,
+                    buffer, bufferoffset, length), value), out complete);
 
             if (complete)
             {
@@ -629,7 +629,7 @@ namespace System.Data.SQLite
             bool complete;
 
             InvokeReadValueCallback(i, new SQLiteReadValueEventArgs(
-                null, value), out complete);
+                "GetChar", null, value), out complete);
 
             if (complete)
             {
@@ -670,8 +670,8 @@ namespace System.Data.SQLite
             bool complete;
 
             InvokeReadValueCallback(i, new SQLiteReadValueEventArgs(
-                new SQLiteReadArrayEventArgs(fieldoffset, buffer,
-                    bufferoffset, length), value), out complete);
+                "GetChars", new SQLiteReadArrayEventArgs(fieldoffset,
+                    buffer, bufferoffset, length), value), out complete);
 
             if (complete)
             {
@@ -735,7 +735,7 @@ namespace System.Data.SQLite
             bool complete;
 
             InvokeReadValueCallback(i, new SQLiteReadValueEventArgs(
-                null, value), out complete);
+                "GetDateTime", null, value), out complete);
 
             if (complete)
             {
@@ -769,7 +769,7 @@ namespace System.Data.SQLite
             bool complete;
 
             InvokeReadValueCallback(i, new SQLiteReadValueEventArgs(
-                null, value), out complete);
+                "GetDecimal", null, value), out complete);
 
             if (complete)
             {
@@ -803,7 +803,7 @@ namespace System.Data.SQLite
             bool complete;
 
             InvokeReadValueCallback(i, new SQLiteReadValueEventArgs(
-                null, value), out complete);
+                "GetDouble", null, value), out complete);
 
             if (complete)
             {
@@ -852,7 +852,7 @@ namespace System.Data.SQLite
             bool complete;
 
             InvokeReadValueCallback(i, new SQLiteReadValueEventArgs(
-                null, value), out complete);
+                "GetFloat", null, value), out complete);
 
             if (complete)
             {
@@ -886,7 +886,7 @@ namespace System.Data.SQLite
             bool complete;
 
             InvokeReadValueCallback(i, new SQLiteReadValueEventArgs(
-                null, value), out complete);
+                "GetGuid", null, value), out complete);
 
             if (complete)
             {
@@ -927,7 +927,7 @@ namespace System.Data.SQLite
             bool complete;
 
             InvokeReadValueCallback(i, new SQLiteReadValueEventArgs(
-                null, value), out complete);
+                "GetInt16", null, value), out complete);
 
             if (complete)
             {
@@ -961,7 +961,7 @@ namespace System.Data.SQLite
             bool complete;
 
             InvokeReadValueCallback(i, new SQLiteReadValueEventArgs(
-                null, value), out complete);
+                "GetInt32", null, value), out complete);
 
             if (complete)
             {
@@ -995,7 +995,7 @@ namespace System.Data.SQLite
             bool complete;
 
             InvokeReadValueCallback(i, new SQLiteReadValueEventArgs(
-                null, value), out complete);
+                "GetInt64", null, value), out complete);
 
             if (complete)
             {
@@ -1548,7 +1548,7 @@ namespace System.Data.SQLite
             bool complete;
 
             InvokeReadValueCallback(i, new SQLiteReadValueEventArgs(
-                null, value), out complete);
+                "GetString", null, value), out complete);
 
             if (complete)
                 return value.StringValue;
@@ -1579,7 +1579,7 @@ namespace System.Data.SQLite
             bool complete;
 
             InvokeReadValueCallback(i, new SQLiteReadValueEventArgs(
-                null, value), out complete);
+                "GetValue", null, value), out complete);
 
             if (complete)
                 return value.Value;
