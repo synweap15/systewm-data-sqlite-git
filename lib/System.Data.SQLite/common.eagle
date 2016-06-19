@@ -1832,18 +1832,21 @@ namespace eval ::Eagle {
       upvar 1 $varName properties
 
       set count 0
+      set names [list]
 
-      set names [object members \
-          -membertypes Property -nameonly $object]
+      if {[isObjectHandle $object] && $object ne "null"} then {
+        eval lappend names [object members \
+            -membertypes Property -nameonly $object]
 
-      eval lappend names [object members \
-          -membertypes Field -nameonly $object]
+        eval lappend names [object members \
+            -membertypes Field -nameonly $object]
+      }
 
       foreach name $names {
         if {[catch {
           object invoke -objectflags +NoDispose $object $name
         } value] == 0} then {
-          if {[isObjectHandle $value]} then {
+          if {[isObjectHandle $value] && $value ne "null"} then {
             set error null; object invoke -flags +NonPublic \
                 -marshalflags +NoHandle Interpreter.GetActive \
                 AddObjectReference Ok $value error
@@ -1893,6 +1896,43 @@ namespace eval ::Eagle {
 
         unset properties(seenObjects)
       }
+    }
+
+    proc getVariables { varNames {objects false} } {
+      set result [list]
+
+      foreach varName $varNames {
+        if {[uplevel 1 [list array exists $varName]]} then {
+          set arrayName $varName
+
+          foreach elementName [uplevel 1 [list array names $arrayName]] {
+            set name [appendArgs $arrayName ( $elementName )]
+            set varValue [uplevel 1 [list set $name]]
+
+            if {$objects && [isObjectHandle $varValue]} then {
+              unset -nocomplain properties
+              getAllProperties $varValue properties
+
+              lappend result [list $name [array get properties]]
+            } else {
+              lappend result [list $name $varValue]
+            }
+          }
+        } else {
+          set varValue [uplevel 1 [list set $varName]]
+
+          if {$objects && [isObjectHandle $varValue]} then {
+            unset -nocomplain properties
+            getAllProperties $varValue properties
+
+            lappend result [list $varName [array get properties]]
+          } else {
+            lappend result [list $varName $varValue]
+          }
+        }
+      }
+
+      return $result
     }
 
     proc enumerableToList { enumerable } {
