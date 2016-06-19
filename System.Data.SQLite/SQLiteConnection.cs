@@ -451,8 +451,10 @@ namespace System.Data.SQLite
   /////////////////////////////////////////////////////////////////////////////////////////////////
 
   /// <summary>
-  /// This represents a method that will be called in response to a request to bind a parameter
-  /// to a command.
+  /// This represents a method that will be called in response to a request to
+  /// bind a parameter to a command.  If an exception is thrown, it will cause
+  /// the parameter binding operation to fail -AND- it will continue to unwind
+  /// the call stack.
   /// </summary>
   /// <param name="convert">
   /// The <see cref="SQLiteConvert" /> instance in use.
@@ -461,7 +463,8 @@ namespace System.Data.SQLite
   /// The <see cref="SQLiteCommand" /> instance in use.
   /// </param>
   /// <param name="flags">
-  /// The flags associated with the <see cref="SQLiteConnection" /> instance in use.
+  /// The flags associated with the <see cref="SQLiteConnection" /> instance
+  /// in use.
   /// </param>
   /// <param name="parameter">
   /// The <see cref="SQLiteParameter" /> instance being bound to the command.
@@ -476,9 +479,9 @@ namespace System.Data.SQLite
   /// The data originally used when registering this callback.
   /// </param>
   /// <param name="complete">
-  /// Non-zero if the default handling for the parameter binding call should be skipped
-  /// (i.e. the parameter should not be bound at all).  Great care should be used when
-  /// setting this to non-zero.
+  /// Non-zero if the default handling for the parameter binding call should
+  /// be skipped (i.e. the parameter should not be bound at all).  Great care
+  /// should be used when setting this to non-zero.
   /// </param>
   public delegate void SQLiteBindValueCallback(
       SQLiteConvert convert,
@@ -494,8 +497,10 @@ namespace System.Data.SQLite
   /////////////////////////////////////////////////////////////////////////////////////////////////
 
   /// <summary>
-  /// This represents a method that will be called in response to a request to read a value
-  /// from a data reader.
+  /// This represents a method that will be called in response to a request
+  /// to read a value from a data reader.  If an exception is thrown, it will
+  /// cause the data reader operation to fail -AND- it will continue to unwind
+  /// the call stack.
   /// </summary>
   /// <param name="convert">
   /// The <see cref="SQLiteConvert" /> instance in use.
@@ -504,10 +509,12 @@ namespace System.Data.SQLite
   /// The <see cref="SQLiteDataReader" /> instance in use.
   /// </param>
   /// <param name="flags">
-  /// The flags associated with the <see cref="SQLiteConnection" /> instance in use.
+  /// The flags associated with the <see cref="SQLiteConnection" /> instance
+  /// in use.
   /// </param>
   /// <param name="eventArgs">
-  /// The parameter and return type data for the column being read from the data reader.
+  /// The parameter and return type data for the column being read from the
+  /// data reader.
   /// </param>
   /// <param name="typeName">
   /// The database type name associated with this callback.
@@ -519,9 +526,9 @@ namespace System.Data.SQLite
   /// The data originally used when registering this callback.
   /// </param>
   /// <param name="complete">
-  /// Non-zero if the default handling for the data reader call should be skipped.  If this
-  /// is set to non-zero and the necessary return value is unavailable or unsuitable, an
-  /// exception will be thrown.
+  /// Non-zero if the default handling for the data reader call should be
+  /// skipped.  If this is set to non-zero and the necessary return value
+  /// is unavailable or unsuitable, an exception will be thrown.
   /// </param>
   public delegate void SQLiteReadValueCallback(
       SQLiteConvert convert,
