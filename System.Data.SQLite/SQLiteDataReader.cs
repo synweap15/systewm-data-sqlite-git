@@ -456,14 +456,14 @@ namespace System.Data.SQLite
 
         try
         {
-            SQLiteConnection connection = GetConnection(this);
-
-            if (connection == null)
-                return;
-
             string typeName = GetDataTypeName(index);
 
             if (typeName == null)
+                return;
+
+            SQLiteConnection connection = GetConnection(this);
+
+            if (connection == null)
                 return;
 
             SQLiteTypeCallbacks callbacks;
