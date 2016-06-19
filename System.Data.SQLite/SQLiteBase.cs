@@ -1161,6 +1161,24 @@ namespace System.Data.SQLite
       NoVerifyTextAffinity = 0x200000000,
 
       /// <summary>
+      /// Enable using per-connection mappings between type names and
+      /// <see cref="SQLiteBindValueCallback" /> values.  Also see the
+      /// <see cref="SQLiteConnection.ClearTypeCallbacks" />,
+      /// <see cref="SQLiteConnection.TryGetTypeCallbacks" />, and
+      /// <see cref="SQLiteConnection.SetTypeCallbacks" /> methods.
+      /// </summary>
+      UseConnectionBindValueCallbacks = 0x400000000,
+
+      /// <summary>
+      /// Enable using per-connection mappings between type names and
+      /// <see cref="SQLiteReadValueCallback" /> values.  Also see the
+      /// <see cref="SQLiteConnection.ClearTypeCallbacks" />,
+      /// <see cref="SQLiteConnection.TryGetTypeCallbacks" />, and
+      /// <see cref="SQLiteConnection.SetTypeCallbacks" /> methods.
+      /// </summary>
+      UseConnectionReadValueCallbacks = 0x800000000,
+
+      /// <summary>
       /// When binding parameter values or returning column values, always
       /// treat them as though they were plain text (i.e. no numeric,
       /// date/time, or other conversions should be attempted).
@@ -1190,6 +1208,12 @@ namespace System.Data.SQLite
       /// </summary>
       ConvertAndBindAndGetAllAsInvariantText = BindAndGetAllAsText |
                                                ConvertAndBindInvariantText,
+
+      /// <summary>
+      /// Enables use of all per-connection value handling callbacks.
+      /// </summary>
+      UseAllConnectionValueCallbacks = UseConnectionBindValueCallbacks |
+                                       UseConnectionReadValueCallbacks,
 
       /// <summary>
       /// Enable all logging.
