@@ -288,7 +288,8 @@ namespace System.Data.SQLite
     /// </param>
     /// <param name="complete">
     /// Non-zero if the default handling for the parameter binding call
-    /// should be skipped.
+    /// should be skipped (i.e. the parameter should not be bound at all).
+    /// Great care should be used when setting this to non-zero.
     /// </param>
     private void InvokeBindValueCallback(
         int index,
