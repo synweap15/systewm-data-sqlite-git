@@ -579,12 +579,14 @@ namespace System.Data.SQLite
 
         if ((_flags & SQLiteConnectionFlags.UseConnectionReadValueCallbacks) == SQLiteConnectionFlags.UseConnectionReadValueCallbacks)
         {
+            SQLiteReadArrayEventArgs eventArgs = new SQLiteReadArrayEventArgs(
+                fieldOffset, buffer, bufferoffset, length);
+
             SQLiteDataReaderValue value = new SQLiteDataReaderValue();
             bool complete;
 
             InvokeReadValueCallback(i, new SQLiteReadValueEventArgs(
-                "GetBytes", new SQLiteReadArrayEventArgs(fieldOffset,
-                    buffer, bufferoffset, length), value), out complete);
+                "GetBytes", eventArgs, value), out complete);
 
             if (complete)
             {
@@ -592,13 +594,11 @@ namespace System.Data.SQLite
 
                 if (bytes != null)
                 {
-                    Array.Copy(bytes, 0, buffer, bufferoffset, length);
+                    Array.Copy(bytes, /* throw */
+                        eventArgs.DataOffset, eventArgs.ByteBuffer,
+                        eventArgs.BufferOffset, eventArgs.Length);
 
-#if !PLATFORM_COMPACTFRAMEWORK
-                    return bytes.LongLength;
-#else
-                    return bytes.Length;
-#endif
+                    return eventArgs.Length;
                 }
                 else
                 {
@@ -667,12 +667,14 @@ namespace System.Data.SQLite
 
         if ((_flags & SQLiteConnectionFlags.UseConnectionReadValueCallbacks) == SQLiteConnectionFlags.UseConnectionReadValueCallbacks)
         {
+            SQLiteReadArrayEventArgs eventArgs = new SQLiteReadArrayEventArgs(
+                fieldoffset, buffer, bufferoffset, length);
+
             SQLiteDataReaderValue value = new SQLiteDataReaderValue();
             bool complete;
 
             InvokeReadValueCallback(i, new SQLiteReadValueEventArgs(
-                "GetChars", new SQLiteReadArrayEventArgs(fieldoffset,
-                    buffer, bufferoffset, length), value), out complete);
+                "GetChars", eventArgs, value), out complete);
 
             if (complete)
             {
@@ -680,13 +682,11 @@ namespace System.Data.SQLite
 
                 if (chars != null)
                 {
-                    Array.Copy(chars, 0, buffer, bufferoffset, length);
+                    Array.Copy(chars, /* throw */
+                        eventArgs.DataOffset, eventArgs.CharBuffer,
+                        eventArgs.BufferOffset, eventArgs.Length);
 
-#if !PLATFORM_COMPACTFRAMEWORK
-                    return chars.LongLength;
-#else
-                    return chars.Length;
-#endif
+                    return eventArgs.Length;
                 }
                 else
                 {

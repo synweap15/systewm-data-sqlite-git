@@ -285,6 +285,7 @@ namespace System.Data.SQLite
       public long DataOffset
       {
           get { return dataOffset; }
+          set { dataOffset = value; }
       }
 
       /////////////////////////////////////////////////////////////////////////
@@ -321,6 +322,7 @@ namespace System.Data.SQLite
       public int BufferOffset
       {
           get { return bufferOffset; }
+          set { bufferOffset = value; }
       }
 
       /////////////////////////////////////////////////////////////////////////
@@ -333,6 +335,7 @@ namespace System.Data.SQLite
       public int Length
       {
           get { return length; }
+          set { length = value; }
       }
       #endregion
   }
