@@ -475,14 +475,15 @@ namespace System.Data.SQLite
             }
 
             SQLiteReadValueCallback callback = callbacks.ReadValueCallback;
+
+            if (callback == null)
+                return;
+
             object userData = callbacks.ReadValueUserData;
 
-            if (callback != null)
-            {
-                callback(
-                    _activeStatement._sql, this, _flags, eventArgs, index,
-                    userData, out complete); /* throw */
-            }
+            callback(
+                _activeStatement._sql, this, _flags, eventArgs, index,
+                userData, out complete); /* throw */
         }
         finally
         {
@@ -591,7 +592,12 @@ namespace System.Data.SQLite
                 if (bytes != null)
                 {
                     Array.Copy(bytes, 0, buffer, bufferoffset, length);
+
+#if !PLATFORM_COMPACTFRAMEWORK
                     return bytes.LongLength;
+#else
+                    return bytes.Length;
+#endif
                 }
                 else
                 {
@@ -674,7 +680,12 @@ namespace System.Data.SQLite
                 if (chars != null)
                 {
                     Array.Copy(chars, 0, buffer, bufferoffset, length);
+
+#if !PLATFORM_COMPACTFRAMEWORK
                     return chars.LongLength;
+#else
+                    return chars.Length;
+#endif
                 }
                 else
                 {
