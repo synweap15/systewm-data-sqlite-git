@@ -1832,7 +1832,12 @@ namespace eval ::Eagle {
       upvar 1 $varName properties
 
       set count 0
-      set names [object members -membertypes Property -nameonly $object]
+
+      set names [object members \
+          -membertypes Property -nameonly $object]
+
+      eval lappend names [object members \
+          -membertypes Field -nameonly $object]
 
       foreach name $names {
         if {[catch {
@@ -1882,6 +1887,7 @@ namespace eval ::Eagle {
 
       if {[info exists properties(seenObjects)]} then {
         foreach value $properties(seenObjects) {
+          if {$value eq $object} continue
           catch {object dispose $value}
         }
 
