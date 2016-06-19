@@ -4163,13 +4163,12 @@ runTest {test data-1.81 {SQLiteCommand.VerifyOnly method} -setup {
   freeDbConnection
 
   unset -nocomplain result code command connection db fileName
-} -constraints \
-{eagle monoBug28 command.sql compile.DATA SQLite System.Data.SQLite} -result \
-{0 {} 0 {} 0 {} 1 {SQL logic error or missing database -- no such table: t2} 1\
-{SQL logic error or missing database -- near "BAD": syntax error} 0 {} 1 {SQL\
-logic error or missing database -- no such table: t2} 1 {SQL logic error or\
-missing database -- near "BAD": syntax error} 1 {SQL logic error or missing\
-database -- no such table: t2} {1 2 3}}}
+} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
+System.Data.SQLite} -result {0 {} 0 {} 0 {} 1 {SQL logic error or missing\
+database -- no such table: t2} 1 {SQL logic error or missing database -- near\
+"BAD": syntax error} 0 {} 1 {SQL logic error or missing database -- no such\
+table: t2} 1 {SQL logic error or missing database -- near "BAD": syntax error}\
+1 {SQL logic error or missing database -- no such table: t2} {1 2 3}}}
 
 ###############################################################################
 
@@ -4227,11 +4226,10 @@ runTest {test data-1.82 {IsReadOnly method} -setup {
   cleanupDb $fileName
 
   unset -nocomplain error result db fileName
-} -constraints \
-{eagle monoBug28 command.sql compile.DATA SQLite System.Data.SQLite} -result {0\
-False 1 {unknown error -- database "wrong" not found} 0 True 1 {unknown error\
--- database "wrong" not found} 0 False 1 {unknown error -- database "wrong" not\
-found}}}
+} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
+System.Data.SQLite} -result {0 False 1 {unknown error -- database "wrong" not\
+found} 0 True 1 {unknown error -- database "wrong" not found} 0 False 1\
+{unknown error -- database "wrong" not found}}}
 
 ###############################################################################
 
