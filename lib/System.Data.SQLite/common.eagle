@@ -1828,6 +1828,67 @@ namespace eval ::Eagle {
       }
     }
 
+    proc getProperties { object varName } {
+      upvar 1 $varName properties
+
+      set count 0
+      set names [object members -membertypes Property -nameonly $object]
+
+      foreach name $names {
+        if {[catch {
+          object invoke -objectflags +NoDispose $object $name
+        } value] == 0} then {
+          if {[isObjectHandle $value]} then {
+            set error null; object invoke -flags +NonPublic \
+                -marshalflags +NoHandle Interpreter.GetActive \
+                AddObjectReference Ok $value error
+
+            lappend properties(objects) [list $name $value]
+          } else {
+            lappend properties(values) [list $name $value]
+          }
+
+          incr count
+        } else {
+          lappend properties(errors) [list $name $::errorCode]
+        }
+      }
+
+      return $count
+    }
+
+    proc getAllProperties { object varName } {
+      upvar 1 $varName properties
+      set value $object
+
+      while {true} {
+        if {![info exists properties(seenObjects)] || \
+            $value ni $properties(seenObjects)} then {
+          getProperties $value properties
+          lappend properties(seenObjects) $value
+        }
+
+        if {![info exists properties(objects)]} then {
+          break
+        }
+
+        if {[llength $properties(objects)] == 0} then {
+          unset properties(objects); break
+        }
+
+        set value [lindex [lindex $properties(objects) 0] end]
+        set properties(objects) [lrange $properties(objects) 1 end]
+      }
+
+      if {[info exists properties(seenObjects)]} then {
+        foreach value $properties(seenObjects) {
+          catch {object dispose $value}
+        }
+
+        unset properties(seenObjects)
+      }
+    }
+
     proc enumerableToList { enumerable } {
       set result [list]
 
