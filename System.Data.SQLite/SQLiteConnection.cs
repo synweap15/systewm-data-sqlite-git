@@ -545,14 +545,10 @@ namespace System.Data.SQLite
 
       /////////////////////////////////////////////////////////////////////////
 
-      #region Public Constructors
+      #region Private Constructors
       /// <summary>
       /// Constructs an instance of this class.
       /// </summary>
-      /// <param name="typeName">
-      /// The database type name that the callbacks contained in this class
-      /// will apply to.  This parameter may not be null.
-      /// </param>
       /// <param name="bindValueCallback">
       /// The custom paramater binding callback.  This parameter may be null.
       /// </param>
@@ -567,19 +563,50 @@ namespace System.Data.SQLite
       /// The extra data to pass into the data reader value callback.  This
       /// parameter may be null.
       /// </param>
-      public SQLiteTypeCallbacks(
-          string typeName,
+      private SQLiteTypeCallbacks(
           SQLiteBindValueCallback bindValueCallback,
           SQLiteReadValueCallback readValueCallback,
           object bindValueUserData,
           object readValueUserData
           )
       {
-          this.typeName = typeName;
           this.bindValueCallback = bindValueCallback;
           this.readValueCallback = readValueCallback;
           this.bindValueUserData = bindValueUserData;
           this.readValueUserData = readValueUserData;
+      }
+      #endregion
+
+      /////////////////////////////////////////////////////////////////////////
+
+      #region Static "Factory" Methods
+      /// <summary>
+      /// Creates an instance of the <see cref="SQLiteTypeCallbacks" /> class.
+      /// </summary>
+      /// <param name="bindValueCallback">
+      /// The custom paramater binding callback.  This parameter may be null.
+      /// </param>
+      /// <param name="readValueCallback">
+      /// The custom data reader value callback.  This parameter may be null.
+      /// </param>
+      /// <param name="bindValueUserData">
+      /// The extra data to pass into the parameter binding callback.  This
+      /// parameter may be null.
+      /// </param>
+      /// <param name="readValueUserData">
+      /// The extra data to pass into the data reader value callback.  This
+      /// parameter may be null.
+      /// </param>
+      public static SQLiteTypeCallbacks Create(
+          SQLiteBindValueCallback bindValueCallback,
+          SQLiteReadValueCallback readValueCallback,
+          object bindValueUserData,
+          object readValueUserData
+          )
+      {
+          return new SQLiteTypeCallbacks(
+              bindValueCallback, readValueCallback, bindValueUserData,
+              readValueUserData);
       }
       #endregion
 
@@ -593,6 +620,7 @@ namespace System.Data.SQLite
       public string TypeName
       {
           get { return typeName; }
+          internal set { typeName = value; }
       }
 
       /////////////////////////////////////////////////////////////////////////
@@ -2120,7 +2148,9 @@ namespace System.Data.SQLite
         if (callbacks == null)
             return _typeCallbacks.Remove(typeName);
 
+        callbacks.TypeName = typeName;
         _typeCallbacks[typeName] = callbacks;
+
         return true;
     }
     #endregion
