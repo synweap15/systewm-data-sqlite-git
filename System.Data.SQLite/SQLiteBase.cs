@@ -1170,11 +1170,13 @@ namespace System.Data.SQLite
       UseConnectionBindValueCallbacks = 0x400000000,
 
       /// <summary>
-      /// If the database type name has not been explicitly set for the
-      /// parameter specified, fallback to using the database type name
-      /// associated with the <see cref="DbType" /> value.
+      /// Enable using per-connection mappings between type names and
+      /// <see cref="SQLiteReadValueCallback" /> values.  Also see the
+      /// <see cref="SQLiteConnection.ClearTypeCallbacks" />,
+      /// <see cref="SQLiteConnection.TryGetTypeCallbacks" />, and
+      /// <see cref="SQLiteConnection.SetTypeCallbacks" /> methods.
       /// </summary>
-      UseParameterDbTypeForTypeName = 0x800000000,
+      UseConnectionReadValueCallbacks = 0x800000000,
 
       /// <summary>
       /// If the database type name has not been explicitly set for the
@@ -1183,13 +1185,11 @@ namespace System.Data.SQLite
       UseParameterNameForTypeName = 0x1000000000,
 
       /// <summary>
-      /// Enable using per-connection mappings between type names and
-      /// <see cref="SQLiteReadValueCallback" /> values.  Also see the
-      /// <see cref="SQLiteConnection.ClearTypeCallbacks" />,
-      /// <see cref="SQLiteConnection.TryGetTypeCallbacks" />, and
-      /// <see cref="SQLiteConnection.SetTypeCallbacks" /> methods.
+      /// If the database type name has not been explicitly set for the
+      /// parameter specified, fallback to using the database type name
+      /// associated with the <see cref="DbType" /> value.
       /// </summary>
-      UseConnectionReadValueCallbacks = 0x2000000000,
+      UseParameterDbTypeForTypeName = 0x2000000000,
 
       /// <summary>
       /// When binding parameter values or returning column values, always
@@ -1225,8 +1225,15 @@ namespace System.Data.SQLite
       /// <summary>
       /// Enables use of all per-connection value handling callbacks.
       /// </summary>
-      UseAllConnectionValueCallbacks = UseConnectionBindValueCallbacks |
+      UseConnectionAllValueCallbacks = UseConnectionBindValueCallbacks |
                                        UseConnectionReadValueCallbacks,
+
+      /// <summary>
+      /// Enables use of all applicable <see cref="SQLiteParameter" />
+      /// properties as fallbacks for the database type name.
+      /// </summary>
+      UseParameterAnythingForTypeName = UseParameterNameForTypeName |
+                                        UseParameterDbTypeForTypeName,
 
       /// <summary>
       /// Enable all logging.
