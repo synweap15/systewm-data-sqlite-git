@@ -594,9 +594,15 @@ namespace System.Data.SQLite
 
                 if (bytes != null)
                 {
+#if !PLATFORM_COMPACTFRAMEWORK
                     Array.Copy(bytes, /* throw */
                         eventArgs.DataOffset, eventArgs.ByteBuffer,
                         eventArgs.BufferOffset, eventArgs.Length);
+#else
+                    Array.Copy(bytes, /* throw */
+                        (int)eventArgs.DataOffset, eventArgs.ByteBuffer,
+                        eventArgs.BufferOffset, eventArgs.Length);
+#endif
 
                     return eventArgs.Length;
                 }
@@ -682,9 +688,15 @@ namespace System.Data.SQLite
 
                 if (chars != null)
                 {
+#if !PLATFORM_COMPACTFRAMEWORK
                     Array.Copy(chars, /* throw */
                         eventArgs.DataOffset, eventArgs.CharBuffer,
                         eventArgs.BufferOffset, eventArgs.Length);
+#else
+                    Array.Copy(chars, /* throw */
+                        (int)eventArgs.DataOffset, eventArgs.CharBuffer,
+                        eventArgs.BufferOffset, eventArgs.Length);
+#endif
 
                     return eventArgs.Length;
                 }
