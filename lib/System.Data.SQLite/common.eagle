@@ -2117,7 +2117,8 @@ namespace eval ::Eagle {
       #
       set patterns [list \
       {System\.Data\.SQLite\.SQLiteException \(0x80004005\): (.+?)  (?: )?at} \
-      {System\.Data\.SQLite\.SQLiteException: (.+?)  (?: )?at}]
+      {System\.Data\.SQLite\.SQLiteException: (.+?)  (?: )?at} \
+      {Eagle\._Components\.Public\.ScriptException: (.+?)  (?: )?at}]
 
       foreach pattern $patterns {
         if {[regexp -- $pattern $value dummy message]} then {
@@ -2190,6 +2191,13 @@ namespace eval ::Eagle {
           set database <unknown>
         }
       }
+
+      #
+      # NOTE: Even though there is only one source of flags so far, they
+      #       must be combined using the correct syntax for enumerated
+      #       flag values for the .NET Framework.
+      #
+      set flags [combineFlags $flags ""]
 
       #
       # NOTE: Show (and log) the local connection flags and the associated
