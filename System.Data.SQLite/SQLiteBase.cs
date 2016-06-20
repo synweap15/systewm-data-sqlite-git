@@ -1161,6 +1161,37 @@ namespace System.Data.SQLite
       NoVerifyTextAffinity = 0x200000000,
 
       /// <summary>
+      /// Enable using per-connection mappings between type names and
+      /// <see cref="SQLiteBindValueCallback" /> values.  Also see the
+      /// <see cref="SQLiteConnection.ClearTypeCallbacks" />,
+      /// <see cref="SQLiteConnection.TryGetTypeCallbacks" />, and
+      /// <see cref="SQLiteConnection.SetTypeCallbacks" /> methods.
+      /// </summary>
+      UseConnectionBindValueCallbacks = 0x400000000,
+
+      /// <summary>
+      /// Enable using per-connection mappings between type names and
+      /// <see cref="SQLiteReadValueCallback" /> values.  Also see the
+      /// <see cref="SQLiteConnection.ClearTypeCallbacks" />,
+      /// <see cref="SQLiteConnection.TryGetTypeCallbacks" />, and
+      /// <see cref="SQLiteConnection.SetTypeCallbacks" /> methods.
+      /// </summary>
+      UseConnectionReadValueCallbacks = 0x800000000,
+
+      /// <summary>
+      /// If the database type name has not been explicitly set for the
+      /// parameter specified, fallback to using the parameter name.
+      /// </summary>
+      UseParameterNameForTypeName = 0x1000000000,
+
+      /// <summary>
+      /// If the database type name has not been explicitly set for the
+      /// parameter specified, fallback to using the database type name
+      /// associated with the <see cref="DbType" /> value.
+      /// </summary>
+      UseParameterDbTypeForTypeName = 0x2000000000,
+
+      /// <summary>
       /// When binding parameter values or returning column values, always
       /// treat them as though they were plain text (i.e. no numeric,
       /// date/time, or other conversions should be attempted).
@@ -1190,6 +1221,19 @@ namespace System.Data.SQLite
       /// </summary>
       ConvertAndBindAndGetAllAsInvariantText = BindAndGetAllAsText |
                                                ConvertAndBindInvariantText,
+
+      /// <summary>
+      /// Enables use of all per-connection value handling callbacks.
+      /// </summary>
+      UseConnectionAllValueCallbacks = UseConnectionBindValueCallbacks |
+                                       UseConnectionReadValueCallbacks,
+
+      /// <summary>
+      /// Enables use of all applicable <see cref="SQLiteParameter" />
+      /// properties as fallbacks for the database type name.
+      /// </summary>
+      UseParameterAnythingForTypeName = UseParameterNameForTypeName |
+                                        UseParameterDbTypeForTypeName,
 
       /// <summary>
       /// Enable all logging.

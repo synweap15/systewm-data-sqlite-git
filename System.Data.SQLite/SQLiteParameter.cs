@@ -55,6 +55,11 @@ namespace System.Data.SQLite
     private bool           _nullMapping;
 
     /// <summary>
+    /// The database type name associated with this parameter, if any.
+    /// </summary>
+    private string         _typeName;
+
+    /// <summary>
     /// Constructor used when creating for use with a specific command.
     /// </summary>
     /// <param name="command">
@@ -475,6 +480,21 @@ namespace System.Data.SQLite
         if (_dbType == UnknownDbType && _objValue != null && _objValue != DBNull.Value) // If the DbType has never been assigned, try to glean one from the value's datatype
           _dbType = SQLiteConvert.TypeToDbType(_objValue.GetType());
       }
+    }
+
+    /// <summary>
+    /// The database type name associated with this parameter, if any.
+    /// </summary>
+    public string TypeName
+    {
+        get
+        {
+            return _typeName;
+        }
+        set
+        {
+            _typeName = value;
+        }
     }
 
     /// <summary>

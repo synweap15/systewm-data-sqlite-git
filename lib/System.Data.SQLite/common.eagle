@@ -1828,6 +1828,113 @@ namespace eval ::Eagle {
       }
     }
 
+    proc getProperties { object varName } {
+      upvar 1 $varName properties
+
+      set count 0
+      set names [list]
+
+      if {[isObjectHandle $object] && $object ne "null"} then {
+        eval lappend names [object members \
+            -membertypes Property -nameonly $object]
+
+        eval lappend names [object members \
+            -membertypes Field -nameonly $object]
+      }
+
+      foreach name $names {
+        if {[catch {
+          object invoke -objectflags +NoDispose $object $name
+        } value] == 0} then {
+          if {[isObjectHandle $value] && $value ne "null"} then {
+            set error null; object invoke -flags +NonPublic \
+                -marshalflags +NoHandle Interpreter.GetActive \
+                AddObjectReference Ok $value error
+
+            lappend properties(objects) [list $name $value]
+          } else {
+            lappend properties(values) [list $name $value]
+          }
+
+          incr count
+        } else {
+          lappend properties(errors) [list $name $::errorCode]
+        }
+      }
+
+      return $count
+    }
+
+    proc getAllProperties { object varName } {
+      upvar 1 $varName properties
+      set value $object
+
+      while {true} {
+        if {![info exists properties(seenObjects)] || \
+            $value ni $properties(seenObjects)} then {
+          getProperties $value properties
+          lappend properties(seenObjects) $value
+        }
+
+        if {![info exists properties(objects)]} then {
+          break
+        }
+
+        if {[llength $properties(objects)] == 0} then {
+          unset properties(objects); break
+        }
+
+        set value [lindex [lindex $properties(objects) 0] end]
+        set properties(objects) [lrange $properties(objects) 1 end]
+      }
+
+      if {[info exists properties(seenObjects)]} then {
+        foreach value $properties(seenObjects) {
+          if {$value eq $object} continue
+          catch {object dispose $value}
+        }
+
+        unset properties(seenObjects)
+      }
+    }
+
+    proc getVariables { varNames {objects false} } {
+      set result [list]
+
+      foreach varName $varNames {
+        if {[uplevel 1 [list array exists $varName]]} then {
+          set arrayName $varName
+
+          foreach elementName [uplevel 1 [list array names $arrayName]] {
+            set name [appendArgs $arrayName ( $elementName )]
+            set varValue [uplevel 1 [list set $name]]
+
+            if {$objects && [isObjectHandle $varValue]} then {
+              unset -nocomplain properties
+              getAllProperties $varValue properties
+
+              lappend result [list $name [array get properties]]
+            } else {
+              lappend result [list $name $varValue]
+            }
+          }
+        } else {
+          set varValue [uplevel 1 [list set $varName]]
+
+          if {$objects && [isObjectHandle $varValue]} then {
+            unset -nocomplain properties
+            getAllProperties $varValue properties
+
+            lappend result [list $varName [array get properties]]
+          } else {
+            lappend result [list $varName $varValue]
+          }
+        }
+      }
+
+      return $result
+    }
+
     proc enumerableToList { enumerable } {
       set result [list]
 
@@ -2010,7 +2117,8 @@ namespace eval ::Eagle {
       #
       set patterns [list \
       {System\.Data\.SQLite\.SQLiteException \(0x80004005\): (.+?)  (?: )?at} \
-      {System\.Data\.SQLite\.SQLiteException: (.+?)  (?: )?at}]
+      {System\.Data\.SQLite\.SQLiteException: (.+?)  (?: )?at} \
+      {Eagle\._Components\.Public\.ScriptException: (.+?)  (?: )?at}]
 
       foreach pattern $patterns {
         if {[regexp -- $pattern $value dummy message]} then {
@@ -2083,6 +2191,13 @@ namespace eval ::Eagle {
           set database <unknown>
         }
       }
+
+      #
+      # NOTE: Even though there is only one source of flags so far, they
+      #       must be combined using the correct syntax for enumerated
+      #       flag values for the .NET Framework.
+      #
+      set flags [combineFlags $flags ""]
 
       #
       # NOTE: Show (and log) the local connection flags and the associated
