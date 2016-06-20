@@ -1177,13 +1177,19 @@ namespace System.Data.SQLite
       UseParameterDbTypeForTypeName = 0x800000000,
 
       /// <summary>
+      /// If the database type name has not been explicitly set for the
+      /// parameter specified, fallback to using the parameter name.
+      /// </summary>
+      UseParameterNameForTypeName = 0x1000000000,
+
+      /// <summary>
       /// Enable using per-connection mappings between type names and
       /// <see cref="SQLiteReadValueCallback" /> values.  Also see the
       /// <see cref="SQLiteConnection.ClearTypeCallbacks" />,
       /// <see cref="SQLiteConnection.TryGetTypeCallbacks" />, and
       /// <see cref="SQLiteConnection.SetTypeCallbacks" /> methods.
       /// </summary>
-      UseConnectionReadValueCallbacks = 0x1000000000,
+      UseConnectionReadValueCallbacks = 0x2000000000,
 
       /// <summary>
       /// When binding parameter values or returning column values, always

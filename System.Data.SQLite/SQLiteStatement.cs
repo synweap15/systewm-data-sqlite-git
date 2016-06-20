@@ -311,23 +311,38 @@ namespace System.Data.SQLite
             if (connection == null)
                 return;
 
+            //
+            // NOTE: First, always look for an explicitly set database type
+            //       name.
+            //
             string typeName = parameter.TypeName;
 
             if (typeName == null)
             {
                 //
+                // NOTE: Are we allowed to fallback to using the parameter name
+                //       as the basis for looking up the binding callback?
+                //
+                if ((_flags & SQLiteConnectionFlags.UseParameterNameForTypeName)
+                        == SQLiteConnectionFlags.UseParameterNameForTypeName)
+                {
+                    typeName = parameter.ParameterName;
+                }
+            }
+
+            if (typeName == null)
+            {
+                //
                 // NOTE: Are we allowed to fallback to using the database type
-                //       name translated from the DbType?  If not, there is
-                //       nothing else we can do.
+                //       name translated from the DbType as the basis for looking
+                //       up the binding callback?
                 //
                 if ((_flags & SQLiteConnectionFlags.UseParameterDbTypeForTypeName)
-                        != SQLiteConnectionFlags.UseParameterDbTypeForTypeName)
+                        == SQLiteConnectionFlags.UseParameterDbTypeForTypeName)
                 {
-                    return;
+                    typeName = SQLiteConvert.DbTypeToTypeName(
+                        connection, parameter.DbType, _flags);
                 }
-
-                typeName = SQLiteConvert.DbTypeToTypeName(
-                    connection, parameter.DbType, _flags);
             }
 
             if (typeName == null)
