@@ -695,7 +695,7 @@ namespace System.Data.SQLite
       /// </summary>
       public object BindValueUserData
       {
-          get { return bindValueCallback; }
+          get { return bindValueUserData; }
       }
 
       /////////////////////////////////////////////////////////////////////////
