@@ -113,6 +113,7 @@ Notice 27
 Notice_Recover_Rollback 539
 Notice_Recover_Wal 283
 Ok 0
+Ok_Load_Permanently 256
 Perm 3
 Protocol 15
 Range 25
