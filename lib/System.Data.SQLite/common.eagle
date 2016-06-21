@@ -2310,7 +2310,7 @@ namespace eval ::Eagle {
 
         object invoke Utility TryParseFlagsEnum "" \
             System.Data.SQLite.SQLiteConnectionFlags "" $flags null true \
-            true error
+            true true error
       } value]} then {
         #
         # NOTE: Attempting to parse the connection flags caused a script
