@@ -1828,6 +1828,32 @@ namespace eval ::Eagle {
       }
     }
 
+    proc getDateTimeTicks { value {local ""} {default ""} } {
+      if {[string length $value] == 0} then {
+        return $default
+      }
+
+      if {[catch {
+        set dateTime [object invoke -create DateTime ParseExact \
+            $value [getDateTimeFormat] null AdjustToUniversal]
+      }]} then {
+        return $default
+      }
+
+      if {[string is boolean -strict $local]} then {
+        set dateTime [object invoke -create DateTime SpecifyKind \
+            $dateTime Utc]
+      } else {
+        return [object invoke $dateTime Ticks]
+      }
+
+      if {$local} then {
+        return [object invoke $dateTime ToLocalTime.Ticks]
+      } else {
+        return [object invoke $dateTime ToUniversalTime.Ticks]
+      }
+    }
+
     proc getProperties { object varName } {
       upvar 1 $varName properties
 
