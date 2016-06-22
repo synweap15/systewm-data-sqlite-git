@@ -289,6 +289,30 @@ IF NOT DEFINED SOLUTION (
 )
 
 IF NOT DEFINED SOLUTION (
+  IF DEFINED INTEROPONLY (
+    IF DEFINED STATICONLY (
+      %_AECHO% Building static core interop project...
+      FOR /F "delims=" %%F IN ('DIR /B /S ".\SQLite.Interop\SQLite.Interop.Static.%YEAR%.vc?proj" 2^> NUL') DO (
+        SET SOLUTION=%%F
+      )
+      IF NOT DEFINED SOLUTION (
+        ECHO Could not locate static core interop project for %YEAR%.
+        GOTO errors
+      )
+    ) ELSE (
+      %_AECHO% Building normal core interop project...
+      FOR /F "delims=" %%F IN ('DIR /B /S ".\SQLite.Interop\SQLite.Interop.%YEAR%.vc?proj" 2^> NUL') DO (
+        SET SOLUTION=%%F
+      )
+      IF NOT DEFINED SOLUTION (
+        ECHO Could not locate normal core interop project for %YEAR%.
+        GOTO errors
+      )
+    )
+  )
+)
+
+IF NOT DEFINED SOLUTION (
   IF DEFINED BUILD_FULL (
     %_AECHO% Building all projects...
     SET SOLUTION=.\SQLite.NET.%YEAR%.sln
