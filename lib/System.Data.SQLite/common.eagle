@@ -1806,7 +1806,7 @@ namespace eval ::Eagle {
       }
     }
 
-    proc getDateTimeFormat {} {
+    proc getDateTimeFormat { {timeZone true} } {
       #
       # NOTE: This procedure simply returns the "default" DateTime format used
       #       by the test suite.
@@ -1824,7 +1824,8 @@ namespace eval ::Eagle {
         #       DateTime class of the framework.  If this value is changed,
         #       various tests may fail.
         #
-        return "yyyy-MM-dd HH:mm:ss.FFFFFFFK"
+        return [appendArgs \
+            "yyyy-MM-dd HH:mm:ss.FFFFFFF" [expr {$timeZone ? "K" : ""}]]
       }
     }
 
