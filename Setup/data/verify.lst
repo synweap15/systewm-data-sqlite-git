@@ -786,6 +786,7 @@ set sds_manifests(source) {
   Tests/tkt-1c456ae75f.eagle
   Tests/tkt-201128cc88.eagle
   Tests/tkt-2556655d1b.eagle
+  Tests/tkt-2abbf2c244.eagle
   Tests/tkt-2c630bffa7.eagle
   Tests/tkt-2ce0870fad.eagle
   Tests/tkt-3113734605.eagle
