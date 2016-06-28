@@ -673,7 +673,22 @@ namespace System.Data.SQLite
         /// <summary>
         /// This value represents the MATCH operator.
         /// </summary>
-        Match = 64
+        Match = 64,
+
+        /// <summary>
+        /// This value represents the LIKE operator.
+        /// </summary>
+        Like = 65,
+
+        /// <summary>
+        /// This value represents the GLOB operator.
+        /// </summary>
+        Glob = 66,
+
+        /// <summary>
+        /// This value represents the REGEXP operator.
+        /// </summary>
+        Regexp = 67
     }
     #endregion
 
