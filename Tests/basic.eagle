@@ -4237,6 +4237,199 @@ found} 0 True 1 {unknown error -- database "wrong" not found} 0 False 1\
 
 ###############################################################################
 
+runTest {test data-1.83 {bind and use REGEXP function} -setup {
+  set fileName data-1.83.db
+} -body {
+  set id [object invoke Interpreter.GetActive NextId]
+  set dataSource [file join [getDatabaseDirectory] $fileName]
+
+  set sql(1) { \
+    SELECT 'test' REGEXP '^t.?.?t$'; \
+  }
+
+  set sql(2) { \
+    SELECT 'no' REGEXP '^nope$'; \
+  }
+
+  unset -nocomplain results errors
+
+  set code [compileCSharpWith [subst {
+    using System;
+    using System.Data.SQLite;
+    using System.Text.RegularExpressions;
+
+    namespace _Dynamic${id}
+    {
+      public class Test${id} : SQLiteFunction
+      {
+        private static SQLiteFunctionAttribute functionAttribute;
+        private static SQLiteConnection connection;
+
+        ///////////////////////////////////////////////////////////////////////
+
+        public override object Invoke(
+          object\[\] args
+          )
+        {
+          if (args == null)
+            return new ArgumentNullException("args");
+
+          if (args.Length != 2)
+            return new ArgumentException(String.Format(
+              "need exactly two arguments, got {0}", args.Length));
+
+          string pattern = (args\[0\] != null) ? args\[0\].ToString() : null;
+
+          if (pattern == null)
+            return new ArgumentNullException("pattern");
+
+          string input = (args\[1\] != null) ? args\[1\].ToString() : null;
+
+          if (input == null)
+            return new ArgumentNullException("input");
+
+          return Regex.IsMatch(input, pattern);
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+
+        private static void Initialize()
+        {
+          if (functionAttribute == null)
+          {
+            functionAttribute = new SQLiteFunctionAttribute(
+                "regexp", 2, FunctionType.Scalar);
+          }
+
+          if (connection == null)
+          {
+            connection = new SQLiteConnection(
+                "Data Source=${dataSource};[getFlagsProperty]");
+
+            connection.Open();
+          }
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+
+        public static void BindFunction()
+        {
+          Initialize();
+
+          connection.BindFunction(functionAttribute, new Test${id}());
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+
+        public static object CallFunction1()
+        {
+          Initialize();
+
+          using (SQLiteCommand command = new SQLiteCommand("${sql(1)}",
+              connection))
+          {
+            return command.ExecuteScalar();
+          }
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+
+        public static object CallFunction2()
+        {
+          Initialize();
+
+          using (SQLiteCommand command = new SQLiteCommand("${sql(2)}",
+              connection))
+          {
+            return command.ExecuteScalar();
+          }
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+
+        public static bool UnbindFunction()
+        {
+          Initialize();
+
+          return connection.UnbindFunction(functionAttribute);
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+
+        public static void Uninitialize()
+        {
+          if (connection != null)
+          {
+            connection.Close();
+            connection = null;
+          }
+
+          if (functionAttribute != null)
+            functionAttribute = null;
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+
+        public static void Main()
+        {
+          // do nothing.
+        }
+      }
+    }
+  }] true true true results errors System.Data.SQLite.dll]
+
+  list $code $results \
+      [expr {[info exists errors] ? $errors : ""}] \
+      [expr {$code eq "Ok" ? [catch {
+        object invoke _Dynamic${id}.Test${id} CallFunction1
+      } result] : [set result ""]}] \
+      [extractSystemDataSQLiteExceptionMessage $result] \
+      [expr {$code eq "Ok" ? [catch {
+        object invoke _Dynamic${id}.Test${id} CallFunction2
+      } result] : [set result ""]}] \
+      [extractSystemDataSQLiteExceptionMessage $result] \
+      [expr {$code eq "Ok" ? [catch {
+        object invoke _Dynamic${id}.Test${id} BindFunction
+      } result] : [set result ""]}] \
+      [extractSystemDataSQLiteExceptionMessage $result] \
+      [expr {$code eq "Ok" ? [catch {
+        object invoke _Dynamic${id}.Test${id} CallFunction1
+      } result] : [set result ""]}] \
+      [extractSystemDataSQLiteExceptionMessage $result] \
+      [expr {$code eq "Ok" ? [catch {
+        object invoke _Dynamic${id}.Test${id} CallFunction2
+      } result] : [set result ""]}] \
+      [extractSystemDataSQLiteExceptionMessage $result] \
+      [expr {$code eq "Ok" ? [catch {
+        object invoke _Dynamic${id}.Test${id} UnbindFunction
+      } result] : [set result ""]}] \
+      [extractSystemDataSQLiteExceptionMessage $result] \
+      [expr {$code eq "Ok" ? [catch {
+        object invoke _Dynamic${id}.Test${id} CallFunction1
+      } result] : [set result ""]}] \
+      [extractSystemDataSQLiteExceptionMessage $result] \
+      [expr {$code eq "Ok" ? [catch {
+        object invoke _Dynamic${id}.Test${id} CallFunction2
+      } result] : [set result ""]}] \
+      [extractSystemDataSQLiteExceptionMessage $result] \
+      [expr {$code eq "Ok" ? [catch {
+        object invoke _Dynamic${id}.Test${id} Uninitialize
+      } result] : [set result ""]}] \
+      [extractSystemDataSQLiteExceptionMessage $result]
+} -cleanup {
+  cleanupDb $fileName
+
+  unset -nocomplain result code results errors sql dataSource id fileName
+} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
+System.Data.SQLite compileCSharp} -match regexp -result {^Ok\
+System#CodeDom#Compiler#CompilerResults#\d+ \{\} 1 \{SQL logic error or missing\
+database -- no such function: REGEXP\} 1 \{SQL logic error or missing database\
+-- no such function: REGEXP\} 0 \{\} 0 1 0 0 0 True 1 \{SQL logic error or\
+missing database -- no such function: REGEXP\} 1 \{SQL logic error or missing\
+database -- no such function: REGEXP\} 0 \{\}$}}
+
+###############################################################################
+
 reportSQLiteResources $test_channel
 
 ###############################################################################
