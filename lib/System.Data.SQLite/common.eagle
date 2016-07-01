@@ -3168,7 +3168,8 @@ namespace eval ::Eagle {
         #
         # NOTE: Add each critical handle count to the resulting list.
         #
-        foreach name [list connectionCount statementCount backupCount] {
+        foreach name [list \
+            connectionCount statementCount backupCount blobCount] {
           if {[catch {
             object invoke -flags +NonPublic \
                 System.Data.SQLite.DebugData $name

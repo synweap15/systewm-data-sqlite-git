@@ -57,6 +57,7 @@ namespace System.Data.SQLite
       internal static int connectionCount;
       internal static int statementCount;
       internal static int backupCount;
+      internal static int blobCount;
 #endif
       #endregion
 
@@ -1804,6 +1805,9 @@ namespace System.Data.SQLite
     internal static extern SQLiteErrorCode sqlite3_backup_finish_interop(IntPtr backup);
 
     [DllImport(SQLITE_DLL)]
+    internal static extern SQLiteErrorCode sqlite3_blob_close_interop(IntPtr blob);
+
+    [DllImport(SQLITE_DLL)]
     internal static extern SQLiteErrorCode sqlite3_open_interop(byte[] utf8Filename, byte[] vfsName, SQLiteOpenFlagsEnum flags, int extFuncs, ref IntPtr db);
 
     [DllImport(SQLITE_DLL)]
@@ -2776,6 +2780,48 @@ namespace System.Data.SQLite
     [DllImport(SQLITE_DLL)]
 #endif
     internal static extern int sqlite3_backup_pagecount(IntPtr backup);
+
+#if !PLATFORM_COMPACTFRAMEWORK
+    [DllImport(SQLITE_DLL, CallingConvention = CallingConvention.Cdecl)]
+#else
+    [DllImport(SQLITE_DLL)]
+#endif
+    internal static extern SQLiteErrorCode sqlite3_blob_close(IntPtr blob);
+
+#if !PLATFORM_COMPACTFRAMEWORK
+    [DllImport(SQLITE_DLL, CallingConvention = CallingConvention.Cdecl)]
+#else
+    [DllImport(SQLITE_DLL)]
+#endif
+    internal static extern int sqlite3_blob_bytes(IntPtr blob);
+
+#if !PLATFORM_COMPACTFRAMEWORK
+    [DllImport(SQLITE_DLL, CallingConvention = CallingConvention.Cdecl)]
+#else
+    [DllImport(SQLITE_DLL)]
+#endif
+    internal static extern SQLiteErrorCode sqlite3_blob_open(IntPtr db, byte[] dbName, byte[] tblName, byte[] colName, long rowId, int flags, ref IntPtr ptrBlob);
+
+#if !PLATFORM_COMPACTFRAMEWORK
+    [DllImport(SQLITE_DLL, CallingConvention = CallingConvention.Cdecl)]
+#else
+    [DllImport(SQLITE_DLL)]
+#endif
+    internal static extern SQLiteErrorCode sqlite3_blob_read(IntPtr blob, [MarshalAs(UnmanagedType.LPArray)] byte[] buffer, int count, int offset);
+
+#if !PLATFORM_COMPACTFRAMEWORK
+    [DllImport(SQLITE_DLL, CallingConvention = CallingConvention.Cdecl)]
+#else
+    [DllImport(SQLITE_DLL)]
+#endif
+    internal static extern SQLiteErrorCode sqlite3_blob_reopen(IntPtr blob, long rowId);
+
+#if !PLATFORM_COMPACTFRAMEWORK
+    [DllImport(SQLITE_DLL, CallingConvention = CallingConvention.Cdecl)]
+#else
+    [DllImport(SQLITE_DLL)]
+#endif
+    internal static extern SQLiteErrorCode sqlite3_blob_write(IntPtr blob, [MarshalAs(UnmanagedType.LPArray)] byte[] buffer, int count, int offset);
 
 #if !PLATFORM_COMPACTFRAMEWORK
     [DllImport(SQLITE_DLL, CallingConvention = CallingConvention.Cdecl)]
@@ -3846,6 +3892,176 @@ namespace System.Data.SQLite
         public int WasReleasedOk()
         {
             return Interlocked.Decrement(ref DebugData.backupCount);
+        }
+#endif
+
+        ///////////////////////////////////////////////////////////////////////
+
+        public override bool IsInvalid
+        {
+            get
+            {
+#if PLATFORM_COMPACTFRAMEWORK
+                lock (syncRoot)
+#endif
+                {
+                    return (handle == IntPtr.Zero);
+                }
+            }
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+
+#if DEBUG
+        public override string ToString()
+        {
+#if PLATFORM_COMPACTFRAMEWORK
+            lock (syncRoot)
+#endif
+            {
+                return handle.ToString();
+            }
+        }
+#endif
+    }
+    #endregion
+
+    ///////////////////////////////////////////////////////////////////////////
+
+    #region SQLiteBlobHandle Class
+    // Provides finalization support for unmanaged SQLite blob objects.
+    internal sealed class SQLiteBlobHandle : CriticalHandle
+    {
+#if PLATFORM_COMPACTFRAMEWORK
+        internal readonly object syncRoot = new object();
+#endif
+
+        ///////////////////////////////////////////////////////////////////////
+
+        private SQLiteConnectionHandle cnn;
+
+        ///////////////////////////////////////////////////////////////////////
+
+        public static implicit operator IntPtr(SQLiteBlobHandle blob)
+        {
+            if (blob != null)
+            {
+#if PLATFORM_COMPACTFRAMEWORK
+                lock (blob.syncRoot)
+#endif
+                {
+                    return blob.handle;
+                }
+            }
+            return IntPtr.Zero;
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+
+        internal SQLiteBlobHandle(SQLiteConnectionHandle cnn, IntPtr blob)
+            : this()
+        {
+#if PLATFORM_COMPACTFRAMEWORK
+            lock (syncRoot)
+#endif
+            {
+                this.cnn = cnn;
+                SetHandle(blob);
+            }
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+
+        private SQLiteBlobHandle()
+            : base(IntPtr.Zero)
+        {
+#if COUNT_HANDLE
+            Interlocked.Increment(ref DebugData.blobCount);
+#endif
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+
+        protected override bool ReleaseHandle()
+        {
+            try
+            {
+#if !PLATFORM_COMPACTFRAMEWORK
+                IntPtr localHandle = Interlocked.Exchange(
+                    ref handle, IntPtr.Zero);
+
+                if (localHandle != IntPtr.Zero)
+                    SQLiteBase.CloseBlob(cnn, localHandle);
+
+#if !NET_COMPACT_20 && TRACE_HANDLE
+                try
+                {
+                    Trace.WriteLine(HelperMethods.StringFormat(
+                        CultureInfo.CurrentCulture,
+                        "CloseBlob: {0}", localHandle)); /* throw */
+                }
+                catch
+                {
+                }
+#endif
+#else
+                lock (syncRoot)
+                {
+                    if (handle != IntPtr.Zero)
+                    {
+                        SQLiteBase.CloseBlob(cnn, handle);
+                        SetHandle(IntPtr.Zero);
+                    }
+                }
+#endif
+#if COUNT_HANDLE
+                Interlocked.Decrement(ref DebugData.blobCount);
+#endif
+#if DEBUG
+                return true;
+#endif
+            }
+#if !NET_COMPACT_20 && TRACE_HANDLE
+            catch (SQLiteException e)
+#else
+            catch (SQLiteException)
+#endif
+            {
+#if !NET_COMPACT_20 && TRACE_HANDLE
+                try
+                {
+                    Trace.WriteLine(HelperMethods.StringFormat(
+                        CultureInfo.CurrentCulture,
+                        "CloseBlob: {0}, exception: {1}",
+                        handle, e)); /* throw */
+                }
+                catch
+                {
+                }
+#endif
+            }
+            finally
+            {
+#if PLATFORM_COMPACTFRAMEWORK
+                lock (syncRoot)
+#endif
+                {
+                    SetHandleAsInvalid();
+                }
+            }
+#if DEBUG
+            return false;
+#else
+            return true;
+#endif
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+
+#if COUNT_HANDLE
+        public int WasReleasedOk()
+        {
+            return Interlocked.Decrement(ref DebugData.blobCount);
         }
 #endif
 

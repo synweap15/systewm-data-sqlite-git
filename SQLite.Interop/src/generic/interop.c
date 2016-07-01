@@ -64,6 +64,7 @@ extern int RegisterExtensionFunctions(sqlite3 *db);
 #define INTEROP_DEBUG_RESET          (0x0080)
 #define INTEROP_DEBUG_CHANGES        (0x0100)
 #define INTEROP_DEBUG_BREAK          (0x0200)
+#define INTEROP_DEBUG_BLOB_CLOSE     (0x0400)
 
 #if defined(_MSC_VER) && defined(INTEROP_DEBUG) && \
     (INTEROP_DEBUG & INTEROP_DEBUG_BREAK)
@@ -720,6 +721,23 @@ SQLITE_API int WINAPI sqlite3_backup_finish_interop(sqlite3_backup *p)
 
 #if defined(INTEROP_DEBUG) && (INTEROP_DEBUG & INTEROP_DEBUG_BACKUP_FINISH)
   sqlite3InteropDebug("sqlite3_backup_finish_interop(): sqlite3_backup_finish(%p, %p, %p) returned %d.\n", pDestDb, pSrcDb, p, ret);
+#endif
+
+  return ret;
+}
+
+SQLITE_API int WINAPI sqlite3_blob_close_interop(sqlite3_blob *p)
+{
+  int ret;
+
+#if defined(INTEROP_DEBUG) && (INTEROP_DEBUG & INTEROP_DEBUG_BLOB_CLOSE)
+  sqlite3InteropDebug("sqlite3_blob_close_interop(): calling sqlite3_blob_close(%p)...\n", p);
+#endif
+
+  ret = sqlite3_blob_close(p);
+
+#if defined(INTEROP_DEBUG) && (INTEROP_DEBUG & INTEROP_DEBUG_BLOB_CLOSE)
+  sqlite3InteropDebug("sqlite3_blob_close_interop(): sqlite3_blob_close(%p) returned %d.\n", p, ret);
 #endif
 
   return ret;

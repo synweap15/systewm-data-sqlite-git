@@ -692,6 +692,32 @@ namespace System.Data.SQLite
         }
     }
 
+    internal static void CloseBlob(SQLiteConnectionHandle hdl, IntPtr blob)
+    {
+        if ((hdl == null) || (blob == IntPtr.Zero)) return;
+
+        try
+        {
+            // do nothing.
+        }
+        finally /* NOTE: Thread.Abort() protection. */
+        {
+#if PLATFORM_COMPACTFRAMEWORK
+            lock (hdl.syncRoot)
+#else
+            lock (hdl)
+#endif
+            {
+#if !SQLITE_STANDARD
+                SQLiteErrorCode n = UnsafeNativeMethods.sqlite3_blob_close_interop(blob);
+#else
+                SQLiteErrorCode n = UnsafeNativeMethods.sqlite3_blob_close(blob);
+#endif
+                if (n != SQLiteErrorCode.Ok) throw new SQLiteException(n, null);
+            }
+        }
+    }
+
     internal static void FinalizeStatement(SQLiteConnectionHandle hdl, IntPtr stmt)
     {
         if ((hdl == null) || (stmt == IntPtr.Zero)) return;
@@ -1190,6 +1216,11 @@ namespace System.Data.SQLite
       /// associated with the <see cref="DbType" /> value.
       /// </summary>
       UseParameterDbTypeForTypeName = 0x2000000000,
+
+      /// <summary>
+      /// When returning column values, skip verifying their affinity.
+      /// </summary>
+      NoVerifyTypeAffinity = 0x4000000000,
 
       /// <summary>
       /// When binding parameter values or returning column values, always

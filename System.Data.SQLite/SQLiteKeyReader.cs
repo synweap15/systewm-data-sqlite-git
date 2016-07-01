@@ -1,7 +1,7 @@
 /********************************************************
  * ADO.NET 2.0 Data Provider for SQLite Version 3.X
  * Written by Robert Simpson (robert@blackcastlesoft.com)
- * 
+ *
  * Released to the public domain, use at your own risk!
  ********************************************************/
 
@@ -24,6 +24,7 @@ namespace System.Data.SQLite
     private KeyInfo[] _keyInfo;
     private SQLiteStatement _stmt;
     private bool _isValid;
+    private RowIdInfo[] _rowIdInfo;
 
     /// <summary>
     /// Used to support CommandBehavior.KeyInfo
@@ -38,6 +39,16 @@ namespace System.Data.SQLite
       internal int cursor;
       internal KeyQuery query;
       internal int column;
+    }
+
+    /// <summary>
+    /// Used to keep track of the per-table RowId column metadata.
+    /// </summary>
+    private struct RowIdInfo
+    {
+        internal string databaseName;
+        internal string tableName;
+        internal int column;
     }
 
     /// <summary>
@@ -155,6 +166,7 @@ namespace System.Data.SQLite
       Dictionary<string, List<string>> tables = new Dictionary<string, List<string>>();
       List<string> list;
       List<KeyInfo> keys = new List<KeyInfo>();
+      List<RowIdInfo> rowIds = new List<RowIdInfo>();
 
       // Record the statement so we can use it later for sync'ing
       _stmt = stmt;
@@ -203,7 +215,7 @@ namespace System.Data.SQLite
             DataRow preferredRow = null;
             using (DataTable tbl = cnn.GetSchema("Indexes", new string[] { pair.Key, null, table }))
             {
-              // Loop twice.  The first time looking for a primary key index, 
+              // Loop twice.  The first time looking for a primary key index,
               // the second time looking for a unique index
               for (int n = 0; n < 2 && preferredRow == null; n++)
               {
@@ -238,6 +250,11 @@ namespace System.Data.SQLite
                   // Now enumerate the members of the index we're going to use
                   using (DataTable indexColumns = cnn.GetSchema("IndexColumns", new string[] { pair.Key, null, table, (string)preferredRow["INDEX_NAME"] }))
                   {
+                    //
+                    // NOTE: If this is actually a RowId (or alias), record that now.  There should
+                    //       be exactly one index column in that case.
+                    //
+                    bool isRowId = (string)preferredRow["INDEX_NAME"] == "sqlite_master_PK_" + table;
                     KeyQuery query = null;
 
                     List<string> cols = new List<string>();
@@ -257,6 +274,16 @@ namespace System.Data.SQLite
                             (string)row[SchemaTableColumn.BaseTableName] == table &&
                             (string)row[SchemaTableOptionalColumn.BaseCatalogName] == pair.Key)
                         {
+                          if (isRowId)
+                          {
+                            RowIdInfo rowId = new RowIdInfo();
+
+                            rowId.databaseName = pair.Key;
+                            rowId.tableName = table;
+                            rowId.column = (int)row[SchemaTableColumn.ColumnOrdinal];
+
+                            rowIds.Add(rowId);
+                          }
                           indexColumns.Rows.RemoveAt(x);
                           x--;
                           addKey = false;
@@ -269,7 +296,7 @@ namespace System.Data.SQLite
 
                     // If the index is not a rowid alias, record all the columns
                     // needed to make up the unique index and construct a SQL query for it
-                    if ((string)preferredRow["INDEX_NAME"] != "sqlite_master_PK_" + table)
+                    if (!isRowId)
                     {
                       // Whatever remains of the columns we need that make up the index that are not
                       // already in the query need to be queried separately, so construct a subquery
@@ -310,6 +337,33 @@ namespace System.Data.SQLite
       // CommandBehavior.KeyInfo
       _keyInfo = new KeyInfo[keys.Count];
       keys.CopyTo(_keyInfo);
+
+      _rowIdInfo = new RowIdInfo[rowIds.Count];
+      rowIds.CopyTo(_rowIdInfo);
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+
+    internal int GetRowIdIndex(
+        string databaseName,
+        string tableName
+        )
+    {
+        if ((_rowIdInfo != null) &&
+            (databaseName != null) &&
+            (tableName != null))
+        {
+            for (int i = 0; i < _rowIdInfo.Length; i++)
+            {
+                if (_rowIdInfo[i].databaseName == databaseName &&
+                    _rowIdInfo[i].tableName == tableName)
+                {
+                    return _rowIdInfo[i].column;
+                }
+            }
+        }
+
+        return -1;
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -463,6 +517,13 @@ namespace System.Data.SQLite
       return -1;
     }
 
+    internal SQLiteBlob GetBlob(int i, bool readOnly)
+    {
+      Sync(i);
+      if (_keyInfo[i].query != null) return _keyInfo[i].query._reader.GetBlob(_keyInfo[i].column, readOnly);
+      else throw new InvalidCastException();
+    }
+
     internal bool GetBoolean(int i)
     {
       Sync(i);
@@ -565,7 +626,7 @@ namespace System.Data.SQLite
       {
         long rowid = _stmt._sql.GetRowIdForCursor(_stmt, _keyInfo[i].cursor);
         if (rowid == 0) throw new InvalidCastException();
-        return Convert.ToInt64(rowid);
+        return rowid;
       }
     }
 

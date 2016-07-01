@@ -391,6 +391,9 @@ namespace System.Data.SQLite
     /// <param name="typ">The type we want to get out of the column</param>
     private TypeAffinity VerifyType(int i, DbType typ)
     {
+        if ((_flags & SQLiteConnectionFlags.NoVerifyTypeAffinity) == SQLiteConnectionFlags.NoVerifyTypeAffinity)
+            return TypeAffinity.None;
+
         TypeAffinity affinity = GetSQLiteType(_flags, i).Affinity;
 
         switch (affinity)
@@ -447,7 +450,7 @@ namespace System.Data.SQLite
     /// </param>
     private void InvokeReadValueCallback(
         int index,
-        SQLiteReadValueEventArgs eventArgs,
+        SQLiteReadEventArgs eventArgs,
         out bool complete
         )
     {
@@ -490,6 +493,67 @@ namespace System.Data.SQLite
         {
             _flags |= SQLiteConnectionFlags.UseConnectionReadValueCallbacks;
         }
+    }
+
+    /// <summary>
+    /// Attempts to query the integer identifier for the current row.  This
+    /// will not work for tables that were created WITHOUT ROWID -OR- if the
+    /// query does not include the "rowid" column or one of its aliases.
+    /// </summary>
+    /// <returns>
+    /// The integer identifier for the current row -OR- null if it could not
+    /// be determined.
+    /// </returns>
+    internal long? GetRowId(int i)
+    {
+        // CheckDisposed();
+        VerifyForGet();
+
+        if (_keyInfo == null)
+            return null;
+
+        int iRowId = _keyInfo.GetRowIdIndex(
+            GetDatabaseName(i), GetTableName(i));
+
+        if (iRowId == -1)
+            return null;
+
+        return GetInt64(iRowId);
+    }
+
+    /// <summary>
+    /// Retrieves the column as a <see cref="SQLiteBlob" /> object.
+    /// This will not work for tables that were created WITHOUT ROWID
+    /// -OR- if the query does not include the "rowid" column or one
+    /// of its aliases.
+    /// </summary>
+    /// <param name="i">The index of the column.</param>
+    /// <param name="readOnly">
+    /// Non-zero to open the blob object for read-only access.
+    /// </param>
+    /// <returns>A new <see cref="SQLiteBlob" /> object.</returns>
+    public SQLiteBlob GetBlob(int i, bool readOnly)
+    {
+        CheckDisposed();
+        VerifyForGet();
+
+        if ((_flags & SQLiteConnectionFlags.UseConnectionReadValueCallbacks) == SQLiteConnectionFlags.UseConnectionReadValueCallbacks)
+        {
+            SQLiteDataReaderValue value = new SQLiteDataReaderValue();
+            bool complete;
+
+            InvokeReadValueCallback(i, new SQLiteReadValueEventArgs(
+                "GetBlob", new SQLiteReadBlobEventArgs(readOnly), value),
+                out complete);
+
+            if (complete)
+                return (SQLiteBlob)value.BlobValue;
+        }
+
+        if (i >= PrivateVisibleFieldCount && _keyInfo != null)
+            return _keyInfo.GetBlob(i - PrivateVisibleFieldCount, readOnly);
+
+        return SQLiteBlob.Create(this, i, readOnly);
     }
 
     /// <summary>
@@ -1849,7 +1913,7 @@ namespace System.Data.SQLite
     /// <returns>
     /// The connection object -OR- null if it is unavailable.
     /// </returns>
-    private static SQLiteConnection GetConnection(
+    internal static SQLiteConnection GetConnection(
         SQLiteDataReader dataReader
         )
     {
