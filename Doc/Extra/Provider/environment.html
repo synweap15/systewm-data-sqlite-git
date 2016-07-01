@@ -131,6 +131,22 @@
           are subject to change.</td>
         </tr>
         <tr valign="top">
+          <td>No_SQLiteGetSettingValue</td>
+          <td>If this environment variable is set [to anything], all calls to
+          the GetSettingValue method will return the default value.  This will
+          effectively prevent all other setting values from having any effect,
+          including those specified via other supported environment variables
+          or in the associated XML configuration file.</td>
+        </tr>
+        <tr valign="top">
+          <td>No_SQLiteXmlConfigFile</td>
+          <td>If this environment variable is set [to anything], calls to the
+          GetSettingValue method will never result in the XML configuration
+          file being read; instead, the default value will be returned.  This
+          will effectively prevent any setting values specified via the XML
+          configuration file from having any effect.</td>
+        </tr>
+        <tr valign="top">
           <td>PreLoadSQLite_BaseDirectory</td>
           <td>If this environment variable is set [to anything], it will be
           used instead of the application base directory by the native
@@ -141,7 +157,7 @@
         </tr>
         <tr valign="top">
           <td>PreLoadSQLite_LibraryFileNameOnly</td>
-          <td>If this configuration variable is set [to anything], it will be
+          <td>If this environment variable is set [to anything], it will be
           used as the base file name (without directory information) for the
           native SQLite library to be pre-loaded (e.g. "sqlite3.dll" or
           "libsqlite3.so.0").</td>

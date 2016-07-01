@@ -760,6 +760,21 @@ namespace System.Data.SQLite
           string @default /* in */
           )
       {
+#if !PLATFORM_COMPACTFRAMEWORK
+          //
+          // NOTE: If the special "No_SQLiteGetSettingValue" environment
+          //       variable is set [to anything], this method will always
+          //       return the default value.
+          //
+          if (Environment.GetEnvironmentVariable(
+                "No_SQLiteGetSettingValue") != null)
+          {
+              return @default;
+          }
+#endif
+
+          /////////////////////////////////////////////////////////////////////
+
           if (name == null)
               return @default;
 
@@ -796,6 +811,17 @@ namespace System.Data.SQLite
 
           if (value != null)
               return value;
+
+          //
+          // NOTE: If the "No_SQLiteXmlConfigFile" environment variable is
+          //       set [to anything], this method will NEVER read from the
+          //       XML configuration file.
+          //
+          if (Environment.GetEnvironmentVariable(
+                "No_SQLiteXmlConfigFile") != null)
+          {
+              return @default;
+          }
 #endif
 
           try
