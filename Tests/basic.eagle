@@ -4430,6 +4430,79 @@ database -- no such function: REGEXP\} 0 \{\}$}}
 
 ###############################################################################
 
+runTest {test data-1.84 {GetBlob method and SQLiteBlob class} -setup {
+  proc getBytesAsList { bytes } {
+    set byteList [object create -alias ByteList $bytes]
+    return [$byteList ToString]
+  }
+
+  setupDb [set fileName data-1.84.db] "" "" "" NoVerifyTypeAffinity
+} -body {
+  sql execute $db {
+    CREATE TABLE t1(x INTEGER PRIMARY KEY, y);
+    INSERT INTO t1 (x, y) VALUES(1, 'nope');
+    INSERT INTO t1 (x, y) VALUES(2, '1984');
+  }
+
+  set dataReader [sql execute -execute reader -format datareader \
+      -behavior +KeyInfo -alias $db "SELECT x, y FROM t1;"]
+
+  set size 4
+  set bytes(1) [object create -alias Byte\[\] $size]
+  set bytes(2) [object create -alias Byte\[\] $size]
+  set result [list]
+
+  while {[$dataReader Read]} {
+    set blob [$dataReader -alias GetBlob 1 false]
+    lappend result [$blob GetCount]
+    $blob Read $bytes(1) $size 0
+    lappend result [getBytesAsList $bytes(1)]
+
+    for {set i 0} {$i < $size} {incr i} {
+      set byte [$bytes(1) GetValue $i]
+      incr byte; set byte [object invoke -create Byte Parse $byte]
+      $bytes(1) SetValue $byte $i
+    }
+
+    $blob Write $bytes(1) $size 0
+
+    if {[$dataReader GetInt64 0] == 1} then {
+      $blob Reopen 2
+      $blob Read $bytes(2) $size 0
+      lappend result [getBytesAsList $bytes(2)]
+    }
+
+    $blob Close
+  }
+
+  $dataReader Close; unset dataReader
+
+  set dataReader [sql execute -execute reader -format datareader \
+      -alias $db "SELECT x, y FROM t1;"]
+
+  while {[$dataReader Read]} {
+    lappend result [$dataReader GetInt64 0]
+    lappend result [$dataReader GetString 0]
+    lappend result [$dataReader GetInt64 1]
+    lappend result [$dataReader GetString 1]
+  }
+
+  set result
+} -cleanup {
+  unset -nocomplain blob
+  unset -nocomplain dataReader
+
+  cleanupDb $fileName
+
+  unset -nocomplain byte i bytes size result db fileName
+
+  rename getBytesAsList ""
+} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
+System.Data.SQLite} -result {4 {110 111 112 101} {49 57 56 52} 4 {49 57 56 52}\
+1 1 0 opqf 2 2 2 2:95}}
+
+###############################################################################
+
 reportSQLiteResources $test_channel
 
 ###############################################################################

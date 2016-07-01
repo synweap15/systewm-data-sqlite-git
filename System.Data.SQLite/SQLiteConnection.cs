@@ -24,7 +24,8 @@ namespace System.Data.SQLite
   /// <summary>
   /// This class represents a single value to be returned
   /// from the <see cref="SQLiteDataReader" /> class via
-  /// its <see cref="SQLiteDataReader.GetBoolean" />,
+  /// its <see cref="SQLiteDataReader.GetBlob" />,
+  /// <see cref="SQLiteDataReader.GetBoolean" />,
   /// <see cref="SQLiteDataReader.GetByte" />,
   /// <see cref="SQLiteDataReader.GetBytes" />,
   /// <see cref="SQLiteDataReader.GetChar" />,
@@ -48,6 +49,13 @@ namespace System.Data.SQLite
   /// </summary>
   public sealed class SQLiteDataReaderValue
   {
+      /// <summary>
+      /// The value to be returned from the
+      /// <see cref="SQLiteDataReader.GetBlob" /> method -OR- null to
+      /// indicate an error.
+      /// </summary>
+      public SQLiteBlob BlobValue;
+
       /// <summary>
       /// The value to be returned from the
       /// <see cref="SQLiteDataReader.GetBoolean" /> method -OR- null to
@@ -154,11 +162,75 @@ namespace System.Data.SQLite
 
   /// <summary>
   /// This class represents the parameters that are provided
+  /// to the <see cref="SQLiteDataReader" /> methods, with
+  /// the exception of the column index (provided separately).
+  /// </summary>
+  public abstract class SQLiteReadEventArgs : EventArgs
+  {
+      // nothing.
+  }
+
+  /////////////////////////////////////////////////////////////////////////////////////////////////
+
+  /// <summary>
+  /// This class represents the parameters that are provided to
+  /// the <see cref="SQLiteDataReader.GetBlob" /> method, with
+  /// the exception of the column index (provided separately).
+  /// </summary>
+  public class SQLiteReadBlobEventArgs : SQLiteReadEventArgs
+  {
+      #region Private Data
+      /// <summary>
+      /// Provides the underlying storage for the
+      /// <see cref="ReadOnly" /> property.
+      /// </summary>
+      private bool readOnly;
+      #endregion
+
+      /////////////////////////////////////////////////////////////////////////
+
+      #region Private Constructors
+      /// <summary>
+      /// Constructs an instance of this class to pass into a user-defined
+      /// callback associated with the <see cref="SQLiteDataReader.GetBlob" />
+      /// method.
+      /// </summary>
+      /// <param name="readOnly">
+      /// The value that was originally specified for the "readOnly"
+      /// parameter to the <see cref="SQLiteDataReader.GetBlob" /> method.
+      /// </param>
+      internal SQLiteReadBlobEventArgs(
+          bool readOnly
+          )
+      {
+          this.readOnly = readOnly;
+      }
+      #endregion
+
+      /////////////////////////////////////////////////////////////////////////
+
+      #region Public Properties
+      /// <summary>
+      /// The value that was originally specified for the "readOnly"
+      /// parameter to the <see cref="SQLiteDataReader.GetBlob" /> method.
+      /// </summary>
+      public bool ReadOnly
+      {
+          get { return readOnly; }
+          set { readOnly = value; }
+      }
+      #endregion
+  }
+
+  /////////////////////////////////////////////////////////////////////////////////////////////////
+
+  /// <summary>
+  /// This class represents the parameters that are provided
   /// to the <see cref="SQLiteDataReader.GetBytes" /> and
   /// <see cref="SQLiteDataReader.GetChars" /> methods, with
   /// the exception of the column index (provided separately).
   /// </summary>
-  public class SQLiteReadArrayEventArgs : EventArgs
+  public class SQLiteReadArrayEventArgs : SQLiteReadEventArgs
   {
       #region Private Data
       /// <summary>
@@ -344,6 +416,7 @@ namespace System.Data.SQLite
 
   /// <summary>
   /// This class represents the parameters and return values for the
+  /// <see cref="SQLiteDataReader.GetBlob" />,
   /// <see cref="SQLiteDataReader.GetBoolean" />,
   /// <see cref="SQLiteDataReader.GetByte" />,
   /// <see cref="SQLiteDataReader.GetBytes" />,
@@ -360,7 +433,7 @@ namespace System.Data.SQLite
   /// <see cref="SQLiteDataReader.GetString" />, and
   /// <see cref="SQLiteDataReader.GetValue" /> methods.
   /// </summary>
-  public class SQLiteReadValueEventArgs : EventArgs
+  public class SQLiteReadValueEventArgs : SQLiteReadEventArgs
   {
       #region Private Data
       /// <summary>
@@ -371,9 +444,9 @@ namespace System.Data.SQLite
 
       /// <summary>
       /// Provides the underlying storage for the
-      /// <see cref="ArrayEventArgs" /> property.
+      /// <see cref="ExtraEventArgs" /> property.
       /// </summary>
-      private SQLiteReadArrayEventArgs arrayEventArgs;
+      private SQLiteReadEventArgs extraEventArgs;
 
       /// <summary>
       /// Provides the underlying storage for the
@@ -387,18 +460,20 @@ namespace System.Data.SQLite
       #region Private Constructors
       /// <summary>
       /// Constructs a new instance of this class.  Depending on the method
-      /// being called, the <paramref name="arrayEventArgs" /> and/or
+      /// being called, the <paramref name="extraEventArgs" /> and/or
       /// <paramref name="value" /> parameters may be null.
       /// </summary>
       /// <param name="methodName">
       /// The name of the <see cref="SQLiteDataReader" /> method that was
       /// responsible for invoking this callback.
       /// </param>
-      /// <param name="arrayEventArgs">
+      /// <param name="extraEventArgs">
       /// If the <see cref="SQLiteDataReader.GetBytes" /> or
       /// <see cref="SQLiteDataReader.GetChars" /> method is being called,
       /// this object will contain the array related parameters for that
-      /// method.
+      /// method.  If the <see cref="SQLiteDataReader.GetBlob" /> method is
+      /// being called, this object will contain the blob related parameters
+      /// for that method.
       /// </param>
       /// <param name="value">
       /// This may be used by the callback to set the return value for the
@@ -406,12 +481,12 @@ namespace System.Data.SQLite
       /// </param>
       internal SQLiteReadValueEventArgs(
           string methodName,
-          SQLiteReadArrayEventArgs arrayEventArgs,
+          SQLiteReadEventArgs extraEventArgs,
           SQLiteDataReaderValue value
           )
       {
           this.methodName = methodName;
-          this.arrayEventArgs = arrayEventArgs;
+          this.extraEventArgs = extraEventArgs;
           this.value = value;
       }
       #endregion
@@ -434,11 +509,13 @@ namespace System.Data.SQLite
       /// If the <see cref="SQLiteDataReader.GetBytes" /> or
       /// <see cref="SQLiteDataReader.GetChars" /> method is being called,
       /// this object will contain the array related parameters for that
-      /// method.
+      /// method.  If the <see cref="SQLiteDataReader.GetBlob" /> method is
+      /// being called, this object will contain the blob related parameters
+      /// for that method.
       /// </summary>
-      public SQLiteReadArrayEventArgs ArrayEventArgs
+      public SQLiteReadEventArgs ExtraEventArgs
       {
-          get { return arrayEventArgs; }
+          get { return extraEventArgs; }
       }
 
       /////////////////////////////////////////////////////////////////////////
@@ -540,7 +617,7 @@ namespace System.Data.SQLite
       SQLiteConvert convert,
       SQLiteDataReader dataReader,
       SQLiteConnectionFlags flags,
-      SQLiteReadValueEventArgs eventArgs,
+      SQLiteReadEventArgs eventArgs,
       string typeName,
       int index,
       object userData,

@@ -112,22 +112,23 @@ set readArgs [list \
     completeVarName]
 
 set params [list \
-    [list Boolean    GetBoolean    false   BooleanValue    true    0] \
-    [list Byte       GetByte       false   ByteValue       true    0] \
-    [list Byte       GetBytes      true    BytesValue      false   0] \
-    [list Char       GetChar       false   CharValue       true    0] \
-    [list Char       GetChars      true    CharsValue      false   0] \
-    [list DateTime   GetDateTime   false   DateTimeValue   true    0] \
-    [list Decimal    GetDecimal    false   DecimalValue    true    0] \
-    [list Double     GetDouble     false   DoubleValue     true    0] \
-    [list Single     GetFloat      false   FloatValue      true    0] \
-    [list Guid       GetGuid       false   GuidValue       true    \
+    [list Boolean         GetBoolean    false   BooleanValue    true    0] \
+    [list Byte            GetByte       false   ByteValue       true    0] \
+    [list Byte            GetBytes      true    BytesValue      false   0] \
+    [list Char            GetChar       false   CharValue       true    0] \
+    [list Char            GetChars      true    CharsValue      false   0] \
+    [list DateTime        GetDateTime   false   DateTimeValue   true    0] \
+    [list Decimal         GetDecimal    false   DecimalValue    true    0] \
+    [list Double          GetDouble     false   DoubleValue     true    0] \
+    [list Single          GetFloat      false   FloatValue      true    0] \
+    [list Guid            GetGuid       false   GuidValue       true    \
         00000000-0000-0000-0000-000000000000] \
-    [list Int16      GetInt16      false   Int16Value      true    0] \
-    [list Int32      GetInt32      false   Int32Value      true    0] \
-    [list Int64      GetInt64      false   Int64Value      true    0] \
-    [list String     GetString     false   StringValue     false   null] \
-    [list Object     GetValue      false   Value           false   null]]
+    [list Int16           GetInt16      false   Int16Value      true    0] \
+    [list Int32           GetInt32      false   Int32Value      true    0] \
+    [list Int64           GetInt64      false   Int64Value      true    0] \
+    [list String          GetString     false   StringValue     false   null] \
+    [list Object          GetValue      false   Value           false   null] \
+    [list SDS.SQLiteBlob  GetBlob       false   BlobValue       false   0]]
 
 ###############################################################################
 
@@ -167,7 +168,11 @@ set expectedResults [list \
         74f1f402-ddef-4027-a78f-3847fa97b830" \
     {{} 0 1 1.2 three {4 5 6} {2016-06-19\
         19:50:04.1234567}\
-        74f1f402-ddef-4027-a78f-3847fa97b830}]
+        74f1f402-ddef-4027-a78f-3847fa97b830} \
+    {System.Data.SQLite.SQLiteBlob System.Data.SQLite.SQLiteBlob\
+        System.Data.SQLite.SQLiteBlob System.Data.SQLite.SQLiteBlob\
+        System.Data.SQLite.SQLiteBlob System.Data.SQLite.SQLiteBlob\
+        System.Data.SQLite.SQLiteBlob System.Data.SQLite.SQLiteBlob}]
 
 ###############################################################################
 
@@ -182,6 +187,7 @@ for {set i 0} {$i < [llength $params]} {incr i} {
     typeName methodName isArray propertyName isRequired value
   } [lindex $params $i] break
 
+  set typeName [string map [list SDS. System.Data.SQLite.] $typeName]
   set expectedResult [lindex $expectedResults $i]
 
   #############################################################################
@@ -189,13 +195,13 @@ for {set i 0} {$i < [llength $params]} {incr i} {
   proc readValueCallback2 $readArgs [subst {
     if {$isArray} then {
       if {\[catch {
-        set dataOffset \[\$eventArgs ArrayEventArgs.DataOffset\]
+        set dataOffset \[\$eventArgs ExtraEventArgs.DataOffset\]
 
-        set buffer \[\$eventArgs -create [appendArgs ArrayEventArgs. \
+        set buffer \[\$eventArgs -create [appendArgs ExtraEventArgs. \
             $typeName Buffer]\]
 
-        set bufferOffset \[\$eventArgs ArrayEventArgs.BufferOffset\]
-        set length \[\$eventArgs ArrayEventArgs.Length\]
+        set bufferOffset \[\$eventArgs ExtraEventArgs.BufferOffset\]
+        set length \[\$eventArgs ExtraEventArgs.Length\]
 
         set readValue \[\$dataReader \[\$eventArgs MethodName\] \
             \$index \$dataOffset \$buffer \$bufferOffset \$length\]
@@ -213,19 +219,24 @@ for {set i 0} {$i < [llength $params]} {incr i} {
         }
 
         \$eventArgs \[appendArgs Value. $propertyName\] \$buffer
-        \$eventArgs ArrayEventArgs.Length \[\$buffer Length\]
+        \$eventArgs ExtraEventArgs.Length \[\$buffer Length\]
       } else {
-        set buffer \[\$eventArgs -create [appendArgs ArrayEventArgs. \
+        set buffer \[\$eventArgs -create [appendArgs ExtraEventArgs. \
             $typeName Buffer]\]
 
         \$eventArgs \[appendArgs Value. $propertyName\] \$buffer
       }
     } else {
       if {\[catch {
-        set readValue \[\$dataReader \[\$eventArgs MethodName\] \$index\]
+        if {"$typeName" eq "System.Data.SQLite.SQLiteBlob"} then {
+          set readValue \[object create -flags +NonPublic $typeName \
+              null null\]
+        } else {
+          set readValue \[\$dataReader \[\$eventArgs MethodName\] \$index\]
 
-        if {"$typeName" eq "Char"} then {
-          set readValue \[object invoke -create Char Parse \$readValue\]
+          if {"$typeName" eq "Char"} then {
+            set readValue \[object invoke -create Char Parse \$readValue\]
+          }
         }
 
         \$eventArgs \[appendArgs Value. $propertyName\] \$readValue
@@ -296,7 +307,11 @@ for {set i 0} {$i < [llength $params]} {incr i} {
         }
       } else {
         if {[catch {
-          $dataReader $methodName 0
+          if {$typeName eq "System.Data.SQLite.SQLiteBlob"} then {
+            $dataReader $methodName 0 true; # read-only
+          } else {
+            $dataReader $methodName 0
+          }
         } value] == 0} then {
           if {$value eq "\x00"} then {
             lappend result <NUL>

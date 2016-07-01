@@ -558,6 +558,7 @@ set sds_manifests(source) {
   System.Data.SQLite/SQLite3_UTF16.cs
   System.Data.SQLite/SQLiteBackup.cs
   System.Data.SQLite/SQLiteBase.cs
+  System.Data.SQLite/SQLiteBlob.cs
   System.Data.SQLite/SQLiteCommand.cs
   System.Data.SQLite/SQLiteCommandBuilder.cs
   System.Data.SQLite/SQLiteConnection.cs

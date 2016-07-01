@@ -21,6 +21,7 @@
     <Compile Include="SQLite3_UTF16.cs" />
     <Compile Include="SQLiteBackup.cs" />
     <Compile Include="SQLiteBase.cs" />
+    <Compile Include="SQLiteBlob.cs" />
     <Compile Include="SQLiteCommand.cs">
       <SubType>Component</SubType>
     </Compile>
