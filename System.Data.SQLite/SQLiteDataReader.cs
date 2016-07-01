@@ -498,7 +498,9 @@ namespace System.Data.SQLite
     /// <summary>
     /// Attempts to query the integer identifier for the current row.  This
     /// will not work for tables that were created WITHOUT ROWID -OR- if the
-    /// query does not include the "rowid" column or one of its aliases.
+    /// query does not include the "rowid" column or one of its aliases -OR-
+    /// if the <see cref="SQLiteDataReader" /> was not created with the
+    /// <see cref="CommandBehavior.KeyInfo"/> flag.
     /// </summary>
     /// <returns>
     /// The integer identifier for the current row -OR- null if it could not
@@ -525,7 +527,8 @@ namespace System.Data.SQLite
     /// Retrieves the column as a <see cref="SQLiteBlob" /> object.
     /// This will not work for tables that were created WITHOUT ROWID
     /// -OR- if the query does not include the "rowid" column or one
-    /// of its aliases.
+    /// of its aliases -OR- if the <see cref="SQLiteDataReader" /> was
+    /// not created with the <see cref="CommandBehavior.KeyInfo"/> flag.
     /// </summary>
     /// <param name="i">The index of the column.</param>
     /// <param name="readOnly">
