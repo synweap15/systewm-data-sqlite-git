@@ -215,6 +215,8 @@ released versions of System.Data.SQLite.
     <li>Change the SQLiteReadValueCallback delegate &quot;eventArgs&quot; parameter to be of type SQLiteReadEventArgs.&nbsp;<b>** Potentially Incompatible Change **</b></li>
     <li>Make SQLiteReadValueEventArgs and SQLiteReadArrayEventArgs derive from SQLiteReadEventArgs.&nbsp;<b>** Potentially Incompatible Change **</b></li>
     <li>Rename SQLiteReadValueEventArgs.ArrayEventArgs property to ExtraEventArgs.&nbsp;<b>** Potentially Incompatible Change **</b></li>
+    <li>Add No_SQLiteGetSettingValue and No_SQLiteXmlConfigFile environment variables.</li>
+    <li>Reduce the number of calls to GetSettingValue from SQLiteConnection. Pursuant to [25d53b48f6].&nbsp;<b>** Potentially Incompatible Change **</b></li>
     <li>Add NoVerifyTypeAffinity connection flag to disable all type affinity checking.</li>
     <li>Add support for <a href="https://www.sqlite.org/c3ref/blob_open.html">incremental blob I/O</a>.</li>
 </ul>
