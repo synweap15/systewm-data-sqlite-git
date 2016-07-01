@@ -4447,27 +4447,28 @@ runTest {test data-1.84 {GetBlob method and SQLiteBlob class} -setup {
   set dataReader [sql execute -execute reader -format datareader \
       -behavior +KeyInfo -alias $db "SELECT x, y FROM t1;"]
 
-  set bytes(1) [object create -alias Byte\[\] 4]
-  set bytes(2) [object create -alias Byte\[\] 4]
+  set size 4
+  set bytes(1) [object create -alias Byte\[\] $size]
+  set bytes(2) [object create -alias Byte\[\] $size]
   set result [list]
 
   while {[$dataReader Read]} {
     set blob [$dataReader -alias GetBlob 1 false]
     lappend result [$blob GetCount]
-    $blob Read $bytes(1) 4 0
+    $blob Read $bytes(1) $size 0
     lappend result [getBytesAsList $bytes(1)]
 
-    for {set i 0} {$i < 4} {incr i} {
+    for {set i 0} {$i < $size} {incr i} {
       set byte [$bytes(1) GetValue $i]
       incr byte; set byte [object invoke -create Byte Parse $byte]
       $bytes(1) SetValue $byte $i
     }
 
-    $blob Write $bytes(1) 4 0
+    $blob Write $bytes(1) $size 0
 
     if {[$dataReader GetInt64 0] == 1} then {
       $blob Reopen 2
-      $blob Read $bytes(2) 4 0
+      $blob Read $bytes(2) $size 0
       lappend result [getBytesAsList $bytes(2)]
     }
 
@@ -4493,7 +4494,7 @@ runTest {test data-1.84 {GetBlob method and SQLiteBlob class} -setup {
 
   cleanupDb $fileName
 
-  unset -nocomplain byte i bytes result db fileName
+  unset -nocomplain byte i bytes size result db fileName
 
   rename getBytesAsList ""
 } -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
