@@ -1410,6 +1410,15 @@ namespace System.Data.SQLite
     /// </summary>
     private static SQLiteConnectionFlags _sharedFlags;
 
+    /// <summary>
+    /// The <see cref="SQLiteConnection" /> instance (for this thread) that
+    /// had the most recent call to <see cref="SQLiteConnection.Open" />.
+    /// </summary>
+#if !PLATFORM_COMPACTFRAMEWORK
+    [ThreadStatic()]
+#endif
+    private static SQLiteConnection _lastConnectionInOpen;
+
 #if SQLITE_STANDARD && !PLATFORM_COMPACTFRAMEWORK
     /// <summary>
     /// Used to hold the active library version number of SQLite.
@@ -2027,7 +2036,7 @@ namespace System.Data.SQLite
     /// </returns>
     internal bool TryGetCachedSetting(
         string name,     /* in */
-        string @default, /* in */
+        object @default, /* in */
         out object value /* out */
         )
     {
@@ -2456,9 +2465,45 @@ namespace System.Data.SQLite
         bool allowNameOnly
         )
     {
+        return ParseConnectionString(
+            null, connectionString, parseViaFramework, allowNameOnly);
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+
+    /// <summary>
+    /// Parses a connection string into component parts using the custom
+    /// connection string parser.  An exception may be thrown if the syntax
+    /// of the connection string is incorrect.
+    /// </summary>
+    /// <param name="connection">
+    /// The connection that will be using the parsed connection string.
+    /// </param>
+    /// <param name="connectionString">
+    /// The connection string to parse.
+    /// </param>
+    /// <param name="parseViaFramework">
+    /// Non-zero to parse the connection string using the algorithm provided
+    /// by the framework itself.  This is not applicable when running on the
+    /// .NET Compact Framework.
+    /// </param>
+    /// <param name="allowNameOnly">
+    /// Non-zero if names are allowed without values.
+    /// </param>
+    /// <returns>
+    /// The list of key/value pairs corresponding to the parameters specified
+    /// within the connection string.
+    /// </returns>
+    private static SortedList<string, string> ParseConnectionString(
+        SQLiteConnection connection,
+        string connectionString,
+        bool parseViaFramework,
+        bool allowNameOnly
+        )
+    {
         return parseViaFramework ?
-            ParseConnectionStringViaFramework(connectionString, false) :
-            ParseConnectionString(connectionString, allowNameOnly);
+            ParseConnectionStringViaFramework(connection, connectionString, false) :
+            ParseConnectionString(connection, connectionString, allowNameOnly);
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -2973,6 +3018,37 @@ namespace System.Data.SQLite
     }
 
     /// <summary>
+    /// Determines if the legacy connection string parser should be used.
+    /// </summary>
+    /// <param name="connection">
+    /// The connection that will be using the parsed connection string.
+    /// </param>
+    /// <returns>
+    /// Non-zero if the legacy connection string parser should be used.
+    /// </returns>
+    private static bool ShouldUseLegacyConnectionStringParser(
+        SQLiteConnection connection
+        )
+    {
+        string name = "No_SQLiteConnectionNewParser";
+        object value; /* NOT USED */
+
+        if ((connection != null) &&
+            connection.TryGetCachedSetting(name, null, out value))
+        {
+            return true;
+        }
+
+        if ((connection == null) &&
+            TryGetLastCachedSetting(name, null, out value))
+        {
+            return true;
+        }
+
+        return (UnsafeNativeMethods.GetSettingValue(name, null) != null);
+    }
+
+    /// <summary>
     /// Parses a connection string into component parts using the custom
     /// connection string parser.  An exception may be thrown if the syntax
     /// of the connection string is incorrect.
@@ -2992,6 +3068,33 @@ namespace System.Data.SQLite
         bool allowNameOnly
         )
     {
+        return ParseConnectionString(null, connectionString, allowNameOnly);
+    }
+
+    /// <summary>
+    /// Parses a connection string into component parts using the custom
+    /// connection string parser.  An exception may be thrown if the syntax
+    /// of the connection string is incorrect.
+    /// </summary>
+    /// <param name="connection">
+    /// The connection that will be using the parsed connection string.
+    /// </param>
+    /// <param name="connectionString">
+    /// The connection string to parse.
+    /// </param>
+    /// <param name="allowNameOnly">
+    /// Non-zero if names are allowed without values.
+    /// </param>
+    /// <returns>
+    /// The list of key/value pairs corresponding to the parameters specified
+    /// within the connection string.
+    /// </returns>
+    private static SortedList<string, string> ParseConnectionString(
+        SQLiteConnection connection,
+        string connectionString,
+        bool allowNameOnly
+        )
+    {
       string s = connectionString;
       int n;
       SortedList<string, string> ls = new SortedList<string, string>(StringComparer.OrdinalIgnoreCase);
@@ -3000,7 +3103,7 @@ namespace System.Data.SQLite
       string error = null;
       string[] arParts;
 
-      if (UnsafeNativeMethods.GetSettingValue("No_SQLiteConnectionNewParser", null) != null)
+      if (ShouldUseLegacyConnectionStringParser(connection))
           arParts = SQLiteConvert.Split(s, ';');
       else
           arParts = SQLiteConvert.NewSplit(s, ';', true, ref error);
@@ -3045,6 +3148,9 @@ namespace System.Data.SQLite
     /// connection string parser is always used instead because the framework
     /// provided one is unavailable there.
     /// </summary>
+    /// <param name="connection">
+    /// The connection that will be using the parsed connection string.
+    /// </param>
     /// <param name="connectionString">
     /// The connection string to parse.
     /// </param>
@@ -3055,6 +3161,7 @@ namespace System.Data.SQLite
     /// </param>
     /// <returns>The list of key/value pairs.</returns>
     private static SortedList<string, string> ParseConnectionStringViaFramework(
+        SQLiteConnection connection,
         string connectionString,
         bool strict
         )
@@ -3098,7 +3205,7 @@ namespace System.Data.SQLite
         //       string parser as the built-in (i.e. framework provided) one is
         //       unavailable.
         //
-        return ParseConnectionString(connectionString, false);
+        return ParseConnectionString(connection, connectionString, false);
 #endif
     }
 
@@ -3498,6 +3605,8 @@ namespace System.Data.SQLite
     {
       CheckDisposed();
 
+      _lastConnectionInOpen = this; /* THREAD-SAFE: per-thread datum. */
+
       OnChanged(this, new ConnectionEventArgs(
           SQLiteConnectionEventType.Opening, null, null, null, null, null,
           null, null));
@@ -3508,7 +3617,7 @@ namespace System.Data.SQLite
       Close();
 
       SortedList<string, string> opts = ParseConnectionString(
-          _connectionString, _parseViaFramework, false);
+          this, _connectionString, _parseViaFramework, false);
 
       OnChanged(this, new ConnectionEventArgs(
           SQLiteConnectionEventType.ConnectionString, null, null, null, null,
@@ -4401,6 +4510,41 @@ namespace System.Data.SQLite
     }
 
     /// <summary>
+    /// Queries and returns the value of the specified setting, using the
+    /// cached setting names and values for the last connection that used
+    /// by the <see cref="SQLiteConnection.Open" /> method, when available.
+    /// </summary>
+    /// <param name="name">
+    /// The name of the setting.
+    /// </param>
+    /// <param name="default">
+    /// The value to be returned if the setting has not been set explicitly
+    /// or cannot be determined.
+    /// </param>
+    /// <param name="value">
+    /// The value of the cached setting is stored here if found; otherwise,
+    /// the value of <paramref name="default" /> is stored here.
+    /// </param>
+    /// <returns>
+    /// Non-zero if the cached setting was found; otherwise, zero.
+    /// </returns>
+    private static bool TryGetLastCachedSetting(
+        string name,
+        object @default,
+        out object value
+        )
+    {
+        if (_lastConnectionInOpen == null)
+        {
+            value = @default;
+            return false;
+        }
+
+        return _lastConnectionInOpen.TryGetCachedSetting(
+            name, @default, out value);
+    }
+
+    /// <summary>
     /// The default connection flags to be used for all opened connections
     /// when they are not present in the connection string.
     /// </summary>
@@ -4408,11 +4552,17 @@ namespace System.Data.SQLite
     {
         get
         {
-            object enumValue;
+            string name = "DefaultFlags_SQLiteConnection";
+            object value;
 
-            enumValue = TryParseEnum(typeof(SQLiteConnectionFlags),
-                UnsafeNativeMethods.GetSettingValue(
-                    "DefaultFlags_SQLiteConnection", null), true);
+            if (!TryGetLastCachedSetting(name, null, out value))
+                value = UnsafeNativeMethods.GetSettingValue(name, null);
+
+            if (value == null)
+                return FallbackDefaultFlags;
+
+            object enumValue = TryParseEnum(
+                typeof(SQLiteConnectionFlags), value.ToString(), true);
 
             if (enumValue is SQLiteConnectionFlags)
                 return (SQLiteConnectionFlags)enumValue;
