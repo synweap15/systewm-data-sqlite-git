@@ -96,17 +96,18 @@ namespace System.Data.SQLite
       #region Public Methods
 #if DEBUG
       /// <summary>
-      /// Creates the dictionary used to store the read counts for each of the
-      /// runtime configuration settings.  These numbers are used for debugging
-      /// and testing purposes only.
+      /// Creates dictionaries used to store the read counts for each of
+      /// the runtime configuration settings.  These numbers are used for
+      /// debugging and testing purposes only.
       /// </summary>
       public static void InitializeSettingReadCounts()
       {
           lock (staticSyncRoot)
           {
               //
-              // NOTE: Create the lists of statistics that will contain the
-              //       number of times each setting value has been read.
+              // NOTE: Create the dictionaries of statistics that will
+              //       contain the number of times each setting value
+              //       has been read.
               //
               if (settingReadCounts == null)
                   settingReadCounts = new Dictionary<string, int>();
@@ -127,8 +128,8 @@ namespace System.Data.SQLite
       /// The name of the setting being read.
       /// </param>
       /// <param name="viaFile">
-      /// Non-zero if the specified setting was read via the configuration
-      /// file.
+      /// Non-zero if the specified setting is being read from the XML
+      /// configuration file.
       /// </param>
       public static void IncrementSettingReadCount(
           string name,
