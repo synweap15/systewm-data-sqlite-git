@@ -790,11 +790,7 @@ namespace System.Data.SQLite
       /// <returns>
       /// The value of the setting -OR- the default value specified by
       /// <paramref name="default" /> if it has not been set explicitly or
-      /// cannot be determined.  By default, all references to existing
-      /// environment variables will be expanded to their corresponding values
-      /// within the value to be returned unless either the "No_Expand" or
-      /// "No_Expand_<paramref name="name" />" environment variable is set [to
-      /// anything].
+      /// cannot be determined.
       /// </returns>
       private static string GetSettingValueViaXmlConfigFile(
           string fileName, /* in */
