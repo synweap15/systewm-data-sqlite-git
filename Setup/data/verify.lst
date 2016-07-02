@@ -1196,7 +1196,7 @@ set sds_manifests(setupX64Vs2013) {
 #       supporting the .NET Framework 4.6 for x86.
 #
 set sds_manifests(setupX86Vs2015) {
-  {{tmp}\vcredist_x86_2015_VSU2.exe}
+  {{tmp}\vcredist_x86_2015_VSU3.exe}
 }
 
 ###############################################################################
@@ -1205,7 +1205,7 @@ set sds_manifests(setupX86Vs2015) {
 #       supporting the .NET Framework 4.6 for x64.
 #
 set sds_manifests(setupX64Vs2015) {
-  {{tmp}\vcredist_x64_2015_VSU2.exe}
+  {{tmp}\vcredist_x64_2015_VSU3.exe}
 }
 
 ###############################################################################
