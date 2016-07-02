@@ -2826,6 +2826,22 @@ namespace eval ::Eagle {
       }
     }
 
+    proc saveGetSettingValueEnvironment {} {
+      upvar 1 savedEnv savedEnv
+
+      saveEnvironmentVariables [list \
+          No_Expand No_SQLiteGetSettingValue No_SQLiteXmlConfigFile] \
+          savedEnv
+    }
+
+    proc restoreGetSettingValueEnvironment {} {
+      upvar 1 savedEnv savedEnv
+
+      restoreEnvironmentVariables [list \
+          No_Expand No_SQLiteGetSettingValue No_SQLiteXmlConfigFile] \
+          savedEnv
+    }
+
     proc saveSQLiteConnectionEnvironment {} {
       upvar 1 savedEnv savedEnv
 
@@ -3281,35 +3297,72 @@ namespace eval ::Eagle {
       #       configuration statistics.
       #
       if {[haveSQLiteObjectCommand] && \
-          [haveConstraint buildConfiguration.Debug] && [catch {
-        object invoke -flags +NonPublic -alias \
-            System.Data.SQLite.DebugData settingReadCounts
-      } settingReadCounts] == 0} then {
-        set nameCount [$settingReadCounts Count]
-        set valueCount 0
+          [haveConstraint buildConfiguration.Debug]} then {
+        if {[catch {
+          object invoke -flags +NonPublic -alias \
+              System.Data.SQLite.DebugData settingReadCounts
+        } settingReadCounts] == 0} then {
+          set nameCount [$settingReadCounts Count]
+          set valueCount 0
 
-        object foreach -alias pair $settingReadCounts {
-          incr valueCount [$pair Value]
+          object foreach -alias pair $settingReadCounts {
+            incr valueCount [$pair Value]
 
-          if {!$quiet} then {
-            tputs $channel [appendArgs \
-                "---- setting \"" [$pair Key] "\" was read " \
-                [$pair Value] " times\n"]
+            if {!$quiet} then {
+              tputs $channel [appendArgs \
+                  "---- setting \"" [$pair Key] "\" was read " \
+                  [$pair Value] " times\n"]
+            }
+          }
+
+          if {$reset} then {
+            if {[catch {$settingReadCounts Clear} error] == 0} then {
+              if {!$quiet} then {
+                tputs $channel [appendArgs \
+                    "---- reset setting statistics for the previous " \
+                    $nameCount " names and " $valueCount " values read\n"]
+              }
+            } else {
+              tputs $channel [appendArgs \
+                  "==== WARNING: failed to reset setting statistics for " \
+                  "the previous " $nameCount " names and " $valueCount \
+                  " values read, error: " \n\t $error \n]
+            }
           }
         }
 
-        if {$reset} then {
-          if {[catch {$settingReadCounts Clear} error] == 0} then {
+        if {[catch {
+          object invoke -flags +NonPublic -alias \
+              System.Data.SQLite.DebugData settingFileReadCounts
+        } settingFileReadCounts] == 0} then {
+          set nameCount [$settingFileReadCounts Count]
+          set valueCount 0
+
+          object foreach -alias pair $settingFileReadCounts {
+            incr valueCount [$pair Value]
+
             if {!$quiet} then {
               tputs $channel [appendArgs \
-                  "---- reset setting statistics for the previous " \
-                  $nameCount " names and " $valueCount " values read\n"]
+                  "---- setting \"" [$pair Key] "\" was read " \
+                  [$pair Value] " times from the configuration file\n"]
             }
-          } else {
-            tputs $channel [appendArgs \
-                "==== WARNING: failed to reset setting statistics for " \
-                "the previous " $nameCount " names and " $valueCount \
-                " values read, error: " \n\t $error \n]
+          }
+
+          if {$reset} then {
+            if {[catch {$settingFileReadCounts Clear} error] == 0} then {
+              if {!$quiet} then {
+                tputs $channel [appendArgs \
+                    "---- reset setting statistics for the previous " \
+                    $nameCount " names and " $valueCount " values read " \
+                    "from the configuration file\n"]
+              }
+            } else {
+              tputs $channel [appendArgs \
+                  "==== WARNING: failed to reset setting statistics for " \
+                  "the previous " $nameCount " names and " $valueCount \
+                  " values read from the configuration file, error: " \n\t \
+                  $error \n]
+            }
           }
         }
       }

@@ -20,21 +20,46 @@ runSQLiteTestPrologue
 
 ###############################################################################
 
-proc getSettingReadCount { name } {
+proc getSettingReadCount { name {viaFile false} } {
   if {[haveConstraint buildConfiguration.Debug] && [catch {
     object invoke -flags +NonPublic -alias \
-        System.Data.SQLite.DebugData settingReadCounts
+        System.Data.SQLite.DebugData [expr {$viaFile ? \
+        "settingFileReadCounts" : "settingReadCounts"}]
   } settingReadCounts] == 0} then {
-    if {[$settingReadCounts TryGetValue $name value]} then {
-      tputs $::test_channel [appendArgs \
-          "---- setting \"" $name "\" was read " $value " times\n"]
+    if {[string length $name] > 0} then {
+      if {[$settingReadCounts TryGetValue $name value]} then {
+        tputs $::test_channel [appendArgs \
+            "---- setting \"" $name "\" was read " $value " times" \
+            [expr {$viaFile ? " from the configuration file" : ""}] \n]
 
-      return $value
+        return $value
+      }
+    } else {
+      set nameCount [$settingReadCounts Count]
+      set valueCount 0
+
+      object foreach -alias pair $settingReadCounts {
+        incr valueCount [$pair Value]
+
+        tputs $::test_channel [appendArgs \
+            "---- setting \"" [$pair Key] "\" was read " [$pair Value] \
+            " times" [expr {$viaFile ? " from the configuration file" : \
+            ""}] \n]
+      }
+
+      return [list $nameCount $valueCount]
     }
   }
 
-  tputs $::test_channel [appendArgs \
-      "---- setting \"" $name "\" was not read\n"]
+  if {[string length $name] > 0} then {
+    tputs $::test_channel [appendArgs \
+        "---- setting \"" $name "\" was not read" [expr {$viaFile ? \
+        " from the configuration file" : ""}] \n]
+  } else {
+    tputs $::test_channel [appendArgs \
+        "---- no settings were read" [expr {$viaFile ? \
+        " from the configuration file" : ""}] \n]
+  }
 
   return -1
 }
@@ -375,6 +400,65 @@ runTest {test tkt-58ed318f2f-1.12 {zero SQLiteConvert settings usage} -setup {
   freeDbConnection
 
   unset -nocomplain columns connection db fileName
+} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
+System.Data.SQLite buildConfiguration.Debug} -result {True}}
+
+###############################################################################
+
+reportSQLiteResources $test_channel true
+
+###############################################################################
+
+runTest {test tkt-58ed318f2f-1.13 {zero settings usage} -setup {
+  saveGetSettingValueEnvironment
+
+  set env(No_SQLiteGetSettingValue) 1
+
+  setupDb [set fileName tkt-58ed318f2f-1.13.db]
+} -body {
+  sql execute $db {
+    CREATE TABLE t1(x);
+    INSERT INTO t1 (x) VALUES(0);
+  }
+
+  sql execute -execute reader -format list $db "SELECT x FROM t1;"
+
+  expr {[getSettingReadCount ""] eq "0 0"}
+} -cleanup {
+  cleanupDb $fileName
+  restoreGetSettingValueEnvironment
+
+  unset -nocomplain db fileName
+} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
+System.Data.SQLite buildConfiguration.Debug} -result {True}}
+
+###############################################################################
+
+reportSQLiteResources $test_channel true
+
+###############################################################################
+
+runTest {test tkt-58ed318f2f-1.14 {zero XML configuration file usage} -setup {
+  saveGetSettingValueEnvironment
+
+  set env(No_SQLiteXmlConfigFile) 1
+
+  setupDb [set fileName tkt-58ed318f2f-1.14.db]
+} -body {
+  sql execute $db {
+    CREATE TABLE t1(x);
+    INSERT INTO t1 (x) VALUES(0);
+  }
+
+  sql execute -execute reader -format list $db "SELECT x FROM t1;"
+
+  expr {[getSettingReadCount ""] eq "10 13" && \
+      [getSettingReadCount "" true] eq "0 0"}
+} -cleanup {
+  cleanupDb $fileName
+  restoreGetSettingValueEnvironment
+
+  unset -nocomplain db fileName
 } -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
 System.Data.SQLite buildConfiguration.Debug} -result {True}}
 

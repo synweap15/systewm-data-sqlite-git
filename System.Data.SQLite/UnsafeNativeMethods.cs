@@ -78,6 +78,15 @@ namespace System.Data.SQLite
       /// "Debug" build configuration.
       /// </summary>
       private static Dictionary<string, int> settingReadCounts;
+
+      /////////////////////////////////////////////////////////////////////////
+
+      /// <summary>
+      /// This dictionary stores the read counts for the runtime configuration
+      /// settings via the XML configuration file.  This information is only
+      /// recorded when compiled in the "Debug" build configuration.
+      /// </summary>
+      private static Dictionary<string, int> settingFileReadCounts;
 #endif
       #endregion
       #endregion
@@ -96,11 +105,14 @@ namespace System.Data.SQLite
           lock (staticSyncRoot)
           {
               //
-              // NOTE: Create the list of statistics that will contain the
+              // NOTE: Create the lists of statistics that will contain the
               //       number of times each setting value has been read.
               //
               if (settingReadCounts == null)
                   settingReadCounts = new Dictionary<string, int>();
+
+              if (settingFileReadCounts == null)
+                  settingFileReadCounts = new Dictionary<string, int>();
           }
       }
 
@@ -114,8 +126,13 @@ namespace System.Data.SQLite
       /// <param name="name">
       /// The name of the setting being read.
       /// </param>
+      /// <param name="viaFile">
+      /// Non-zero if the specified setting was read via the configuration
+      /// file.
+      /// </param>
       public static void IncrementSettingReadCount(
-          string name
+          string name,
+          bool viaFile
           )
       {
           lock (staticSyncRoot)
@@ -123,14 +140,29 @@ namespace System.Data.SQLite
               //
               // NOTE: Update statistics for this setting value.
               //
-              if (settingReadCounts != null)
+              if (viaFile)
               {
-                  int count;
+                  if (settingFileReadCounts != null)
+                  {
+                      int count;
 
-                  if (settingReadCounts.TryGetValue(name, out count))
-                        settingReadCounts[name] = count + 1;
-                  else
-                        settingReadCounts.Add(name, 1);
+                      if (settingFileReadCounts.TryGetValue(name, out count))
+                          settingFileReadCounts[name] = count + 1;
+                      else
+                          settingFileReadCounts.Add(name, 1);
+                  }
+              }
+              else
+              {
+                  if (settingReadCounts != null)
+                  {
+                      int count;
+
+                      if (settingReadCounts.TryGetValue(name, out count))
+                          settingReadCounts[name] = count + 1;
+                      else
+                          settingReadCounts.Add(name, 1);
+                  }
               }
           }
       }
@@ -782,7 +814,7 @@ namespace System.Data.SQLite
 
           #region Debug Build Only
 #if DEBUG
-          DebugData.IncrementSettingReadCount(name);
+          DebugData.IncrementSettingReadCount(name, false);
 #endif
           #endregion
 
@@ -823,6 +855,16 @@ namespace System.Data.SQLite
               return @default;
           }
 #endif
+
+          /////////////////////////////////////////////////////////////////////
+
+          #region Debug Build Only
+#if DEBUG
+          DebugData.IncrementSettingReadCount(name, true);
+#endif
+          #endregion
+
+          /////////////////////////////////////////////////////////////////////
 
           try
           {
