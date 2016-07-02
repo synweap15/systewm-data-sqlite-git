@@ -767,6 +767,98 @@ namespace System.Data.SQLite
       }
 
       /////////////////////////////////////////////////////////////////////////
+
+      /// <summary>
+      /// Queries and returns the value of the specified setting, using the
+      /// specified XML configuration file.
+      /// </summary>
+      /// <param name="fileName">
+      /// The name of the XML configuration file to read.
+      /// </param>
+      /// <param name="name">
+      /// The name of the setting.
+      /// </param>
+      /// <param name="default">
+      /// The value to be returned if the setting has not been set explicitly
+      /// or cannot be determined.
+      /// </param>
+      /// <param name="expand">
+      /// Non-zero to expand any environment variable references contained in
+      /// the setting value to be returned.  This has no effect on the .NET
+      /// Compact Framework.
+      /// </param>
+      /// <returns>
+      /// The value of the setting -OR- the default value specified by
+      /// <paramref name="default" /> if it has not been set explicitly or
+      /// cannot be determined.  By default, all references to existing
+      /// environment variables will be expanded to their corresponding values
+      /// within the value to be returned unless either the "No_Expand" or
+      /// "No_Expand_<paramref name="name" />" environment variable is set [to
+      /// anything].
+      /// </returns>
+      private static string GetSettingValueViaXmlConfigFile(
+          string fileName, /* in */
+          string name,     /* in */
+          string @default, /* in */
+          bool expand      /* in */
+          )
+      {
+          try
+          {
+              if ((fileName == null) || (name == null))
+                  return @default;
+
+              XmlDocument document = new XmlDocument();
+
+              document.Load(fileName); /* throw */
+
+              XmlElement element = document.SelectSingleNode(
+                  HelperMethods.StringFormat(CultureInfo.InvariantCulture,
+                  "/configuration/appSettings/add[@key='{0}']", name)) as
+                  XmlElement; /* throw */
+
+              if (element != null)
+              {
+                  string value = null;
+
+                  if (element.HasAttribute("value"))
+                      value = element.GetAttribute("value");
+
+#if !PLATFORM_COMPACTFRAMEWORK
+                  if (expand && !String.IsNullOrEmpty(value))
+                      value = Environment.ExpandEnvironmentVariables(value);
+#endif
+
+                  if (value != null)
+                      return value;
+              }
+          }
+#if !NET_COMPACT_20 && TRACE_SHARED
+          catch (Exception e)
+#else
+          catch (Exception)
+#endif
+          {
+#if !NET_COMPACT_20 && TRACE_SHARED
+              try
+              {
+                  Trace.WriteLine(HelperMethods.StringFormat(
+                      CultureInfo.CurrentCulture, "Native library " +
+                      "pre-loader failed to get setting \"{0}\" value " +
+                      "from XML configuration file \"{1}\": {2}", name,
+                      fileName, e)); /* throw */
+              }
+              catch
+              {
+                  // do nothing.
+              }
+#endif
+          }
+
+          return @default;
+      }
+
+      /////////////////////////////////////////////////////////////////////////
       /// <summary>
       /// Queries and returns the value of the specified setting, using the XML
       /// configuration file and/or the environment variables for the current
@@ -815,16 +907,23 @@ namespace System.Data.SQLite
 
           #region Debug Build Only
 #if DEBUG
+          //
+          // NOTE: We are about to read a setting value from the environment
+          //       or possibly from the XML configuration file; create or
+          //       increment the appropriate statistic now.
+          //
           DebugData.IncrementSettingReadCount(name, false);
 #endif
           #endregion
 
           /////////////////////////////////////////////////////////////////////
 
-          string value = null;
+          bool expand = true; /* SHARED: Environment -AND- XML config file. */
+
+          /////////////////////////////////////////////////////////////////////
 
 #if !PLATFORM_COMPACTFRAMEWORK
-          bool expand = true;
+          string value = null;
 
           if (Environment.GetEnvironmentVariable("No_Expand") != null)
           {
@@ -861,64 +960,19 @@ namespace System.Data.SQLite
 
           #region Debug Build Only
 #if DEBUG
+          //
+          // NOTE: We are about to read a setting value from the XML
+          //       configuration file; create or increment the appropriate
+          //       statistic now.
+          //
           DebugData.IncrementSettingReadCount(name, true);
 #endif
           #endregion
 
           /////////////////////////////////////////////////////////////////////
 
-          try
-          {
-              string fileName = GetXmlConfigFileName();
-
-              if (fileName == null)
-                  return @default;
-
-              XmlDocument document = new XmlDocument();
-
-              document.Load(fileName);
-
-              XmlElement element = document.SelectSingleNode(
-                  HelperMethods.StringFormat(CultureInfo.InvariantCulture,
-                  "/configuration/appSettings/add[@key='{0}']", name)) as
-                  XmlElement;
-
-              if (element != null)
-              {
-                  if (element.HasAttribute("value"))
-                      value = element.GetAttribute("value");
-
-#if !PLATFORM_COMPACTFRAMEWORK
-                  if (expand && !String.IsNullOrEmpty(value))
-                      value = Environment.ExpandEnvironmentVariables(value);
-#endif
-
-                  if (value != null)
-                      return value;
-              }
-          }
-#if !NET_COMPACT_20 && TRACE_SHARED
-          catch (Exception e)
-#else
-          catch (Exception)
-#endif
-          {
-#if !NET_COMPACT_20 && TRACE_SHARED
-              try
-              {
-                  Trace.WriteLine(HelperMethods.StringFormat(
-                      CultureInfo.CurrentCulture,
-                      "Native library pre-loader failed to get setting " +
-                      "\"{0}\" value: {1}", name, e)); /* throw */
-              }
-              catch
-              {
-                  // do nothing.
-              }
-#endif
-          }
-
-          return @default;
+          return GetSettingValueViaXmlConfigFile(
+              GetXmlConfigFileName(), name, @default, expand);
       }
 
       /////////////////////////////////////////////////////////////////////////
