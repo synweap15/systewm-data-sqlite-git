@@ -1071,7 +1071,9 @@ SQLITE_API int WINAPI sqlite3_cursor_rowid_interop(sqlite3_stmt *pstmt, int curs
         ret = SQLITE_ERROR;
         break;
       }
-#if SQLITE_VERSION_NUMBER >= 3010000
+#if SQLITE_VERSION_NUMBER >= 3014000
+      *prowid = sqlite3BtreeIntegerKey(pC->uc.pCursor);
+#elif SQLITE_VERSION_NUMBER >= 3010000
       sqlite3BtreeKeySize(pC->uc.pCursor, prowid);
 #else
       sqlite3BtreeKeySize(pC->pCursor, prowid);
