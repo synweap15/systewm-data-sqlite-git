@@ -642,7 +642,8 @@ namespace System.Data.SQLite
 
             if (result == -1) /* database not found */
             {
-                throw new SQLiteException(String.Format(
+                throw new SQLiteException(HelperMethods.StringFormat(
+                    CultureInfo.CurrentCulture,
                     "database \"{0}\" not found", name));
             }
 
@@ -2726,7 +2727,43 @@ namespace System.Data.SQLite
 #endif
 
     /// <summary>
-    /// Enables or disabled extension loading by SQLite.
+    /// Enables or disables a configuration option for the database.
+    /// connection.
+    /// </summary>
+    /// <param name="option">
+    /// The database configuration option to enable or disable.
+    /// </param>
+    /// <param name="bOnOff">
+    /// True to enable loading of extensions, false to disable.
+    /// </param>
+    /// <returns>
+    /// A standard SQLite return code.
+    /// </returns>
+    internal override SQLiteErrorCode SetConfigurationOption(
+        SQLiteConfigDbOpsEnum option,
+        bool bOnOff
+        )
+    {
+        if ((option < SQLiteConfigDbOpsEnum.SQLITE_DBCONFIG_ENABLE_FKEY) ||
+            (option > SQLiteConfigDbOpsEnum.SQLITE_DBCONFIG_ENABLE_LOAD_EXTENSION))
+        {
+            throw new SQLiteException(HelperMethods.StringFormat(
+                CultureInfo.CurrentCulture,
+                "unsupported configuration option, must be: {0}, {1}, {2}, or {3}",
+                SQLiteConfigDbOpsEnum.SQLITE_DBCONFIG_ENABLE_FKEY,
+                SQLiteConfigDbOpsEnum.SQLITE_DBCONFIG_ENABLE_TRIGGER,
+                SQLiteConfigDbOpsEnum.SQLITE_DBCONFIG_ENABLE_FTS3_TOKENIZER,
+                SQLiteConfigDbOpsEnum.SQLITE_DBCONFIG_ENABLE_LOAD_EXTENSION));
+        }
+
+        int result = 0; /* NOT USED */
+
+        return UnsafeNativeMethods.sqlite3_db_config_int_refint(
+            _sql, option, (bOnOff ? 1 : 0), ref result);
+    }
+
+    /// <summary>
+    /// Enables or disables extension loading by SQLite.
     /// </summary>
     /// <param name="bOnOff">
     /// True to enable loading of extensions, false to disable.
@@ -2737,11 +2774,9 @@ namespace System.Data.SQLite
 
         if (SQLiteVersionNumber >= 3013000)
         {
-            int result = 0; /* NOT USED */
-
-            n = UnsafeNativeMethods.sqlite3_db_config_int_refint(
-                _sql, SQLiteConfigDbOpsEnum.SQLITE_DBCONFIG_ENABLE_LOAD_EXTENSION,
-                (bOnOff ? 1 : 0), ref result);
+            n = SetConfigurationOption(
+                SQLiteConfigDbOpsEnum.SQLITE_DBCONFIG_ENABLE_LOAD_EXTENSION,
+                bOnOff);
         }
         else
         {

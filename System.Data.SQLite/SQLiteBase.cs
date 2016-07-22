@@ -373,7 +373,21 @@ namespace System.Data.SQLite
 #endif
 
     /// <summary>
-    /// Enables or disabled extension loading by SQLite.
+    /// Enables or disables a configuration option for the database.
+    /// connection.
+    /// </summary>
+    /// <param name="option">
+    /// The database configuration option to enable or disable.
+    /// </param>
+    /// <param name="bOnOff">
+    /// True to enable loading of extensions, false to disable.
+    /// </param>
+    /// <returns>
+    /// A standard SQLite return code.
+    /// </returns>
+    internal abstract SQLiteErrorCode SetConfigurationOption(SQLiteConfigDbOpsEnum option, bool bOnOff);
+    /// <summary>
+    /// Enables or disables extension loading by SQLite.
     /// </summary>
     /// <param name="bOnOff">
     /// True to enable loading of extensions, false to disable.
@@ -1293,14 +1307,45 @@ namespace System.Data.SQLite
       DefaultAndLogAll = Default | LogAll
   }
 
-  // These are the options to the internal sqlite3_db_config call.
-  internal enum SQLiteConfigDbOpsEnum
+  /// <summary>
+  /// These are the supported configuration verbs for use with the native
+  /// SQLite library.  They are used with the
+  /// <see cref="SQLiteConnection.SetConfigurationOption" /> method.
+  /// </summary>
+  public enum SQLiteConfigDbOpsEnum
   {
+    /// <summary>
+    /// This value represents an unknown (or invalid) option, do not use it.
+    /// </summary>
     SQLITE_DBCONFIG_NONE = 0, // nil
+
+    /// <summary>
+    /// This option is not currently supported by System.Data.SQLite.  It
+    /// may be supported in the future.
+    /// </summary>
     SQLITE_DBCONFIG_LOOKASIDE = 1001, // void* int int
+
+    /// <summary>
+    /// This option is used to enable or disable the enforcement of
+    /// foreign key constraints.
+    /// </summary>
     SQLITE_DBCONFIG_ENABLE_FKEY = 1002, // int int*
+
+    /// <summary>
+    /// This option is used to enable or disable triggers.
+    /// </summary>
     SQLITE_DBCONFIG_ENABLE_TRIGGER = 1003, // int int*
+
+    /// <summary>
+    /// This option is used to enable or disable the two-argument version
+    /// of the fts3_tokenizer() function which is part of the FTS3 full-text
+    /// search engine extension.
+    /// </summary>
     SQLITE_DBCONFIG_ENABLE_FTS3_TOKENIZER = 1004, // int int*
+
+    /// <summary>
+    /// This option is used to enable or disable the loading of extensions.
+    /// </summary>
     SQLITE_DBCONFIG_ENABLE_LOAD_EXTENSION = 1005 // int int*
   }
 

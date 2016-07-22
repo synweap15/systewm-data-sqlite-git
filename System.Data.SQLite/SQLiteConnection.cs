@@ -3327,6 +3327,39 @@ namespace System.Data.SQLite
     }
 
     /// <summary>
+    /// Enables or disables a configuration option for the database.
+    /// </summary>
+    /// <param name="option">
+    /// The database configuration option to enable or disable.
+    /// </param>
+    /// <param name="enable">
+    /// True to enable loading of extensions, false to disable.
+    /// </param>
+    public void SetConfigurationOption(
+        SQLiteConfigDbOpsEnum option,
+        bool enable
+        )
+    {
+        CheckDisposed();
+
+        if (_sql == null)
+        {
+            throw new InvalidOperationException(HelperMethods.StringFormat(
+                CultureInfo.CurrentCulture,
+                "Database connection not valid for {0} a configuration option.",
+                enable ? "enabling" : "disabling"));
+        }
+
+        if ((option == SQLiteConfigDbOpsEnum.SQLITE_DBCONFIG_ENABLE_LOAD_EXTENSION) &&
+            ((_flags & SQLiteConnectionFlags.NoLoadExtension) == SQLiteConnectionFlags.NoLoadExtension))
+        {
+            throw new SQLiteException("Loading extensions is disabled for this database connection.");
+        }
+
+        _sql.SetConfigurationOption(option, enable);
+    }
+
+    /// <summary>
     /// Enables or disabled extension loading.
     /// </summary>
     /// <param name="enable">
