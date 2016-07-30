@@ -452,7 +452,7 @@ runTest {test tkt-58ed318f2f-1.14 {zero XML configuration file usage} -setup {
 
   sql execute -execute reader -format list $db "SELECT x FROM t1;"
 
-  expr {[getSettingReadCount ""] eq "10 13" && \
+  expr {[getSettingReadCount ""] eq ([isMono] ? "10 15" : "10 13") && \
       [getSettingReadCount "" true] eq "0 0"}
 } -cleanup {
   cleanupDb $fileName
