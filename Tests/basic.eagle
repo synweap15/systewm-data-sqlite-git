@@ -4432,7 +4432,14 @@ database -- no such function: REGEXP\} 0 \{\}$}}
 
 runTest {test data-1.84 {GetBlob method and SQLiteBlob class} -setup {
   proc getBytesAsList { bytes } {
-    set byteList [object create -alias ByteList $bytes]
+    #
+    # HACK: *MONO* Mono does not choose the right ByteList constructor
+    #       overload here.  Therefore, attempt to force the issue.
+    #
+    set byteList [object create -parametertypes [list \
+        System.Collections.Generic.IEnumerable`1\[System.Byte\]] \
+        -alias ByteList $bytes]
+
     return [$byteList ToString]
   }
 
