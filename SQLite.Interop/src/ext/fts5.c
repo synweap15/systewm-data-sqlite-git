@@ -330,7 +330,7 @@ struct Fts5ExtensionApi {
 ** behaviour. The structure methods are expected to function as follows:
 **
 ** xCreate:
-**   This function is used to allocate and inititalize a tokenizer instance.
+**   This function is used to allocate and initialize a tokenizer instance.
 **   A tokenizer instance is required to actually tokenize text.
 **
 **   The first argument passed to this function is a copy of the (void*)
@@ -589,7 +589,6 @@ struct fts5_api {
 #endif
 
 #endif /* _FTS5_H */
-
 
 #line 1 "fts5Int.h"
 /*
@@ -16890,7 +16889,7 @@ static void fts5SourceIdFunc(
 ){
   assert( nArg==0 );
   UNUSED_PARAM2(nArg, apUnused);
-  sqlite3_result_text(pCtx, "fts5: 2016-07-29 17:36:27 9fae75c08b7d3b3e13734193ad8398ef6971cbac", -1, SQLITE_TRANSIENT);
+  sqlite3_result_text(pCtx, "fts5: 2016-08-08 13:40:27 d5e98057028abcf7217d0d2b2e29bbbcdf09d6de", -1, SQLITE_TRANSIENT);
 }
 
 static int fts5Init(sqlite3 *db){
