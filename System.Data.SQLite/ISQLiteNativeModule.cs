@@ -22,8 +22,14 @@ namespace System.Data.SQLite
         ///                char **pzErr);
         /// </code></para>
         /// <para>
-        /// This method is called to create a new instance of a virtual table 
-        /// in response to a CREATE VIRTUAL TABLE statement. 
+        /// The xCreate method is called to create a new instance of a virtual table 
+        /// in response to a CREATE VIRTUAL TABLE statement.
+        /// If the xCreate method is the same pointer as the xConnect method, then the
+        /// virtual table is an eponymous virtual table.
+        /// If the xCreate method is omitted (if it is a NULL pointer) then the virtual 
+        /// table is an eponymous-only virtual table.
+        /// </para>
+        /// <para>
         /// The db parameter is a pointer to the SQLite database connection that 
         /// is executing the CREATE VIRTUAL TABLE statement. 
         /// The pAux argument is the copy of the client data pointer that was the 
@@ -176,6 +182,30 @@ namespace System.Data.SQLite
         /// number of hidden columns, in which case the latter hidden columns are
         /// unconstrained.  However, an error results if there are more arguments
         /// than there are hidden columns in the virtual table.
+        /// </para>
+        /// <para>
+        /// Beginning with SQLite version 3.14.0, the CREATE TABLE statement that
+        /// is passed into sqlite3_declare_vtab() may contain a WITHOUT ROWID clause.
+        /// This is useful for cases where the virtual table rows 
+        /// cannot easily be mapped into unique integers.  A CREATE TABLE
+        /// statement that includes WITHOUT ROWID must define one or more columns as
+        /// the PRIMARY KEY.  Every column of the PRIMARY KEY must individually be
+        /// NOT NULL and all columns for each row must be collectively unique.
+        /// </para>
+        /// <para>
+        /// Note that SQLite does not enforce the PRIMARY KEY for a WITHOUT ROWID
+        /// virtual table.  Enforcement is the responsibility of the underlying
+        /// virtual table implementation.  But SQLite does assume that the PRIMARY KEY
+        /// constraint is valid - that the identified columns really are UNIQUE and
+        /// NOT NULL - and it uses that assumption to optimize queries against the
+        /// virtual table.
+        /// </para>
+        /// <para>
+        /// The rowid column is not accessible on a
+        /// WITHOUT ROWID virtual table (of course).  Furthermore, since the
+        /// xUpdate method depends on having a valid rowid, the xUpdate method 
+        /// must be NULL for a WITHOUT ROWID virtual table.  That in turn means that
+        /// WITHOUT ROWID virtual tables must be read-only.
         /// </para>
         /// </summary>
         /// <param name="pDb">

@@ -29,6 +29,11 @@ proc escapeSubSpec { data } {
   return $data
 }
 
+proc removeSectionId { value } {
+  regsub -- { id="section(?:_\d+)+"} $value "" value
+  return $value
+}
+
 proc englishToList { value } {
   set result [list]
 
@@ -86,7 +91,7 @@ proc extractMethod { name lines pattern prefix indexVarName methodsVarName } {
   set length [llength $lines]
 
   while {$index < $length} {
-    set line [lindex $lines $index]
+    set line [removeSectionId [lindex $lines $index]]
 
     if {[regexp -- $pattern $line]} then {
       break; # stop on this line for outer loop.
@@ -191,12 +196,13 @@ set inputData [string map [list \
 set inputData [string map [list {<p align="center"></p>} ""] $inputData]
 
 set lines [split [string map [list \r\n \n] $inputData] \n]
-set patterns(method) {^<h3>2\.\d+ The (.*) Method(?:s)?</h3>$}
+
+set patterns(method) {^<h2>2\.\d+\. The (.*) Method(?:s)?</h2>$}
 set prefix "        /// "
 unset -nocomplain methods; set start false
 
 for {set index 0} {$index < [llength $lines]} {} {
-  set line [lindex $lines $index]
+  set line [removeSectionId [lindex $lines $index]]
 
   if {$start} then {
     if {[regexp -- $patterns(method) $line dummy capture]} then {
@@ -211,7 +217,7 @@ for {set index 0} {$index < [llength $lines]} {} {
     } else {
       incr index
     }
-  } elseif {[regexp -- {^<h2>2\.0 Virtual Table Methods</h2>$} $line]} then {
+  } elseif {[regexp -- {^<h1>2\. Virtual Table Methods</h1>$} $line]} then {
     set start true; incr index
   } else {
     incr index
