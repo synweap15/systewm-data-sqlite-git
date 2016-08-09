@@ -875,7 +875,7 @@ or in a USING or ON clause that is of the form
 </blockquote>
 
 <p>Where "column" is a column in the virtual table, OP is an operator 
-like "=" or "<", and EXPR is an arbitrary expression. So, for example,
+like "=" or "&lt;", and EXPR is an arbitrary expression. So, for example,
 if the WHERE clause contained a term like this:
 
 <blockquote><pre>
@@ -891,15 +891,15 @@ as it can. So, for example, if the WHERE clause contained something
 like this:
 
 <blockquote><pre>
-     x BETWEEN 10 AND 100 AND 999>y
+     x BETWEEN 10 AND 100 AND 999&gt;y
 </pre></blockquote>
 
 <p>The query optimizer might translate this into three separate constraints:
 
 <blockquote><pre>
-     x >= 10
-     x <= 100
-     y < 999
+     x &gt;= 10
+     x &lt;= 100
+     y &lt; 999
 </pre></blockquote>
 
 <p>For each constraint, the aConstraint[].iColumn field indicates which 
