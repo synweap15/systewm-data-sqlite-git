@@ -7,6 +7,7 @@
 </p>
 <ul>
     <li>Updated to [https://www.sqlite.org/releaselog/3_14.html|SQLite 3.14].</li>
+    <li>Add preliminary support for the .NET Framework 4.6.2.</li>
     <li>Change the SQLiteReadValueCallback delegate &quot;eventArgs&quot; parameter to be of type SQLiteReadEventArgs.&nbsp;<b>** Potentially Incompatible Change **</b></li>
     <li>Make SQLiteReadValueEventArgs and SQLiteReadArrayEventArgs derive from SQLiteReadEventArgs.&nbsp;<b>** Potentially Incompatible Change **</b></li>
     <li>Rename SQLiteReadValueEventArgs.ArrayEventArgs property to ExtraEventArgs.&nbsp;<b>** Potentially Incompatible Change **</b></li>

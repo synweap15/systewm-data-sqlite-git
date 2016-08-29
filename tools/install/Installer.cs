@@ -5263,6 +5263,14 @@ namespace System.Data.SQLite
                     if ((configuration == null) || !configuration.NoNetFx461)
                         desktopVersionList.Add(new Version(4, 6, 1));
 
+                    //
+                    // NOTE: The .NET Framework 4.6.2 does not have its own
+                    //       directory; however, it still may have assembly
+                    //       folders for use in Visual Studio, etc.
+                    //
+                    if ((configuration == null) || !configuration.NoNetFx462)
+                        desktopVersionList.Add(new Version(4, 6, 2));
+
                     frameworkList.Versions.Add(".NETFramework",
                         desktopVersionList);
                 }

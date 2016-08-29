@@ -332,6 +332,7 @@ set sds_manifests(source) {
   Setup/set_netFx452.bat
   Setup/set_netFx46.bat
   Setup/set_netFx461.bat
+  Setup/set_netFx462.bat
   Setup/set_Release.bat
   Setup/set_Release_ARMV7.bat
   "Setup/set_Release_CEPC DevPlatform.bat"

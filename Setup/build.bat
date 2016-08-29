@@ -191,6 +191,14 @@ IF DEFINED NETFX461ONLY (
   GOTO setup_buildToolDir
 )
 
+IF DEFINED NETFX462ONLY (
+  %_AECHO% Forcing the use of the .NET Framework 4.6.2...
+  SET YEAR=2015
+  CALL :fn_CheckFrameworkDir v4.0.30319
+  CALL :fn_CheckMsBuildDir 14.0
+  GOTO setup_buildToolDir
+)
+
 REM
 REM TODO: When the next version of MSBuild is released, this section may need
 REM       updating.
