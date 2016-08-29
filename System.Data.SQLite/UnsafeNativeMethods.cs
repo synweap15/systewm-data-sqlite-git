@@ -1344,6 +1344,22 @@ namespace System.Data.SQLite
                   //
                   if (File.Exists(fileName))
                   {
+#if !NET_COMPACT_20 && TRACE_DETECTION
+                      try
+                      {
+                          Trace.WriteLine(HelperMethods.StringFormat(
+                              CultureInfo.CurrentCulture,
+                              "Native library pre-loader search found file " +
+                              "name \"{0}\", returning directory \"{1}\" and " +
+                              "sub-directory \"{2}\"...", fileName, directory,
+                              subDirectory)); /* throw */
+                      }
+                      catch
+                      {
+                          // do nothing.
+                      }
+#endif
+
                       baseDirectory = directory;
                       processorArchitecture = subDirectory;
                       return true; /* FOUND */
