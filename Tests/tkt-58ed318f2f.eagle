@@ -460,7 +460,7 @@ runTest {test tkt-58ed318f2f-1.14 {zero XML configuration file usage} -setup {
 
   unset -nocomplain db fileName
 } -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
-System.Data.SQLite buildConfiguration.Debug} -result {True}}
+System.Data.SQLite SQLiteInterop buildConfiguration.Debug} -result {True}}
 
 ###############################################################################
 
