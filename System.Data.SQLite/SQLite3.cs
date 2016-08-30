@@ -71,7 +71,7 @@ namespace System.Data.SQLite
     protected int _poolVersion;
     private int _cancelCount;
 
-#if (NET_35 || NET_40 || NET_45 || NET_451 || NET_452 || NET_46 || NET_461) && !PLATFORM_COMPACTFRAMEWORK
+#if (NET_35 || NET_40 || NET_45 || NET_451 || NET_452 || NET_46 || NET_461 || NET_462) && !PLATFORM_COMPACTFRAMEWORK
     private bool _buildingSchema;
 #endif
 
@@ -1455,7 +1455,7 @@ namespace System.Data.SQLite
 
               return cmd;
             }
-#if (NET_35 || NET_40 || NET_45 || NET_451 || NET_452 || NET_46 || NET_461) && !PLATFORM_COMPACTFRAMEWORK
+#if (NET_35 || NET_40 || NET_45 || NET_451 || NET_452 || NET_46 || NET_461 || NET_462) && !PLATFORM_COMPACTFRAMEWORK
             else if (_buildingSchema == false && String.Compare(GetLastError(), 0, "no such table: TEMP.SCHEMA", 0, 26, StringComparison.OrdinalIgnoreCase) == 0)
             {
               strRemain = String.Empty;

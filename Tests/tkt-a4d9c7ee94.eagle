@@ -60,7 +60,8 @@ file_System.Data.SQLite.Linq.dll file_testlinq.exe file_northwindEF.db} \
 [haveConstraint buildFramework.netFx451] || \
 [haveConstraint buildFramework.netFx452] || \
 [haveConstraint buildFramework.netFx46] || \
-[haveConstraint buildFramework.netFx461]} \
+[haveConstraint buildFramework.netFx461] || \
+[haveConstraint buildFramework.netFx462]} \
 -result {0 {1581 1730 1833 2116 2139 2184 2903 3049 3801 6897 7960 8837 10019\
 10038 11747 14450 19428 19713 20852 27403 27511 29202 30346 31406 32859 33607\
 40222 44122 45839 48075 48084 48304 53404 55113 55439 60179 60601 72716 75234\
@@ -108,7 +109,8 @@ file_System.Data.SQLite.Linq.dll file_testlinq.exe file_northwindEF.db} \
 [haveConstraint buildFramework.netFx451] || \
 [haveConstraint buildFramework.netFx452] || \
 [haveConstraint buildFramework.netFx46] || \
-[haveConstraint buildFramework.netFx461]} \
+[haveConstraint buildFramework.netFx461] || \
+[haveConstraint buildFramework.netFx462]} \
 -result {0 {1581 1730 1833 2116 2139 2184 2903 3049 3801 6897 7960 8837 10019\
 10038 11747 14450 19428 19713 20852 27403 27511 29202 30346 31406 32859 33607\
 40222 44122 45839 48075 48084 48304 53404 55113 55439 60179 60601 72716 75234\
