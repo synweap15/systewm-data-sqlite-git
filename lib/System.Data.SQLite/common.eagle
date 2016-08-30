@@ -604,6 +604,14 @@ namespace eval ::Eagle {
       }
 
       #
+      # NOTE: If the machine name is unavailable, there is nothign else we
+      #       can do.
+      #
+      if {![info exists ::tcl_platform(machine)]} then {
+        return false
+      }
+
+      #
       # NOTE: What is the architecture for this machine?
       #
       set architecture [machineToPlatform $::tcl_platform(machine) true]
@@ -1443,6 +1451,14 @@ namespace eval ::Eagle {
       #
       if {[string length $platform] == 0} then {
         return true
+      }
+
+      #
+      # NOTE: If the machine name is unavailable, there is nothign else we
+      #       can do.
+      #
+      if {![info exists ::tcl_platform(machine)]} then {
+        return false
       }
 
       #

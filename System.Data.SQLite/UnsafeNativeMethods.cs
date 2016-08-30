@@ -1349,7 +1349,7 @@ namespace System.Data.SQLite
                       {
                           Trace.WriteLine(HelperMethods.StringFormat(
                               CultureInfo.CurrentCulture,
-                              "Native library pre-loader search found file " +
+                              "Native library pre-loader found native file " +
                               "name \"{0}\", returning directory \"{1}\" and " +
                               "sub-directory \"{2}\"...", fileName, directory,
                               subDirectory)); /* throw */
