@@ -235,7 +235,7 @@ namespace eval ::Eagle {
               return netFx451; # TODO: Or "netFx452"?
             }
             2015 {
-              return netFx46; # TODO: Or "netFx461"?
+              return netFx46; # TODO: Or "netFx461" / "netFx462"?
             }
             default {
               return netFx35; # TODO: Good "fallback" default?
@@ -249,7 +249,7 @@ namespace eval ::Eagle {
     # NOTE: This procedure should return non-zero if the configured test
     #       platform is most likely the default for this machine.
     #
-    proc isDefaultBuildPlatform { {verbose false} } {
+    proc isDefaultBuildPlatform { {verbose true} } {
       #
       # NOTE: Running on WoW64 is never the default platform.
       #
@@ -258,6 +258,7 @@ namespace eval ::Eagle {
           tputs $::test_channel \
               "---- detected non-default platform (WoW64)\n"
         }
+
         return false
       }
 
@@ -267,6 +268,7 @@ namespace eval ::Eagle {
       if {$verbose} then {
         tputs $::test_channel "---- detected default platform\n"
       }
+
       return true
     }
 
@@ -1134,7 +1136,7 @@ namespace eval ::Eagle {
       return $result
     }
 
-    proc moveSystemDataSQLiteDllConfig { {restore false} {verbose false} } {
+    proc moveSystemDataSQLiteDllConfig { {restore false} {verbose true} } {
       set directory [object invoke AppDomain CurrentDomain.BaseDirectory]
 
       if {[string length $directory] == 0} then {
@@ -1143,6 +1145,7 @@ namespace eval ::Eagle {
               "---- skipped moving \"System.Data.SQLite.dll.config\", " \
               "no base directory\n"]
         }
+
         return
       }
 
@@ -1229,7 +1232,7 @@ namespace eval ::Eagle {
     }
 
     proc tryCopyExternalFile {
-            fileName {platform ""} {newFileName ""} {verbose false} } {
+            fileName {platform ""} {newFileName ""} {verbose true} } {
       set sourceFileName [getExternalFileName $fileName]
 
       if {![file exists $sourceFileName]} then {
@@ -1238,6 +1241,7 @@ namespace eval ::Eagle {
               "---- skipped copying external file \"" $sourceFileName \
               "\", it does not exist\n"]
         }
+
         return
       }
 
@@ -1253,6 +1257,7 @@ namespace eval ::Eagle {
         if {![file exists $targetDirectory]} then {
           file mkdir $targetDirectory
         }
+
         file copy -force $sourceFileName $targetFileName
       }] == 0} then {
         tputs $::test_channel [appendArgs \
@@ -1266,7 +1271,7 @@ namespace eval ::Eagle {
     }
 
     proc tryCopyBinaryFile {
-            fileName {platform ""} {newFileName ""} {verbose false} } {
+            fileName {platform ""} {newFileName ""} {verbose true} } {
       set sourceFileName [getBinaryFileName $fileName $platform]
 
       if {![file exists $sourceFileName]} then {
@@ -1275,6 +1280,7 @@ namespace eval ::Eagle {
               "---- skipped copying binary file \"" $sourceFileName \
               "\", it does not exist\n"]
         }
+
         return
       }
 
@@ -1290,6 +1296,7 @@ namespace eval ::Eagle {
         if {![file exists $targetDirectory]} then {
           file mkdir $targetDirectory
         }
+
         file copy -force $sourceFileName $targetFileName
       }] == 0} then {
         tputs $::test_channel [appendArgs \
@@ -1303,7 +1310,7 @@ namespace eval ::Eagle {
     }
 
     proc tryCopyBuildFile {
-            fileName {platform ""} {newFileName ""} {verbose false} } {
+            fileName {platform ""} {newFileName ""} {verbose true} } {
       set sourceFileName [getBuildFileName $fileName $platform]
 
       if {![file exists $sourceFileName]} then {
@@ -1312,6 +1319,7 @@ namespace eval ::Eagle {
               "---- skipped copying build file \"" $sourceFileName \
               "\", it does not exist\n"]
         }
+
         return
       }
 
@@ -1327,6 +1335,7 @@ namespace eval ::Eagle {
         if {![file exists $targetDirectory]} then {
           file mkdir $targetDirectory
         }
+
         file copy -force $sourceFileName $targetFileName
       }] == 0} then {
         tputs $::test_channel [appendArgs \
@@ -1339,7 +1348,7 @@ namespace eval ::Eagle {
       }
     }
 
-    proc tryDeleteBinaryFile { fileName {platform ""} {verbose false} } {
+    proc tryDeleteBinaryFile { fileName {platform ""} {verbose true} } {
       set fileName [getBinaryFileName $fileName $platform]
 
       if {![file exists $fileName]} then {
@@ -1348,6 +1357,7 @@ namespace eval ::Eagle {
               "---- skipped deleting binary file \"" $fileName \
               "\", it does not exist\n"]
         }
+
         return
       }
 
@@ -1360,7 +1370,7 @@ namespace eval ::Eagle {
       }
     }
 
-    proc tryDeleteBuildFile { fileName {platform ""} {verbose false} } {
+    proc tryDeleteBuildFile { fileName {platform ""} {verbose true} } {
       set fileName [getBuildFileName $fileName $platform]
 
       if {![file exists $fileName]} then {
@@ -1369,6 +1379,7 @@ namespace eval ::Eagle {
               "---- skipped deleting build file \"" $fileName \
               "\", it does not exist\n"]
         }
+
         return
       }
 
@@ -1382,7 +1393,7 @@ namespace eval ::Eagle {
     }
 
     proc tryCopyAssembly {
-            fileName {platform ""} {pdb true} {verbose false} } {
+            fileName {platform ""} {pdb true} {verbose true} } {
       tryCopyBuildFile $fileName $platform "" $verbose
 
       if {$pdb} then {
@@ -1392,7 +1403,7 @@ namespace eval ::Eagle {
     }
 
     proc tryDeleteAssembly {
-            fileName {platform ""} {pdb true} {verbose false} } {
+            fileName {platform ""} {pdb true} {verbose true} } {
       tryDeleteBinaryFile $fileName $platform $verbose
 
       if {$pdb} then {
@@ -3788,6 +3799,27 @@ namespace eval ::Eagle {
             System.Data.SQLite.EF6.dll]
 
         #
+        # NOTE: Show the various lists of file names that are handled by this
+        #       procedure.
+        #
+        tputs $::test_channel [appendArgs \
+            "---- list of \"configuration\" file names is: " \
+            $configFileNames \n]
+
+        tputs $::test_channel [appendArgs \
+            "---- list of \"MDA configuration\" file names is: " \
+            $mdaConfigFileNames \n]
+
+        tputs $::test_channel [appendArgs \
+            "---- list of \"external\" file names is: " $externalFileNames \n]
+
+        tputs $::test_channel [appendArgs \
+            "---- list of \"native\" file names is: " $nativeFileNames \n]
+
+        tputs $::test_channel [appendArgs \
+            "---- list of \"managed\" file names is: " $managedFileNames \n]
+
+        #
         # NOTE: Remove any test constraints that refer to the native and/or
         #       managed assembly files that we handle unless forbidden from
         #       doing so.
@@ -3919,9 +3951,15 @@ namespace eval ::Eagle {
           #
           if {![info exists ::no(copySqliteFiles)]} then {
             if {![info exists ::no(copySqliteConfigFiles)]} then {
+              tputs $::test_channel \
+                  "---- start copying configuration files\n"
+
               foreach fileName $configFileNames {
                 tryCopyBuildFile $fileName
               }
+
+              tputs $::test_channel \
+                  "---- end copying configuration files\n"
             }
 
             if {![info exists ::no(copySqliteExternalFiles)]} then {
@@ -3933,9 +3971,15 @@ namespace eval ::Eagle {
               #       legacy tests run with exactly the same set of Managed
               #       Debugging Assistants configured.
               #
+              tputs $::test_channel \
+                  "---- start copying MDA configuration files\n"
+
               foreach fileName $mdaConfigFileNames {
                 tryCopyBinaryFile EagleShell.exe.mda.config "" $fileName
               }
+
+              tputs $::test_channel \
+                  "---- end copying MDA configuration files\n"
 
               #
               # NOTE: Copy the external binaries, if any, to the directory that
@@ -3943,9 +3987,13 @@ namespace eval ::Eagle {
               #       sure assemblies referenced by the ones being tested are
               #       available during the testing process.
               #
+              tputs $::test_channel "---- start copying external files\n"
+
               foreach fileName $externalFileNames {
                 tryCopyExternalFile $fileName
               }
+
+              tputs $::test_channel "---- end copying external files\n"
             }
 
             if {![info exists ::no(copySqliteNativeFiles)]} then {
@@ -3955,33 +4003,59 @@ namespace eval ::Eagle {
               #       binary location.
               #
               if {![info exists ::no(copySqliteImplicitFiles)] && \
-                  [isDefaultBuildPlatform true]} then {
+                  [isDefaultBuildPlatform]} then {
+                tputs $::test_channel \
+                    "---- start copying implicit native files\n"
+
                 foreach fileName $nativeFileNames {
                   tryCopyAssembly $fileName
                 }
+
+                tputs $::test_channel \
+                    "---- end copying implicit native files\n"
               }
 
               if {![info exists ::no(copySqliteNonImplicitFiles)]} then {
                 if {![info exists ::no(copySqlitePlatformFiles)] && \
                     [string length $platform] > 0} then {
+                  tputs $::test_channel [appendArgs \
+                      "---- start copying native files for platform \"" \
+                      $platform "\" files\n"]
+
                   foreach fileName $nativeFileNames {
                     tryCopyAssembly $fileName $platform
                   }
+
+                  tputs $::test_channel [appendArgs \
+                      "---- end copying native files for platform \"" \
+                      $platform "\" files\n"]
                 }
 
                 if {![info exists ::no(copySqliteArchitectureFiles)] && \
                     [string length $architecture] > 0} then {
+                  tputs $::test_channel [appendArgs \
+                      "---- start copying native files for architecture \"" \
+                      $architecture "\" files\n"]
+
                   foreach fileName $nativeFileNames {
                     tryCopyAssembly $fileName $architecture
                   }
+
+                  tputs $::test_channel [appendArgs \
+                      "---- end copying native files for architecture \"" \
+                      $architecture "\" files\n"]
                 }
               }
             }
 
             if {![info exists ::no(copySqliteManagedFiles)]} then {
+              tputs $::test_channel "---- start copying managed files\n"
+
               foreach fileName $managedFileNames {
                 tryCopyAssembly $fileName
               }
+
+              tputs $::test_channel "---- end copying managed files\n"
             }
           }
 

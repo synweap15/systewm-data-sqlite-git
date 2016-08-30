@@ -20,7 +20,7 @@ runSQLiteTestPrologue
 
 ###############################################################################
 
-moveSystemDataSQLiteDllConfig false true
+moveSystemDataSQLiteDllConfig false
 
 ###############################################################################
 
@@ -30,7 +30,7 @@ runTest {test tkt-da685c0bac-1.1 {GetXmlConfigFileName path handling} -setup \
   package require Eagle.Test
   package require System.Data.SQLite.Test
 
-  moveSystemDataSQLiteDllConfig false true
+  moveSystemDataSQLiteDllConfig false
 
   object load -loadtype Bytes [base64 encode [readFile [file join \
       [getBinaryDirectory] System.Data.SQLite.dll]]]
@@ -38,14 +38,14 @@ runTest {test tkt-da685c0bac-1.1 {GetXmlConfigFileName path handling} -setup \
   object invoke -flags +NonPublic \
       System.Data.SQLite.UnsafeNativeMethods GetXmlConfigFileName
 } -cleanup {
-  moveSystemDataSQLiteDllConfig true true
+  moveSystemDataSQLiteDllConfig true
 } -isolationLevel AppDomain -constraints \
 {eagle command.object compile.ISOLATED_INTERPRETERS System.Data.SQLite\
 defineConstant.System.Data.SQLite.USE_INTEROP_DLL} -result {}}
 
 ###############################################################################
 
-moveSystemDataSQLiteDllConfig true true
+moveSystemDataSQLiteDllConfig true
 
 ###############################################################################
 
