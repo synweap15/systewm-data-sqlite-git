@@ -3780,16 +3780,17 @@ namespace eval ::Eagle {
             EntityFramework.dll]]
 
         #
-        # NOTE: Build the list of native assembly files that we handle.  The
-        #       reason the "System.Data.SQLite.dll" file is included here is
-        #       because it could be the mixed-mode assembly.
+        # NOTE: Build the list of native assembly files that we handle.
         #
         set nativeFileNames [list]
 
         eval lappend nativeFileNames [getNativeLibraryFileNamesOnly]
         eval lappend nativeFileNames [getInteropAssemblyFileNamesOnly]
 
-        lappend nativeFileNames System.Data.SQLite.dll
+        #
+        # NOTE: Build the list of mixed-mode assembly files that we handle.
+        #
+        set mixedFileNames [list System.Data.SQLite.dll]
 
         #
         # NOTE: Build the list of managed assembly files that we handle.
@@ -3817,6 +3818,9 @@ namespace eval ::Eagle {
             "---- list of \"native\" file names is: " $nativeFileNames \n]
 
         tputs $::test_channel [appendArgs \
+            "---- list of \"mixed\" file names is: " $mixedFileNames \n]
+
+        tputs $::test_channel [appendArgs \
             "---- list of \"managed\" file names is: " $managedFileNames \n]
 
         #
@@ -3838,6 +3842,10 @@ namespace eval ::Eagle {
           }
 
           foreach fileName $nativeFileNames {
+            removeConstraint [appendArgs file_ $fileName]
+          }
+
+          foreach fileName $mixedFileNames {
             removeConstraint [appendArgs file_ $fileName]
           }
 
@@ -3889,6 +3897,24 @@ namespace eval ::Eagle {
                 if {![info exists ::no(deleteSqliteArchitectureFiles)] && \
                     [string length $architecture] > 0} then {
                   foreach fileName $nativeFileNames {
+                    tryDeleteAssembly $fileName $architecture
+                  }
+                }
+              }
+            }
+
+            if {![info exists ::no(deleteSqliteMixedFiles)]} then {
+              if {![info exists ::no(deleteSqliteNonImplicitFiles)]} then {
+                if {![info exists ::no(deleteSqlitePlatformFiles)] && \
+                    [string length $platform] > 0} then {
+                  foreach fileName $mixedFileNames {
+                    tryDeleteAssembly $fileName $platform
+                  }
+                }
+
+                if {![info exists ::no(deleteSqliteArchitectureFiles)] && \
+                    [string length $architecture] > 0} then {
+                  foreach fileName $mixedFileNames {
                     tryDeleteAssembly $fileName $architecture
                   }
                 }
@@ -3952,14 +3978,11 @@ namespace eval ::Eagle {
           if {![info exists ::no(copySqliteFiles)]} then {
             if {![info exists ::no(copySqliteConfigFiles)]} then {
               tputs $::test_channel \
-                  "---- start copying configuration files\n"
+                  "---- copying \"configuration\" files...\n"
 
               foreach fileName $configFileNames {
                 tryCopyBuildFile $fileName
               }
-
-              tputs $::test_channel \
-                  "---- end copying configuration files\n"
             }
 
             if {![info exists ::no(copySqliteExternalFiles)]} then {
@@ -3972,14 +3995,11 @@ namespace eval ::Eagle {
               #       Debugging Assistants configured.
               #
               tputs $::test_channel \
-                  "---- start copying MDA configuration files\n"
+                  "---- copying \"MDA configuration\" files...\n"
 
               foreach fileName $mdaConfigFileNames {
                 tryCopyBinaryFile EagleShell.exe.mda.config "" $fileName
               }
-
-              tputs $::test_channel \
-                  "---- end copying MDA configuration files\n"
 
               #
               # NOTE: Copy the external binaries, if any, to the directory that
@@ -3987,13 +4007,11 @@ namespace eval ::Eagle {
               #       sure assemblies referenced by the ones being tested are
               #       available during the testing process.
               #
-              tputs $::test_channel "---- start copying external files\n"
+              tputs $::test_channel "---- copying \"external\" files...\n"
 
               foreach fileName $externalFileNames {
                 tryCopyExternalFile $fileName
               }
-
-              tputs $::test_channel "---- end copying external files\n"
             }
 
             if {![info exists ::no(copySqliteNativeFiles)]} then {
@@ -4005,57 +4023,70 @@ namespace eval ::Eagle {
               if {![info exists ::no(copySqliteImplicitFiles)] && \
                   [isDefaultBuildPlatform]} then {
                 tputs $::test_channel \
-                    "---- start copying implicit native files\n"
+                    "---- copying implicit \"native\" files...\n"
 
                 foreach fileName $nativeFileNames {
                   tryCopyAssembly $fileName
                 }
-
-                tputs $::test_channel \
-                    "---- end copying implicit native files\n"
               }
 
               if {![info exists ::no(copySqliteNonImplicitFiles)]} then {
                 if {![info exists ::no(copySqlitePlatformFiles)] && \
                     [string length $platform] > 0} then {
                   tputs $::test_channel [appendArgs \
-                      "---- start copying native files for platform \"" \
-                      $platform "\" files\n"]
+                      "---- copying \"native\" files for platform \"" \
+                      $platform "\" files...\n"]
 
                   foreach fileName $nativeFileNames {
                     tryCopyAssembly $fileName $platform
                   }
-
-                  tputs $::test_channel [appendArgs \
-                      "---- end copying native files for platform \"" \
-                      $platform "\" files\n"]
                 }
 
                 if {![info exists ::no(copySqliteArchitectureFiles)] && \
                     [string length $architecture] > 0} then {
                   tputs $::test_channel [appendArgs \
-                      "---- start copying native files for architecture \"" \
-                      $architecture "\" files\n"]
+                      "---- copying \"native\" files for architecture \"" \
+                      $architecture "\" files...\n"]
 
                   foreach fileName $nativeFileNames {
                     tryCopyAssembly $fileName $architecture
                   }
+                }
+              }
+            }
 
+            if {![info exists ::no(copySqliteMixedFiles)]} then {
+              if {![info exists ::no(copySqliteNonImplicitFiles)]} then {
+                if {![info exists ::no(copySqlitePlatformFiles)] && \
+                    [string length $platform] > 0} then {
                   tputs $::test_channel [appendArgs \
-                      "---- end copying native files for architecture \"" \
-                      $architecture "\" files\n"]
+                      "---- copying \"mixed\" files for platform \"" \
+                      $platform "\" files...\n"]
+
+                  foreach fileName $mixedFileNames {
+                    tryCopyAssembly $fileName $platform
+                  }
+                }
+
+                if {![info exists ::no(copySqliteArchitectureFiles)] && \
+                    [string length $architecture] > 0} then {
+                  tputs $::test_channel [appendArgs \
+                      "---- copying \"mixed\" files for architecture \"" \
+                      $architecture "\" files...\n"]
+
+                  foreach fileName $mixedFileNames {
+                    tryCopyAssembly $fileName $architecture
+                  }
                 }
               }
             }
 
             if {![info exists ::no(copySqliteManagedFiles)]} then {
-              tputs $::test_channel "---- start copying managed files\n"
+              tputs $::test_channel "---- copying \"managed\" files...\n"
 
               foreach fileName $managedFileNames {
                 tryCopyAssembly $fileName
               }
-
-              tputs $::test_channel "---- end copying managed files\n"
             }
           }
 
