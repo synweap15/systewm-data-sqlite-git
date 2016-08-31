@@ -435,6 +435,12 @@ namespace eval ::Eagle {
     set no(emitSharedFlagsIfNone) 1
     set no(emitGlobalFlagsIfNone) 1
     set no(emitCombinedFlagsIfNone) 1
+
+    #
+    # NOTE: Force use of the native library pre-loader when applicable.
+    #
+    set no(deleteSqliteImplicitFiles) 1
+    set no(copySqliteImplicitFiles) 1
   }
 }
 
