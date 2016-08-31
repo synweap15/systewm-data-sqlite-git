@@ -4035,7 +4035,7 @@ namespace eval ::Eagle {
                     [string length $platform] > 0} then {
                   tputs $::test_channel [appendArgs \
                       "---- copying \"native\" files for platform \"" \
-                      $platform "\" files...\n"]
+                      $platform \"...\n]
 
                   foreach fileName $nativeFileNames {
                     tryCopyAssembly $fileName $platform
@@ -4046,7 +4046,7 @@ namespace eval ::Eagle {
                     [string length $architecture] > 0} then {
                   tputs $::test_channel [appendArgs \
                       "---- copying \"native\" files for architecture \"" \
-                      $architecture "\" files...\n"]
+                      $architecture \"...\n]
 
                   foreach fileName $nativeFileNames {
                     tryCopyAssembly $fileName $architecture
@@ -4061,7 +4061,7 @@ namespace eval ::Eagle {
                     [string length $platform] > 0} then {
                   tputs $::test_channel [appendArgs \
                       "---- copying \"mixed\" files for platform \"" \
-                      $platform "\" files...\n"]
+                      $platform \"...\n]
 
                   foreach fileName $mixedFileNames {
                     tryCopyAssembly $fileName $platform
@@ -4072,7 +4072,7 @@ namespace eval ::Eagle {
                     [string length $architecture] > 0} then {
                   tputs $::test_channel [appendArgs \
                       "---- copying \"mixed\" files for architecture \"" \
-                      $architecture "\" files...\n"]
+                      $architecture \"...\n]
 
                   foreach fileName $mixedFileNames {
                     tryCopyAssembly $fileName $architecture
