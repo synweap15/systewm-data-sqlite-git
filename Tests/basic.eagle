@@ -62,12 +62,7 @@ testExec winForms} -result {0 {}}}
 ###############################################################################
 
 runTest {test data-1.2 {unit tests from the 'testlinq' project} -setup {
-  #
-  # NOTE: Re-copy the reference database file used for this unit test to the
-  #       build directory in case it has been changed by a previous test run.
-  #
-  file copy -force $northwindEfDbFile \
-      [file join [getBuildDirectory false] [file tail $northwindEfDbFile]]
+  copySampleDatabaseFiles
 
   #
   # NOTE: We need to make 100% sure that the console output encoding is the
@@ -103,12 +98,7 @@ file_testlinq.out testExec} -result {0 True {}}}
 ###############################################################################
 
 runTest {test data-1.3 {unit tests from the 'testef6' project} -setup {
-  #
-  # NOTE: Re-copy the reference database file used for this unit test to the
-  #       build directory in case it has been changed by a previous test run.
-  #
-  file copy -force $northwindEfDbFile \
-      [file join [getBuildDirectory false] [file tail $northwindEfDbFile]]
+  copySampleDatabaseFiles
 
   #
   # NOTE: We need to make 100% sure that the console output encoding is the
@@ -3192,12 +3182,7 @@ System.Data.SQLite} -result {{DetectTextAffinity, DetectStringType}\
 ###############################################################################
 
 runTest {test data-1.70 {LINQ w/String.Substring Method} -body {
-  #
-  # NOTE: Re-copy the reference database file used for this unit test to the
-  #       build directory in case it has been changed by a previous test run.
-  #
-  file copy -force $northwindEfDbFile \
-      [file join [getBuildDirectory false] [file tail $northwindEfDbFile]]
+  copySampleDatabaseFiles
 
   set result [list]
   set output ""

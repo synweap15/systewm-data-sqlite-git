@@ -22,12 +22,7 @@ runSQLiteTestFilesPrologue
 ###############################################################################
 
 runTest {test tkt-ccfa69fc32-1.1 {LINQ Transaction Scope} -body {
-  #
-  # NOTE: Re-copy the reference database file used for this unit test to the
-  #       build directory in case it has been changed by a previous test run.
-  #
-  file copy -force $northwindEfDbFile \
-      [file join [getBuildDirectory false] [file tail $northwindEfDbFile]]
+  copySampleDatabaseFiles
 
   set result [list]
 
@@ -67,12 +62,7 @@ failed: Territories.TerritoryID} 0 {1 2 3 4 5 6 7 8 9 10 1576 1577 1578 1579\
 ###############################################################################
 
 runTest {test tkt-ccfa69fc32-1.2 {EF6 Transaction Scope} -body {
-  #
-  # NOTE: Re-copy the reference database file used for this unit test to the
-  #       build directory in case it has been changed by a previous test run.
-  #
-  file copy -force $northwindEfDbFile \
-      [file join [getBuildDirectory false] [file tail $northwindEfDbFile]]
+  copySampleDatabaseFiles
 
   set result [list]
 
