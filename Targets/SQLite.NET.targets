@@ -221,4 +221,39 @@
           Condition="'$(ProjectName)' != ''">
     <Warning Text="The Visual Studio SDK is missing, skipping project &quot;$(ProjectName)&quot;..." />
   </Target>
+
+  <!--
+  ******************************************************************************
+  -->
+
+  <Target Name="SignMixedModeAssembly"
+          Condition="'$(SignMixedModeAssembly)' != 'false' And
+                     '$(TargetPath)' != '' And
+                     Exists('$(TargetPath)') And
+                     '$(INTEROP_KEY_FILE)' != '' And
+                     Exists('$(INTEROP_KEY_FILE)')">
+    <Exec Condition="'$(TargetFrameworkSDKToolsDirectory)' == '' And
+                     '$(FrameworkSDKDir)' != ''"
+          Command="&quot;$(FrameworkSDKDir)Bin\sn.exe&quot; -Ra &quot;$(TargetPath)&quot; &quot;$(INTEROP_KEY_FILE)&quot;" />
+
+    <Exec Condition="'$(TargetFrameworkSDKToolsDirectory)' != ''"
+          Command="&quot;$(TargetFrameworkSDKToolsDirectory)sn.exe&quot; -Ra &quot;$(TargetPath)&quot; &quot;$(INTEROP_KEY_FILE)&quot;" />
+  </Target>
+
+  <!--
+  ******************************************************************************
+  -->
+
+  <Target Name="CopyInteropAssembly"
+          Condition="'$(CopyInteropAssembly)' != 'false' And
+                     '$(OutDir)' != '' And
+                     HasTrailingSlash('$(OutDir)') And
+                     '$(TargetName)' != '' And
+                     '$(BaseConfiguration)' != '' And
+                     '$(Platform)' != ''">
+    <Exec Command="XCOPY &quot;$(OutDir)$(TargetName).*&quot; &quot;$(OutDir)..\..\$(BaseConfiguration)\bin\$(Platform)\&quot; /D /E /V /I /F /H /Y" />
+
+    <Exec Condition="'$(DoesMachineMatchPlatform)' != 'false'"
+          Command="XCOPY &quot;$(OutDir)$(TargetName).*&quot; &quot;$(OutDir)..\..\$(BaseConfiguration)\bin\&quot; /D /E /V /I /F /H /Y" />
+  </Target>
 </Project>
