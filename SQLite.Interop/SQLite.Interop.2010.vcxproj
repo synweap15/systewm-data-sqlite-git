@@ -169,11 +169,13 @@
       <AssemblyIdentity>$(ProjectName), processorArchitecture=x86, version=$(INTEROP_MANIFEST_VERSION), type=win32</AssemblyIdentity>
       <UpdateFileHashes>true</UpdateFileHashes>
     </Manifest>
-    <PostBuildEvent>
-      <Command Condition="'$(TargetFrameworkSDKToolsDirectory)'==''">"$(FrameworkSDKDir)Bin\sn.exe" -Ra "$(TargetPath)" "$(INTEROP_KEY_FILE)"</Command>
-      <Command Condition="'$(TargetFrameworkSDKToolsDirectory)'!=''">"$(TargetFrameworkSDKToolsDirectory)sn.exe" -Ra "$(TargetPath)" "$(INTEROP_KEY_FILE)"</Command>
-    </PostBuildEvent>
   </ItemDefinitionGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <AfterBuildLinkTargets>
+      $(AfterBuildLinkTargets);
+      SignMixedModeAssembly;
+    </AfterBuildLinkTargets>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
@@ -213,11 +215,13 @@
       <AssemblyIdentity>$(ProjectName), processorArchitecture=amd64, version=$(INTEROP_MANIFEST_VERSION), type=win32</AssemblyIdentity>
       <UpdateFileHashes>true</UpdateFileHashes>
     </Manifest>
-    <PostBuildEvent>
-      <Command Condition="'$(TargetFrameworkSDKToolsDirectory)'==''">"$(FrameworkSDKDir)Bin\sn.exe" -Ra "$(TargetPath)" "$(INTEROP_KEY_FILE)"</Command>
-      <Command Condition="'$(TargetFrameworkSDKToolsDirectory)'!=''">"$(TargetFrameworkSDKToolsDirectory)sn.exe" -Ra "$(TargetPath)" "$(INTEROP_KEY_FILE)"</Command>
-    </PostBuildEvent>
   </ItemDefinitionGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <AfterBuildLinkTargets>
+      $(AfterBuildLinkTargets);
+      SignMixedModeAssembly;
+    </AfterBuildLinkTargets>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DebugNativeOnly|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
@@ -251,11 +255,14 @@
       <AssemblyIdentity>$(ProjectName), processorArchitecture=x86, version=$(INTEROP_MANIFEST_VERSION), type=win32</AssemblyIdentity>
       <UpdateFileHashes>true</UpdateFileHashes>
     </Manifest>
-    <PostBuildEvent>
-      <Command>XCOPY "$(OutDir)$(TargetName).*" "$(OutDir)..\..\Debug\bin\$(Platform)\" /D /E /V /I /F /H /Y</Command>
-      <Command Condition="'$(DoesMachineMatchPlatform)' != 'false'">XCOPY "$(OutDir)$(TargetName).*" "$(OutDir)..\..\Debug\bin\" /D /E /V /I /F /H /Y</Command>
-    </PostBuildEvent>
   </ItemDefinitionGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DebugNativeOnly|Win32'">
+    <BaseConfiguration>Debug</BaseConfiguration>
+    <AfterBuildLinkTargets>
+      $(AfterBuildLinkTargets);
+      CopyInteropAssembly;
+    </AfterBuildLinkTargets>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DebugNativeOnly|x64'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
@@ -289,11 +296,14 @@
       <AssemblyIdentity>$(ProjectName), processorArchitecture=amd64, version=$(INTEROP_MANIFEST_VERSION), type=win32</AssemblyIdentity>
       <UpdateFileHashes>true</UpdateFileHashes>
     </Manifest>
-    <PostBuildEvent>
-      <Command>XCOPY "$(OutDir)$(TargetName).*" "$(OutDir)..\..\Debug\bin\$(Platform)\" /D /E /V /I /F /H /Y</Command>
-      <Command Condition="'$(DoesMachineMatchPlatform)' != 'false'">XCOPY "$(OutDir)$(TargetName).*" "$(OutDir)..\..\Debug\bin\" /D /E /V /I /F /H /Y</Command>
-    </PostBuildEvent>
   </ItemDefinitionGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DebugNativeOnly|x64'">
+    <BaseConfiguration>Debug</BaseConfiguration>
+    <AfterBuildLinkTargets>
+      $(AfterBuildLinkTargets);
+      CopyInteropAssembly;
+    </AfterBuildLinkTargets>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <Optimization>Full</Optimization>
@@ -335,11 +345,13 @@
       <AssemblyIdentity>$(ProjectName), processorArchitecture=x86, version=$(INTEROP_MANIFEST_VERSION), type=win32</AssemblyIdentity>
       <UpdateFileHashes>true</UpdateFileHashes>
     </Manifest>
-    <PostBuildEvent>
-      <Command Condition="'$(TargetFrameworkSDKToolsDirectory)'==''">"$(FrameworkSDKDir)Bin\sn.exe" -Ra "$(TargetPath)" "$(INTEROP_KEY_FILE)"</Command>
-      <Command Condition="'$(TargetFrameworkSDKToolsDirectory)'!=''">"$(TargetFrameworkSDKToolsDirectory)sn.exe" -Ra "$(TargetPath)" "$(INTEROP_KEY_FILE)"</Command>
-    </PostBuildEvent>
   </ItemDefinitionGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <AfterBuildLinkTargets>
+      $(AfterBuildLinkTargets);
+      SignMixedModeAssembly;
+    </AfterBuildLinkTargets>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <Optimization>Full</Optimization>
@@ -381,11 +393,13 @@
       <AssemblyIdentity>$(ProjectName), processorArchitecture=amd64, version=$(INTEROP_MANIFEST_VERSION), type=win32</AssemblyIdentity>
       <UpdateFileHashes>true</UpdateFileHashes>
     </Manifest>
-    <PostBuildEvent>
-      <Command Condition="'$(TargetFrameworkSDKToolsDirectory)'==''">"$(FrameworkSDKDir)Bin\sn.exe" -Ra "$(TargetPath)" "$(INTEROP_KEY_FILE)"</Command>
-      <Command Condition="'$(TargetFrameworkSDKToolsDirectory)'!=''">"$(TargetFrameworkSDKToolsDirectory)sn.exe" -Ra "$(TargetPath)" "$(INTEROP_KEY_FILE)"</Command>
-    </PostBuildEvent>
   </ItemDefinitionGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <AfterBuildLinkTargets>
+      $(AfterBuildLinkTargets);
+      SignMixedModeAssembly;
+    </AfterBuildLinkTargets>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseNativeOnly|Win32'">
     <ClCompile>
       <Optimization>Full</Optimization>
@@ -422,11 +436,14 @@
       <AssemblyIdentity>$(ProjectName), processorArchitecture=x86, version=$(INTEROP_MANIFEST_VERSION), type=win32</AssemblyIdentity>
       <UpdateFileHashes>true</UpdateFileHashes>
     </Manifest>
-    <PostBuildEvent>
-      <Command>XCOPY "$(OutDir)$(TargetName).*" "$(OutDir)..\..\Release\bin\$(Platform)\" /D /E /V /I /F /H /Y</Command>
-      <Command Condition="'$(DoesMachineMatchPlatform)' != 'false'">XCOPY "$(OutDir)$(TargetName).*" "$(OutDir)..\..\Release\bin\" /D /E /V /I /F /H /Y</Command>
-    </PostBuildEvent>
   </ItemDefinitionGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseNativeOnly|Win32'">
+    <BaseConfiguration>Release</BaseConfiguration>
+    <AfterBuildLinkTargets>
+      $(AfterBuildLinkTargets);
+      CopyInteropAssembly;
+    </AfterBuildLinkTargets>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseNativeOnly|x64'">
     <ClCompile>
       <Optimization>Full</Optimization>
@@ -463,11 +480,14 @@
       <AssemblyIdentity>$(ProjectName), processorArchitecture=amd64, version=$(INTEROP_MANIFEST_VERSION), type=win32</AssemblyIdentity>
       <UpdateFileHashes>true</UpdateFileHashes>
     </Manifest>
-    <PostBuildEvent>
-      <Command>XCOPY "$(OutDir)$(TargetName).*" "$(OutDir)..\..\Release\bin\$(Platform)\" /D /E /V /I /F /H /Y</Command>
-      <Command Condition="'$(DoesMachineMatchPlatform)' != 'false'">XCOPY "$(OutDir)$(TargetName).*" "$(OutDir)..\..\Release\bin\" /D /E /V /I /F /H /Y</Command>
-    </PostBuildEvent>
   </ItemDefinitionGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseNativeOnly|Win32'">
+    <BaseConfiguration>Release</BaseConfiguration>
+    <AfterBuildLinkTargets>
+      $(AfterBuildLinkTargets);
+      CopyInteropAssembly;
+    </AfterBuildLinkTargets>
+  </PropertyGroup>
   <ItemGroup>
     <ClCompile Include="src\win\AssemblyInfo.cpp">
       <ExcludedFromBuild>true</ExcludedFromBuild>
