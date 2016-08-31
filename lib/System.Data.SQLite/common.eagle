@@ -3724,15 +3724,15 @@ namespace eval ::Eagle {
     }
 
     proc copySampleDatabaseFiles {} {
-      global northwindEfDbFile
-
-      #
-      # NOTE: Re-copy the reference database file used for this unit test to
-      #       the build directory in case it has been changed by a previous
-      #       test run.
-      #
-      file copy -force $northwindEfDbFile \
-        [file join [getBuildDirectory true] [file tail $northwindEfDbFile]]
+      uplevel 1 {
+        #
+        # NOTE: Re-copy the reference database file used for this unit test to
+        #       the build directory in case it has been changed by a previous
+        #       test run.
+        #
+        file copy -force $northwindEfDbFile \
+          [file join [getBuildDirectory true] [file tail $northwindEfDbFile]]
+      }
     }
 
     proc runSQLiteTestPrologue {} {
