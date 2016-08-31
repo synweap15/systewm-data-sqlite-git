@@ -67,7 +67,7 @@ runTest {test data-1.2 {unit tests from the 'testlinq' project} -setup {
   #       build directory in case it has been changed by a previous test run.
   #
   file copy -force $northwindEfDbFile \
-      [file join [getBuildDirectory] [file tail $northwindEfDbFile]]
+      [file join [getBuildDirectory false] [file tail $northwindEfDbFile]]
 
   #
   # NOTE: We need to make 100% sure that the console output encoding is the
@@ -108,7 +108,7 @@ runTest {test data-1.3 {unit tests from the 'testef6' project} -setup {
   #       build directory in case it has been changed by a previous test run.
   #
   file copy -force $northwindEfDbFile \
-      [file join [getBuildDirectory] [file tail $northwindEfDbFile]]
+      [file join [getBuildDirectory false] [file tail $northwindEfDbFile]]
 
   #
   # NOTE: We need to make 100% sure that the console output encoding is the
@@ -3197,7 +3197,7 @@ runTest {test data-1.70 {LINQ w/String.Substring Method} -body {
   #       build directory in case it has been changed by a previous test run.
   #
   file copy -force $northwindEfDbFile \
-      [file join [getBuildDirectory] [file tail $northwindEfDbFile]]
+      [file join [getBuildDirectory false] [file tail $northwindEfDbFile]]
 
   set result [list]
   set output ""

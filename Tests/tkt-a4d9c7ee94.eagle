@@ -27,7 +27,7 @@ runTest {test tkt-a4d9c7ee94-1.1 {LINQ w/BinaryGUID=false} -body {
   #       build directory in case it has been changed by a previous test run.
   #
   file copy -force $northwindEfDbFile \
-      [file join [getBuildDirectory] [file tail $northwindEfDbFile]]
+      [file join [getBuildDirectory false] [file tail $northwindEfDbFile]]
 
   set result [list]
   set output ""
@@ -76,7 +76,7 @@ runTest {test tkt-a4d9c7ee94-1.2 {LINQ w/BinaryGUID=true} -body {
   #       build directory in case it has been changed by a previous test run.
   #
   file copy -force $northwindEfDbFile \
-      [file join [getBuildDirectory] [file tail $northwindEfDbFile]]
+      [file join [getBuildDirectory false] [file tail $northwindEfDbFile]]
 
   set result [list]
   set output ""

@@ -27,7 +27,7 @@ runTest {test tkt-0a32885109-1.1 {LINQ compound-operator handling} -body {
   #       build directory in case it has been changed by a previous test run.
   #
   file copy -force $northwindEfDbFile \
-      [file join [getBuildDirectory] [file tail $northwindEfDbFile]]
+      [file join [getBuildDirectory false] [file tail $northwindEfDbFile]]
 
   set result [list]
   set output ""

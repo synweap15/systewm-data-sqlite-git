@@ -27,7 +27,7 @@ runTest {test linq-1.1 {DbUpdateCommandTree with UPDATE and SELECT} -body {
   #       build directory in case it has been changed by a previous test run.
   #
   file copy -force $northwindEfDbFile \
-      [file join [getBuildDirectory] [file tail $northwindEfDbFile]]
+      [file join [getBuildDirectory false] [file tail $northwindEfDbFile]]
 
   set result [list]
   set output ""
@@ -65,7 +65,7 @@ runTest {test linq-1.2 {ROUND function with two arguments} -body {
   #       build directory in case it has been changed by a previous test run.
   #
   file copy -force $northwindEfDbFile \
-      [file join [getBuildDirectory] [file tail $northwindEfDbFile]]
+      [file join [getBuildDirectory false] [file tail $northwindEfDbFile]]
 
   set result [list]
   set output ""

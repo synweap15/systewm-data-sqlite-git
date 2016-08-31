@@ -27,7 +27,7 @@ runTest {test tkt-59edc1018b-1.1 {LINQ with EndsWith} -body {
   #       build directory in case it has been changed by a previous test run.
   #
   file copy -force $northwindEfDbFile \
-      [file join [getBuildDirectory] [file tail $northwindEfDbFile]]
+      [file join [getBuildDirectory false] [file tail $northwindEfDbFile]]
 
   set result [list]
 
@@ -71,7 +71,7 @@ runTest {test tkt-59edc1018b-1.2 {EF6 with EndsWith} -body {
   #       build directory in case it has been changed by a previous test run.
   #
   file copy -force $northwindEfDbFile \
-      [file join [getBuildDirectory] [file tail $northwindEfDbFile]]
+      [file join [getBuildDirectory false] [file tail $northwindEfDbFile]]
 
   set result [list]
 

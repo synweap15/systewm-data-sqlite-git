@@ -27,7 +27,7 @@ runTest {test tkt-8b7d179c3c-1.1 {LINQ with Skip and Take} -body {
   #       build directory in case it has been changed by a previous test run.
   #
   file copy -force $northwindEfDbFile \
-      [file join [getBuildDirectory] [file tail $northwindEfDbFile]]
+      [file join [getBuildDirectory false] [file tail $northwindEfDbFile]]
 
   set result [list]
 
@@ -82,7 +82,7 @@ runTest {test tkt-8b7d179c3c-1.2 {EF6 with Skip and Take} -body {
   #       build directory in case it has been changed by a previous test run.
   #
   file copy -force $northwindEfDbFile \
-      [file join [getBuildDirectory] [file tail $northwindEfDbFile]]
+      [file join [getBuildDirectory false] [file tail $northwindEfDbFile]]
 
   set result [list]
 

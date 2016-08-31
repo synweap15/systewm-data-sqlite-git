@@ -27,7 +27,7 @@ runTest {test tkt-8d928c3e88-1.1 {LINQ w/BinaryGUID=false} -body {
   #       build directory in case it has been changed by a previous test run.
   #
   file copy -force $northwindEfDbFile \
-      [file join [getBuildDirectory] [file tail $northwindEfDbFile]]
+      [file join [getBuildDirectory false] [file tail $northwindEfDbFile]]
 
   set result [list]
   set output ""
@@ -65,7 +65,7 @@ runTest {test tkt-8d928c3e88-1.2 {LINQ w/BinaryGUID=true} -body {
   #       build directory in case it has been changed by a previous test run.
   #
   file copy -force $northwindEfDbFile \
-      [file join [getBuildDirectory] [file tail $northwindEfDbFile]]
+      [file join [getBuildDirectory false] [file tail $northwindEfDbFile]]
 
   set result [list]
   set output ""
@@ -103,7 +103,7 @@ runTest {test tkt-8d928c3e88-2.1 {LINQ w/DateTimeFormat=Ticks} -body {
   #       build directory in case it has been changed by a previous test run.
   #
   file copy -force $northwindEfDbFile \
-      [file join [getBuildDirectory] [file tail $northwindEfDbFile]]
+      [file join [getBuildDirectory false] [file tail $northwindEfDbFile]]
 
   set result [list]
   set output ""
@@ -142,7 +142,7 @@ runTest {test tkt-8d928c3e88-2.2 {LINQ w/DateTimeFormat=JulianDay} -body {
   #       build directory in case it has been changed by a previous test run.
   #
   file copy -force $northwindEfDbFile \
-      [file join [getBuildDirectory] [file tail $northwindEfDbFile]]
+      [file join [getBuildDirectory false] [file tail $northwindEfDbFile]]
 
   set result [list]
   set output ""
@@ -180,7 +180,7 @@ runTest {test tkt-8d928c3e88-2.3 {LINQ w/DateTimeFormat=UnixEpoch} -body {
   #       build directory in case it has been changed by a previous test run.
   #
   file copy -force $northwindEfDbFile \
-      [file join [getBuildDirectory] [file tail $northwindEfDbFile]]
+      [file join [getBuildDirectory false] [file tail $northwindEfDbFile]]
 
   set result [list]
   set output ""
@@ -218,7 +218,7 @@ runTest {test tkt-8d928c3e88-2.4 {LINQ w/DateTimeFormat=ISO8601} -body {
   #       build directory in case it has been changed by a previous test run.
   #
   file copy -force $northwindEfDbFile \
-      [file join [getBuildDirectory] [file tail $northwindEfDbFile]]
+      [file join [getBuildDirectory false] [file tail $northwindEfDbFile]]
 
   set result [list]
   set output ""
