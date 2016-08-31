@@ -4120,7 +4120,7 @@ namespace eval ::Eagle {
           }
         }
 
-        foreach fileNameOnly [getNativeLibraryFileNamesOnly] {
+        foreach fileNameOnly $nativeFileNames {
           catch {
             tputs $::test_channel [appendArgs \
                 "---- file version of \"" $fileNameOnly "\"... \"" \
@@ -4128,36 +4128,16 @@ namespace eval ::Eagle {
           }
         }
 
-        foreach fileNameOnly [getInteropAssemblyFileNamesOnly] {
+        foreach fileNameOnly $managedFileNames {
           catch {
             tputs $::test_channel [appendArgs \
                 "---- file version of \"" $fileNameOnly "\"... \"" \
                 [file version [getBinaryFileName $fileNameOnly]] \"\n]
           }
-        }
-
-        catch {
-          tputs $::test_channel [appendArgs \
-              "---- file version of \"System.Data.SQLite.dll\"... \"" \
-              [file version [getBinaryFileName System.Data.SQLite.dll]] \"\n]
-        }
-
-        catch {
-          tputs $::test_channel [appendArgs \
-              "---- file version of \"System.Data.SQLite.Linq.dll\"... \"" \
-              [file version [getBinaryFileName System.Data.SQLite.Linq.dll]] \
-              \"\n]
-        }
-
-        catch {
-          tputs $::test_channel [appendArgs \
-              "---- file version of \"System.Data.SQLite.EF6.dll\"... \"" \
-              [file version [getBinaryFileName System.Data.SQLite.EF6.dll]] \
-              \"\n]
         }
 
         if {[string length $platform] > 0} then {
-          foreach fileNameOnly [getNativeLibraryFileNamesOnly] {
+          foreach fileNameOnly $nativeFileNames {
             catch {
               tputs $::test_channel [appendArgs \
                   "---- file version of \"" $platform \
@@ -4166,25 +4146,18 @@ namespace eval ::Eagle {
             }
           }
 
-          foreach fileNameOnly [getInteropAssemblyFileNamesOnly] {
+          foreach fileNameOnly $mixedFileNames {
             catch {
               tputs $::test_channel [appendArgs \
                   "---- file version of \"" $platform \
                   / $fileNameOnly "\"... \"" [file version \
                   [getBinaryFileName $fileNameOnly $platform]] \"\n]
             }
-          }
-
-          catch {
-            tputs $::test_channel [appendArgs \
-                "---- file version of \"" $platform \
-                "/System.Data.SQLite.dll\"... \"" [file version \
-                [getBinaryFileName System.Data.SQLite.dll $platform]] \"\n]
           }
         }
 
         if {[string length $architecture] > 0} then {
-          foreach fileNameOnly [getNativeLibraryFileNamesOnly] {
+          foreach fileNameOnly $nativeFileNames {
             catch {
               tputs $::test_channel [appendArgs \
                   "---- file version of \"" $architecture \
@@ -4193,19 +4166,13 @@ namespace eval ::Eagle {
             }
           }
 
-          catch {
-            tputs $::test_channel [appendArgs \
-                "---- file version of \"" $architecture \
-                / $fileNameOnly "\"... \"" [file version \
-                [getBinaryFileName $fileNameOnly $architecture]] \"\n]
-          }
-
-          catch {
-            tputs $::test_channel [appendArgs \
-                "---- file version of \"" $architecture \
-                "/System.Data.SQLite.dll\"... \"" [file version \
-                [getBinaryFileName System.Data.SQLite.dll $architecture]] \
-                \"\n]
+          foreach fileNameOnly $mixedFileNames {
+            catch {
+              tputs $::test_channel [appendArgs \
+                  "---- file version of \"" $architecture \
+                  / $fileNameOnly "\"... \"" [file version \
+                  [getBinaryFileName $fileNameOnly $architecture]] \"\n]
+            }
           }
         }
 
