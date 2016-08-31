@@ -22,12 +22,7 @@ runSQLiteTestFilesPrologue
 ###############################################################################
 
 runTest {test tkt-41aea496e0-1.1 {LINQ non-rowid primary key support} -body {
-  #
-  # NOTE: Re-copy the reference database file used for this unit test to the
-  #       build directory in case it has been changed by a previous test run.
-  #
-  file copy -force $northwindEfDbFile \
-      [file join [getBuildDirectory] [file tail $northwindEfDbFile]]
+  copySampleDatabaseFiles
 
   set result [list]
   set output ""

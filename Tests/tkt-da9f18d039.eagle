@@ -22,12 +22,7 @@ runSQLiteTestFilesPrologue
 ###############################################################################
 
 runTest {test tkt-da9f18d039-1.1 {LINQ DateTime handling} -body {
-  #
-  # NOTE: Re-copy the reference database file used for this unit test to the
-  #       build directory in case it has been changed by a previous test run.
-  #
-  file copy -force $northwindEfDbFile \
-      [file join [getBuildDirectory] [file tail $northwindEfDbFile]]
+  copySampleDatabaseFiles
 
   set result [list]
   set output ""
@@ -64,8 +59,7 @@ runTest {test tkt-da9f18d039-1.2 {EF6 DateTime handling} -body {
   # NOTE: Re-copy the reference database file used for this unit test to the
   #       build directory in case it has been changed by a previous test run.
   #
-  file copy -force $northwindEfDbFile \
-      [file join [getBuildDirectory] [file tail $northwindEfDbFile]]
+  copySampleDatabaseFiles
 
   set result [list]
   set output ""

@@ -706,7 +706,7 @@ namespace eval ::Eagle {
       }
     }
 
-    proc getBuildDirectory {} {
+    proc getBuildDirectory { managedOnly } {
       #
       # NOTE: See if the "native" runtime option has been set.  If so, use the
       #       directory for the mixed-mode assembly (a.k.a. the native interop
@@ -772,7 +772,7 @@ namespace eval ::Eagle {
         #       Refer to the comments in [getBuildYear] for more information on
         #       how to set this variable.
         #
-        set native [hasRuntimeOption native]
+        set native [expr {!$managedOnly && [hasRuntimeOption native]}]
 
         return [joinBuildDirectory $native [getBuildBaseDirectory] \
             [getBuildYear] [getBuildPlatform $native] [getBuildConfiguration]]
@@ -801,14 +801,15 @@ namespace eval ::Eagle {
       }
     }
 
-    proc getBuildFileName { fileName {platform ""} } {
+    proc getBuildFileName { fileName managedOnly {platform ""} } {
       #
       # NOTE: Returns the specified file name as if it were located in the
       #       build directory, discarding any directory information present
       #       in the file name as provided by our caller.
       #
       set result [file nativename \
-          [file join [getBuildDirectory] $platform [file tail $fileName]]]
+          [file join [getBuildDirectory $managedOnly] $platform \
+          [file tail $fileName]]]
 
       #
       # HACK: When running on WoW64, assume the test executables are present
@@ -1271,7 +1272,8 @@ namespace eval ::Eagle {
     }
 
     proc tryCopyBinaryFile {
-            fileName {platform ""} {newFileName ""} {verbose true} } {
+            fileName managedOnly {platform ""} {newFileName ""}
+            {verbose true} } {
       set sourceFileName [getBinaryFileName $fileName $platform]
 
       if {![file exists $sourceFileName]} then {
@@ -1285,9 +1287,11 @@ namespace eval ::Eagle {
       }
 
       if {[string length $newFileName] > 0} then {
-        set targetFileName [getBuildFileName $newFileName $platform]
+        set targetFileName [getBuildFileName \
+            $newFileName $managedOnly $platform]
       } else {
-        set targetFileName [getBuildFileName $fileName $platform]
+        set targetFileName [getBuildFileName \
+            $fileName $managedOnly $platform]
       }
 
       set targetDirectory [file dirname $targetFileName]
@@ -1310,8 +1314,9 @@ namespace eval ::Eagle {
     }
 
     proc tryCopyBuildFile {
-            fileName {platform ""} {newFileName ""} {verbose true} } {
-      set sourceFileName [getBuildFileName $fileName $platform]
+            fileName managedOnly {platform ""} {newFileName ""}
+            {verbose true} } {
+      set sourceFileName [getBuildFileName $fileName $managedOnly $platform]
 
       if {![file exists $sourceFileName]} then {
         if {$verbose} then {
@@ -1370,8 +1375,9 @@ namespace eval ::Eagle {
       }
     }
 
-    proc tryDeleteBuildFile { fileName {platform ""} {verbose true} } {
-      set fileName [getBuildFileName $fileName $platform]
+    proc tryDeleteBuildFile {
+            fileName managedOnly {platform ""} {verbose true} } {
+      set fileName [getBuildFileName $fileName $managedOnly $platform]
 
       if {![file exists $fileName]} then {
         if {$verbose} then {
@@ -1393,12 +1399,12 @@ namespace eval ::Eagle {
     }
 
     proc tryCopyAssembly {
-            fileName {platform ""} {pdb true} {verbose true} } {
-      tryCopyBuildFile $fileName $platform "" $verbose
+            fileName managedOnly {platform ""} {pdb true} {verbose true} } {
+      tryCopyBuildFile $fileName $managedOnly $platform "" $verbose
 
       if {$pdb} then {
         tryCopyBuildFile [appendArgs \
-            [file rootname $fileName] .pdb] $platform "" $verbose
+            [file rootname $fileName] .pdb] $managedOnly $platform "" $verbose
       }
     }
 
@@ -3717,6 +3723,18 @@ namespace eval ::Eagle {
       }
     }
 
+    proc copySampleDatabaseFiles {} {
+      uplevel 1 {
+        #
+        # NOTE: Copy (or re-copy) the reference database file used for this
+        #       unit test to the build directory in case it has been changed
+        #       by a previous test run.
+        #
+        file copy -force $northwindEfDbFile \
+          [file join [getBuildDirectory true] [file tail $northwindEfDbFile]]
+      }
+    }
+
     proc runSQLiteTestPrologue {} {
       #
       # NOTE: Skip running our custom prologue if the main one has been
@@ -3790,14 +3808,21 @@ namespace eval ::Eagle {
         #
         # NOTE: Build the list of mixed-mode assembly files that we handle.
         #
-        set mixedFileNames [list System.Data.SQLite.dll]
+        set mixedFileNames [list]
+
+        if {[hasRuntimeOption native]} then {
+          lappend mixedFileNames System.Data.SQLite.dll
+        }
 
         #
         # NOTE: Build the list of managed assembly files that we handle.
         #
         set managedFileNames [list \
-            System.Data.SQLite.dll System.Data.SQLite.Linq.dll \
-            System.Data.SQLite.EF6.dll]
+            System.Data.SQLite.Linq.dll System.Data.SQLite.EF6.dll]
+
+        if {![hasRuntimeOption native]} then {
+          lappend managedFileNames System.Data.SQLite.dll
+        }
 
         #
         # NOTE: Show the various lists of file names that are handled by this
@@ -3871,7 +3896,7 @@ namespace eval ::Eagle {
 
             if {![info exists ::no(deleteSqliteExternalFiles)]} then {
               foreach fileName $mdaConfigFileNames {
-                tryDeleteBuildFile $fileName
+                tryDeleteBuildFile $fileName false
               }
 
               foreach fileName $externalFileNames {
@@ -3880,7 +3905,7 @@ namespace eval ::Eagle {
             }
 
             if {![info exists ::no(deleteSqliteNativeFiles)]} then {
-              if {![info exists ::no(deleteSqliteImplicitFiles)]} then {
+              if {![info exists ::no(deleteSqliteImplicitNativeFiles)]} then {
                 foreach fileName $nativeFileNames {
                   tryDeleteAssembly $fileName
                 }
@@ -3904,6 +3929,18 @@ namespace eval ::Eagle {
             }
 
             if {![info exists ::no(deleteSqliteMixedFiles)]} then {
+              #
+              # NOTE: If the "native" runtime option is set, delete implicit
+              #       mixed-mode assembly files as well.  This runtime option
+              #       check is handled when building the list of mixed-mode
+              #       assembly file names.
+              #
+              if {![info exists ::no(deleteSqliteImplicitMixedFiles)]} then {
+                foreach fileName $mixedFileNames {
+                  tryDeleteAssembly $fileName
+                }
+              }
+
               if {![info exists ::no(deleteSqliteNonImplicitFiles)]} then {
                 if {![info exists ::no(deleteSqlitePlatformFiles)] && \
                     [string length $platform] > 0} then {
@@ -3950,7 +3987,7 @@ namespace eval ::Eagle {
             # NOTE: At this point, the build directory MUST exist as a
             #       valid directory for the testing process to continue.
             #
-            set directory [getBuildDirectory]
+            set directory [getBuildDirectory false]
 
             if {![file exists $directory] || \
                 ![file isdirectory $directory]} then {
@@ -3981,7 +4018,7 @@ namespace eval ::Eagle {
                   "---- copying \"configuration\" files...\n"
 
               foreach fileName $configFileNames {
-                tryCopyBuildFile $fileName
+                tryCopyBuildFile $fileName false
               }
             }
 
@@ -3998,7 +4035,7 @@ namespace eval ::Eagle {
                   "---- copying \"MDA configuration\" files...\n"
 
               foreach fileName $mdaConfigFileNames {
-                tryCopyBinaryFile EagleShell.exe.mda.config "" $fileName
+                tryCopyBinaryFile EagleShell.exe.mda.config true "" $fileName
               }
 
               #
@@ -4020,13 +4057,13 @@ namespace eval ::Eagle {
               #       machine, also try to copy the native files to the
               #       binary location.
               #
-              if {![info exists ::no(copySqliteImplicitFiles)] && \
+              if {![info exists ::no(copySqliteImplicitNativeFiles)] && \
                   [isDefaultBuildPlatform]} then {
                 tputs $::test_channel \
                     "---- copying implicit \"native\" files...\n"
 
                 foreach fileName $nativeFileNames {
-                  tryCopyAssembly $fileName
+                  tryCopyAssembly $fileName false
                 }
               }
 
@@ -4038,7 +4075,7 @@ namespace eval ::Eagle {
                       $platform \"...\n]
 
                   foreach fileName $nativeFileNames {
-                    tryCopyAssembly $fileName $platform
+                    tryCopyAssembly $fileName false $platform
                   }
                 }
 
@@ -4049,13 +4086,28 @@ namespace eval ::Eagle {
                       $architecture \"...\n]
 
                   foreach fileName $nativeFileNames {
-                    tryCopyAssembly $fileName $architecture
+                    tryCopyAssembly $fileName false $architecture
                   }
                 }
               }
             }
 
             if {![info exists ::no(copySqliteMixedFiles)]} then {
+              #
+              # NOTE: If the "native" runtime option is set, copy implicit
+              #       mixed-mode assembly files as well.  The runtime option
+              #       check is handled when building the list of mixed-mode
+              #       assembly file names.
+              #
+              if {![info exists ::no(copySqliteImplicitMixedFiles)]} then {
+                tputs $::test_channel \
+                    "---- copying implicit \"mixed\" files...\n"
+
+                foreach fileName $mixedFileNames {
+                  tryCopyAssembly $fileName false
+                }
+              }
+
               if {![info exists ::no(copySqliteNonImplicitFiles)]} then {
                 if {![info exists ::no(copySqlitePlatformFiles)] && \
                     [string length $platform] > 0} then {
@@ -4064,7 +4116,7 @@ namespace eval ::Eagle {
                       $platform \"...\n]
 
                   foreach fileName $mixedFileNames {
-                    tryCopyAssembly $fileName $platform
+                    tryCopyAssembly $fileName false $platform
                   }
                 }
 
@@ -4075,7 +4127,7 @@ namespace eval ::Eagle {
                       $architecture \"...\n]
 
                   foreach fileName $mixedFileNames {
-                    tryCopyAssembly $fileName $architecture
+                    tryCopyAssembly $fileName false $architecture
                   }
                 }
               }
@@ -4085,7 +4137,7 @@ namespace eval ::Eagle {
               tputs $::test_channel "---- copying \"managed\" files...\n"
 
               foreach fileName $managedFileNames {
-                tryCopyAssembly $fileName
+                tryCopyAssembly $fileName true
               }
             }
           }
@@ -4120,7 +4172,7 @@ namespace eval ::Eagle {
           }
         }
 
-        foreach fileNameOnly [getNativeLibraryFileNamesOnly] {
+        foreach fileNameOnly $nativeFileNames {
           catch {
             tputs $::test_channel [appendArgs \
                 "---- file version of \"" $fileNameOnly "\"... \"" \
@@ -4128,7 +4180,7 @@ namespace eval ::Eagle {
           }
         }
 
-        foreach fileNameOnly [getInteropAssemblyFileNamesOnly] {
+        foreach fileNameOnly $mixedFileNames {
           catch {
             tputs $::test_channel [appendArgs \
                 "---- file version of \"" $fileNameOnly "\"... \"" \
@@ -4136,28 +4188,16 @@ namespace eval ::Eagle {
           }
         }
 
-        catch {
-          tputs $::test_channel [appendArgs \
-              "---- file version of \"System.Data.SQLite.dll\"... \"" \
-              [file version [getBinaryFileName System.Data.SQLite.dll]] \"\n]
-        }
-
-        catch {
-          tputs $::test_channel [appendArgs \
-              "---- file version of \"System.Data.SQLite.Linq.dll\"... \"" \
-              [file version [getBinaryFileName System.Data.SQLite.Linq.dll]] \
-              \"\n]
-        }
-
-        catch {
-          tputs $::test_channel [appendArgs \
-              "---- file version of \"System.Data.SQLite.EF6.dll\"... \"" \
-              [file version [getBinaryFileName System.Data.SQLite.EF6.dll]] \
-              \"\n]
+        foreach fileNameOnly $managedFileNames {
+          catch {
+            tputs $::test_channel [appendArgs \
+                "---- file version of \"" $fileNameOnly "\"... \"" \
+                [file version [getBinaryFileName $fileNameOnly]] \"\n]
+          }
         }
 
         if {[string length $platform] > 0} then {
-          foreach fileNameOnly [getNativeLibraryFileNamesOnly] {
+          foreach fileNameOnly $nativeFileNames {
             catch {
               tputs $::test_channel [appendArgs \
                   "---- file version of \"" $platform \
@@ -4166,25 +4206,18 @@ namespace eval ::Eagle {
             }
           }
 
-          foreach fileNameOnly [getInteropAssemblyFileNamesOnly] {
+          foreach fileNameOnly $mixedFileNames {
             catch {
               tputs $::test_channel [appendArgs \
                   "---- file version of \"" $platform \
                   / $fileNameOnly "\"... \"" [file version \
                   [getBinaryFileName $fileNameOnly $platform]] \"\n]
             }
-          }
-
-          catch {
-            tputs $::test_channel [appendArgs \
-                "---- file version of \"" $platform \
-                "/System.Data.SQLite.dll\"... \"" [file version \
-                [getBinaryFileName System.Data.SQLite.dll $platform]] \"\n]
           }
         }
 
         if {[string length $architecture] > 0} then {
-          foreach fileNameOnly [getNativeLibraryFileNamesOnly] {
+          foreach fileNameOnly $nativeFileNames {
             catch {
               tputs $::test_channel [appendArgs \
                   "---- file version of \"" $architecture \
@@ -4193,19 +4226,13 @@ namespace eval ::Eagle {
             }
           }
 
-          catch {
-            tputs $::test_channel [appendArgs \
-                "---- file version of \"" $architecture \
-                / $fileNameOnly "\"... \"" [file version \
-                [getBinaryFileName $fileNameOnly $architecture]] \"\n]
-          }
-
-          catch {
-            tputs $::test_channel [appendArgs \
-                "---- file version of \"" $architecture \
-                "/System.Data.SQLite.dll\"... \"" [file version \
-                [getBinaryFileName System.Data.SQLite.dll $architecture]] \
-                \"\n]
+          foreach fileNameOnly $mixedFileNames {
+            catch {
+              tputs $::test_channel [appendArgs \
+                  "---- file version of \"" $architecture \
+                  / $fileNameOnly "\"... \"" [file version \
+                  [getBinaryFileName $fileNameOnly $architecture]] \"\n]
+            }
           }
         }
 
@@ -4315,11 +4342,11 @@ namespace eval ::Eagle {
             INTEROP_LEGACY_CLOSE INTEROP_LOG INTEROP_PERCENTILE_EXTENSION \
             INTEROP_REGEXP_EXTENSION INTEROP_TEST_EXTENSION \
             INTEROP_TOTYPE_EXTENSION INTEROP_VIRTUAL_TABLE NET_20 NET_35 \
-            NET_40 NET_45 NET_451 NET_452 NET_46 NET_461 NET_COMPACT_20 \
-            PLATFORM_COMPACTFRAMEWORK PRELOAD_NATIVE_LIBRARY RETARGETABLE \
-            SQLITE_STANDARD THROW_ON_DISPOSED TRACE TRACE_CONNECTION \
-            TRACE_DETECTION TRACE_HANDLE TRACE_PRELOAD TRACE_SHARED \
-            TRACE_STATEMENT TRACE_WARNING TRACK_MEMORY_BYTES \
+            NET_40 NET_45 NET_451 NET_452 NET_46 NET_461 NET_462 \
+            NET_COMPACT_20 PLATFORM_COMPACTFRAMEWORK PRELOAD_NATIVE_LIBRARY \
+            RETARGETABLE SQLITE_STANDARD THROW_ON_DISPOSED TRACE \
+            TRACE_CONNECTION TRACE_DETECTION TRACE_HANDLE TRACE_PRELOAD \
+            TRACE_SHARED TRACE_STATEMENT TRACE_WARNING TRACK_MEMORY_BYTES \
             USE_ENTITY_FRAMEWORK_6 USE_INTEROP_DLL USE_PREPARE_V2 WINDOWS] {
           #
           # NOTE: Check if the compile-time option is listed in the list of
@@ -4515,23 +4542,27 @@ namespace eval ::Eagle {
         #       required by the tests in this file.
         #
         set entityFrameworkDllFile \
-            [getBuildFileName EntityFramework.dll]
+            [getBuildFileName EntityFramework.dll true]
 
-        set installerExeFile [getBuildFileName Installer.exe]
-        set sqliteDesignerDllFile [getBuildFileName SQLite.Designer.dll]
+        set installerExeFile \
+            [getBuildFileName Installer.exe true]
+
+        set sqliteDesignerDllFile \
+            [getBuildFileName SQLite.Designer.dll true]
 
         set systemDataSQLiteDllFile \
-            [getBuildFileName System.Data.SQLite.dll]
+            [getBuildFileName System.Data.SQLite.dll \
+            [expr {![hasRuntimeOption native]}]]
 
         set systemDataSQLiteLinqDllFile \
-            [getBuildFileName System.Data.SQLite.Linq.dll]
+            [getBuildFileName System.Data.SQLite.Linq.dll true]
 
         set systemDataSQLiteEf6DllFile \
-            [getBuildFileName System.Data.SQLite.EF6.dll]
+            [getBuildFileName System.Data.SQLite.EF6.dll true]
 
-        set testExeFile [getBuildFileName test.exe]
-        set testLinqExeFile [getBuildFileName testlinq.exe]
-        set testEf6ExeFile [getBuildFileName testef6.exe]
+        set testExeFile [getBuildFileName test.exe true]
+        set testLinqExeFile [getBuildFileName testlinq.exe true]
+        set testEf6ExeFile [getBuildFileName testef6.exe true]
 
         #
         # NOTE: Setup the variables that refer to the various data files
