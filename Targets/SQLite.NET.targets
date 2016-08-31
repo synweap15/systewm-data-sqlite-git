@@ -226,17 +226,19 @@
   ******************************************************************************
   -->
 
-  <Target Name="SignMixedModeAssembly"
-          Condition="'$(SignMixedModeAssembly)' != 'false' And
+  <Target Name="ReSignMixedModeAssembly"
+          Condition="'$(ReSignMixedModeAssembly)' != 'false' And
                      '$(TargetPath)' != '' And
                      Exists('$(TargetPath)') And
                      '$(INTEROP_KEY_FILE)' != '' And
                      Exists('$(INTEROP_KEY_FILE)')">
     <Exec Condition="'$(TargetFrameworkSDKToolsDirectory)' == '' And
-                     '$(FrameworkSDKDir)' != ''"
+                     '$(FrameworkSDKDir)' != '' And
+                     Exists('$(FrameworkSDKDir)Bin\sn.exe')"
           Command="&quot;$(FrameworkSDKDir)Bin\sn.exe&quot; -Ra &quot;$(TargetPath)&quot; &quot;$(INTEROP_KEY_FILE)&quot;" />
 
-    <Exec Condition="'$(TargetFrameworkSDKToolsDirectory)' != ''"
+    <Exec Condition="'$(TargetFrameworkSDKToolsDirectory)' != '' And
+                     Exists('$(TargetFrameworkSDKToolsDirectory)sn.exe')"
           Command="&quot;$(TargetFrameworkSDKToolsDirectory)sn.exe&quot; -Ra &quot;$(TargetPath)&quot; &quot;$(INTEROP_KEY_FILE)&quot;" />
   </Target>
 
