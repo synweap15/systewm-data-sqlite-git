@@ -1,0 +1,231 @@
+###############################################################################
+#
+# object.eagle --
+#
+# Extensible Adaptable Generalized Logic Engine (Eagle)
+# Eagle Object Package File
+#
+# Copyright (c) 2007-2012 by Joe Mistachkin.  All rights reserved.
+#
+# See the file "license.terms" for information on usage and redistribution of
+# this file, and for a DISCLAIMER OF ALL WARRANTIES.
+#
+# RCS: @(#) $Id: $
+#
+###############################################################################
+
+#
+# NOTE: Use our own namespace here because even though we do not directly
+#       support namespaces ourselves, we do not want to pollute the global
+#       namespace if this script actually ends up being evaluated in Tcl.
+#
+namespace eval ::Eagle {
+  #
+  # NOTE: This procedure accepts two arguments containing the flag string
+  #       that are based on an enumerated CLR type.  Flag values that are
+  #       contained in these two arguments are combined and returned as
+  #       the result.  The third flag string argument contains the flags
+  #       to exclude from the result.
+  #
+  proc combineFlags { flags1 flags2 {flags3 ""} {noCase false} } {
+    #
+    # NOTE: This should work properly in both Tcl and Eagle.
+    #
+    set result [list]
+    set notFlags [list]
+
+    if {[string length $flags3] > 0} then {
+      foreach flag [split $flags3 ", "] {
+        set flag [string trim $flag]
+
+        if {[string length $flag] > 0} then {
+          lappend notFlags $flag
+        }
+      }
+    }
+
+    foreach flags [list $flags1 $flags2] {
+      foreach flag [split $flags ", "] {
+        set flag [string trim $flag]
+
+        if {[string length $flag] > 0} then {
+          set addFlag false
+
+          if {[llength $notFlags] > 0} then {
+            set command [list lsearch -exact]
+
+            if {$noCase} then {
+              lappend command -nocase
+            }
+
+            lappend command -- $notFlags $flag
+
+            if {[eval $command] == -1} then {
+              set addFlag true
+            }
+          } else {
+            set addFlag true
+          }
+
+          if {$addFlag} then {
+            lappend result $flag
+          }
+        }
+      }
+    }
+
+    return [join $result ,]
+  }
+
+  #
+  # NOTE: This procedure returns the type name of the return type for the
+  #       specified CLR member.
+  #
+  proc getReturnType { object member } {
+    if {[string length $object] == 0} then {
+      return ""
+    }
+
+    if {[string length $member] == 0} then {
+      return ""
+    }
+
+    set code [catch {
+      object foreach -alias memberInfo \
+          [object invoke -noinvoke $object $member] {
+        #
+        # NOTE: Use the member type to determine which property contains
+        #       the type information we want to return.
+        #
+        switch -exact -- [$memberInfo MemberType] {
+          Field {
+            return [$memberInfo FieldType.AssemblyQualifiedName]
+          }
+          Method {
+            return [$memberInfo ReturnType.AssemblyQualifiedName]
+          }
+          Property {
+            return [$memberInfo PropertyType.AssemblyQualifiedName]
+          }
+          default {
+            return ""
+          }
+        }
+      }
+    } result]
+
+    #
+    # NOTE: If no error was raised above, return the result; otherwise,
+    #       return an empty string to indicate a general failure.
+    #
+    return [expr {$code == 2 ? $result : ""}]
+  }
+
+  #
+  # NOTE: This procedure returns the default value for the specified CLR type.
+  #
+  proc getDefaultValue { typeName } {
+    if {[llength [info commands object]] == 0} then {
+      return ""
+    }
+
+    if {[string length $typeName] == 0} then {
+      return ""
+    }
+
+    set type [object invoke -create -alias Type GetType $typeName]
+
+    if {[string length $type] == 0} then {
+      return ""
+    }
+
+    return [expr {[$type IsValueType] ? 0 : "null"}]
+  }
+
+  #
+  # NOTE: This procedure returns a string obtained by using the specified
+  #       value as an opaque object handle -OR- a default value (e.g. an
+  #       empty string) if the value is not a valid opaque object handle.
+  #
+  proc getStringFromObjectHandle { value {default ""} } {
+    if {[isObjectHandle $value]} then {
+      return [object invoke $value ToString]
+    }
+
+    if {[string length $default] > 0} then {
+      return $default
+    }
+
+    return $value
+  }
+
+  #
+  # NOTE: This procedure returns non-zero if the specified value can be used
+  #       as an opaque object handle.
+  #
+  proc isObjectHandle { value } {
+    set pattern [string map [list \\ \\\\ \[ \\\[ \] \\\]] $value]
+    set objects [info objects $pattern]
+
+    if {[llength $objects] == 1 && [lindex $objects 0] eq $value} then {
+      return true
+    }
+
+    return false
+  }
+
+  #
+  # NOTE: This procedure returns non-zero if the specified name represents
+  #       a valid CLR type name.
+  #
+  proc isManagedType { name } {
+    if {[llength [info commands object]] > 0} then {
+      if {![isObjectHandle $name]} then {
+        if {[catch {
+          object members -matchnameonly -nameonly -pattern Equals $name
+        } result] == 0 && $result eq "Equals"} then {
+          return true
+        }
+      }
+    }
+
+    return false
+  }
+
+  #
+  # NOTE: This procedure returns non-zero if the specified name is usable
+  #       as a CLR type name.
+  #
+  proc canGetManagedType { name {varName ""} } {
+    if {[llength [info commands object]] > 0} then {
+      if {![isObjectHandle $name]} then {
+        set cultureInfo [object invoke Interpreter.GetActive CultureInfo]
+        set type null
+
+        set code [object invoke -create -alias -flags +NonPublic \
+            Value GetType "" $name null null None $cultureInfo type]
+
+        if {[$code ToString] eq "Ok"} then {
+          if {[string length $varName] > 0} then {
+            upvar 1 $varName typeName
+          }
+
+          set typeName [$type AssemblyQualifiedName]
+
+          if {[isManagedType $typeName]} then {
+            return true
+          }
+        }
+      }
+    }
+
+    return false
+  }
+
+  #
+  # NOTE: Provide the Eagle "object" package to the interpreter.
+  #
+  package provide Eagle.Object \
+    [expr {[isEagle] ? [info engine PatchLevel] : "1.0"}]
+}
+

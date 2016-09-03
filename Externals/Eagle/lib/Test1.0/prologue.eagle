@@ -737,6 +737,14 @@ if {![info exists no([file tail [info script]])]} then {
   tputs $test_channel [appendArgs "---- processId: " \
       [pid] \n]
 
+  set ppid(0) [catch {info ppid} ppid(1)]
+
+  tputs $test_channel [appendArgs "---- parentProcessId: " \
+      [expr {$ppid(0) == 0 ? \
+          $ppid(1) : "<none>"}] \n]
+
+  unset ppid
+
   tputs $test_channel [appendArgs "---- test suite: " \
       [expr {[info exists test_suite] ? \
           $test_suite : "<none>"}] \n]
@@ -1730,6 +1738,17 @@ if {![info exists no([file tail [info script]])]} then {
     #
     if {![info exists no(core)] && ![info exists no(test)]} then {
       #
+      # NOTE: Has PackageCallback testing support been disabled?
+      #
+      if {![info exists no(testPackageCallback)]} then {
+        #
+        # NOTE: For test "package-2.1".
+        #
+        checkForObjectMember $test_channel Eagle._Tests.Default \
+            *TestSetPackageFallbackCallback*
+      }
+
+      #
       # NOTE: Has ExecuteCallback testing support been disabled?
       #
       if {![info exists no(testExecuteCallback)]} then {
@@ -1853,10 +1872,13 @@ if {![info exists no([file tail [info script]])]} then {
         # NOTE: For test "socket-3.50".
         #
         checkForObjectMember $test_channel Eagle._Tests.Default \
-            *TestHasNewScriptWebClientCallback*
+            *TestHasScriptNewWebClientCallback*
 
         checkForObjectMember $test_channel Eagle._Tests.Default \
-            *TestSetNewScriptWebClientCallback*
+            *TestHasErrorNewWebClientCallback*
+
+        checkForObjectMember $test_channel Eagle._Tests.Default \
+            *TestSetScriptNewWebClientCallback*
       }
 
       if {![info exists no(testLoad)]} then {
@@ -1930,6 +1952,12 @@ if {![info exists no([file tail [info script]])]} then {
         #
         checkForObjectMember $test_channel Eagle._Tests.Default \
             *TestRemoting*
+
+        checkForObjectMember $test_channel Eagle._Tests.Default \
+            *TestRemotingHaveChannel*
+
+        checkForObjectMember $test_channel Eagle._Tests.Default \
+            *TestRemotingTryGetChannel*
       }
 
       #
@@ -2643,6 +2671,46 @@ if {![info exists no([file tail [info script]])]} then {
 
   tputs $test_channel \
       "---- start of common (Tcl & Eagle) test constraints...\n"
+
+  #
+  # NOTE: Force tests that are normally blocked by Mono issues to run?
+  #
+  if {[info exists no(monoHacks)]} then {
+    addKnownMonoConstraints true
+    addKnownMonoConstraints false
+
+    tputs $test_channel \
+        "---- added all known Mono test constraints (forced)\n"
+  }
+
+  #
+  # NOTE: Check for Eagle core library package names...
+  #
+  if {![info exists no(corePackageNames)]} then {
+    checkForPackage $test_channel {^Eagle\._Plugins\.Core, .*$}
+    checkForPackage $test_channel {^Eagle\._Plugins\.Object, .*$}
+    checkForPackage $test_channel {^Eagle\._Plugins\.Test, .*$}
+    checkForPackage $test_channel {^Eagle\._Plugins\.Trace, .*$}
+  }
+
+  #
+  # NOTE: Check for Eagle Enterprise Edition package names...
+  #
+  if {![info exists no(enterprisePackageNames)]} then {
+    #
+    # NOTE: These are from various SKUs of the Harpy plugin.
+    #
+    checkForPackage $test_channel {^Licensing\.Core, .*$}
+    checkForPackage $test_channel {^Licensing\.Standard, .*$}
+    checkForPackage $test_channel {^Licensing\.Enterprise, .*$}
+    checkForPackage $test_channel {^Security\.Core, .*$}
+
+    #
+    # NOTE: These are from various SKUs of the Badge plugin.
+    #
+    checkForPackage $test_channel {^Badge\.Enterprise, .*$}
+    checkForPackage $test_channel {^Security\.Certificates, .*$}
+  }
 
   #
   # NOTE: Check for the test suite infrastructure files...

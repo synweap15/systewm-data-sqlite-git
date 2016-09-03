@@ -3,7 +3,7 @@
 # test.eagle --
 #
 # Extensible Adaptable Generalized Logic Engine (Eagle)
-# Test Initialization File
+# Eagle Test Package File
 #
 # Copyright (c) 2007-2012 by Joe Mistachkin.  All rights reserved.
 #
@@ -320,7 +320,7 @@ namespace eval ::Eagle {
               # NOTE: First, make sure that the [after] event queue for the
               #       interpreter is totally empty.
               #
-              catch {eval after cancel [after info]}
+              catch {foreach id [after info] {after cancel $id}}
 
               #
               # NOTE: Schedule the event to cancel the script we are about to
@@ -3338,7 +3338,7 @@ namespace eval ::Eagle {
             # NOTE: First, make sure that the [after] event queue for the
             #       interpreter is totally empty.
             #
-            catch {eval after cancel [after info]}
+            catch {foreach id [after info] {after cancel $id}}
 
             #
             # NOTE: Schedule the event to cancel the script we are about to
@@ -3734,11 +3734,11 @@ namespace eval ::Eagle {
         getTemporaryPath getFiles getTestFiles getTestRunId getTestLogId \
         getDefaultTestLog getTestLog getLastTestLog getTestSuite \
         getTestMachine getTestPlatform getTestConfiguration getTestSuffix \
-        getTestUncountedLeaks getTestAssemblyName testExec testClrExec \
-        execTestShell isRandomOrder isBreakOnLeak isStopOnFailure \
-        isStopOnLeak isExitOnComplete returnInfoScript runTestPrologue \
-        runTestEpilogue hookPuts unhookPuts runTest testDebugBreak \
-        testArrayGet testShim tsource recordTestStatistics \
+        getTestUncountedLeaks getTestAssemblyName canTestExec testExec \
+        testClrExec execTestShell isRandomOrder isBreakOnLeak \
+        isStopOnFailure isStopOnLeak isExitOnComplete returnInfoScript \
+        runTestPrologue runTestEpilogue hookPuts unhookPuts runTest \
+        testDebugBreak testArrayGet testShim tsource recordTestStatistics \
         reportTestStatistics formatList formatListAsDict pathToRegexp \
         inverseLsearchGlob removePathFromFileNames formatDecimal \
         clearTestPercent reportTestPercent runAllTests isTestSuiteRunning \
@@ -3752,7 +3752,7 @@ namespace eval ::Eagle {
   }
 
   #
-  # NOTE: Provide the Eagle test package to the interpreter.
+  # NOTE: Provide the Eagle "test" package to the interpreter.
   #
   package provide Eagle.Test \
     [expr {[isEagle] ? [info engine PatchLevel] : "1.0"}]

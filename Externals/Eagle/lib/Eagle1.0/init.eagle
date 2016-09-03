@@ -3,7 +3,7 @@
 # init.eagle --
 #
 # Extensible Adaptable Generalized Logic Engine (Eagle)
-# Interpreter Initialization File
+# Eagle Interpreter Initialization File
 #
 # Copyright (c) 2007-2012 by Joe Mistachkin.  All rights reserved.
 #
@@ -24,8 +24,11 @@ namespace eval ::Eagle {
   # NOTE: This is the procedure that detects whether or not we are
   #       running in Eagle (otherwise, we are running in vanilla Tcl).
   #       This procedure must function correctly in both Tcl and Eagle
-  #       and must return non-zero only when running in Eagle.
+  #       and must return non-zero only when running in Eagle.  This
+  #       procedure must be defined in this script file because it is
+  #       needed while this script file is being evaluated.
   #
+  # <bootstrap>
   proc isEagle {} {
     #
     # NOTE: Nothing too fancy or expensive should be done in here.  In
@@ -38,812 +41,99 @@ namespace eval ::Eagle {
   }
 
   #
-  # NOTE: This is the procedure that detects whether or not we are
-  #       running on Windows (otherwise, we are running on some flavor
-  #       of Unix).  This procedure must function correctly in both Tcl
-  #       and Eagle and must return non-zero only when on Windows.
+  # NOTE: This procedure is designed to "load" (i.e. [source]) other script
+  #       files that logically belong to the package defined in this script
+  #       file.  Upon success, an empty string will be returned.  A script
+  #       error may be raised.  This should work properly in both Tcl and
+  #       Eagle.  This procedure must be defined in this script file because
+  #       it is needed while this script file is being evaluated.
   #
-  proc isWindows {} {
-    return [expr {[info exists ::tcl_platform(platform)] && \
-        $::tcl_platform(platform) eq "windows"}]
-  }
-
-  #
-  # NOTE: This procedure should return non-zero if and only if only there
-  #       is currently an interactive user that can respond to prompts and
-  #       other requests for input.
-  #
-  proc isInteractive {} {
+  # <bootstrap>
+  proc loadScripts { directory fileNamesOnly } {
     #
-    # TODO: Is more complex checking required here?
+    # NOTE: Does the directory specified by the caller contain information
+    #       useful in locating the script file?
     #
-    return [expr {[info exists ::tcl_interactive] && $::tcl_interactive}]
-  }
-
-  proc haveGaruda { {varName ""} } {
-    #
-    # NOTE: Check for a variable name to place the Garuda package Id into.
-    #
-    if {[string length $varName] > 0} then {
-      upvar 1 $varName packageId
+    if {[string length $directory] == 0 || $directory eq "."} then {
+      #
+      # NOTE: The directory specified by the caller contains no useful
+      #       information, use the Tcl library directory instead, if
+      #       possible.
+      #
+      if {[info exists ::tcl_library] && \
+          [string length $::tcl_library] > 0 && \
+          [file isdirectory $::tcl_library]} then {
+        #
+        # NOTE: Ok, use the Tcl library directory.
+        #
+        set directory $::tcl_library
+      }
     }
 
     #
-    # NOTE: Is the Eagle Package for Tcl (Garuda) available?  This check
-    #       is different in Eagle and Tcl.
+    # NOTE: Start out with the [source] command.
+    #
+    set baseCommand source
+
+    #
+    # NOTE: When using Eagle, use the -withinfo option to preserve the
+    #       location information for procedures defined in the specified
+    #       script file.
     #
     if {[isEagle]} then {
-      return [expr {[llength [info commands tcl]] > 0 && [tcl ready] && \
-          [catch {tcl eval [tcl master] {package present Garuda}}] == 0 && \
-          [catch {tcl eval [tcl master] {garuda packageid}} packageId] == 0}]
-    } else {
-      return [expr {[catch {package present Garuda}] == 0 && \
-          [catch {garuda packageid} packageId] == 0}]
-    }
-  }
-
-  proc isTclThread { name } {
-    #
-    # NOTE: For now, this check only works in Eagle.
-    #
-    set result false
-
-    if {[isEagle]} then {
-      catch {
-        if {[llength [info commands tcl]] > 0 && [tcl ready] && \
-            [lsearch -exact -- [tcl threads] $name] != -1} then {
-          #
-          # NOTE: The name specified by the caller appears in the
-          #       list of Tcl threads for this Eagle interpreter.
-          #
-          set result true
-        }
-      }
+      lappend baseCommand -withinfo true --
     }
 
-    return $result
-  }
-
-  #
-  # NOTE: This is the procedure that detects whether or not we are
-  #       running in Eagle on Mono (otherwise, we are running in Tcl
-  #       or in Eagle on .NET).  This procedure must function correctly
-  #       in both Tcl and Eagle and must return non-zero only when
-  #       running in Eagle on Mono.
-  #
-  proc isMono {} {
-    return [expr {[info exists ::eagle_platform(runtime)] && \
-        [string compare -nocase mono $::eagle_platform(runtime)] == 0}]
-  }
-
-  #
-  # NOTE: This procedure returns non-zero if the specified file names refer
-  #       to the same file, using the most robust method available for the
-  #       script engine and platform.
-  #
-  proc isSameFileName { fileName1 fileName2 } {
-    if {[isEagle]} then {
-      return [file same $fileName1 $fileName2]
-    } else {
-      if {[isWindows]} then {
-        return [string equal -nocase $fileName1 $fileName2]
-      } else {
-        return [string equal $fileName1 $fileName2]
-      }
-    }
-  }
-
-  proc getEnvironmentVariable { name } {
     #
-    # NOTE: This should work properly in both Tcl and Eagle.
+    # NOTE: Load each script file specified by the caller, in the exact
+    #       order they were specified.
     #
-    return [expr {[info exists ::env($name)] ? $::env($name) : ""}]
-  }
-
-  proc combineFlags { flags1 flags2 {flags3 ""} {noCase false} } {
-    #
-    # NOTE: This should work properly in both Tcl and Eagle.
-    #
-    set result [list]
-    set notFlags [list]
+    foreach fileNameOnly $fileNamesOnly {
+      #
+      # NOTE: Start with the base [source] command, maybe with some
+      #       options.
+      #
+      set fileCommand $baseCommand
 
-    if {[string length $flags3] > 0} then {
-      foreach flag [split $flags3 ", "] {
-        set flag [string trim $flag]
+      #
+      # NOTE: Add the qualified file name, which may or may not be fully
+      #       qualified.
+      #
+      lappend fileCommand [file join $directory $fileNameOnly]
 
-        if {[string length $flag] > 0} then {
-          lappend notFlags $flag
-        }
-      }
+      #
+      # NOTE: Evaluate the resulting command in the callers context.
+      #
+      uplevel 1 $fileCommand
     }
 
-    foreach flags [list $flags1 $flags2] {
-      foreach flag [split $flags ", "] {
-        set flag [string trim $flag]
-
-        if {[string length $flag] > 0} then {
-          set addFlag false
-
-          if {[llength $notFlags] > 0} then {
-            set command [list lsearch -exact]
-
-            if {$noCase} then {
-              lappend command -nocase
-            }
-
-            lappend command -- $notFlags $flag
-
-            if {[eval $command] == -1} then {
-              set addFlag true
-            }
-          } else {
-            set addFlag true
-          }
-
-          if {$addFlag} then {
-            lappend result $flag
-          }
-        }
-      }
-    }
-
-    return [join $result ,]
-  }
-
-  proc getCompileInfo {} {
     #
-    # NOTE: Return the important compile-time information for use by the
-    #       setup or other callers.
+    # NOTE: Success, return an empty string.
     #
-    return [expr {[isEagle] ? [lappend result \
-        TimeStamp $::eagle_platform(timeStamp) \
-        ImageRuntimeVersion $::eagle_platform(imageRuntimeVersion) \
-        ModuleVersionId $::eagle_platform(moduleVersionId) \
-        CompileOptions $::eagle_platform(compileOptions)] : ""}]
-  }
-
-  proc getPlatformInfo { name {default ""} } {
-    #
-    # NOTE: Return the important platform information for use by the test
-    #       suite or other callers.
-    #
-    return [expr {[isEagle] && [info exists ::eagle_platform($name)] && \
-        [string length [string trim $::eagle_platform($name)]] > 0 ? \
-        $::eagle_platform($name) : $default}]
-  }
-
-  proc getPluginName { pattern } {
-    #
-    # NOTE: This should work properly in both Tcl and Eagle.
-    #
-    foreach loaded [info loaded] {
-      if {[regexp -- $pattern [lindex $loaded end]]} then {
-        return [lindex $loaded 1]
-      }
-    }
-
     return ""
   }
 
-  proc getPluginPath { pattern } {
+  if {![interp issafe]} then {
     #
-    # NOTE: This should work properly in both Tcl and Eagle.
+    # NOTE: Load the extra script library files that contain commonly used
+    #       procedures that are shared between native Tcl and Eagle.
     #
-    foreach loaded [info loaded] {
-      if {[regexp -- $pattern [lindex $loaded end]]} then {
-        return [lindex $loaded 0]
-      }
-    }
-
-    return ""
-  }
-
-  proc appendArgs { args } {
-    #
-    # NOTE: This should work properly in both Tcl and Eagle.
-    #
-    set result ""; eval append result $args
-  }
-
-  proc lappendArgs { args } {
-    #
-    # NOTE: This should work properly in both Tcl and Eagle.
-    #
-    set result [list]; eval lappend result $args
-  }
-
-  proc getDictionaryValue { dictionary name {default ""} {wrap ""} } {
-    #
-    # NOTE: Locate the named value we are interested in.  The dictionary must
-    #       be a list with an even number of elements in the following format:
-    #
-    #       <name1> <value1> <name2> <value2> ... <nameN> <valueN>
-    #
-    foreach {pairName pairValue} $dictionary {
-      #
-      # NOTE: Does this name match the one specified by the caller?
-      #
-      if {$pairName eq $name} then {
-        #
-        # NOTE: Return the value, optionally wrapped.
-        #
-        return [appendArgs $wrap $pairValue $wrap]
-      }
-    }
+    loadScripts [file dirname [info script]] [list \
+        auxiliary.eagle database.eagle exec.eagle file1.eagle \
+        file2.eagle file3.eagle info.eagle list.eagle \
+        platform.eagle testlog.eagle]
 
     #
-    # NOTE: Return the default value.
-    #
-    return $default
-  }
-
-  proc getColumnValue { row column {default ""} {wrap ""} } {
-    #
-    # NOTE: Start with the default value.
-    #
-    set result $default
-
-    #
-    # NOTE: Locate the index of the named column we are interested in.
-    #       This requires Tcl 8.5 or Eagle.
-    #
-    set index [lsearch -exact -index 0 $row $column]
-
-    #
-    # NOTE: Did we find the column name in the row?
-    #
-    if {$index != -1} then {
-      #
-      # NOTE: Grab the column value.
-      #
-      set result [appendArgs $wrap [lindex [lindex $row $index] end] $wrap]
-    }
-
-    return $result
-  }
-
-  proc getRowColumnValue { varName id column {default ""} {wrap ""} } {
-    #
-    # NOTE: Start with the default value.
-    #
-    set result $default
-
-    #
-    # NOTE: We need acccess to the result array (from the context of the
-    #       caller).
-    #
-    upvar 1 $varName rows
-
-    #
-    # NOTE: Make sure we have the first result row.
-    #
-    if {[info exists rows($id)]} then {
-      #
-      # NOTE: Grab the entire row we are interested in.
-      #
-      set row $rows($id)
-
-      #
-      # NOTE: Grab the value at the specified column.
-      #
-      set result [getColumnValue $row $column $default $wrap]
-    }
-
-    return $result
-  }
-
-  proc tqputs { channel string } {
-    #
-    # NOTE: If an output channel was provided, use it; otherwise, ignore the
-    #       message.
-    #
-    if {[string length $channel] > 0} then {
-      puts -nonewline $channel $string
-    }
-
-    tqlog $string
-  }
-
-  proc tqlog { string } {
-    #
-    # NOTE: If an empty string is supplied by the caller, do nothing.
-    #
-    if {[string length $string] > 0} then {
-      #
-      # NOTE: *SPECIAL* The special global variable "test_log_queue" is used
-      #       by the [tlog] script library procedure from the test package to
-      #       enable it to emit "queued" data into the test log file prior to
-      #       emitting the string requested by its caller.  The only job for
-      #       this procedure is to populate the "test_log_queue" variable for
-      #       later use by the test package.
-      #
-      if {[info exists ::test_log_queue]} then {
-        #
-        # NOTE: Use the next queued test log entry.
-        #
-        set entry [expr {[array size ::test_log_queue] + 1}]
-      } else {
-        #
-        # NOTE: Use the first queued test log entry.
-        #
-        set entry 1
-      }
-
-      #
-      # NOTE: Add the new entry to the test log queue.  All entries will be
-      #       sent to the actual test log file the very next time the [tlog]
-      #       command from the test package is executed.
-      #
-      set ::test_log_queue($entry) $string
-    }
-
-    return ""
-  }
-
-  proc readFile { fileName } {
-    #
-    # NOTE: This should work properly in both Tcl and Eagle.
-    #
-    set channel [open $fileName RDONLY]
-    fconfigure $channel -encoding binary -translation binary; # BINARY DATA
-    set result [read $channel]
-    close $channel
-    return $result
-  }
-
-  proc readSharedFile { fileName } {
-    #
-    # NOTE: This should work properly in both Tcl and Eagle.
-    #
-    set command [list open $fileName RDONLY]
-
-    #
-    # HACK: Tcl appears to do this by default; however Eagle does not and
-    #       will not.  Therefore, manually add the -share option to the
-    #       command if running in Eagle.
+    # NOTE: Load the extra script library files that contain procedures that
+    #       require a specific language (i.e. either native Tcl or Eagle).
     #
     if {[isEagle]} then {
-      lappend command 0 file -share readWrite
-    }
-
-    #
-    # NOTE: Open the file using the command constructed above, configure
-    #       the channel for binary data, and output the data to it.
-    #
-    set channel [eval $command]
-    fconfigure $channel -encoding binary -translation binary; # BINARY DATA
-    set result [read $channel]
-    close $channel
-    return $result
-  }
-
-  proc writeFile { fileName data } {
-    #
-    # NOTE: This should work properly in both Tcl and Eagle.
-    #
-    set channel [open $fileName {WRONLY CREAT TRUNC}]
-    fconfigure $channel -encoding binary -translation binary; # BINARY DATA
-    puts -nonewline $channel $data
-    close $channel
-    return ""
-  }
-
-  proc appendFile { fileName data } {
-    #
-    # NOTE: This should work properly in both Tcl and Eagle.
-    #
-    set channel [open $fileName {WRONLY CREAT APPEND}]
-    fconfigure $channel -encoding binary -translation binary; # BINARY DATA
-    puts -nonewline $channel $data
-    close $channel
-    return ""
-  }
-
-  proc appendLogFile { fileName data } {
-    #
-    # NOTE: This should work properly in both Tcl and Eagle.
-    #
-    set channel [open $fileName {WRONLY CREAT APPEND}]
-    fconfigure $channel -encoding binary -translation \
-        [expr {[isEagle] ? "protocol" : "auto"}]; # LOG DATA
-    puts -nonewline $channel $data
-    close $channel
-    return ""
-  }
-
-  proc appendSharedFile { fileName data } {
-    #
-    # NOTE: This should work properly in both Tcl and Eagle.
-    #
-    set command [list open $fileName {WRONLY CREAT APPEND}]
-
-    #
-    # HACK: Tcl appears to do this by default; however Eagle does not and
-    #       will not.  Therefore, manually add the -share option to the
-    #       command if running in Eagle.
-    #
-    if {[isEagle]} then {
-      lappend command 0 file -share readWrite
-    }
-
-    #
-    # NOTE: Open the file using the command constructed above, configure
-    #       the channel for binary data, and output the data to it.
-    #
-    set channel [eval $command]
-    fconfigure $channel -encoding binary -translation binary; # BINARY DATA
-    puts -nonewline $channel $data; flush $channel
-    close $channel
-    return ""
-  }
-
-  proc appendSharedLogFile { fileName data } {
-    #
-    # NOTE: This should work properly in both Tcl and Eagle.
-    #
-    set command [list open $fileName {WRONLY CREAT APPEND}]
-
-    #
-    # HACK: Tcl appears to do this by default; however Eagle does not and
-    #       will not.  Therefore, manually add the -share option to the
-    #       command if running in Eagle.
-    #
-    if {[isEagle]} then {
-      lappend command 0 file -share readWrite
-    }
-
-    #
-    # NOTE: Open the file using the command constructed above, configure
-    #       the channel for binary data, and output the data to it.
-    #
-    set channel [eval $command]
-    fconfigure $channel -encoding binary -translation \
-        [expr {[isEagle] ? "protocol" : "auto"}]; # LOG DATA
-    puts -nonewline $channel $data; flush $channel
-    close $channel
-    return ""
-  }
-
-  proc readAsciiFile { fileName } {
-    #
-    # NOTE: This should work properly in both Tcl and Eagle.
-    #
-    set channel [open $fileName RDONLY]
-    fconfigure $channel -encoding ascii -translation auto; # ASCII TEXT
-    set result [read $channel]
-    close $channel
-    return $result
-  }
-
-  proc writeAsciiFile { fileName data } {
-    #
-    # NOTE: This should work properly in both Tcl and Eagle.
-    #
-    set channel [open $fileName {WRONLY CREAT TRUNC}]
-    fconfigure $channel -encoding ascii -translation auto; # ASCII TEXT
-    puts -nonewline $channel $data
-    close $channel
-    return ""
-  }
-
-  proc readUnicodeFile { fileName } {
-    #
-    # NOTE: This should work properly in both Tcl and Eagle.
-    #
-    set channel [open $fileName RDONLY]
-    fconfigure $channel -encoding unicode -translation auto; # UNICODE TEXT
-    set result [read $channel]
-    close $channel
-    return $result
-  }
-
-  proc writeUnicodeFile { fileName data } {
-    #
-    # NOTE: This should work properly in both Tcl and Eagle.
-    #
-    set channel [open $fileName {WRONLY CREAT TRUNC}]
-    fconfigure $channel -encoding unicode -translation auto; # UNICODE TEXT
-    puts -nonewline $channel $data
-    close $channel
-    return ""
-  }
-
-  proc getDirResultPath { pattern path } {
-    #
-    # NOTE: This should work properly in both Tcl and Eagle.
-    #       Is the result path itself already absolute?
-    #
-    if {[file pathtype $path] eq "absolute"} then {
-      #
-      # NOTE: Ok, the result path is already absolute.
-      #       Normalize and return it.
-      #
-      return [file normalize $path]
-    } elseif {[file pathtype $pattern] eq "absolute"} then {
-      #
-      # NOTE: The pattern refers to an absolute path.  Strip
-      #       the final part of the pattern and join it with
-      #       the result path (which we already know is not
-      #       absolute).
-      #
-      return [file normalize [file join [file dirname $pattern] $path]]
+      loadScripts [file dirname [info script]] [list \
+          compat.eagle csharp.eagle object.eagle process.eagle \
+          runopt.eagle unkobj.eagle update.eagle]
     } else {
-      #
-      # NOTE: Neither the result path nor the input pattern
-      #       contain an absolute path; therefore, use the
-      #       current directory to hang the result path on.
-      #
-      return [file normalize [file join [pwd] $path]]
+      loadScripts [file dirname [info script]] [list shim.eagle]
     }
-  }
-
-  proc addToPath { dir } {
-    #
-    # NOTE: This should work properly in both Tcl and Eagle.
-    #       Normalize to an operating system native path.
-    #
-    set dir [file nativename $dir]
-
-    #
-    # NOTE: On Windows, use PATH; otherwise (i.e. Unix), use
-    #       LD_LIBRARY_PATH.
-    #
-    if {[isWindows]} then {
-      set name PATH
-    } else {
-      set name LD_LIBRARY_PATH
-    }
-
-    #
-    # NOTE: Make sure the directory is not already in the
-    #       loader search path.
-    #
-    if {[info exists ::tcl_platform(pathSeparator)]} then {
-      set separator $::tcl_platform(pathSeparator)
-    } elseif {[isWindows]} then {
-      set separator \;
-    } else {
-      set separator :
-    }
-
-    #
-    # NOTE: Does the necessary environment variable exist?
-    #
-    if {[info exists ::env($name)]} then {
-      #
-      # NOTE: Grab the value of the environment variable.
-      #
-      set value $::env($name)
-
-      #
-      # BUGBUG: Consider exact case only for now.
-      #
-      if {[lsearch -exact [split $value $separator] $dir] == -1} then {
-        #
-        # NOTE: Append the directory to the loader search path.
-        #       This allows us to subsequently load DLLs that
-        #       implicitly attempt to load other DLLs that are
-        #       not in the application directory.
-        #
-        set ::env($name) [join [list $value $dir] $separator]
-
-        #
-        # NOTE: Yes, we altered the search path.
-        #
-        return true
-      }
-    } else {
-      #
-      # NOTE: Create the loader search path with the directory.
-      #
-      set ::env($name) $dir
-
-      #
-      # NOTE: Yes, we created the search path.
-      #
-      return true
-    }
-
-    #
-    # NOTE: No, we did not alter the search path.
-    #
-    return false
-  }
-
-  proc removeFromPath { dir } {
-    #
-    # NOTE: This should work properly in both Tcl and Eagle.
-    #       Normalize to an operating system native path.
-    #
-    set dir [file nativename $dir]
-
-    #
-    # NOTE: On Windows, use PATH; otherwise (i.e. Unix), use
-    #       LD_LIBRARY_PATH.
-    #
-    if {[isWindows]} then {
-      set name PATH
-    } else {
-      set name LD_LIBRARY_PATH
-    }
-
-    #
-    # NOTE: Make sure the directory is in the loader search
-    #       path.
-    #
-    if {[info exists ::tcl_platform(pathSeparator)]} then {
-      set separator $::tcl_platform(pathSeparator)
-    } elseif {[isWindows]} then {
-      set separator \;
-    } else {
-      set separator :
-    }
-
-    #
-    # NOTE: Does the necessary environment variable exist?
-    #
-    if {[info exists ::env($name)]} then {
-      #
-      # NOTE: We need to separate the directories in the path
-      #       so that we can selectively remove the one we are
-      #       looking for.
-      #
-      set dirs [split $::env($name) $separator]
-
-      #
-      # BUGBUG: Consider exact case only for now.
-      #
-      set index [lsearch -exact $dirs $dir]
-
-      #
-      # NOTE: Is the directory in the loader search path?
-      #
-      if {$index != -1} then {
-        #
-        # NOTE: Remove the directory from the loader search path.
-        #
-        set dirs [lreplace $dirs $index $index]
-
-        #
-        # NOTE: Replace the original loader search path with
-        #       our modified one.
-        #
-        set ::env($name) [join $dirs $separator]
-
-        #
-        # NOTE: Yes, we altered the search path.
-        #
-        return true
-      }
-    }
-
-    #
-    # NOTE: No, we did not alter the search path.
-    #
-    return false
-  }
-
-  proc execShell { options args } {
-    #
-    # NOTE: Start out with just the base [exec] command.
-    #
-    set command [list exec]
-
-    #
-    # NOTE: Add options for the [exec] command, if any.
-    #
-    if {[llength $options] > 0} then {
-      eval lappend command $options
-    }
-
-    #
-    # NOTE: Always add the end-of-options marker.
-    #
-    lappend command --
-
-    #
-    # HACK: Assume that Mono is somewhere along the PATH.
-    #
-    if {[isMono]} then {
-      lappend command mono \
-          [appendArgs \" [file nativename [info nameofexecutable]] \"]
-    } else {
-      lappend command [info nameofexecutable]
-    }
-
-    #
-    # NOTE: If possible, check if the current interpreter has security
-    #       enabled; if so, add the appropriate command line option for
-    #       the sub-process.
-    #
-    if {[llength [info commands object]] > 0} then {
-      if {[catch {
-        object invoke -flags +NonPublic Interpreter.GetActive HasSecurity
-      } security] == 0 && $security} then {
-        lappend command -security true
-      }
-    }
-
-    #
-    # NOTE: Add command line arguments to the shell command, if any.
-    #
-    if {[llength $args] > 0} then {
-      eval lappend command $args
-    }
-
-    #
-    # NOTE: Finally, execute the resulting [exec] command in the context
-    #       of the caller, returning its result.
-    #
-    return [uplevel 1 $command]
-  }
-
-  proc lshuffle { list } {
-    #
-    # NOTE: This code for this algorithm was stolen from the Tcl library
-    #       struct package and modified to conform with the Eagle style
-    #       guide.
-    #
-    set result $list
-
-    for {set length [llength $result]} \
-        {$length > 1} {lset result $index $element} {
-      set index [expr {int(rand() * $length)}]
-      set element [lindex $result [incr length -1]]
-      lset result $length [lindex $result $index]
-    }
-
-    return $result
-  }
-
-  proc ldifference { list1 list2 } {
-    set result [list]
-
-    foreach element $list1 {
-      if {[lsearch -exact $list2 $element] == -1} then {
-        lappend result $element
-      }
-    }
-
-    foreach element $list2 {
-      if {[lsearch -exact $list1 $element] == -1} then {
-        lappend result $element
-      }
-    }
-
-    return $result
-  }
-
-  proc filter { list script } {
-    set result [list]
-
-    foreach item $list {
-      if {[uplevel 1 $script [list $item]]} then {
-        lappend result $item
-      }
-    }
-
-    return $result
-  }
-
-  proc map { list script } {
-    set result [list]
-
-    foreach item $list {
-      lappend result [uplevel 1 $script [list $item]]
-    }
-
-    return $result
-  }
-
-  proc reduce { list script } {
-    set result ""
-
-    foreach item $list {
-      set result [uplevel 1 $script [list $result] [list $item]]
-    }
-
-    return $result
   }
 
   if {[isEagle]} then {
@@ -851,1626 +141,55 @@ namespace eval ::Eagle {
     ############################ BEGIN Eagle ONLY #############################
     ###########################################################################
 
-    proc isAdministrator {} {
-      #
-      # NOTE: Returns non-zero if the logged on user has full administrator
-      #       rights on this machine.
-      #
-      return [expr {[info exists ::eagle_platform(administrator)] && \
-          $::eagle_platform(administrator)}]
-    }
-
-    proc hasRuntimeOption { name {default false} } {
-      #
-      # NOTE: Returns non-zero if the specified runtime option is set.
-      #
-      if {[llength [info commands debug]] > 0} then {
-        if {[llength [info subcommands debug runtimeoption]] > 0} then {
-          if {[catch {debug runtimeoption has $name} result] == 0} then {
-            return $result
-          }
-        }
-      }
-
-      if {[llength [info commands object]] > 0} then {
-        if {[catch {
-          object invoke Interpreter.GetActive HasRuntimeOption $name
-        } result] == 0} then {
-          return $result
-        }
-      }
-
-      return $default
-    }
-
-    proc addRuntimeOption { name } {
-      #
-      # NOTE: Returns non-zero if the specified runtime option was added.
-      #
-      if {[llength [info commands debug]] > 0} then {
-        if {[llength [info subcommands debug runtimeoption]] > 0} then {
-          if {[catch {debug runtimeoption add $name} result] == 0} then {
-            return $result
-          }
-        }
-      }
-
-      if {[llength [info commands object]] > 0} then {
-        if {[catch {
-          object invoke Interpreter.GetActive AddRuntimeOption $name
-        } result] == 0} then {
-          return $result
-        }
-      }
-
-      return false
-    }
-
-    proc removeRuntimeOption { name } {
-      #
-      # NOTE: Returns non-zero if the specified runtime option was removed.
-      #
-      if {[llength [info commands debug]] > 0} then {
-        if {[llength [info subcommands debug runtimeoption]] > 0} then {
-          if {[catch {debug runtimeoption remove $name} result] == 0} then {
-            return $result
-          }
-        }
-      }
-
-      if {[llength [info commands object]] > 0} then {
-        if {[catch {
-          object invoke Interpreter.GetActive RemoveRuntimeOption $name
-        } result] == 0} then {
-          return $result
-        }
-      }
-
-      return false
-    }
-
-    proc getBasePath {} {
-      set assembly [object invoke -flags +NonPublic \
-          Eagle._Components.Private.GlobalState GetAssembly]
-
-      return [object invoke -flags +NonPublic \
-          Eagle._Components.Private.PathOps GetBasePath $assembly \
-          [file dirname [lindex [info assembly] 1]]]
-    }
-
-    proc getPluginFlags { pattern } {
-      foreach loaded [info loaded] {
-        set plugin [lindex $loaded end]
-
-        if {[regexp -- $pattern $plugin]} then {
-          return [string map [list , " "] \
-              [getDictionaryValue [info plugin $plugin] flags]]
-        }
-      }
-
-      return [list]
-    }
-
-    proc getProcesses { name } {
-      #
-      # NOTE: Start with an empty list of process Ids.
-      #
-      set result [list]
-
-      #
-      # NOTE: Are we able to actually query the active processes?
-      #
-      if {[llength [info commands object]] > 0} then {
-        #
-        # NOTE: Does the caller want processes matching a specific name
-        #       or all processes on the local machine?
-        #
-        if {[string length $name] > 0} then {
-          #
-          # NOTE: Get the managed array of processes with matching names.
-          #
-          set array [object invoke -alias System.Diagnostics.Process \
-              GetProcessesByName $name]
-        } else {
-          #
-          # NOTE: Get the managed array of all processes on the local
-          #       machine.
-          #
-          set array [object invoke -alias System.Diagnostics.Process \
-              GetProcesses]
-        }
-      } else {
-        #
-        # NOTE: No, return nothing.
-        #
-        return $result
-      }
-
-      #
-      # NOTE: For each process in the resulting array, grab the Id.
-      #
-      for {set index 0} {$index < [$array Length]} {incr index} {
-        #
-        # NOTE: Grab the Nth process array element value using the
-        #       accessor method.
-        #
-        set process [$array -alias GetValue $index]
-
-        #
-        # NOTE: Add the Id of the process to the result list.  This
-        #       may fail on some versions of Mono.
-        #
-        if {[catch {$process Id} id] == 0} then {
-          lappend result $id
-        }
-
-        #
-        # NOTE: Get rid of the process object, we no longer need it.
-        #       Technically, it is not a requirement to explicitly
-        #       unset variables that contain object references;
-        #       however, it is useful in helping to document the
-        #       code.
-        #
-        unset process; # dispose
-      }
-
-      #
-      # NOTE: Get rid of the managed array of processes, we no longer
-      #       need it.
-      #
-      unset array; # dispose
-
-      #
-      # NOTE: Return the list of process Ids, which may be empty.
-      #
-      return $result
-    }
-
-    proc waitForProcesses { ids timeout {collect true} } {
-      #
-      # NOTE: If requested, run the garbage collector now.  This may be
-      #       necessary to successfully wait for processes that are being
-      #       kept alive via runtime callable wrappers for out-of-process
-      #       COM servers (e.g. Excel).
-      #
-      if {$collect} then {
-        debug collect true true
-      }
-
-      #
-      # NOTE: Wait for each process in the list to exit.
-      #
-      foreach id $ids {
-        #
-        # NOTE: Get the process object by its Id.  If it does not exist,
-        #       this will raise an error.
-        #
-        set result [catch {
-          set process [object invoke -alias System.Diagnostics.Process \
-              GetProcessById $id]
-        }]
-
-        #
-        # NOTE: Were we able to grab the process object?
-        #
-        if {$result == 0 && [info exists process]} then {
-          #
-          # NOTE: Wait a while for the process to exit.
-          #
-          $process WaitForExit $timeout
-        }
-
-        #
-        # NOTE: Get rid of the process (if we actually obtained it to
-        #       begin with).
-        #
-        unset -nocomplain process; # dispose
-      }
-    }
-
     #
-    # NOTE: This proc can be used to dynamically compile C# code in a script.
+    # NOTE: This procedure uses the [source] command to evaluate a script
+    #       file while preserving the location information for procedures
+    #       defined with it.
     #
-    proc compileCSharp {
-            string memory symbols strict resultsVarName errorsVarName args } {
-      #
-      # NOTE: The [object] command is required by this procedure.  If it
-      #       is not available, bail out now.
-      #
-      if {[llength [info commands object]] == 0} then {
-        #
-        # NOTE: We cannot even attempt to compile anything, fail.
-        #
-        set code Error
+    # <pkgIndex>
+    proc sourceWithInfo { args } {
+      catch {
+        set savedCacheFlags None
 
-        #
-        # NOTE: Prepare to transfer error messages to the caller.
-        #
-        if {[string length $errorsVarName] > 0} then {
-          upvar 1 $errorsVarName local_errors
-        }
-
-        #
-        # NOTE: Append to the list of errors.
-        #
-        lappend local_errors "cannot compile, missing \"object\" command"
-
-        #
-        # NOTE: Return the overall result to the caller.
-        #
-        return $code
+        object invoke -flags +NonPublic Interpreter.GetActive \
+            BeginNoArgumentCache savedCacheFlags
       }
 
-      #
-      # NOTE: Create the C# code provider object (i.e. the compiler).
-      #
-      set provider [object create -alias Microsoft.CSharp.CSharpCodeProvider]
+      try {
+        catch {
+          set savedInterpreterFlags None
 
-      #
-      # NOTE: Create the object that provides various parameters to the C#
-      #       code provider (i.e. the compiler options).
-      #
-      set parameters [object create -alias \
-          System.CodeDom.Compiler.CompilerParameters]
-
-      #
-      # NOTE: Do we not want to persist the generated assembly to disk?
-      #
-      if {$memory} then {
-        $parameters GenerateInMemory true
-      }
-
-      #
-      # NOTE: Do we want symbols to be generated for the generated assembly?
-      #
-      if {$symbols} then {
-        $parameters IncludeDebugInformation true
-      }
-
-      #
-      # NOTE: Make sure that the "standard" preprocessor defines match those
-      #       for the platform (i.e. the ones used to compile the Eagle core
-      #       library assembly).
-      #
-      set platformOptions [expr { \
-          [info exists ::eagle_platform(compileOptions)] ? \
-          $::eagle_platform(compileOptions) : [list]}]
-
-      #
-      # NOTE: Permit extra C# compiler options to be passed via the global
-      #       array element "csharpOptions", if it exists.
-      #
-      set csharpOptions [expr { \
-          [info exists ::eagle_platform(csharpOptions)] ? \
-          $::eagle_platform(csharpOptions) : [list]}]
-
-      if {[llength $platformOptions] > 0 || \
-          [llength $csharpOptions] > 0} then {
-        #
-        # NOTE: Grab the existing compiler options, if any.
-        #
-        set compilerOptions [$parameters CompilerOptions]
-
-        if {"DEBUG" in $platformOptions} then {
-          if {[string length $compilerOptions] > 0} then {
-            append compilerOptions " "
-          }
-
-          append compilerOptions /define:DEBUG
-        }
-
-        if {"TRACE" in $platformOptions} then {
-          if {[string length $compilerOptions] > 0} then {
-            append compilerOptions " "
-          }
-
-          append compilerOptions /define:TRACE
-        }
-
-        #
-        # NOTE: Append the configured extra C# compiler options configured
-        #       via the global array element "csharpOptions", if any.
-        #
-        foreach csharpOption $csharpOptions {
-          if {[string length $compilerOptions] > 0} then {
-            append compilerOptions " "
-          }
-
-          append compilerOptions $csharpOption
-        }
-
-        #
-        # NOTE: Reset the compiler options to the pre-existing ones plus the
-        #       extra defines we may have added (above).
-        #
-        $parameters CompilerOptions $compilerOptions
-      }
-
-      #
-      # NOTE: Process any extra compiler settings the caller may have
-      #       provided.
-      #
-      foreach {name value} $args {
-        $parameters -nocase $name $value
-      }
-
-      #
-      # NOTE: Prepare to transfer the object reference to the caller.  We
-      #       must use upvar here because otherwise the object is lost when
-      #       the procedure call frame is cleaned up.
-      #
-      if {[string length $resultsVarName] > 0} then {
-        upvar 1 $resultsVarName results
-      }
-
-      #
-      # NOTE: Attempt to compile the specified string as C# and capture the
-      #       results into the variable provided by the caller.
-      #
-      set results [$provider -alias CompileAssemblyFromSource $parameters \
-          $string]
-
-      #
-      # NOTE: We no longer need the C# code provider object (i.e. the
-      #       compiler); therefore, dispose it now.
-      #
-      unset provider; # dispose
-
-      #
-      # NOTE: Fetch the collection of compiler errors (which may be empty).
-      #
-      set errors [$results -alias Errors]
-
-      #
-      # NOTE: It is assumed that no assembly was generated if there were
-      #       any compiler errors.  Ignore all compiler warnings unless
-      #       we are in strict mode.
-      #
-      if {[$errors HasErrors] || ($strict && [$errors HasWarnings])} then {
-        #
-        # NOTE: Compilation of the assembly failed.
-        #
-        set code Error
-
-        #
-        # NOTE: Prepare to transfer error messages to the caller.
-        #
-        if {[string length $errorsVarName] > 0} then {
-          upvar 1 $errorsVarName local_errors
-        }
-
-        #
-        # NOTE: How many compile errors?
-        #
-        set count [$errors Count]
-
-        #
-        # NOTE: Grab each error object and append the string itself to
-        #       the overall list of errors.
-        #
-        for {set index 0} {$index < $count} {incr index} {
-          #
-          # NOTE: Get the compiler error object at this index.
-          #
-          set error [$errors -alias Item $index]
-
-          #
-          # NOTE: Convert it to a string and append it to the list of
-          #       errors.
-          #
-          lappend local_errors [$error ToString]
-
-          #
-          # NOTE: Since the error itself is actually an object, we must
-          #       dispose it.
-          #
-          unset error; # dispose
-        }
-      } else {
-        #
-        # NOTE: Compilation of the assembly succeeded.
-        #
-        set code Ok
-      }
-
-      #
-      # NOTE: We no longer need the collection of compiler errors;
-      #       therefore, dispose it now.
-      #
-      unset errors; # dispose
-
-      #
-      # NOTE: Return the overall result to the caller.
-      #
-      return $code
-    }
-
-    proc matchEnginePublicKeyToken { publicKeyToken } {
-      return [expr {[string length $publicKeyToken] == 0 || \
-          $publicKeyToken eq [info engine PublicKeyToken]}]
-    }
-
-    proc matchEngineName { name } {
-      return [expr {[string length $name] == 0 || \
-          $name eq [info engine Name]}]
-    }
-
-    proc matchEngineCulture { culture } {
-      return [expr {[string length $culture] == 0 || \
-          $culture eq [info engine Culture]}]
-    }
-
-    proc escapeUpdateNotes { notes } {
-      #
-      # NOTE: Escape any embedded tab and line-ending characters.
-      #
-      return [string map \
-          [list & &amp\; \t &htab\; \v &vtab\; \n &lf\; \r &cr\;] $notes]
-    }
-
-    proc unescapeUpdateNotes { notes } {
-      #
-      # NOTE: Unescape any embedded tab and line-ending characters.
-      #
-      return [string map \
-          [list &htab\; \t &vtab\; \v &lf\; \n &cr\; \r &amp\; &] $notes]
-    }
-
-    proc getFetchUpdateArgs { baseUri patchLevel type directory extension } {
-      #
-      # NOTE: Initially, set the result to an empty list to indicate
-      #       unrecognized input.
-      #
-      set result [list]
-
-      #
-      # NOTE: Make sure the base URI is valid.
-      #
-      if {[uri isvalid $baseUri]} then {
-        #
-        # NOTE: Make sure the patch level looks valid.
-        #
-        if {[regexp -- {^\d+\.\d+\.\d+\.\d+$} $patchLevel]} then {
-          #
-          # NOTE: Make sure the directory is either empty or an existing
-          #       valid directory.
-          #
-          if {[string length $directory] == 0 || \
-              [file isdirectory $directory]} then {
-            #
-            # NOTE: Make sure the extension is supported.
-            #
-            if {$extension eq ".exe" || $extension eq ".rar"} then {
-              #
-              # NOTE: Start with the URI components common to all download
-              #       types.
-              #
-              set components [list $baseUri releases $patchLevel]
-
-              #
-              # NOTE: Next, figure out what type of download is being
-              #       requested.
-              #
-              switch -exact -nocase -- $type {
-                source -
-                setup -
-                binary {
-                  #
-                  # NOTE: Source code, setup, or binary download.  This may be
-                  #       a RAR or an EXE file.  Append the appropriate file
-                  #       name and then join all the URI components to form the
-                  #       final URI.
-                  #
-                  set fileName [appendArgs \
-                      [info engine] [string totitle $type] $patchLevel \
-                      [expr {[string tolower $type] eq "setup" ? ".exe" : \
-                      $extension}]]
-
-                  lappend components $fileName
-
-                  set result [list [eval uri join $components] [file join \
-                      $directory $fileName]]
-                }
-              }
-            }
-          }
-        }
-      }
-
-      return $result
-    }
-
-    proc fetchUpdate { baseUri patchLevel type directory } {
-      #
-      # NOTE: Figure out the appropriate file extension to download for
-      #       this platform.
-      #
-      set extension [expr {[isWindows] ? ".exe" : ".rar"}]
-
-      #
-      # NOTE: Build the necessary arguments for the download.
-      #
-      set args [getFetchUpdateArgs $baseUri $patchLevel $type \
-          $directory $extension]
-
-      if {[llength $args] > 0} then {
-        #
-        # NOTE: Start trusting ONLY our self-signed SSL certificate.
-        #
-        set trusted true
-
-        if {[lindex [uri softwareupdates] end] eq "untrusted"} then {
-          uri softwareupdates true
-        } else {
-          set trusted false; # NOTE: Already trusted.
+          object invoke -flags +NonPublic Interpreter.GetActive \
+              BeginArgumentLocation savedInterpreterFlags
         }
 
         try {
-          #
-          # NOTE: Download the file from the web site.
-          #
-          eval uri download $args; # synchronous.
+          set command [list source]; eval lappend command $args
+
+          return [uplevel 1 $command]
         } finally {
-          if {$trusted && \
-              [lindex [uri softwareupdates] end] eq "trusted"} then {
-            #
-            # NOTE: Stop trusting ONLY our self-signed SSL certificate.
-            #
-            uri softwareupdates false
+          catch {
+            object invoke -flags +NonPublic Interpreter.GetActive \
+                EndArgumentLocation savedInterpreterFlags
           }
         }
-
-        #
-        # NOTE: Return a result indicating what was done.
-        #
-        return [appendArgs "downloaded URI " [lindex $args 0] \
-            " to directory \"" $directory \"]
-      } else {
-        return "cannot fetch update, the URI is invalid"
-      }
-    }
-
-    proc runUpdateAndExit { {automatic false} } {
-      set directory [file dirname [info nameofexecutable]]
-
-      set command [list exec -shell -- \
-          [file join $directory Hippogriff.exe] -delay 2000]
-
-      #
-      # HACK: The native StrongNameSignatureVerificationEx() function does
-      #       not appear to work on WOA (Windows-on-ARM) on the Surface RT
-      #       tablet; therefore, attempt to disable its use when calling
-      #       into the updater on that platform.
-      #
-      if {[isWindows] && \
-          [info exists ::tcl_platform(machine)] && \
-          $::tcl_platform(machine) eq "arm"} then {
-        #
-        # NOTE: We appear to be running on WOA (Windows-on-ARM), add the
-        #       command line option that skips strong name verification.
-        #
-        lappend command -noStrongNameSigned true
-      }
-
-      #
-      # NOTE: If requested, enable fully automatic update mode.
-      #
-      if {$automatic} then {
-        lappend command -silent true -confirm false
-      }
-
-      set baseUri [getUpdateBaseUri]
-
-      if {[string length $baseUri] > 0} then {
-        lappend command -baseUri $baseUri
-      }
-
-      set pathAndQuery [getUpdatePathAndQuery]
-
-      if {[string length $pathAndQuery] > 0} then {
-        lappend command -tagPathAndQuery $pathAndQuery
-      }
-
-      eval $command &; exit -force
-    }
-
-    proc getUpdateBaseUri {} {
-      #
-      # NOTE: Check the current base URI for updates against the one baked
-      #       into the assembly.  If they are different, then the base URI
-      #       must have been overridden.  In that case, we must return the
-      #       current base URI; otherwise, we must return an empty string.
-      #
-      set baseUri(0) [info engine UpdateBaseUri false]; # NOTE: Current.
-      set baseUri(1) [info engine UpdateBaseUri true];  # NOTE: Default.
-
-      if {[string length $baseUri(0)] > 0 && \
-          [string length $baseUri(1)] > 0} then {
-        #
-        # NOTE: Ok, they are both valid.  Are they different?
-        #
-        if {$baseUri(0) ne $baseUri(1)} then {
-          return $baseUri(0)
-        }
-      }
-
-      return ""
-    }
-
-    proc getUpdatePathAndQuery {} {
-      #
-      # NOTE: Check the current tag path and query for updates against the
-      #       one baked into the assembly.  If they are different, then the
-      #       tag path and query must have been overridden.  In that case,
-      #       we must return the current tag path and query; otherwise, we
-      #       must return an empty string.
-      #
-      set pathAndQuery(0) [info engine UpdatePathAndQuery \
-          false]; # NOTE: Current.
-
-      set pathAndQuery(1) [info engine UpdatePathAndQuery \
-          true];  # NOTE: Default.
-
-      if {[string length $pathAndQuery(0)] > 0 && \
-          [string length $pathAndQuery(1)] > 0} then {
-        #
-        # NOTE: Ok, they are both valid.  Are they different?
-        #
-        if {$pathAndQuery(0) ne $pathAndQuery(1)} then {
-          return $pathAndQuery(0)
-        }
-      }
-
-      return ""
-    }
-
-    proc getUpdateData { uri } {
-      #
-      # NOTE: Start trusting ONLY our own self-signed SSL certificate.
-      #
-      set trusted true
-
-      if {[lindex [uri softwareupdates] end] eq "untrusted"} then {
-        uri softwareupdates true
-      } else {
-        set trusted false; # NOTE: Already trusted.
-      }
-
-      try {
-        #
-        # NOTE: Download the tag file from the web site.
-        #
-        return [uri download -inline $uri]; # synchronous.
       } finally {
-        if {$trusted && \
-            [lindex [uri softwareupdates] end] eq "trusted"} then {
-          #
-          # NOTE: Stop trusting ONLY our own self-signed SSL certificate.
-          #
-          uri softwareupdates false
+        catch {
+          object invoke -flags +NonPublic Interpreter.GetActive \
+              EndNoArgumentCache savedCacheFlags
         }
       }
-    }
-
-    proc getUpdateScriptData { uri } {
-      #
-      # NOTE: Start trusting ONLY our own self-signed SSL certificate.
-      #
-      set trusted true
-
-      if {[lindex [uri softwareupdates] end] eq "untrusted"} then {
-        uri softwareupdates true
-      } else {
-        set trusted false; # NOTE: Already trusted.
-      }
-
-      try {
-        #
-        # NOTE: Download the script file from the web site.
-        #
-        return [interp readorgetscriptfile -- "" $uri]; # synchronous.
-      } finally {
-        if {$trusted && \
-            [lindex [uri softwareupdates] end] eq "trusted"} then {
-          #
-          # NOTE: Stop trusting ONLY our own self-signed SSL certificate.
-          #
-          uri softwareupdates false
-        }
-      }
-    }
-
-    proc getDownloadBaseUri {} {
-      #
-      # NOTE: Just return the current base URI for downloads.
-      #
-      return [info engine DownloadBaseUri]; # NOTE: Current.
     }
 
     #
-    # NOTE: This proc is used to check for new versions -OR- new update
-    #       scripts for the runtime when a user executes the interactive
-    #       "#check" command.  To disable this functionality, simply
-    #       redefine this procedure to do nothing.
+    # NOTE: This is the [unknown] command for Eagle.  It will normally be
+    #       executed by the script engine when a command is not found.
+    #       By default, it will simply raise a script error; however, if
+    #       the "eagleUnknownObjectInvoke" runtime option is set, it will
+    #       first attempt to use the (unknown) command name as the name
+    #       of a CLR type.
     #
-    proc checkForUpdate {
-            {wantScripts false} {quiet false} {prompt false}
-            {automatic false} } {
-      #
-      # NOTE: Grab the base URI for updates.
-      #
-      set updateBaseUri [info engine UpdateBaseUri]
-
-      #
-      # NOTE: Grab the update path and query string used for updates.
-      #
-      set updatePathAndQuery [info engine UpdatePathAndQuery]
-
-      #
-      # HACK: Exract the URI type (e.g. "stable" or "latest") from the
-      #       update path and query.  This code may need to be modified
-      #       in the future.
-      #
-      set updateUriType [lindex [split $updatePathAndQuery .] 0]
-
-      #
-      # NOTE: Combine them to form the complete update URI.
-      #
-      set updateUri [appendArgs $updateBaseUri $updatePathAndQuery]
-
-      #
-      # NOTE: Fetch the master update data from the distribution site
-      #       and normalize to Unix-style line-endings.
-      #
-      set updateData [string map [list \r\n \n] [getUpdateData $updateUri]]
-
-      #
-      # NOTE: Split the data into lines.
-      #
-      set lines [split $updateData \n]
-
-      #
-      # NOTE: Keep track of how many update scripts are processed.
-      #
-      array set scriptCount {
-        invalid            0 fail               0 bad                0
-        ok                 0 error              0
-      }
-
-      #
-      # NOTE: Check each line to find the build information...
-      #
-      foreach line $lines {
-        #
-        # NOTE: Remove excess whitespace.
-        #
-        set line [string trim $line]
-
-        #
-        # NOTE: Skip blank lines.
-        #
-        if {[string length $line] > 0} then {
-          #
-          # NOTE: Skip comment lines.
-          #
-          if {[string index $line 0] ne "#" && \
-              [string index $line 0] ne ";"} then {
-            #
-            # NOTE: Split the tab-delimited line into fields.  The format
-            #       of all lines in the data must be as follows:
-            #
-            #       <startLine> protocolId <tab> publicKeyToken <tab> name
-            #       <tab> culture <tab> patchLevel <tab> timeStamp <tab>
-            #       baseUri <tab> md5Hash <tab> sha1Hash <tab> sha512Hash
-            #       <tab> notes <newLine>
-            #
-            set fields [split $line \t]
-
-            #
-            # NOTE: Grab the protocol Id field.
-            #
-            set protocolId [lindex $fields 0]
-
-            #
-            # NOTE: Grab the public key token field.
-            #
-            set publicKeyToken [lindex $fields 1]
-
-            #
-            # NOTE: Grab the name field.
-            #
-            set name [lindex $fields 2]
-
-            #
-            # NOTE: Grab the culture field.
-            #
-            set culture [lindex $fields 3]
-
-            #
-            # NOTE: Figure out which protocol is in use for this line.
-            #       The value "1" means this line specifies a build of
-            #       the script engine.  The value "2" means this line
-            #       specifies an update script (via a URI) to evaluate.
-            #       All other values are currently reserved and ignored.
-            #
-            set checkBuild [expr {!$wantScripts && $protocolId eq "1"}]
-            set checkScript [expr {$wantScripts && $protocolId eq "2"}]
-
-            #
-            # NOTE: We only want to find the first line that matches our
-            #       engine.  The public key token is being used here to
-            #       make sure we get the same "flavor" of the engine.
-            #       The lines are organized so that the "latest stable
-            #       version" is on the first line (for a given public key
-            #       token), followed by development builds, experimental
-            #       builds, etc.
-            #
-            if {($checkBuild || $checkScript) && \
-                [matchEnginePublicKeyToken $publicKeyToken] && \
-                [matchEngineName $name] && \
-                [matchEngineCulture $culture]} then {
-              #
-              # NOTE: Grab the patch level field.
-              #
-              set patchLevel [lindex $fields 4]
-
-              if {[string length $patchLevel] == 0} then {
-                set patchLevel 0.0.0.0; # no patch level?
-              }
-
-              #
-              # NOTE: Grab the time-stamp field.
-              #
-              set timeStamp [lindex $fields 5]
-
-              if {[string length $timeStamp] == 0} then {
-                set timeStamp 0; #never?
-              }
-
-              #
-              # NOTE: What should the DateTime format be for display?  This
-              #       should be some variation on ISO-8601.
-              #
-              set dateTimeFormat yyyy-MM-ddTHH:mm:ss
-
-              #
-              # NOTE: Does it look like the number of seconds since the epoch
-              #       or some kind of date/time string?
-              #
-              if {[string is integer -strict $timeStamp]} then {
-                set dateTime [clock format \
-                    $timeStamp -format $dateTimeFormat]
-              } else {
-                set dateTime [clock format \
-                    [clock scan $timeStamp] -format $dateTimeFormat]
-              }
-
-              #
-              # NOTE: Grab the patch level for the running engine.
-              #
-              set enginePatchLevel [info engine PatchLevel]
-
-              #
-              # NOTE: Grab the time-stamp for the running engine.
-              #
-              set engineTimeStamp [info engine TimeStamp]
-
-              if {[string length $engineTimeStamp] == 0} then {
-                set engineTimeStamp 0; #never?
-              }
-
-              #
-              # NOTE: Does it look like the number of seconds since the epoch
-              #       or some kind of date/time string?
-              #
-              if {[string is integer -strict $engineTimeStamp]} then {
-                set engineDateTime [clock format \
-                    $engineTimeStamp -format $dateTimeFormat]
-              } else {
-                set engineDateTime [clock format \
-                    [clock scan $engineTimeStamp] -format $dateTimeFormat]
-              }
-
-              #
-              # NOTE: For build lines, compare the patch level from the line
-              #       to the one we are currently using using a simple patch
-              #       level comparison.
-              #
-              if {$checkBuild} then {
-                set compare [package vcompare $patchLevel $enginePatchLevel]
-              } else {
-                #
-                # NOTE: This is not a build line, no match.
-                #
-                set compare -1
-              }
-
-              #
-              # NOTE: For script lines, use regular expression matching.
-              #
-              if {$checkScript} then {
-                #
-                # NOTE: Use [catch] here to prevent raising a script error
-                #       due to a malformed patch level regular expression.
-                #
-                if {[catch {
-                  regexp -nocase -- $patchLevel $enginePatchLevel
-                } match]} then {
-                  #
-                  # NOTE: The patch level from the script line was most
-                  #       likely not a valid regular expression.
-                  #
-                  set match false
-                }
-              } else {
-                #
-                # NOTE: This is not a script line, no match.
-                #
-                set match false
-              }
-
-              #
-              # NOTE: Are we interested in further processing this line?
-              #
-              if {($checkBuild && $compare > 0) ||
-                  ($checkScript && $match)} then {
-                #
-                # NOTE: Grab the base URI field (i.e. it may be a mirror
-                #       site).
-                #
-                set baseUri [lindex $fields 6]
-
-                if {$checkBuild && [string length $baseUri] == 0} then {
-                  set baseUri [getDownloadBaseUri]; # primary site.
-                }
-
-                #
-                # NOTE: Grab the notes field (which may be empty).
-                #
-                set notes [lindex $fields 10]
-
-                if {[string length $notes] > 0} then {
-                  set notes [unescapeUpdateNotes $notes]
-                }
-
-                #
-                # NOTE: The engine patch level from the line is greater,
-                #       we are out-of-date.  Return the result of our
-                #       checking now.
-                #
-                if {$checkBuild} then {
-                  #
-                  # NOTE: Are we supposed to prompt the interactive user,
-                  #       if any, to upgrade now?
-                  #
-                  set text [appendArgs \
-                      $updateUriType " build " $patchLevel ", dated " \
-                      $dateTime ", is newer than the running build " \
-                      $enginePatchLevel ", dated " $engineDateTime \
-                      ", based on the data from " $updateBaseUri]
-
-                  if {$prompt && [isInteractive]} then {
-                    #
-                    # NOTE: Is the [object] command available?  If not,
-                    #       this cannot be done.
-                    #
-                    if {[llength [info commands object]] > 0} then {
-                      set messageCaption [appendArgs \
-                          [info engine Name] " (" [lindex [info level 0] 0] \
-                          " script)"]
-
-                      set messageText [appendArgs \
-                          "The " $text \n\n "Run the updater now?"]
-
-                      if {$automatic} then {
-                        append messageText \n\n \
-                            "WARNING: The updater process will be run " \
-                            "in automatic mode and there will be no " \
-                            "further prompts."
-                      }
-
-                      if {[object invoke -flags +NonPublic \
-                          Eagle._Components.Private.WindowOps YesOrNo \
-                          $messageText $messageCaption false]} then {
-                        #
-                        # NOTE: Ok, run the updater now and then exit.
-                        #
-                        runUpdateAndExit $automatic
-                      }
-                    }
-                  }
-
-                  return [list $text [list $baseUri $patchLevel] [list $notes]]
-                }
-
-                #
-                # NOTE: The script patch level from the line matches the
-                #       current engine patch level exactly, this script
-                #       should be evaluated if it can be authenticated.
-                #
-                if {$checkScript} then {
-                  #
-                  # NOTE: First, set the default channel for update script
-                  #       status messages.  If the test channel has been
-                  #       set (i.e. by the test suite), it will be used
-                  #       instead.
-                  #
-                  if {![info exists channel]} then {
-                    set channel [expr {[info exists ::test_channel] ? \
-                        $::test_channel : "stdout"}]
-                  }
-
-                  #
-                  # NOTE: Next, verify the script has a valid base URI.
-                  #       For update scripts, this must be the location
-                  #       where the update script data can be downloaded.
-                  #
-                  if {[string length $baseUri] == 0} then {
-                    if {!$quiet} then {
-                      tqputs $channel [appendArgs \
-                          "---- invalid baseUri value for update script " \
-                          "line: " $line \"\n]
-                    }
-                    incr scriptCount(invalid); continue
-                  }
-
-                  #
-                  # NOTE: Next, grab the md5 field and see if it looks valid.
-                  #       Below, the value of this field will be compared to
-                  #       that of the actual MD5 hash of the downloaded script
-                  #       data.
-                  #
-                  set lineMd5 [lindex $fields 7]
-
-                  if {[string length $lineMd5] == 0} then {
-                    if {!$quiet} then {
-                      tqputs $channel [appendArgs \
-                          "---- invalid md5 value for update script " \
-                          "line: " $line \"\n]
-                    }
-                    incr scriptCount(invalid); continue
-                  }
-
-                  #
-                  # NOTE: Next, grab the sha1 field and see if it looks valid.
-                  #       Below, the value of this field will be compared to
-                  #       that of the actual SHA1 hash of the downloaded script
-                  #       data.
-                  #
-                  set lineSha1 [lindex $fields 8]
-
-                  if {[string length $lineSha1] == 0} then {
-                    if {!$quiet} then {
-                      tqputs $channel [appendArgs \
-                          "---- invalid sha1 value for update script " \
-                          "line: " $line \"\n]
-                    }
-                    incr scriptCount(invalid); continue
-                  }
-
-                  #
-                  # NOTE: Next, grab the sha512 field and see if it looks
-                  #       valid.  Below, the value of this field will be
-                  #       compared to that of the actual SHA512 hash of the
-                  #       downloaded script data.
-                  #
-                  set lineSha512 [lindex $fields 9]
-
-                  if {[string length $lineSha512] == 0} then {
-                    if {!$quiet} then {
-                      tqputs $channel [appendArgs \
-                          "---- invalid sha512 value for update script " \
-                          "line: " $line \"\n]
-                    }
-                    incr scriptCount(invalid); continue
-                  }
-
-                  #
-                  # NOTE: Next, show the extra information associated with
-                  #       this update script, if any.
-                  #
-                  if {!$quiet} then {
-                    tqputs $channel [appendArgs \
-                        "---- fetching update script from \"" $baseUri \
-                        "\" (" $dateTime ") with notes:\n"]
-
-                    set trimNotes [string trim $notes]
-
-                    tqputs $channel [appendArgs \
-                        [expr {[string length $trimNotes] > 0 ? $trimNotes : \
-                        "<none>"}] "\n---- end of update script notes\n"]
-                  }
-
-                  #
-                  # NOTE: Next, attempt to fetch the update script data.
-                  #
-                  set code [catch {getUpdateScriptData $baseUri} result]
-
-                  if {$code == 0} then {
-                    #
-                    # NOTE: Success, set the script data from the result.
-                    #
-                    set scriptData $result
-                  } else {
-                    #
-                    # NOTE: Failure, report the error message to the log.
-                    #
-                    if {!$quiet} then {
-                      tqputs $channel [appendArgs \
-                          "---- failed to fetch update script: " $result \n]
-                    }
-                    incr scriptCount(fail); continue
-                  }
-
-                  #
-                  # NOTE: Next, verify that the md5, sha1, and sha512
-                  #       hashes of the raw script data match what was
-                  #       specified in the md5, sha1, and sha512 fields.
-                  #
-                  set scriptMd5 [hash normal md5 $scriptData]
-
-                  if {![string equal -nocase $lineMd5 $scriptMd5]} then {
-                    if {!$quiet} then {
-                      tqputs $channel [appendArgs \
-                          "---- wrong md5 value \"" $scriptMd5 \
-                          "\" for update script line: " $line \"\n]
-                    }
-                    incr scriptCount(bad); continue
-                  }
-
-                  set scriptSha1 [hash normal sha1 $scriptData]
-
-                  if {![string equal -nocase $lineSha1 $scriptSha1]} then {
-                    if {!$quiet} then {
-                      tqputs $channel [appendArgs \
-                          "---- wrong sha1 value \"" $scriptSha1 \
-                          "\" for update script line: " $line \"\n]
-                    }
-                    incr scriptCount(bad); continue
-                  }
-
-                  set scriptSha512 [hash normal sha512 $scriptData]
-
-                  if {![string equal -nocase $lineSha512 $scriptSha512]} then {
-                    if {!$quiet} then {
-                      tqputs $channel [appendArgs \
-                          "---- wrong sha512 value \"" $scriptSha512 \
-                          "\" for update script line: " $line \"\n]
-                    }
-                    incr scriptCount(bad); continue
-                  }
-
-                  #
-                  # NOTE: Finally, everything looks good.  Therefore, just
-                  #       evaluate the update script and print the result.
-                  #
-                  if {!$quiet} then {
-                    tqputs $channel [appendArgs \
-                        "---- evaluating update script from \"" $baseUri \
-                        \"...\n]
-                  }
-
-                  #
-                  # NOTE: Reset the variables that will be used to contain
-                  #       the result of the update script.
-                  #
-                  set code 0; set result ""
-
-                  #
-                  # NOTE: Manually override file name to be returned by
-                  #       [info script] to refer back to the originally
-                  #       read script base URI.
-                  #
-                  set pushed false
-
-                  if {[llength [info commands object]] > 0} then {
-                    object invoke -flags +NonPublic Interpreter.GetActive \
-                        PushScriptLocation $baseUri true
-
-                    set pushed true
-                  }
-
-                  try {
-                    #
-                    # NOTE: Evaluate the update script in the context of
-                    #       the caller.
-                    #
-                    set code [catch {uplevel 1 $scriptData} result]
-                  } finally {
-                    #
-                    # NOTE: Reset manual override of the script file name
-                    #       to be returned by [info script].
-                    #
-                    if {$pushed} then {
-                      object invoke -flags +NonPublic Interpreter.GetActive \
-                          PopScriptLocation true
-                    }
-                  }
-
-                  #
-                  # NOTE: Keep track of the number of update scripts that
-                  #       generate Ok and Error return codes.
-                  #
-                  if {$code == 0} then {
-                    incr scriptCount(ok)
-                  } else {
-                    incr scriptCount(error)
-                  }
-
-                  if {!$quiet} then {
-                    host result $code $result
-                    tqputs $channel "\n---- end of update script results\n"
-                  }
-                }
-              } elseif {$checkBuild && $compare < 0} then {
-                #
-                # NOTE: The patch level from the line is less, we are more
-                #       up-to-date than the latest version?
-                #
-                return [list [appendArgs \
-                    "running build " $enginePatchLevel ", dated " \
-                    $engineDateTime ", is newer than the " $updateUriType \
-                    " build " $patchLevel ", dated " $dateTime \
-                    ", based on the data " "from " $updateBaseUri]]
-              } elseif {$checkBuild} then {
-                #
-                # NOTE: The patch levels are equal, we are up-to-date.
-                #
-                return [list [appendArgs \
-                    "running build " $enginePatchLevel ", dated " \
-                    $engineDateTime ", is the " $updateUriType \
-                    " build, based on the data from " $updateBaseUri]]
-              }
-            }
-          }
-        }
-      }
-
-      #
-      # NOTE: Figure out what the final result should be.  If we get
-      #       to this point when checking for a new build, something
-      #       must have gone awry.  Otherwise, report the number of
-      #       update scripts that were successfully processed.
-      #
-      if {$wantScripts} then {
-        set scriptCount(total) [expr [join [array values scriptCount] +]]
-
-        if {$scriptCount(total) > 0} then {
-          return [list [appendArgs \
-              "processed " $scriptCount(total) " update scripts: " \
-              [array get scriptCount]]]
-        } else {
-          return [list "no update scripts were processed"]
-        }
-      } else {
-        return [list \
-            "could not determine if running build is the latest build"]
-      }
-    }
-
-    proc getReturnType { object member } {
-      if {[string length $object] == 0} then {
-        return ""
-      }
-
-      if {[string length $member] == 0} then {
-        return ""
-      }
-
-      set code [catch {
-        object foreach -alias memberInfo \
-            [object invoke -noinvoke $object $member] {
-          #
-          # NOTE: Use the member type to determine which property contains
-          #       the type information we want to return.
-          #
-          switch -exact -- [$memberInfo MemberType] {
-            Field {
-              return [$memberInfo FieldType.AssemblyQualifiedName]
-            }
-            Method {
-              return [$memberInfo ReturnType.AssemblyQualifiedName]
-            }
-            Property {
-              return [$memberInfo PropertyType.AssemblyQualifiedName]
-            }
-            default {
-              return ""
-            }
-          }
-        }
-      } result]
-
-      #
-      # NOTE: If no error was raised above, return the result; otherwise,
-      #       return an empty string to indicate a general failure.
-      #
-      return [expr {$code == 2 ? $result : ""}]
-    }
-
-    proc getDefaultValue { typeName } {
-      if {[llength [info commands object]] == 0} then {
-        return ""
-      }
-
-      if {[string length $typeName] == 0} then {
-        return ""
-      }
-
-      set type [object invoke -create -alias Type GetType $typeName]
-
-      if {[string length $type] == 0} then {
-        return ""
-      }
-
-      return [expr {[$type IsValueType] ? 0 : "null"}]
-    }
-
-    proc getHostSize {} {
-      #
-      # NOTE: Attempt to query the size from the host; failing that,
-      #       return a reasonable default value.
-      #
-      if {[catch {host size} result] == 0} then {
-        return $result
-      }
-
-      return [list 80 25]; # TODO: Good default?
-    }
-
-    proc parray { a args } {
-      if {[llength $args] > 2} then {
-        error "wrong # args: should be \"parray a ?pattern?\""
-      }
-
-      upvar 1 $a array
-
-      if {![array exists array]} {
-        error [appendArgs \" $a "\" isn't an array"]
-      }
-
-      set names [lsort [eval array names array $args]]
-      set maxLength 0
-
-      foreach name $names {
-        set length [string length $name]
-
-        if {$length > $maxLength} {
-          set maxLength $length
-        }
-      }
-
-      set stringMap [list \b " " \t " " \r \xB6 \n \xB6]
-      set maxLength [expr {$maxLength + [string length $a] + 2}]
-      set hostLength [lindex [getHostSize] 0]
-      set valueLength [expr {$hostLength - $maxLength - 5}]; # " ... "
-
-      foreach name $names {
-        #
-        # NOTE: Format the array element name for display.
-        #
-        set nameString [string map $stringMap [appendArgs $a ( $name )]]
-
-        #
-        # NOTE: If the value by itself is too long to fit on one host line,
-        #       just truncate and ellipsis it.
-        #
-        set valueString [string map $stringMap $array($name)]
-
-        if {[string length $valueString] > $valueLength} then {
-          set valueString [appendArgs [string range $valueString 0 \
-              [expr {$valueLength - 4}]] " ..."]
-        }
-
-        #
-        # HACK: Mono does not currently support calling the String.Format
-        #       overload that takes a variable number of arguments via
-        #       reflection (Mono bug #636939).
-        #
-        if {![isMono]} then {
-          set line [string format -verbatim -- [appendArgs "\{0,-" \
-              $maxLength "\} = {1}"] $nameString $valueString]
-        } elseif {[llength [info commands object]] > 0} then {
-          set line [object invoke String Format [appendArgs "\{0,-" \
-              $maxLength "\} = {1}"] $nameString $valueString]
-        } else {
-          set line [format [appendArgs "%-" $maxLength "s = %s"] \
-              $nameString $valueString]
-        }
-
-        puts stdout $line
-      }
-    }
-
-    proc pdict { d } {
-      set maxLength 0
-
-      foreach {name value} $d {
-        set length [string length $name]
-
-        if {$length > $maxLength} {
-          set maxLength $length
-        }
-      }
-
-      set hostLength [lindex [getHostSize] 0]
-      set valueLength [expr {$hostLength - $maxLength - 5}]; # " ... "
-
-      foreach {name value} $d {
-        #
-        # NOTE: If the value by itself is too long to fit on one host line,
-        #       just truncate and ellipsis it.
-        #
-        set valueString $value
-
-        if {[string length $valueString] > $valueLength} then {
-          set valueString [appendArgs [string range $valueString 0 \
-              [expr {$valueLength - 4}]] " ..."]
-        }
-
-        #
-        # HACK: Mono does not currently support calling the String.Format
-        #       overload that takes a variable number of arguments via
-        #       reflection (Mono bug #636939).
-        #
-        if {![isMono]} then {
-          set line [string format -verbatim -- [appendArgs "\{0,-" \
-              $maxLength "\} = {1}"] $name $valueString]
-        } elseif {[llength [info commands object]] > 0} then {
-          set line [object invoke String Format [appendArgs "\{0,-" \
-              $maxLength "\} = {1}"] $name $valueString]
-        } else {
-          set line [format [appendArgs "%-" $maxLength "s = %s"] \
-              $name $valueString]
-        }
-
-        puts stdout $line
-      }
-    }
-
-    proc test { name description args } {
-      #
-      # NOTE: Determine if the caller is trying to run an old style or
-      #       new style test and use the appropriate command.
-      #
-      if {[string index [lindex $args 0] 0] eq "-"} then {
-        #
-        # NOTE: New style test, use [test2] command.
-        #
-        set command test2
-      } else {
-        #
-        # NOTE: Old style test, use [test1] command.
-        #
-        set command test1
-      }
-
-      return [uplevel 1 [list $command $name $description] $args]
-    }
-
-    proc getStringFromObjectHandle { value {default ""} } {
-      if {[isObjectHandle $value]} then {
-        return [object invoke $value ToString]
-      }
-
-      if {[string length $default] > 0} then {
-        return $default
-      }
-
-      return $value
-    }
-
-    proc isObjectHandle { value } {
-      set pattern [string map [list \\ \\\\ \[ \\\[ \] \\\]] $value]
-      set objects [info objects $pattern]
-
-      if {[llength $objects] == 1 && [lindex $objects 0] eq $value} then {
-        return true
-      }
-
-      return false
-    }
-
-    proc isManagedType { name } {
-      if {[llength [info commands object]] > 0} then {
-        if {![isObjectHandle $name]} then {
-          if {[catch {
-            object members -matchnameonly -nameonly -pattern Equals $name
-          } result] == 0 && $result eq "Equals"} then {
-            return true
-          }
-        }
-      }
-
-      return false
-    }
-
-    proc canGetManagedType { name {varName ""} } {
-      if {[llength [info commands object]] > 0} then {
-        if {![isObjectHandle $name]} then {
-          set cultureInfo [object invoke Interpreter.GetActive CultureInfo]
-          set type null
-
-          set code [object invoke -create -alias -flags +NonPublic \
-              Value GetType "" $name null null None $cultureInfo type]
-
-          if {[$code ToString] eq "Ok"} then {
-            if {[string length $varName] > 0} then {
-              upvar 1 $varName typeName
-            }
-
-            set typeName [$type AssemblyQualifiedName]
-
-            if {[isManagedType $typeName]} then {
-              return true
-            }
-          }
-        }
-      }
-
-      return false
-    }
-
-    proc unknownObjectInvoke { level name args } {
-      #
-      # NOTE: This is an [unknown] procedure that attempts to lookup the
-      #       name as a CLR type and then attempts to use [object invoke]
-      #       with it, merging options and arguments as necessary.
-      #
-      if {[llength [info commands object]] > 0 && \
-          ([isManagedType $name] || [canGetManagedType $name name])} then {
-        #
-        # NOTE: Get possible options for the [object invoke] sub-command.
-        #
-        set options [object invoke Utility GetInvokeOptions Invoke]
-
-        #
-        # NOTE: Create argument list for the artificial [object invoke]
-        #       alias.  This always has two arguments.
-        #
-        set arguments1 [object create ArgumentList object invoke]
-
-        #
-        # NOTE: Create argument list for the entire command being handled.
-        #       There may be options right after the command name itself.
-        #
-        set arguments2 [eval \
-            object create ArgumentList [concat [list $name] $args]]
-
-        #
-        # NOTE: Setup output arguments needed for the MergeArguments method.
-        #
-        set arguments3 null; set error null
-
-        #
-        # NOTE: Attempt to merge the option and non-option arguments into a
-        #       single list of arguments.
-        #
-        set code [object invoke -alias -flags +NonPublic \
-            Interpreter.GetActive MergeArguments $options $arguments1 \
-            $arguments2 2 1 false false arguments3 error]
-
-        #
-        # NOTE: Was the argument merging process successful?
-        #
-        if {$code eq "Ok"} then {
-          #
-          # NOTE: Jump up from our call frame (and optionally that of our
-          #       caller) and attempt to invoke the specified static object
-          #       method with the final list of merged arguments.
-          #
-          return [uplevel [expr {$level + 1}] [$arguments3 ToString]]
-        } else {
-          #
-          # NOTE: Failed to merge the arguments, raise an error.
-          #
-          error [$error ToString]
-        }
-      }
-
-      continue; # NOTE: Not handled.
-    }
-
+    # <create>
     proc unknown { name args } {
       #
       # NOTE: This is an [unknown] procedure that normally produces an
@@ -2479,8 +198,10 @@ namespace eval ::Eagle {
       #
       # TODO: Add support for auto-loading packages here in the future?
       #
-      if {[hasRuntimeOption eagleUnknownObjectInvoke] && \
-          [llength [info commands object]] > 0} then {
+      if {[llength [info commands hasRuntimeOption]] > 0 && \
+          [hasRuntimeOption eagleUnknownObjectInvoke] && \
+          [llength [info commands object]] > 0 && \
+          [llength [info commands unknownObjectInvoke]] > 0} then {
         #
         # NOTE: In the context of the caller, attempt to invoke a static
         #       object method using the specified arguments (which may
@@ -2507,11 +228,16 @@ namespace eval ::Eagle {
       return -code error [appendArgs "invalid command name \"" $name \"]
     }
 
+    #
+    # NOTE: This namespace and the procedure defined within it are used for
+    #       compatibility with native Tcl.
+    #
     namespace eval ::tcl::tm {
       #
       # NOTE: Ideally, this procedure should be created in the "::tcl::tm"
       #       namespace.
       #
+      # <create>
       proc ::tcl::tm::UnknownHandler { original name args } {
         #
         # NOTE: Do nothing except call the original handler.
@@ -2520,6 +246,13 @@ namespace eval ::Eagle {
       }
     }
 
+    #
+    # NOTE: This procedure is normally executed by the package management
+    #       subsystem of Eagle when a package is requested that cannot be
+    #       found.  By default, it will force a scan of all known package
+    #       indexes.
+    #
+    # <create>
     proc tclPkgUnknown { name args } {
       #
       # NOTE: Force a rescan of "pkgIndex" files.  This must be done in
@@ -2529,13 +262,12 @@ namespace eval ::Eagle {
       uplevel #0 [list package scan -host -normal -refresh]
     }
 
-    proc tclLog { string } {
-      #
-      # NOTE: This should work properly in both Tcl and Eagle.
-      #
-      catch {puts stderr $string}
-    }
-
+    #
+    # NOTE: This procedure marks a procedure for "fast" execution; for now,
+    #       this means disabling anything that makes variable access slower
+    #       while the target procedure is executing.
+    #
+    # <experimental>
     proc makeProcedureFast { name fast } {
       #
       # NOTE: This should work properly in Eagle only.
@@ -2546,6 +278,12 @@ namespace eval ::Eagle {
       }
     }
 
+    #
+    # NOTE: This procedure marks a variable for "fast" access; for now, this
+    #       means disabling anything that makes variable access slower while
+    #       the target variable is being read, set, or unset.
+    #
+    # <experimental>
     proc makeVariableFast { name fast } {
       #
       # NOTE: This should work properly in Eagle only.
@@ -2556,216 +294,11 @@ namespace eval ::Eagle {
       }
     }
 
-    proc findDirectories { pattern } {
-      #
-      # NOTE: Block non-Windows platforms since this is Windows specific.
-      #
-      if {![isWindows]} then {
-        error "not supported on this operating system"
-      }
-
-      #
-      # NOTE: This should work properly in Eagle only.
-      #
-      set dir ""; set result [list]
-
-      #
-      # HACK: Optimize the variable access in this procedure to be
-      #       as fast as possible.
-      #
-      makeVariableFast dir true; makeVariableFast result true
-
-      foreach dir [split [exec -unicode $::env(ComSpec) /u /c dir \
-          /ad /b [appendArgs \" [file nativename $pattern] \"]] \n] {
-        set dir [string trim $dir]
-
-        if {[string length $dir] > 0} then {
-          set dir [getDirResultPath $pattern $dir]
-
-          if {[lsearch -variable -exact -nocase result $dir] == -1} then {
-            lappend result $dir
-          }
-        }
-      }
-
-      foreach dir [split [exec -unicode $::env(ComSpec) /u /c dir \
-          /ahd /b [appendArgs \" [file nativename $pattern] \"]] \n] {
-        set dir [string trim $dir]
-
-        if {[string length $dir] > 0} then {
-          set dir [getDirResultPath $pattern $dir]
-
-          if {[lsearch -variable -exact -nocase result $dir] == -1} then {
-            lappend result $dir
-          }
-        }
-      }
-
-      return $result
-    }
-
-    proc findDirectoriesRecursive { pattern } {
-      #
-      # NOTE: Block non-Windows platforms since this is Windows specific.
-      #
-      if {![isWindows]} then {
-        error "not supported on this operating system"
-      }
-
-      #
-      # NOTE: This should work properly in Eagle only.
-      #
-      set dir ""; set result [list]
-
-      #
-      # HACK: Optimize the variable access in this procedure to be
-      #       as fast as possible.
-      #
-      makeVariableFast dir true; makeVariableFast result true
-
-      foreach dir [split [exec -unicode $::env(ComSpec) /u /c dir \
-          /ad /s /b [appendArgs \" [file nativename $pattern] \"]] \n] {
-        set dir [string trim $dir]
-
-        if {[string length $dir] > 0} then {
-          set dir [getDirResultPath $pattern $dir]
-
-          if {[lsearch -variable -exact -nocase result $dir] == -1} then {
-            lappend result $dir
-          }
-        }
-      }
-
-      foreach dir [split [exec -unicode $::env(ComSpec) /u /c dir \
-          /ahd /s /b [appendArgs \" [file nativename $pattern] \"]] \n] {
-        set dir [string trim $dir]
-
-        if {[string length $dir] > 0} then {
-          set dir [getDirResultPath $pattern $dir]
-
-          if {[lsearch -variable -exact -nocase result $dir] == -1} then {
-            lappend result $dir
-          }
-        }
-      }
-
-      return $result
-    }
-
-    proc findFiles { pattern } {
-      #
-      # NOTE: Block non-Windows platforms since this is Windows specific.
-      #
-      if {![isWindows]} then {
-        error "not supported on this operating system"
-      }
-
-      #
-      # NOTE: This should work properly in Eagle only.
-      #
-      set fileName ""; set result [list]
-
-      #
-      # HACK: Optimize the variable access in this procedure to be
-      #       as fast as possible.
-      #
-      makeVariableFast fileName true; makeVariableFast result true
-
-      foreach fileName [split [exec -unicode $::env(ComSpec) /u /c dir \
-          /a-d /b [appendArgs \" [file nativename $pattern] \"]] \n] {
-        set fileName [string trim $fileName]
-
-        if {[string length $fileName] > 0} then {
-          set fileName [getDirResultPath $pattern $fileName]
-
-          if {[lsearch -variable -exact -nocase result $fileName] == -1} then {
-            lappend result $fileName
-          }
-        }
-      }
-
-      foreach fileName [split [exec -unicode $::env(ComSpec) /u /c dir \
-          /ah-d /b [appendArgs \" [file nativename $pattern] \"]] \n] {
-        set fileName [string trim $fileName]
-
-        if {[string length $fileName] > 0} then {
-          set fileName [getDirResultPath $pattern $fileName]
-
-          if {[lsearch -variable -exact -nocase result $fileName] == -1} then {
-            lappend result $fileName
-          }
-        }
-      }
-
-      return $result
-    }
-
-    proc findFilesRecursive { pattern } {
-      #
-      # NOTE: Block non-Windows platforms since this is Windows specific.
-      #
-      if {![isWindows]} then {
-        error "not supported on this operating system"
-      }
-
-      #
-      # NOTE: This should work properly in Eagle only.
-      #
-      set fileName ""; set result [list]
-
-      #
-      # HACK: Optimize the variable access in this procedure to be
-      #       as fast as possible.
-      #
-      makeVariableFast fileName true; makeVariableFast result true
-
-      foreach fileName [split [exec -unicode $::env(ComSpec) /u /c dir \
-          /a-d /s /b [appendArgs \" [file nativename $pattern] \"]] \n] {
-        set fileName [string trim $fileName]
-
-        if {[string length $fileName] > 0} then {
-          set fileName [getDirResultPath $pattern $fileName]
-
-          if {[lsearch -variable -exact -nocase result $fileName] == -1} then {
-            lappend result $fileName
-          }
-        }
-      }
-
-      foreach fileName [split [exec -unicode $::env(ComSpec) /u /c dir \
-          /ah-d /s /b [appendArgs \" [file nativename $pattern] \"]] \n] {
-        set fileName [string trim $fileName]
-
-        if {[string length $fileName] > 0} then {
-          set fileName [getDirResultPath $pattern $fileName]
-
-          if {[lsearch -variable -exact -nocase result $fileName] == -1} then {
-            lappend result $fileName
-          }
-        }
-      }
-
-      return $result
-    }
-
-    proc loadWordTcl { directory } {
-      if {([string length $directory] == 0 || $directory eq ".") && \
-          [info exists ::tcl_library]} then {
-        #
-        # NOTE: The directory specified by the caller contains no useful
-        #       information, use the Tcl library directory instead.
-        #
-        set directory $::tcl_library
-      }
-
-      uplevel 1 [list source [file join $directory word.tcl]]
-    }
-
     #
     # NOTE: Add script library files borrowed from native Tcl.
     #
     if {![interp issafe]} then {
-      loadWordTcl [file dirname [info script]]
+      loadScripts [file dirname [info script]] [list word.tcl]
     }
 
     ###########################################################################
@@ -2776,242 +309,27 @@ namespace eval ::Eagle {
     ############################# BEGIN Tcl ONLY ##############################
     ###########################################################################
 
-    proc getLengthModifier { value } {
-      #
-      # NOTE: This should work properly in both Tcl and Eagle.
-      #
-      return [expr {int($value) != wide($value) ? "l" : ""}]
-    }
-
-    proc debug { args } {
-      #
-      # NOTE: This should work properly in both Tcl and Eagle.
-      #
-      puts stdout [lrange $args 2 end]
-    }
-
-    proc findDirectories { pattern } {
-      #
-      # NOTE: This should work properly in Tcl only.
-      #
-      eval lappend result [glob -nocomplain -types {d} \
-          [file normalize $pattern]]
-
-      eval lappend result [glob -nocomplain -types {d hidden} \
-          [file normalize $pattern]]
-
-      return $result
-    }
-
-    proc findDirectoriesRecursive { pattern } {
-      #
-      # NOTE: Block non-Windows platforms since this is Windows specific.
-      #
-      if {![isWindows]} then {
-        error "not supported on this operating system"
-      }
-
-      #
-      # NOTE: This should work properly in Tcl only.
-      #
-      set result [list]
-
-      catch {
-        foreach dir [split [exec $::env(ComSpec) /c dir /ad /s /b \
-            [file nativename $pattern]] \n] {
-          set dir [string trim $dir]
-
-          if {[string length $dir] > 0} then {
-            set dir [getDirResultPath $pattern $dir]
-
-            #
-            # HACK: The -nocase option to [lsearch] is only available
-            #       starting with Tcl 8.5.
-            #
-            if {$::tcl_version >= 8.5} then {
-              if {[lsearch -exact -nocase $result $dir] == -1} then {
-                lappend result $dir
-              }
-            } else {
-              if {[lsearch -exact [string tolower $result] \
-                  [string tolower $dir]] == -1} then {
-                lappend result $dir
-              }
-            }
-          }
-        }
-      }
-
-      catch {
-        foreach dir [split [exec $::env(ComSpec) /c dir /ahd /s /b \
-            [file nativename $pattern]] \n] {
-          set dir [string trim $dir]
-
-          if {[string length $dir] > 0} then {
-            set dir [getDirResultPath $pattern $dir]
-
-            #
-            # HACK: The -nocase option to [lsearch] is only available
-            #       starting with Tcl 8.5.
-            #
-            if {$::tcl_version >= 8.5} then {
-              if {[lsearch -exact -nocase $result $dir] == -1} then {
-                lappend result $dir
-              }
-            } else {
-              if {[lsearch -exact [string tolower $result] \
-                  [string tolower $dir]] == -1} then {
-                lappend result $dir
-              }
-            }
-          }
-        }
-      }
-
-      return $result
-    }
-
-    proc findFiles { pattern } {
-      #
-      # NOTE: This should work properly in Tcl only.
-      #
-      eval lappend result [glob -nocomplain -types {f} \
-          [file normalize $pattern]]
-
-      eval lappend result [glob -nocomplain -types {f hidden} \
-          [file normalize $pattern]]
-
-      return $result
-    }
-
-    proc findFilesRecursive { pattern } {
-      #
-      # NOTE: Block non-Windows platforms since this is Windows specific.
-      #
-      if {![isWindows]} then {
-        error "not supported on this operating system"
-      }
-
-      #
-      # NOTE: This should work properly in Tcl only.
-      #
-      set result [list]
-
-      catch {
-        foreach fileName [split [exec $::env(ComSpec) /c dir /a-d /s /b \
-            [file nativename $pattern]] \n] {
-          set fileName [string trim $fileName]
-
-          if {[string length $fileName] > 0} then {
-            set fileName [getDirResultPath $pattern $fileName]
-
-            #
-            # HACK: The -nocase option to [lsearch] is only available
-            #       starting with Tcl 8.5.
-            #
-            if {$::tcl_version >= 8.5} then {
-              if {[lsearch -exact -nocase $result $fileName] == -1} then {
-                lappend result $fileName
-              }
-            } else {
-              if {[lsearch -exact [string tolower $result] \
-                  [string tolower $fileName]] == -1} then {
-                lappend result $fileName
-              }
-            }
-          }
-        }
-      }
-
-      catch {
-        foreach fileName [split [exec $::env(ComSpec) /c dir /ah-d /s /b \
-            [file nativename $pattern]] \n] {
-          set fileName [string trim $fileName]
-
-          if {[string length $fileName] > 0} then {
-            set fileName [getDirResultPath $pattern $fileName]
-
-            #
-            # HACK: The -nocase option to [lsearch] is only available
-            #       starting with Tcl 8.5.
-            #
-            if {$::tcl_version >= 8.5} then {
-              if {[lsearch -exact -nocase $result $fileName] == -1} then {
-                lappend result $fileName
-              }
-            } else {
-              if {[lsearch -exact [string tolower $result] \
-                  [string tolower $fileName]] == -1} then {
-                lappend result $fileName
-              }
-            }
-          }
-        }
-      }
-
-      return $result
-    }
-
-    proc exportAndImportPackageCommands { namespace exports forget force } {
-      #
-      # NOTE: This should work properly in Tcl only.
-      #
-      # NOTE: Forget any previous commands that were imported from this
-      #       namespace into the global namespace?
-      #
-      if {$forget} then {
-        namespace eval :: [list namespace forget [appendArgs $namespace ::*]]
-      }
-
-      #
-      # NOTE: Process each command to be exported from the specified
-      #       namespace and import it into the global namespace, if
-      #       necessary.
-      #
-      foreach export $exports {
-        #
-        # NOTE: Force importing of our exported commands into the global
-        #       namespace?  Otherwise, see if the command is already
-        #       present in the global namespace before trying to import
-        #       it.
-        #
-        if {$force || \
-            [llength [info commands [appendArgs :: $export]]] == 0} then {
-          #
-          # NOTE: Export the specified command from the specified namespace.
-          #
-          namespace eval $namespace [list namespace export $export]
-
-          #
-          # NOTE: Import the specified command into the global namespace.
-          #
-          set namespaceExport [appendArgs $namespace :: $export]
-
-          if {$force} then {
-            namespace eval :: [list namespace import -force $namespaceExport]
-          } else {
-            namespace eval :: [list namespace import $namespaceExport]
-          }
-        }
-      }
-    }
-
     #
     # NOTE: Exports the necessary commands from this package and import them
     #       into the global namespace.
     #
-    exportAndImportPackageCommands [namespace current] [list \
-        isEagle isWindows isInteractive haveGaruda isTclThread isMono \
-        isSameFileName getEnvironmentVariable combineFlags getCompileInfo \
-        getPlatformInfo getPluginName getPluginPath appendArgs lappendArgs \
-        getDictionaryValue getColumnValue getRowColumnValue tqputs tqlog \
-        readFile readSharedFile writeFile appendFile appendLogFile \
-        appendSharedFile appendSharedLogFile readAsciiFile writeAsciiFile \
-        readUnicodeFile writeUnicodeFile getDirResultPath addToPath \
-        removeFromPath execShell lshuffle ldifference filter map reduce \
-        getLengthModifier debug findDirectories findDirectoriesRecursive \
-        findFiles findFilesRecursive exportAndImportPackageCommands] false \
-        false
+    if {[llength [info commands exportAndImportPackageCommands]] > 0} then {
+      exportAndImportPackageCommands [namespace current] [list \
+          isEagle loadScripts isWindows isInteractive haveGaruda \
+          isTclThread isMono isSameFileName getEnvironmentVariable \
+          combineFlags getCompileInfo getPlatformInfo getPluginName \
+          getPluginPath appendArgs lappendArgs getDictionaryValue \
+          getColumnValue getRowColumnValue tqputs tqlog \
+          makeBinaryChannel makeAsciiChannel makeUnicodeChannel \
+          makeLogChannel readFile readSharedFile writeFile appendFile \
+          appendLogFile appendSharedFile appendSharedLogFile \
+          readAsciiFile writeAsciiFile readUnicodeFile \
+          writeUnicodeFile getDirResultPath addToPath removeFromPath \
+          execShell lshuffle ldifference filter map reduce \
+          getLengthModifier debug findDirectories \
+          findDirectoriesRecursive findFiles findFilesRecursive \
+          exportAndImportPackageCommands] false false
+    }
 
     ###########################################################################
     ############################## END Tcl ONLY ###############################
@@ -3019,7 +337,7 @@ namespace eval ::Eagle {
   }
 
   #
-  # NOTE: Provide the Eagle library package to the interpreter.
+  # NOTE: Provide the Eagle "library" package to the interpreter.
   #
   package provide Eagle.Library \
     [expr {[isEagle] ? [info engine PatchLevel] : "1.0"}]
