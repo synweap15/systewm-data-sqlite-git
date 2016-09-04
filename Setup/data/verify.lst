@@ -885,13 +885,32 @@ set sds_manifests(eagle) {
   Externals/Eagle/bin/x64/Spilornis.dll
   Externals/Eagle/bin/x86/
   Externals/Eagle/bin/x86/Spilornis.dll
+  Externals/Eagle/lib/Eagle1.0/auxiliary.eagle
+  Externals/Eagle/lib/Eagle1.0/compat.eagle
+  Externals/Eagle/lib/Eagle1.0/csharp.eagle
+  Externals/Eagle/lib/Eagle1.0/database.eagle
   Externals/Eagle/lib/Eagle1.0/embed.eagle
+  Externals/Eagle/lib/Eagle1.0/exec.eagle
+  Externals/Eagle/lib/Eagle1.0/file1.eagle
+  Externals/Eagle/lib/Eagle1.0/file2.eagle
+  Externals/Eagle/lib/Eagle1.0/file3.eagle
+  Externals/Eagle/lib/Eagle1.0/info.eagle
   Externals/Eagle/lib/Eagle1.0/init.eagle
+  Externals/Eagle/lib/Eagle1.0/list.eagle
+  Externals/Eagle/lib/Eagle1.0/object.eagle
   Externals/Eagle/lib/Eagle1.0/pkgIndex.eagle
   Externals/Eagle/lib/Eagle1.0/pkgIndex.tcl
+  Externals/Eagle/lib/Eagle1.0/platform.eagle
+  Externals/Eagle/lib/Eagle1.0/process.eagle
+  Externals/Eagle/lib/Eagle1.0/runopt.eagle
   Externals/Eagle/lib/Eagle1.0/safe.eagle
   Externals/Eagle/lib/Eagle1.0/shell.eagle
+  Externals/Eagle/lib/Eagle1.0/shim.eagle
   Externals/Eagle/lib/Eagle1.0/test.eagle
+  Externals/Eagle/lib/Eagle1.0/testlog.eagle
+  Externals/Eagle/lib/Eagle1.0/unkobj.eagle
+  Externals/Eagle/lib/Eagle1.0/update.eagle
+  Externals/Eagle/lib/Eagle1.0/vendor.eagle
   Externals/Eagle/lib/Eagle1.0/word.tcl
   Externals/Eagle/lib/Test1.0/all.eagle
   Externals/Eagle/lib/Test1.0/constraints.eagle

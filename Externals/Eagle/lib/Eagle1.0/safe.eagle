@@ -3,7 +3,7 @@
 # safe.eagle --
 #
 # Extensible Adaptable Generalized Logic Engine (Eagle)
-# Safe Interpreter Initialization File
+# Eagle Safe Interpreter Initialization File
 #
 # Copyright (c) 2007-2012 by Joe Mistachkin.  All rights reserved.
 #
@@ -24,8 +24,11 @@ namespace eval ::Eagle {
   # NOTE: This is the procedure that detects whether or not we are
   #       running in Eagle (otherwise, we are running in vanilla Tcl).
   #       This procedure must function correctly in both Tcl and Eagle
-  #       and must return non-zero only when running in Eagle.
+  #       and must return non-zero only when running in Eagle.  This
+  #       procedure must be defined in this script file because it is
+  #       needed while this script file is being evaluated.
   #
+  # <bootstrap>
   proc isEagle {} {
     #
     # NOTE: Nothing too fancy or expensive should be done in here.  In
@@ -42,21 +45,32 @@ namespace eval ::Eagle {
     ############################ BEGIN Eagle ONLY #############################
     ###########################################################################
 
+    #
+    # NOTE: This is the [unknown] command for Eagle.  It will normally be
+    #       executed by the script engine when a command is not found.
+    #       It will simply raise a script error.
+    #
+    # <create>
     proc unknown { name args } {
       #
-      # NOTE: This is a stub unknown procedure that simply produces an
-      #       appropriate error message.
+      # NOTE: This is an [unknown] procedure that produces an appropriate
+      #       error message.
       #
       # TODO: Add support for auto-loading packages here in the future?
       #
       return -code error "invalid command name \"$name\""
     }
 
+    #
+    # NOTE: This namespace and the procedure defined within it are used for
+    #       compatibility with native Tcl.
+    #
     namespace eval ::tcl::tm {
       #
       # NOTE: Ideally, this procedure should be created in the "::tcl::tm"
       #       namespace.
       #
+      # <create>
       proc ::tcl::tm::UnknownHandler { original name args } {
         #
         # NOTE: Do nothing except call the original handler.
@@ -65,10 +79,15 @@ namespace eval ::Eagle {
       }
     }
 
+    #
+    # NOTE: This procedure is normally executed by the package management
+    #       subsystem of Eagle when a package is requested that cannot be
+    #       found.
+    #
+    # <create>
     proc tclPkgUnknown { name args } {
       #
-      # NOTE: Do nothing since this is [most likely] a safe
-      #       interpreter.
+      # NOTE: Do nothing since this is probably a safe interpreter.
       #
       return
     }

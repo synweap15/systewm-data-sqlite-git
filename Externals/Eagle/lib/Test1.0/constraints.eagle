@@ -3,7 +3,7 @@
 # constraints.eagle --
 #
 # Extensible Adaptable Generalized Logic Engine (Eagle)
-# Test Constraints File
+# Eagle Test Constraints Package File
 #
 # Copyright (c) 2007-2012 by Joe Mistachkin.  All rights reserved.
 #
@@ -23,13 +23,13 @@ namespace eval ::Eagle {
   proc getKnownBuildTypes {} {
     return [list \
         NetFx20 NetFx35 NetFx40 NetFx45 NetFx451 NetFx452 \
-        NetFx46 NetFx461 Bare LeanAndMean Database MonoOnUnix \
-        Development]
+        NetFx46 NetFx461 NetFx462 Bare LeanAndMean Database \
+        MonoOnUnix Development]
   }
 
   proc getKnownCompileOptions {} {
     return [list \
-        APPDOMAINS APPROVED_VERBS ARM ARM64 ASSEMBLY_RELEASE \
+        APPDOMAINS APPROVED_VERBS ARGUMENT_CACHE ARM ARM64 ASSEMBLY_RELEASE \
         ASSEMBLY_STRONG_NAME_TAG ASSEMBLY_TAG ASSEMBLY_TEXT ASSEMBLY_URI \
         BREAK_ON_EXITING BREAKPOINTS CACHE_ARGUMENT_TOSTRING \
         CACHE_ARGUMENTLIST_TOSTRING CACHE_DICTIONARY CACHE_RESULT_TOSTRING \
@@ -46,11 +46,11 @@ namespace eval ::Eagle {
         MONO_LEGACY NATIVE NATIVE_PACKAGE NATIVE_THREAD_ID NATIVE_UTILITY \
         NATIVE_UTILITY_BSTR NETWORK NET_20 NET_20_FAST_ENUM NET_20_ONLY \
         NET_20_SP1 NET_20_SP2 NET_30 NET_35 NET_40 NET_45 NET_451 NET_452 \
-        NET_46 NET_461 NON_WORKING_CODE NOTIFY NOTIFY_ACTIVE NOTIFY_ARGUMENTS \
-        NOTIFY_EXCEPTION NOTIFY_EXECUTE NOTIFY_EXPRESSION NOTIFY_GLOBAL \
-        NOTIFY_OBJECT OBSOLETE OBFUSCATION OFFICIAL PARSE_CACHE PATCHLEVEL \
-        PLUGIN_COMMANDS POLICY_TRACE PREVIOUS_RESULT RANDOMIZE_ID REMOTING \
-        SAMPLE SECURITY SERIALIZATION SHARED_ID_POOL SHELL SOURCE_ID \
+        NET_46 NET_461 NET_462 NON_WORKING_CODE NOTIFY NOTIFY_ACTIVE \
+        NOTIFY_ARGUMENTS NOTIFY_EXCEPTION NOTIFY_EXECUTE NOTIFY_EXPRESSION \
+        NOTIFY_GLOBAL NOTIFY_OBJECT OBSOLETE OBFUSCATION OFFICIAL PARSE_CACHE \
+        PATCHLEVEL PLUGIN_COMMANDS POLICY_TRACE PREVIOUS_RESULT RANDOMIZE_ID \
+        REMOTING SAMPLE SECURITY SERIALIZATION SHARED_ID_POOL SHELL SOURCE_ID \
         SOURCE_TIMESTAMP STATIC TCL TCL_KITS TCL_THREADED TCL_THREADS \
         TCL_UNICODE TCL_WRAPPER TEST TEST_PLUGIN THREADING THROW_ON_DISPOSED \
         TRACE TYPE_CACHE UNIX USE_APPDOMAIN_FOR_ID USE_NAMESPACES VERBOSE WEB \
@@ -63,12 +63,57 @@ namespace eval ::Eagle {
     # NOTE: This job of this procedure is to return the list of "known"
     #       versions of Mono supported by the test suite infrastructure.
     #
+    # NOTE: Other than version 2.11 (which was officially announced and
+    #       released), all of these releases are listed on the official
+    #       release history pages:
+    #
+    #       https://en.wikipedia.org/wiki/Mono_%28software%29
+    #       https://www.mono-project.com/docs/about-mono/releases/
+    #
+    # TODO: This list should be manually updated when a new version of
+    #       the Mono runtime is released.
+    #
     if {$force || ![info exists ::no(monoVersions)]} then {
       return [list \
           [list 2 0] [list 2 2] [list 2 4] [list 2 6] [list 2 8] [list 2 10] \
-          [list 2 11] [list 2 12] [list 3 0] [list 3 1] [list 3 2] [list 3 3] \
-          [list 3 4] [list 3 5] [list 3 6] [list 3 8] [list 3 10] [list 3 12] \
-          [list 4 0] [list 4 2]]
+          [list 2 11] [list 3 0] [list 3 1] [list 3 2] [list 3 4] [list 3 6] \
+          [list 3 8] [list 3 10] [list 3 12] [list 4 0] [list 4 2] [list 4 4] \
+          [list 4 6]]
+    } else {
+      return [list]
+    }
+  }
+
+  proc addKnownMonoConstraints { generic } {
+    #
+    # NOTE: Does the caller want to add the version-specific constraints
+    #       or the generic ones?
+    #
+    if {!$generic} then {
+      #
+      # NOTE: Add the necessary constraints for each version of Mono that
+      #       we know about.
+      #
+      foreach monoVersion [getKnownMonoVersions] {
+        set constraintVersion [join $monoVersion ""]
+
+        addConstraint [appendArgs monoToDo $constraintVersion]
+        addConstraint [appendArgs monoToDo $constraintVersion Only]
+        addConstraint [appendArgs monoBug $constraintVersion]
+        addConstraint [appendArgs monoBug $constraintVersion Only]
+        addConstraint [appendArgs monoCrash $constraintVersion]
+        addConstraint [appendArgs monoCrash $constraintVersion Only]
+      }
+    } else {
+      #
+      # NOTE: Also add just the generic Mono constraints that do not have
+      #       a trailing version.
+      #
+      set constraints [list monoToDo monoBug monoCrash]
+
+      foreach constraint $constraints {
+        addConstraint $constraint
+      }
     }
   }
 
@@ -305,6 +350,41 @@ namespace eval ::Eagle {
     return false
   }
 
+  proc cleanPackageName { package full } {
+    #
+    # NOTE: Start out with the original package name, removing surrounding
+    #       whitespace.  If this results in an empty string, we are done.
+    #
+    set result [string trim $package]
+
+    if {[string length $result] == 0} then {
+      return $result
+    }
+
+    #
+    # NOTE: If the full package name is NOT wanted, use the short name.  It
+    #       will be whatever occurs before the first comma.  If this results
+    #       in an empty string, we are done.
+    #
+    if {!$full} then {
+      set result [string trim [lindex [split $result ,] 0]]
+
+      if {[string length $result] == 0} then {
+        return $result
+      }
+    }
+
+    #
+    # HACK: This is the list of "special" characters that are documented to
+    #       be used when constructing fully qualified .NET Framework type
+    #       names.  For now, they are all replaced with underscores by this
+    #       procedure.  Any existing underscores in the string are doubled.
+    #
+    set charMap [list _ __ " " _ + _ , _ . _ = _ \[ _ \\ _ \] _ ` _]
+
+    return [string map $charMap $result]
+  }
+
   proc checkForTestSuiteFiles { channel } {
     tputs $channel "---- checking for test suite files... "
 
@@ -322,8 +402,13 @@ namespace eval ::Eagle {
       #       package path, add them here as well.
       #
       foreach fileNameOnly [list \
-          embed.eagle init.eagle pkgIndex.eagle pkgIndex.tcl \
-          safe.eagle shell.eagle test.eagle vendor.eagle word.tcl] {
+          auxiliary.eagle compat.eagle csharp.eagle database.eagle \
+          embed.eagle exec.eagle file1.eagle file2.eagle \
+          file3.eagle info.eagle init.eagle list.eagle \
+          object.eagle pkgIndex.eagle pkgIndex.tcl platform.eagle \
+          process.eagle runopt.eagle safe.eagle shell.eagle \
+          shim.eagle test.eagle testlog.eagle unkobj.eagle \
+          update.eagle vendor.eagle word.tcl] {
         #
         # NOTE: First, check if the file resides in the Eagle-specific
         #       package sub-directory.  Failing that, fallback to using
@@ -460,30 +545,8 @@ namespace eval ::Eagle {
       # BUGFIX: We do not normally want to skip any Mono bugs in native Tcl.
       #
       if {![info exists ::no(runtimeVersion)]} then {
-        #
-        # NOTE: Add the necessary constraints for each version of Mono that
-        #       we know about.
-        #
-        foreach monoVersion [getKnownMonoVersions] {
-          set constraintVersion [join $monoVersion ""]
-
-          addConstraint [appendArgs monoToDo $constraintVersion]
-          addConstraint [appendArgs monoToDo $constraintVersion Only]
-          addConstraint [appendArgs monoBug $constraintVersion]
-          addConstraint [appendArgs monoBug $constraintVersion Only]
-          addConstraint [appendArgs monoCrash $constraintVersion]
-          addConstraint [appendArgs monoCrash $constraintVersion Only]
-        }
-
-        #
-        # NOTE: Also add just the generic Mono constraints that do not have
-        #       a trailing version.
-        #
-        set constraints [list monoToDo monoBug monoCrash]
-
-        foreach constraint $constraints {
-          addConstraint $constraint
-        }
+        addKnownMonoConstraints true; # running in native Tcl.
+        addKnownMonoConstraints false; # running in native Tcl.
       }
     }
   }
@@ -531,10 +594,10 @@ namespace eval ::Eagle {
             #       replace it.  We must know the real Windows version.
             #
             if {$osVersion eq $comSpecVersion} then {
-              set extra "---- Reported and detected Windows versions match\n"
+              set extra "---- reported and detected Windows versions match\n"
             } else {
               set extra [appendArgs \
-                  "==== WARNING: Reported and detected Windows versions " \
+                  "==== WARNING: reported and detected Windows versions " \
                   "do not match: " $osVersion " versus " $comSpecVersion \
                   ", resetting...\n"]
 
@@ -740,6 +803,46 @@ namespace eval ::Eagle {
         }
 
         tputs $channel [appendArgs "yes (\"" $::env(ComSpec) "\")\n"]
+
+        #
+        # NOTE: We are done here, return now.
+        #
+        return
+      }
+    }
+
+    tputs $channel no\n
+  }
+
+  proc checkForPackage { channel pattern } {
+    tputs $channel [appendArgs \
+        "---- checking for loaded package matching \"" \
+        $pattern "\"... "]
+
+    if {[catch {
+      foreach loaded [info loaded] {
+        if {[regexp -- $pattern [lindex $loaded end]]} then {
+          set package [lindex $loaded 1]; break
+        }
+      }
+    }] == 0} then {
+      #
+      # NOTE: Make sure that a matching package name was found.
+      #
+      if {[info exists package]} then {
+        #
+        # NOTE: Yes, it appears that it is loaded.
+        #
+        addConstraint [appendArgs \
+            loaded.name. [cleanPackageName $package false]]
+
+        addConstraint [appendArgs \
+            loaded.fullName. [cleanPackageName $package true]]
+
+        #
+        # NOTE: Show that the sub-command was found.
+        #
+        tputs $channel yes\n
 
         #
         # NOTE: We are done here, return now.
@@ -2560,9 +2663,7 @@ namespace eval ::Eagle {
         #
         # NOTE: We do not want to skip Mono bugs on .NET.
         #
-        addConstraint monoToDo; # running on .NET.
-        addConstraint monoBug; # running on .NET.
-        addConstraint monoCrash; # running on .NET.
+        addKnownMonoConstraints true; # running on .NET.
 
         tputs $channel [appendArgs [expr {[info exists \
             ::eagle_platform(runtime)] ? \
@@ -2594,7 +2695,7 @@ namespace eval ::Eagle {
         addConstraint [appendArgs imageRuntime $version]
 
         tputs $channel [appendArgs \
-            $::eagle_platform(imageRuntimeVersion) " (" $dotVersion )\n]
+            $::eagle_platform(imageRuntimeVersion) " (" $dotVersion ")\n"]
       } else {
         tputs $channel no\n
       }
@@ -2626,7 +2727,7 @@ namespace eval ::Eagle {
         }
 
         tputs $channel [appendArgs \
-            $::eagle_platform(frameworkVersion) " (" $dotVersion )\n]
+            $::eagle_platform(frameworkVersion) " (" $dotVersion ")\n"]
       } else {
         tputs $channel no\n
       }
@@ -2758,20 +2859,11 @@ namespace eval ::Eagle {
           #       necessary constraints for each version of Mono we know
           #       about.
           #
-          foreach monoVersion [getKnownMonoVersions] {
-            set constraintVersion [join $monoVersion ""]
-
-            addConstraint [appendArgs monoToDo $constraintVersion]
-            addConstraint [appendArgs monoToDo $constraintVersion Only]
-            addConstraint [appendArgs monoBug $constraintVersion]
-            addConstraint [appendArgs monoBug $constraintVersion Only]
-            addConstraint [appendArgs monoCrash $constraintVersion]
-            addConstraint [appendArgs monoCrash $constraintVersion Only]
-          }
+          addKnownMonoConstraints false; # running on .NET.
         }
 
         tputs $channel [appendArgs \
-            $::eagle_platform(runtimeVersion) " (" $dotVersion )\n]
+            $::eagle_platform(runtimeVersion) " (" $dotVersion ")\n"]
       } else {
         tputs $channel no\n
       }
@@ -2851,9 +2943,14 @@ namespace eval ::Eagle {
 
       #
       # HACK: Make sure the call stack does not end up confusing
-      #       the tests that rely on absolute call frames.
+      #       the tests that rely on absolute call frames.  The
+      #       [runTestPrologue] is allowed here because it will
+      #       not be active on the call stack at the point the
+      #       tests are actually run.  Actually, the same thing
+      #       goes for [checkForTestCallStack] as well.
       #
-      if {$command in [list checkForTestCallStack]} then {
+      if {$command in \
+          [list runTestPrologue checkForTestCallStack]} then {
         addConstraint testCallStack
 
         tputs $channel [appendArgs "yes (\"" $command "\")\n"]
@@ -3629,7 +3726,7 @@ namespace eval ::Eagle {
         #
         addConstraint [appendArgs targetFramework. $targetFramework]
 
-        tputs $channel [appendArgs "yes (" $targetFramework )\n]
+        tputs $channel [appendArgs "yes (" $targetFramework ")\n"]
       } else {
         tputs $channel no\n
       }
@@ -3659,7 +3756,7 @@ namespace eval ::Eagle {
           addConstraint [appendArgs nativeUtility. $nativeUtility]
 
           tputs $channel [appendArgs \
-              $::eagle_platform(nativeUtility) " (" $nativeUtility )\n]
+              $::eagle_platform(nativeUtility) " (" $nativeUtility ")\n"]
         } else {
           tputs $channel unknown\n
         }
@@ -3762,6 +3859,23 @@ namespace eval ::Eagle {
       return 394271
     }
 
+    proc getFrameworkSetup462Value {} {
+      #
+      # NOTE: Check if we are running on Windows 10 or later.
+      #
+      if {[isWindows] && $::tcl_platform(osVersion) >= 10.0} then {
+        #
+        # NOTE: We are running on Windows 10, return the special value.
+        #
+        return 394802
+      }
+
+      #
+      # NOTE: We are not running on Windows 10, return the normal value.
+      #
+      return 394806
+    }
+
     proc checkForNetFx4x { channel } {
       tputs $channel "---- checking for .NET Framework 4.x... "
 
@@ -3807,11 +3921,20 @@ namespace eval ::Eagle {
           #       equal to 393297 (393295 on Windows 10), then the .NET
           #       Framework 4.6 is installed, which is an in-place upgrade
           #       to 4.5.x.  Similar handling is necessary for the .NET
-          #       Framework 4.6.1.  For more information, see:
+          #       Framework 4.6.1 and 4.6.2.  For more information, see:
           #
           #       https://msdn.microsoft.com/en-us/library/hh925568.aspx
           #
-          if {$release >= [getFrameworkSetup461Value]} then {
+          if {$release >= [getFrameworkSetup462Value]} then {
+            addConstraint dotNet451OrHigher
+            addConstraint dotNet452OrHigher
+            addConstraint dotNet46OrHigher
+            addConstraint dotNet461OrHigher
+            addConstraint dotNet462
+            addConstraint dotNet462OrHigher
+
+            set version 4.6.2
+          } elseif {$release >= [getFrameworkSetup461Value]} then {
             addConstraint dotNet451OrHigher
             addConstraint dotNet452OrHigher
             addConstraint dotNet46OrHigher
@@ -4065,25 +4188,25 @@ namespace eval ::Eagle {
     #
     exportAndImportPackageCommands [namespace current] [list \
         getKnownBuildTypes getKnownCompileOptions getKnownMonoVersions \
-        lpermute alwaysFullInterpReady canExecComSpec canExecWhoAmI \
-        canExecTclShell canExecFossil isTestMono isTestAdministrator \
-        canPing checkForTestSuiteFiles checkForPlatform \
-        checkForWindowsVersion checkForScriptLibrary checkForVariable \
-        checkForTclOptions checkForWindowsCommandProcessor checkForFossil \
-        checkForEagle checkForSymbols checkForLogFile checkForGaruda \
-        checkForShell checkForOfficialStableReleaseInProgress checkForDebug \
-        checkForTk checkForVersion checkForCommand checkForSubCommand \
-        checkForNamespaces checkForTestExec checkForTestMachine \
-        checkForTestPlatform checkForTestConfiguration checkForTestSuffix \
-        checkForFile checkForPathFile checkForNativeCode checkForTip127 \
-        checkForTip194 checkForTip207 checkForTip241 checkForTip285 \
-        checkForTip405 checkForTip426 checkForTip429 checkForTip440 \
-        checkForTiming checkForPerformance checkForBigLists \
-        checkForProcessorIntensive checkForTimeIntensive checkForFullTest \
-        checkForMemoryIntensive checkForStackIntensive checkForStackSize \
-        checkForInteractive checkForInteractiveCommand \
-        checkForUserInteraction checkForNetwork checkForCompileOption \
-        checkForKnownCompileOptions] false false
+        addKnownMonoConstraints lpermute alwaysFullInterpReady canExecComSpec \
+        canExecWhoAmI canExecTclShell canExecFossil isTestMono \
+        isTestAdministrator canPing cleanPackageName checkForTestSuiteFiles \
+        checkForPlatform checkForWindowsVersion checkForScriptLibrary \
+        checkForVariable checkForTclOptions checkForWindowsCommandProcessor \
+        checkForPackage checkForFossil checkForEagle checkForSymbols \
+        checkForLogFile checkForGaruda checkForShell \
+        checkForOfficialStableReleaseInProgress checkForDebug checkForTk \
+        checkForVersion checkForCommand checkForSubCommand checkForNamespaces \
+        checkForTestExec checkForTestMachine checkForTestPlatform \
+        checkForTestConfiguration checkForTestSuffix checkForFile \
+        checkForPathFile checkForNativeCode checkForTip127 checkForTip194 \
+        checkForTip207 checkForTip241 checkForTip285 checkForTip405 \
+        checkForTip426 checkForTip429 checkForTip440 checkForTiming \
+        checkForPerformance checkForBigLists checkForProcessorIntensive \
+        checkForTimeIntensive checkForFullTest checkForMemoryIntensive \
+        checkForStackIntensive checkForStackSize checkForInteractive \
+        checkForInteractiveCommand checkForUserInteraction checkForNetwork \
+        checkForCompileOption checkForKnownCompileOptions] false false
 
     ###########################################################################
     ############################## END Tcl ONLY ###############################
@@ -4091,7 +4214,7 @@ namespace eval ::Eagle {
   }
 
   #
-  # NOTE: Provide the Eagle test constraints package to the interpreter.
+  # NOTE: Provide the Eagle "test constraints" package to the interpreter.
   #
   package provide Eagle.Test.Constraints \
     [expr {[isEagle] ? [info engine PatchLevel] : "1.0"}]
