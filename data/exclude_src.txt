@@ -48,7 +48,6 @@ Externals/Eagle/lib/Eagle1.0/test.eagle
 Externals/Eagle/lib/Eagle1.0/testlog.eagle
 Externals/Eagle/lib/Eagle1.0/unkobj.eagle
 Externals/Eagle/lib/Eagle1.0/update.eagle
-Externals/Eagle/lib/Eagle1.0/vendor.eagle
 Externals/Eagle/lib/Eagle1.0/word.tcl
 Externals/Eagle/lib/Test1.0/all.eagle
 Externals/Eagle/lib/Test1.0/constraints.eagle
