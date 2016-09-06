@@ -73,8 +73,8 @@ runTest {test stress-1.1 {multithreaded stress testing} -setup {
     #       disable use of "PRAGMA temp_store_directory" when setting up
     #       the new connection because it is not thread-safe.
     #
-    uplevel 1 [list setupDb $fileName "" "" "" "" "" true false false false \
-        $varName true]
+    uplevel 1 [list setupDb $fileName $::journalMode "" "" "" "" true false \
+        false false $varName true]
   }
 
   #############################################################################
@@ -343,6 +343,7 @@ runTest {test stress-1.1 {multithreaded stress testing} -setup {
   set count(6) 15;        # Workload auxiliary iteration count (within a run).
   set count(7) 100;       # Workload auxiliary iteration delay (milliseconds).
   set count(8) 5000;      # Workload auxiliary data value (for use by run).
+  set journalMode "";     # Initial journal mode for database files.
   set noWorkload [list];  # Workloads to be omitted from the run, by index.
   set priorities [list];  # Dictionary of workload thread priorities.
   set exitOnFail false;   # Halt testing and exit process on test failure?
@@ -368,6 +369,7 @@ runTest {test stress-1.1 {multithreaded stress testing} -setup {
         [list null MustHaveIntegerValue -1 -1 -count6 $count(6)] \
         [list null MustHaveIntegerValue -1 -1 -count7 $count(7)] \
         [list null MustHaveIntegerValue -1 -1 -count8 $count(8)] \
+        [list null MustHaveValue -1 -1 -journalMode $journalMode] \
         [list null MustHaveListValue -1 -1 -noWorkload $noWorkload] \
         [list null MustHaveListValue -1 -1 -priorities $priorities] \
         [list null MustHaveBooleanValue -1 -1 -exitOnFail $exitOnFail] \
@@ -383,6 +385,7 @@ runTest {test stress-1.1 {multithreaded stress testing} -setup {
     set count(6) $options(-count6,value)
     set count(7) $options(-count7,value)
     set count(8) $options(-count8,value)
+    set journalMode $options(-journalMode,value)
     set noWorkload $options(-noWorkload,value)
     set priorities $options(-priorities,value)
     set exitOnFail $options(-exitOnFail,value)
@@ -475,6 +478,10 @@ runTest {test stress-1.1 {multithreaded stress testing} -setup {
   tputs $test_channel [appendArgs \
       "---- workloads will have an auxiliary data value of " \
       $count(8) \n]
+
+  tputs $test_channel [appendArgs \
+      "---- the initial journal mode is " \
+      [expr {[llength $journalMode] > 0 ? $journalMode : "none"}] \n]
 
   tputs $test_channel [appendArgs \
       "---- workloads to be skipped... " \
@@ -1644,9 +1651,10 @@ runTest {test stress-1.1 {multithreaded stress testing} -setup {
   rename setupLogging ""
 
   unset -nocomplain result thread index workload priority noWorkload \
-      priorities srcDb db fileName compiled options count times logFileName \
-      logListener event timeout connection indicators iterations exitOnFail \
-      coTaskMem noTrace failures status workloadNames workloadCallbacks
+      journalMode priorities srcDb db fileName compiled options count \
+      times logFileName logListener event timeout connection \
+      indicators iterations exitOnFail coTaskMem noTrace failures \
+      status workloadNames workloadCallbacks
 } -time true -constraints {eagle command.object monoBug40 command.sql\
 compile.DATA SQLite System.Data.SQLite compileCSharp} -result {0}}
 
