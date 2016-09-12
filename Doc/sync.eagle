@@ -207,6 +207,6 @@ foreach fileName $fileNames {
   uri download $uri $fileName
 
   if {$verbose} then {
-    puts stdout OK
+    puts stdout <Ok>
   }
 }

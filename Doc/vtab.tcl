@@ -29,8 +29,10 @@ proc escapeSubSpec { data } {
   return $data
 }
 
-proc removeSectionId { value } {
-  regsub -- { id="section(?:_\d+)+"} $value "" value
+proc preProcessLine { value } {
+  regsub -- { id="[a-z_]+"} $value "" value
+  regsub -- {</p><h(\d)>} $value </p>\n<h\\1> value
+  regsub -- {</p><blockquote><pre>} $value <blockquote><pre> value
   return $value
 }
 
@@ -48,7 +50,8 @@ proc englishToList { value } {
 
 proc processLine { line prefix } {
   if {[string length [string trim $line]] == 0 || \
-      [regexp -- {<h\d(?: |>)} [string range $line 0 3]]} then {
+      [regexp -- {<h\d(?: |>)} [string range $line 0 3]] || \
+      [regexp -- {</p>\n<h\d(?: |>)} [string range $line 0 8]]} then {
     return ""
   }
 
@@ -73,8 +76,8 @@ proc processLine { line prefix } {
   regsub -all -- {&ne;} $result {\&#8800;} result
   regsub -all -- {&#91(?:;)?} $result {[} result
   regsub -all -- {&#93(?:;)?} $result {]} result
-  regsub -all -- {<( |\"|\d|=)} $result {\&lt;\1} result
-  regsub -all -- {( |\"|\d|=)>} $result {\1\&gt;} result
+  # regsub -all -- {<( |\"|\d|=)} $result {\&lt;\1} result
+  # regsub -all -- {( |\"|\d|=)>} $result {\1\&gt;} result
   regsub -all -- {<blockquote><pre>} $result <para><code> result
   regsub -all -- {</pre></blockquote>} $result </code></para> result
   regsub -all -- {<blockquote>} $result <para><code> result
@@ -91,7 +94,7 @@ proc extractMethod { name lines pattern prefix indexVarName methodsVarName } {
   set length [llength $lines]
 
   while {$index < $length} {
-    set line [removeSectionId [lindex $lines $index]]
+    set line [preProcessLine [lindex $lines $index]]
 
     if {[regexp -- $pattern $line]} then {
       break; # stop on this line for outer loop.
@@ -109,7 +112,8 @@ proc extractMethod { name lines pattern prefix indexVarName methodsVarName } {
         }
 
         incr levels(p) -1
-      } elseif {[string range $trimLine 0 2] eq "<p>"} then {
+      } elseif {[string range $trimLine 0 2] eq "<p>" || \
+          [string range $trimLine 0 6] eq "</p><p>"} then {
         # open tag ... maybe one line?
         if {[string range $trimLine end-3 end] eq "</p>"} then {
           set newLine [processLine $line $prefix]
@@ -196,13 +200,17 @@ set inputData [string map [list \
 set inputData [string map [list {<p align="center"></p>} ""] $inputData]
 
 set lines [split [string map [list \r\n \n] $inputData] \n]
+set patterns(start) {^</p>\n<h1><span>2\. </span>Virtual Table Methods</h1>$}
 
-set patterns(method) {^<h2>2\.\d+\. The (.*) Method(?:s)?</h2>$}
+set patterns(method) [string trim {
+  ^(?:</p>\n)?<h2><span>2\.\d+\. </span>The (.*) Method(?:s)?</h2>$
+}]
+
 set prefix "        /// "
 unset -nocomplain methods; set start false
 
 for {set index 0} {$index < [llength $lines]} {} {
-  set line [removeSectionId [lindex $lines $index]]
+  set line [preProcessLine [lindex $lines $index]]
 
   if {$start} then {
     if {[regexp -- $patterns(method) $line dummy capture]} then {
@@ -217,7 +225,7 @@ for {set index 0} {$index < [llength $lines]} {} {
     } else {
       incr index
     }
-  } elseif {[regexp -- {^<h1>2\. Virtual Table Methods</h1>$} $line]} then {
+  } elseif {[regexp -- $patterns(start) $line]} then {
     set start true; incr index
   } else {
     incr index
@@ -260,7 +268,7 @@ foreach name [list \
         $outputData 0 $summaryStart]$methods($name)[string \
         range $outputData [expr {$summaryEnd + 1}] end]
 
-    incr count; set start [expr {$summaryEnd + 1}]
+    incr count; incr start [expr {[string length $methods($name)] + 1}]
   } else {
     error "cannot find virtual table method \"$name\" in \"$outputFileName\""
   }
