@@ -202,6 +202,7 @@ set sds_manifests(source) {
   Doc/SQLite.NET.hhc
   Doc/SQLite.NET.hhp
   Doc/SQLite.NET.ndoc
+  Doc/sync.tcl
   Doc/vtab.tcl
   Externals/
   Externals/Eagle/
