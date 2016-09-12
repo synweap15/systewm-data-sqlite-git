@@ -73,11 +73,18 @@ proc processLine { line prefix } {
     regsub -all -- ($escape) $result {<![CDATA[\1]]>} result
   }
 
+  set indent "        /// "
+
   regsub -all -- {&ne;} $result {\&#8800;} result
   regsub -all -- {&#91(?:;)?} $result {[} result
   regsub -all -- {&#93(?:;)?} $result {]} result
   # regsub -all -- {<( |\"|\d|=)} $result {\&lt;\1} result
   # regsub -all -- {( |\"|\d|=)>} $result {\1\&gt;} result
+
+  regsub -all -- {<div class="codeblock"><pre>} $result \
+      <para><code>\n$indent result
+
+  regsub -all -- {</pre></div>} $result </code></para> result
   regsub -all -- {<blockquote><pre>} $result <para><code> result
   regsub -all -- {</pre></blockquote>} $result </code></para> result
   regsub -all -- {<blockquote>} $result <para><code> result
