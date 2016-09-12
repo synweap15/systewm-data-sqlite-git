@@ -30,7 +30,7 @@ proc escapeSubSpec { data } {
 }
 
 proc preProcessLine { value } {
-  regsub -- { id="[a-z_]+"} $value "" value
+  regsub -- { id="[0-9a-z_]+"} $value "" value
   regsub -- {</p><h(\d)>} $value </p>\n<h\\1> value
   regsub -- {</p><blockquote><pre>} $value <blockquote><pre> value
   return $value
@@ -200,10 +200,13 @@ set inputData [string map [list \
 set inputData [string map [list {<p align="center"></p>} ""] $inputData]
 
 set lines [split [string map [list \r\n \n] $inputData] \n]
-set patterns(start) {^</p>\n<h1><span>2\. </span>Virtual Table Methods</h1>$}
+
+set patterns(start) [string trim {
+  ^(?:</p>\n)?<h1>(?:<span>)?2\. (?:</span>)?Virtual Table Methods</h1>$
+}]
 
 set patterns(method) [string trim {
-  ^(?:</p>\n)?<h2><span>2\.\d+\. </span>The (.*) Method(?:s)?</h2>$
+  ^(?:</p>\n)?<h2>(?:<span>)?2\.\d+\. (?:</span>)?The (.*) Method(?:s)?</h2>$
 }]
 
 set prefix "        /// "
