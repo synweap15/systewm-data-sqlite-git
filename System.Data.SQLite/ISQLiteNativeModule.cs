@@ -16,10 +16,10 @@ namespace System.Data.SQLite
     {
         /// <summary>
         /// <para><code>
-        ///   int (*xCreate)(sqlite3 *db, void *pAux,
-        ///                int argc, char **argv,
-        ///                sqlite3_vtab **ppVTab,
-        ///                char **pzErr);
+        /// int (*xCreate)(sqlite3 *db, void *pAux,
+        ///              int argc, char **argv,
+        ///              sqlite3_vtab **ppVTab,
+        ///              char **pzErr);
         /// </code></para>
         /// <para>
         /// The xCreate method is called to create a new instance of a virtual table 
@@ -60,7 +60,7 @@ namespace System.Data.SQLite
         /// The sqlite3_declare_vtab() API has the following prototype:
         /// </para>
         /// <para><code>
-        ///     int sqlite3_declare_vtab(sqlite3 *db, const char *zCreateTable)
+        /// int sqlite3_declare_vtab(sqlite3 *db, const char *zCreateTable)
         /// </code></para>
         /// <para>
         /// The first argument to sqlite3_declare_vtab() must be the same 
@@ -118,17 +118,17 @@ namespace System.Data.SQLite
         /// <![CDATA[<ul>]]>
         /// <![CDATA[<li>]]> Hidden columns are not listed in the dataset returned by 
         ///      "PRAGMA table_info",
-        /// <![CDATA[<li>]]> Hidden columns are not included in the expansion of a "*"
+        /// <![CDATA[</li>]]><![CDATA[<li>]]> Hidden columns are not included in the expansion of a "*"
         ///      expression in the result set of a SELECT, and
-        /// <![CDATA[<li>]]> Hidden columns are not included in the implicit column-list 
+        /// <![CDATA[</li>]]><![CDATA[<li>]]> Hidden columns are not included in the implicit column-list 
         ///      used by an INSERT statement that lacks an explicit column-list. 
-        /// <![CDATA[</ul>]]>
+        /// <![CDATA[</li>]]><![CDATA[</ul>]]>
         /// </para>
         /// <para>
         /// For example, if the following SQL is passed to sqlite3_declare_vtab():
         /// </para>
         /// <para><code>
-        ///    CREATE TABLE x(a HIDDEN VARCHAR(12), b INTEGER, c INTEGER Hidden);
+        /// CREATE TABLE x(a HIDDEN VARCHAR(12), b INTEGER, c INTEGER Hidden);
         /// </code></para>
         /// <para>
         /// Then the virtual table would be created with two hidden columns,
@@ -248,10 +248,10 @@ namespace System.Data.SQLite
 
         /// <summary>
         /// <para><code>
-        ///   int (*xConnect)(sqlite3*, void *pAux,
-        ///                int argc, char **argv,
-        ///                sqlite3_vtab **ppVTab,
-        ///                char **pzErr);
+        /// int (*xConnect)(sqlite3*, void *pAux,
+        ///              int argc, char **argv,
+        ///              sqlite3_vtab **ppVTab,
+        ///              char **pzErr);
         /// </code></para>
         /// <para>
         /// The xConnect method is very similar to xCreate. 
@@ -351,7 +351,7 @@ namespace System.Data.SQLite
         /// The xBestIndex method has a prototype like this:
         /// </para>
         /// <para><code>
-        ///   int (*xBestIndex)(sqlite3_vtab *pVTab, sqlite3_index_info*);
+        /// int (*xBestIndex)(sqlite3_vtab *pVTab, sqlite3_index_info*);
         /// </code></para>
         /// <para>
         /// The SQLite core communicates with the xBestIndex method by filling 
@@ -361,37 +361,37 @@ namespace System.Data.SQLite
         /// forms the reply. The sqlite3_index_info structure looks like this:
         /// </para>
         /// <para><code>
-        ///   struct sqlite3_index_info {
-        ///     /* Inputs */
-        ///     const int nConstraint;     /* Number of entries in aConstraint */
-        ///     const struct sqlite3_index_constraint {
-        ///        int iColumn;              /* Column constrained.  -1 for ROWID */
-        ///        unsigned char op;         /* Constraint operator */
-        ///        unsigned char usable;     /* True if this constraint is usable */
-        ///        int iTermOffset;          /* Used internally - xBestIndex should ignore */
-        ///     } *const aConstraint;      /* Table of WHERE clause constraints */
-        ///     const int nOrderBy;        /* Number of terms in the ORDER BY clause */
-        ///     const struct sqlite3_index_orderby {
-        ///        int iColumn;              /* Column number */
-        ///        unsigned char desc;       /* True for DESC.  False for ASC. */
-        ///     } *const aOrderBy;         /* The ORDER BY clause */
-        ///     /* Outputs */
-        ///     struct sqlite3_index_constraint_usage {
-        ///       int argvIndex;           /* if &gt;0, constraint is part of argv to xFilter */
-        ///       unsigned char omit;      /* Do not code a test for this constraint */
-        ///     } *const aConstraintUsage;
-        ///     int idxNum;                /* Number used to identify the index */
-        ///     char *idxStr;              /* String, possibly obtained from sqlite3_malloc */
-        ///     int needToFreeIdxStr;      /* Free idxStr using sqlite3_free() if true */
-        ///     int orderByConsumed;       /* True if output is already ordered */
-        ///     double estimatedCost;      /* Estimated cost of using this index */
-        ///     <![CDATA[<b>]]>/* Fields below are only available in SQLite 3.8.2 and later */<![CDATA[</b>]]>
-        ///     sqlite3_int64 estimatedRows;    /* Estimated number of rows returned */
-        ///     <![CDATA[<b>]]>/* Fields below are only available in SQLite 3.9.0 and later */<![CDATA[</b>]]>
-        ///     int idxFlags;              /* Mask of SQLITE_INDEX_SCAN_* flags */
-        ///     <![CDATA[<b>]]>/* Fields below are only available in SQLite 3.10.0 and later */<![CDATA[</b>]]>
-        ///     sqlite3_uint64 colUsed;    /* Input: Mask of columns used by statement */
-        ///   };
+        /// struct sqlite3_index_info {
+        ///   /* Inputs */
+        ///   const int nConstraint;     /* Number of entries in aConstraint */
+        ///   const struct sqlite3_index_constraint {
+        ///      int iColumn;              /* Column constrained.  -1 for ROWID */
+        ///      unsigned char op;         /* Constraint operator */
+        ///      unsigned char usable;     /* True if this constraint is usable */
+        ///      int iTermOffset;          /* Used internally - xBestIndex should ignore */
+        ///   } *const aConstraint;      /* Table of WHERE clause constraints */
+        ///   const int nOrderBy;        /* Number of terms in the ORDER BY clause */
+        ///   const struct sqlite3_index_orderby {
+        ///      int iColumn;              /* Column number */
+        ///      unsigned char desc;       /* True for DESC.  False for ASC. */
+        ///   } *const aOrderBy;         /* The ORDER BY clause */
+        ///   /* Outputs */
+        ///   struct sqlite3_index_constraint_usage {
+        ///     int argvIndex;           /* if >0, constraint is part of argv to xFilter */
+        ///     unsigned char omit;      /* Do not code a test for this constraint */
+        ///   } *const aConstraintUsage;
+        ///   int idxNum;                /* Number used to identify the index */
+        ///   char *idxStr;              /* String, possibly obtained from sqlite3_malloc */
+        ///   int needToFreeIdxStr;      /* Free idxStr using sqlite3_free() if true */
+        ///   int orderByConsumed;       /* True if output is already ordered */
+        ///   double estimatedCost;      /* Estimated cost of using this index */
+        ///   <![CDATA[<b>]]>/* Fields below are only available in SQLite 3.8.2 and later */<![CDATA[</b>]]>
+        ///   sqlite3_int64 estimatedRows;    /* Estimated number of rows returned */
+        ///   <![CDATA[<b>]]>/* Fields below are only available in SQLite 3.9.0 and later */<![CDATA[</b>]]>
+        ///   int idxFlags;              /* Mask of SQLITE_INDEX_SCAN_* flags */
+        ///   <![CDATA[<b>]]>/* Fields below are only available in SQLite 3.10.0 and later */<![CDATA[</b>]]>
+        ///   sqlite3_uint64 colUsed;    /* Input: Mask of columns used by statement */
+        /// };
         /// </code></para>
         /// <para>
         /// Note the warnings on the "estimatedRows", "idxFlags", and colUsed fields.
@@ -407,16 +407,16 @@ namespace System.Data.SQLite
         /// In addition, there are some defined constants:
         /// </para>
         /// <para><code>
-        ///   #define SQLITE_INDEX_CONSTRAINT_EQ      2
-        ///   #define SQLITE_INDEX_CONSTRAINT_GT      4
-        ///   #define SQLITE_INDEX_CONSTRAINT_LE      8
-        ///   #define SQLITE_INDEX_CONSTRAINT_LT     16
-        ///   #define SQLITE_INDEX_CONSTRAINT_GE     32
-        ///   #define SQLITE_INDEX_CONSTRAINT_MATCH  64
-        ///   #define SQLITE_INDEX_CONSTRAINT_LIKE   65     /* 3.10.0 and later only */
-        ///   #define SQLITE_INDEX_CONSTRAINT_GLOB   66     /* 3.10.0 and later only */
-        ///   #define SQLITE_INDEX_CONSTRAINT_REGEXP 67     /* 3.10.0 and later only */
-        ///   #define SQLITE_INDEX_SCAN_UNIQUE        1     /* Scan visits at most 1 row */
+        /// #define SQLITE_INDEX_CONSTRAINT_EQ      2
+        /// #define SQLITE_INDEX_CONSTRAINT_GT      4
+        /// #define SQLITE_INDEX_CONSTRAINT_LE      8
+        /// #define SQLITE_INDEX_CONSTRAINT_LT     16
+        /// #define SQLITE_INDEX_CONSTRAINT_GE     32
+        /// #define SQLITE_INDEX_CONSTRAINT_MATCH  64
+        /// #define SQLITE_INDEX_CONSTRAINT_LIKE   65     /* 3.10.0 and later only */
+        /// #define SQLITE_INDEX_CONSTRAINT_GLOB   66     /* 3.10.0 and later only */
+        /// #define SQLITE_INDEX_CONSTRAINT_REGEXP 67     /* 3.10.0 and later only */
+        /// #define SQLITE_INDEX_SCAN_UNIQUE        1     /* Scan visits at most 1 row */
         /// </code></para>
         /// <para>
         /// The SQLite core calls the xBestIndex method when it is compiling a query
@@ -482,7 +482,7 @@ namespace System.Data.SQLite
         /// if the WHERE clause contained a term like this:
         /// </para>
         /// <para><code>
-        ///      a = 5
+        /// a = 5
         /// </code></para>
         /// <para>
         /// Then one of the constraints would be on the "a" column with 
@@ -494,15 +494,15 @@ namespace System.Data.SQLite
         /// like this:
         /// </para>
         /// <para><code>
-        ///      x BETWEEN 10 AND 100 AND 999&gt;y
+        /// x BETWEEN 10 AND 100 AND 999&gt;y
         /// </code></para>
         /// <para>
         /// The query optimizer might translate this into three separate constraints:
         /// </para>
         /// <para><code>
-        ///      x &gt;= 10
-        ///      x &lt;= 100
-        ///      y &lt; 999
+        /// x &gt;= 10
+        /// x &lt;= 100
+        /// y &lt; 999
         /// </code></para>
         /// <para>
         /// For each constraint, the aConstraint[].iColumn field indicates which 
@@ -637,7 +637,7 @@ namespace System.Data.SQLite
 
         /// <summary>
         /// <para><code>
-        ///   int (*xDisconnect)(sqlite3_vtab *pVTab);
+        /// int (*xDisconnect)(sqlite3_vtab *pVTab);
         /// </code></para>
         /// <para>
         /// This method releases a connection to a virtual table. 
@@ -671,7 +671,7 @@ namespace System.Data.SQLite
 
         /// <summary>
         /// <para><code>
-        ///   int (*xDestroy)(sqlite3_vtab *pVTab);
+        /// int (*xDestroy)(sqlite3_vtab *pVTab);
         /// </code></para>
         /// <para>
         /// This method releases a connection to a virtual table, just like 
@@ -703,7 +703,7 @@ namespace System.Data.SQLite
 
         /// <summary>
         /// <para><code>
-        ///   int (*xOpen)(sqlite3_vtab *pVTab, sqlite3_vtab_cursor **ppCursor);
+        /// int (*xOpen)(sqlite3_vtab *pVTab, sqlite3_vtab_cursor **ppCursor);
         /// </code></para>
         /// <para>
         /// The xOpen method creates a new cursor used for accessing (read and/or
@@ -754,7 +754,7 @@ namespace System.Data.SQLite
 
         /// <summary>
         /// <para><code>
-        ///   int (*xClose)(sqlite3_vtab_cursor*);
+        /// int (*xClose)(sqlite3_vtab_cursor*);
         /// </code></para>
         /// <para>
         /// The xClose method closes a cursor previously opened by 
@@ -786,8 +786,8 @@ namespace System.Data.SQLite
 
         /// <summary>
         /// <para><code>
-        ///   int (*xFilter)(sqlite3_vtab_cursor*, int idxNum, const char *idxStr,
-        ///                 int argc, sqlite3_value **argv);
+        /// int (*xFilter)(sqlite3_vtab_cursor*, int idxNum, const char *idxStr,
+        ///               int argc, sqlite3_value **argv);
         /// </code></para>
         /// <para>
         /// This method begins a search of a virtual table. 
@@ -854,7 +854,7 @@ namespace System.Data.SQLite
 
         /// <summary>
         /// <para><code>
-        ///   int (*xNext)(sqlite3_vtab_cursor*);
+        /// int (*xNext)(sqlite3_vtab_cursor*);
         /// </code></para>
         /// <para>
         /// The xNext method advances a virtual table cursor
@@ -887,7 +887,7 @@ namespace System.Data.SQLite
 
         /// <summary>
         /// <para><code>
-        ///   int (*xEof)(sqlite3_vtab_cursor*);
+        /// int (*xEof)(sqlite3_vtab_cursor*);
         /// </code></para>
         /// <para>
         /// The xEof method must return false (zero) if the specified cursor 
@@ -913,7 +913,7 @@ namespace System.Data.SQLite
 
         /// <summary>
         /// <para><code>
-        ///   int (*xColumn)(sqlite3_vtab_cursor*, sqlite3_context*, int N);
+        /// int (*xColumn)(sqlite3_vtab_cursor*, sqlite3_context*, int N);
         /// </code></para>
         /// <para>
         /// The SQLite core invokes this method in order to find the value for 
@@ -925,16 +925,16 @@ namespace System.Data.SQLite
         /// <para>
         /// <![CDATA[<ul>]]>
         /// <![CDATA[<li>]]> sqlite3_result_blob()
-        /// <![CDATA[<li>]]> sqlite3_result_double()
-        /// <![CDATA[<li>]]> sqlite3_result_int()
-        /// <![CDATA[<li>]]> sqlite3_result_int64()
-        /// <![CDATA[<li>]]> sqlite3_result_null()
-        /// <![CDATA[<li>]]> sqlite3_result_text()
-        /// <![CDATA[<li>]]> sqlite3_result_text16()
-        /// <![CDATA[<li>]]> sqlite3_result_text16le()
-        /// <![CDATA[<li>]]> sqlite3_result_text16be()
-        /// <![CDATA[<li>]]> sqlite3_result_zeroblob()
-        /// <![CDATA[</ul>]]>
+        /// <![CDATA[</li>]]><![CDATA[<li>]]> sqlite3_result_double()
+        /// <![CDATA[</li>]]><![CDATA[<li>]]> sqlite3_result_int()
+        /// <![CDATA[</li>]]><![CDATA[<li>]]> sqlite3_result_int64()
+        /// <![CDATA[</li>]]><![CDATA[<li>]]> sqlite3_result_null()
+        /// <![CDATA[</li>]]><![CDATA[<li>]]> sqlite3_result_text()
+        /// <![CDATA[</li>]]><![CDATA[<li>]]> sqlite3_result_text16()
+        /// <![CDATA[</li>]]><![CDATA[<li>]]> sqlite3_result_text16le()
+        /// <![CDATA[</li>]]><![CDATA[<li>]]> sqlite3_result_text16be()
+        /// <![CDATA[</li>]]><![CDATA[<li>]]> sqlite3_result_zeroblob()
+        /// <![CDATA[</li>]]><![CDATA[</ul>]]>
         /// </para>
         /// <para>
         /// If the xColumn method implementation calls none of the functions above,
@@ -974,7 +974,7 @@ namespace System.Data.SQLite
 
         /// <summary>
         /// <para><code>
-        ///   int (*xRowid)(sqlite3_vtab_cursor *pCur, sqlite_int64 *pRowid);
+        /// int (*xRowid)(sqlite3_vtab_cursor *pCur, sqlite_int64 *pRowid);
         /// </code></para>
         /// <para>
         /// A successful invocation of this method will cause *pRowid to be
@@ -1006,12 +1006,12 @@ namespace System.Data.SQLite
 
         /// <summary>
         /// <para><code>
-        ///   int (*xUpdate)(
-        ///     sqlite3_vtab *pVTab,
-        ///     int argc,
-        ///     sqlite3_value **argv,
-        ///     sqlite_int64 *pRowid
-        ///   );
+        /// int (*xUpdate)(
+        ///   sqlite3_vtab *pVTab,
+        ///   int argc,
+        ///   sqlite3_value **argv,
+        ///   sqlite_int64 *pRowid
+        /// );
         /// </code></para>
         /// <para>
         /// All changes to a virtual table are made using the xUpdate method.
@@ -1060,22 +1060,22 @@ namespace System.Data.SQLite
         /// <para><code>
         /// <![CDATA[<dl>]]>
         /// <![CDATA[<dt>]]><![CDATA[<b>]]>argc = 1<![CDATA[</b>]]>
-        /// <![CDATA[<dd>]]>The single row with rowid equal to argv[0] is deleted. No insert occurs.
-        /// <![CDATA[<dt>]]><![CDATA[<b>]]>argc &gt; 1 <![CDATA[<br>]]> argv[0] = NULL<![CDATA[</b>]]>
-        /// <![CDATA[<dd>]]>A new row is inserted with a rowid argv[1] and column values in
+        /// <![CDATA[</dt>]]><![CDATA[<dd>]]>The single row with rowid equal to argv[0] is deleted. No insert occurs.
+        /// <![CDATA[</dd>]]><![CDATA[<dt>]]><![CDATA[<b>]]>argc > 1 <![CDATA[<br>]]> argv[0] = NULL</br><![CDATA[</b>]]>
+        /// <![CDATA[</dt>]]><![CDATA[<dd>]]>A new row is inserted with a rowid argv[1] and column values in
         ///        argv[2] and following.  If argv[1] is an SQL NULL,
         ///        the a new unique rowid is generated automatically.
-        /// <![CDATA[<dt>]]><![CDATA[<b>]]>argc &gt; 1 <![CDATA[<br>]]> argv[0] &#8800; NULL <![CDATA[<br>]]> argv[0] = argv[1]<![CDATA[</b>]]>
-        /// <![CDATA[<dd>]]>The row with rowid argv[0] is updated with new values 
+        /// <![CDATA[</dd>]]><![CDATA[<dt>]]><![CDATA[<b>]]>argc > 1 <![CDATA[<br>]]> argv[0] &#8800; NULL </br><![CDATA[<br>]]> argv[0] = argv[1]</br><![CDATA[</b>]]>
+        /// <![CDATA[</dt>]]><![CDATA[<dd>]]>The row with rowid argv[0] is updated with new values 
         ///        in argv[2] and following parameters.
-        /// <![CDATA[<dt>]]><![CDATA[<b>]]>argc &gt; 1 <![CDATA[<br>]]> argv[0] &#8800; NULL <![CDATA[<br>]]> argv[0] &#8800; argv[1]<![CDATA[</b>]]>
-        /// <![CDATA[<dd>]]> The row with rowid argv[0] is updated with rowid argv[1] 
+        /// <![CDATA[</dd>]]><![CDATA[<dt>]]><![CDATA[<b>]]>argc > 1 <![CDATA[<br>]]> argv[0] &#8800; NULL </br><![CDATA[<br>]]> argv[0] &#8800; argv[1]</br><![CDATA[</b>]]>
+        /// <![CDATA[</dt>]]><![CDATA[<dd>]]> The row with rowid argv[0] is updated with rowid argv[1] 
         /// and new values in argv[2] and following parameters. This will occur 
         /// when an SQL statement updates a rowid, as in the statement:
         /// <para><code>
         ///    UPDATE table SET rowid=rowid+1 WHERE ...; 
         /// </code></para>
-        /// <![CDATA[</dl>]]>
+        /// <![CDATA[</dd>]]><![CDATA[</dl>]]>
         /// </code></para>
         /// <para>
         /// The xUpdate method must return SQLITE_OK if and only if it is
@@ -1134,7 +1134,7 @@ namespace System.Data.SQLite
 
         /// <summary>
         /// <para><code>
-        ///   int (*xBegin)(sqlite3_vtab *pVTab);
+        /// int (*xBegin)(sqlite3_vtab *pVTab);
         /// </code></para>
         /// <para>
         /// This method begins a transaction on a virtual table.
@@ -1165,7 +1165,7 @@ namespace System.Data.SQLite
 
         /// <summary>
         /// <para><code>
-        ///   int (*xSync)(sqlite3_vtab *pVTab);
+        /// int (*xSync)(sqlite3_vtab *pVTab);
         /// </code></para>
         /// <para>
         /// This method signals the start of a two-phase commit on a virtual
@@ -1195,7 +1195,7 @@ namespace System.Data.SQLite
 
         /// <summary>
         /// <para><code>
-        ///   int (*xCommit)(sqlite3_vtab *pVTab);
+        /// int (*xCommit)(sqlite3_vtab *pVTab);
         /// </code></para>
         /// <para>
         /// This method causes a virtual table transaction to commit.
@@ -1221,7 +1221,7 @@ namespace System.Data.SQLite
 
         /// <summary>
         /// <para><code>
-        ///   int (*xRollback)(sqlite3_vtab *pVTab);
+        /// int (*xRollback)(sqlite3_vtab *pVTab);
         /// </code></para>
         /// <para>
         /// This method causes a virtual table transaction to rollback.
@@ -1246,13 +1246,13 @@ namespace System.Data.SQLite
 
         /// <summary>
         /// <para><code>
-        ///   int (*xFindFunction)(
-        ///     sqlite3_vtab *pVtab,
-        ///     int nArg,
-        ///     const char *zName,
-        ///     void (**pxFunc)(sqlite3_context*,int,sqlite3_value**),
-        ///     void **ppArg
-        ///   );
+        /// int (*xFindFunction)(
+        ///   sqlite3_vtab *pVtab,
+        ///   int nArg,
+        ///   const char *zName,
+        ///   void (**pxFunc)(sqlite3_context*,int,sqlite3_value**),
+        ///   void **ppArg
+        /// );
         /// </code></para>
         /// <para>
         /// This method is called during sqlite3_prepare() to give the virtual
@@ -1314,7 +1314,7 @@ namespace System.Data.SQLite
 
         /// <summary>
         /// <para><code>
-        ///   int (*xRename)(sqlite3_vtab *pVtab, const char *zNew);
+        /// int (*xRename)(sqlite3_vtab *pVtab, const char *zNew);
         /// </code></para>
         /// <para>
         /// This method provides notification that the virtual table implementation
@@ -1345,9 +1345,9 @@ namespace System.Data.SQLite
 
         /// <summary>
         /// <para><code>
-        ///   int (*xSavepoint)(sqlite3_vtab *pVtab, int);
-        ///   int (*xRelease)(sqlite3_vtab *pVtab, int);
-        ///   int (*xRollbackTo)(sqlite3_vtab *pVtab, int);
+        /// int (*xSavepoint)(sqlite3_vtab *pVtab, int);
+        /// int (*xRelease)(sqlite3_vtab *pVtab, int);
+        /// int (*xRollbackTo)(sqlite3_vtab *pVtab, int);
         /// </code></para>
         /// <para>
         /// These methods provide the virtual table implementation an opportunity to
@@ -1391,9 +1391,9 @@ namespace System.Data.SQLite
 
         /// <summary>
         /// <para><code>
-        ///   int (*xSavepoint)(sqlite3_vtab *pVtab, int);
-        ///   int (*xRelease)(sqlite3_vtab *pVtab, int);
-        ///   int (*xRollbackTo)(sqlite3_vtab *pVtab, int);
+        /// int (*xSavepoint)(sqlite3_vtab *pVtab, int);
+        /// int (*xRelease)(sqlite3_vtab *pVtab, int);
+        /// int (*xRollbackTo)(sqlite3_vtab *pVtab, int);
         /// </code></para>
         /// <para>
         /// These methods provide the virtual table implementation an opportunity to
@@ -1438,9 +1438,9 @@ namespace System.Data.SQLite
 
         /// <summary>
         /// <para><code>
-        ///   int (*xSavepoint)(sqlite3_vtab *pVtab, int);
-        ///   int (*xRelease)(sqlite3_vtab *pVtab, int);
-        ///   int (*xRollbackTo)(sqlite3_vtab *pVtab, int);
+        /// int (*xSavepoint)(sqlite3_vtab *pVtab, int);
+        /// int (*xRelease)(sqlite3_vtab *pVtab, int);
+        /// int (*xRollbackTo)(sqlite3_vtab *pVtab, int);
         /// </code></para>
         /// <para>
         /// These methods provide the virtual table implementation an opportunity to

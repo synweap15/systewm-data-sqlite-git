@@ -6,7 +6,7 @@
     <b>1.0.103.0 - September XX, 2016 <font color="red">(release scheduled)</font></b>
 </p>
 <ul>
-    <li>Updated to [https://www.sqlite.org/draft/releaselog/3_14_2.html|SQLite 3.14.2].</li>
+    <li>Updated to [https://www.sqlite.org/releaselog/3_14_2.html|SQLite 3.14.2].</li>
     <li>Add preliminary support for the .NET Framework 4.6.2.</li>
     <li>Change the SQLiteReadValueCallback delegate &quot;eventArgs&quot; parameter to be of type SQLiteReadEventArgs.&nbsp;<b>** Potentially Incompatible Change **</b></li>
     <li>Make SQLiteReadValueEventArgs and SQLiteReadArrayEventArgs derive from SQLiteReadEventArgs.&nbsp;<b>** Potentially Incompatible Change **</b></li>

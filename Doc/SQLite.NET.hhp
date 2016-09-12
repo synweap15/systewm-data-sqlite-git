@@ -45,6 +45,7 @@ Core\lang_update.html
 Core\lang_vacuum.html
 Core\lang_with.html
 Core\pragma.html
+Core\sqlite.css
 Core\syntax.html
 Core\syntaxdiagrams.html
 Core\syntax\alter-table-stmt.html

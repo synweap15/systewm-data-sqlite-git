@@ -121,6 +121,7 @@ set sds_manifests(source) {
   Doc/Extra/Core/lang_vacuum.html
   Doc/Extra/Core/lang_with.html
   Doc/Extra/Core/pragma.html
+  Doc/Extra/Core/sqlite.css
   Doc/Extra/Core/syntax.html
   Doc/Extra/Core/syntax/
   Doc/Extra/Core/syntax/alter-table-stmt.html
