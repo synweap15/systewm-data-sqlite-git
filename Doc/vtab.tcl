@@ -48,7 +48,7 @@ proc englishToList { value } {
   return $result
 }
 
-proc processLine { line prefix } {
+proc processLine { line prefix ltAndGt } {
   if {[string length [string trim $line]] == 0 || \
       [regexp -- {<h\d(?: |>)} [string range $line 0 3]] || \
       [regexp -- {</p>\n<h\d(?: |>)} [string range $line 0 8]]} then {
@@ -78,8 +78,11 @@ proc processLine { line prefix } {
   regsub -all -- {&ne;} $result {\&#8800;} result
   regsub -all -- {&#91(?:;)?} $result {[} result
   regsub -all -- {&#93(?:;)?} $result {]} result
-  # regsub -all -- {<( |\"|\d|=)} $result {\&lt;\1} result
-  # regsub -all -- {( |\"|\d|=)>} $result {\1\&gt;} result
+
+  if {$ltAndGt} then {
+    regsub -all -- {<( |\"|\d|=)} $result {\&lt;\1} result
+    regsub -all -- {( |\"|\d|=)>} $result {\1\&gt;} result
+  }
 
   regsub -all -- {<div class="codeblock"><pre>} $result \
       <para><code>\n$indent result
@@ -93,7 +96,8 @@ proc processLine { line prefix } {
   return $result
 }
 
-proc extractMethod { name lines pattern prefix indexVarName methodsVarName } {
+proc extractMethod {
+        name lines pattern prefix indexVarName methodsVarName ltAndGt } {
   upvar 1 $indexVarName index
   upvar 1 $methodsVarName methods
 
@@ -123,7 +127,7 @@ proc extractMethod { name lines pattern prefix indexVarName methodsVarName } {
           [string range $trimLine 0 6] eq "</p><p>"} then {
         # open tag ... maybe one line?
         if {[string range $trimLine end-3 end] eq "</p>"} then {
-          set newLine [processLine $line $prefix]
+          set newLine [processLine $line $prefix $ltAndGt]
 
           if {[string length $newLine] > 0} then {
             # one line tag, wrap.
@@ -147,7 +151,7 @@ proc extractMethod { name lines pattern prefix indexVarName methodsVarName } {
             append data $prefix <para>
           }
 
-          set newLine [processLine $line $prefix]
+          set newLine [processLine $line $prefix $ltAndGt]
 
           if {[string length $newLine] > 0} then {
             append data \n $prefix $newLine
@@ -156,7 +160,7 @@ proc extractMethod { name lines pattern prefix indexVarName methodsVarName } {
           incr levels(p)
         }
       } else {
-        set newLine [processLine $line $prefix]
+        set newLine [processLine $line $prefix $ltAndGt]
 
         if {[string length $newLine] > 0} then {
           if {[info exists methods($name)]} then {
@@ -206,6 +210,13 @@ set inputData [string map [list \
 
 set inputData [string map [list {<p align="center"></p>} ""] $inputData]
 
+if {[string first &lt\; $inputData] != -1 || \
+    [string first &gt\; $inputData] != -1} then {
+  set ltAndGt false
+} else {
+  set ltAndGt true
+}
+
 set lines [split [string map [list \r\n \n] $inputData] \n]
 
 set patterns(start) [string trim {
@@ -227,8 +238,8 @@ for {set index 0} {$index < [llength $lines]} {} {
       foreach method [englishToList $capture] {
         set methodIndex [expr {$index + 1}]
 
-        extractMethod \
-            $method $lines $patterns(method) $prefix methodIndex methods
+        extractMethod $method $lines $patterns(method) $prefix \
+            methodIndex methods $ltAndGt
       }
 
       set index $methodIndex
