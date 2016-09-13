@@ -73,8 +73,6 @@ proc processLine { line prefix ltAndGt } {
     regsub -all -- ($escape) $result {<![CDATA[\1]]>} result
   }
 
-  set indent "        /// "
-
   regsub -all -- {&ne;} $result {\&#8800;} result
   regsub -all -- {&#91(?:;)?} $result {[} result
   regsub -all -- {&#93(?:;)?} $result {]} result
@@ -85,7 +83,7 @@ proc processLine { line prefix ltAndGt } {
   }
 
   regsub -all -- {<div class="codeblock"><pre>} $result \
-      <para><code>\n$indent result
+      <para><code>\n${prefix} result
 
   regsub -all -- {</pre></div>} $result </code></para> result
   regsub -all -- {<blockquote><pre>} $result <para><code> result
