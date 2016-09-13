@@ -67,8 +67,8 @@ proc processLine { line prefix ltAndGt } {
   }
 
   foreach escape [list \
-      {<b>} {</b>} {<br>} {<dd>} {</dd>} {<dl>} {</dl>} {<dt>} \
-      {</dt>} {<li>} {</li>} {<ol>} {</ol>} {<tt>} {</tt>} \
+      {<b>} {</b>} {<br>} {</br>} {<dd>} {</dd>} {<dl>} {</dl>} \
+      {<dt>} {</dt>} {<li>} {</li>} {<ol>} {</ol>} {<tt>} {</tt>} \
       {<ul>} {</ul>}] {
     regsub -all -- ($escape) $result {<![CDATA[\1]]>} result
   }
@@ -81,6 +81,9 @@ proc processLine { line prefix ltAndGt } {
     regsub -all -- {<( |\"|\d|=)} $result {\&lt;\1} result
     regsub -all -- {( |\"|\d|=)>} $result {\1\&gt;} result
   }
+
+  regsub -all -- { < } $result { \&lt; } result
+  regsub -all -- { > } $result { \&gt; } result
 
   regsub -all -- {<div class="codeblock"><pre>} $result \
       <para><code>\n${prefix} result

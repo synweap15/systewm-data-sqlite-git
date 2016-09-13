@@ -1061,14 +1061,14 @@ namespace System.Data.SQLite
         /// <![CDATA[<dl>]]>
         /// <![CDATA[<dt>]]><![CDATA[<b>]]>argc = 1<![CDATA[</b>]]>
         /// <![CDATA[</dt>]]><![CDATA[<dd>]]>The single row with rowid equal to argv[0] is deleted. No insert occurs.
-        /// <![CDATA[</dd>]]><![CDATA[<dt>]]><![CDATA[<b>]]>argc > 1 <![CDATA[<br>]]> argv[0] = NULL</br><![CDATA[</b>]]>
+        /// <![CDATA[</dd>]]><![CDATA[<dt>]]><![CDATA[<b>]]>argc &gt; 1 <![CDATA[<br>]]> argv[0] = NULL<![CDATA[</br>]]><![CDATA[</b>]]>
         /// <![CDATA[</dt>]]><![CDATA[<dd>]]>A new row is inserted with a rowid argv[1] and column values in
         ///        argv[2] and following.  If argv[1] is an SQL NULL,
         ///        the a new unique rowid is generated automatically.
-        /// <![CDATA[</dd>]]><![CDATA[<dt>]]><![CDATA[<b>]]>argc > 1 <![CDATA[<br>]]> argv[0] &#8800; NULL </br><![CDATA[<br>]]> argv[0] = argv[1]</br><![CDATA[</b>]]>
+        /// <![CDATA[</dd>]]><![CDATA[<dt>]]><![CDATA[<b>]]>argc &gt; 1 <![CDATA[<br>]]> argv[0] &#8800; NULL <![CDATA[</br>]]><![CDATA[<br>]]> argv[0] = argv[1]<![CDATA[</br>]]><![CDATA[</b>]]>
         /// <![CDATA[</dt>]]><![CDATA[<dd>]]>The row with rowid argv[0] is updated with new values 
         ///        in argv[2] and following parameters.
-        /// <![CDATA[</dd>]]><![CDATA[<dt>]]><![CDATA[<b>]]>argc > 1 <![CDATA[<br>]]> argv[0] &#8800; NULL </br><![CDATA[<br>]]> argv[0] &#8800; argv[1]</br><![CDATA[</b>]]>
+        /// <![CDATA[</dd>]]><![CDATA[<dt>]]><![CDATA[<b>]]>argc &gt; 1 <![CDATA[<br>]]> argv[0] &#8800; NULL <![CDATA[</br>]]><![CDATA[<br>]]> argv[0] &#8800; argv[1]<![CDATA[</br>]]><![CDATA[</b>]]>
         /// <![CDATA[</dt>]]><![CDATA[<dd>]]> The row with rowid argv[0] is updated with rowid argv[1] 
         /// and new values in argv[2] and following parameters. This will occur 
         /// when an SQL statement updates a rowid, as in the statement:
