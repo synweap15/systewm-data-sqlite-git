@@ -132,8 +132,11 @@
     &quot;%TEMP%\EagleShell.exe.test.&lt;pid&gt;.log&quot; may be checked if any
     errors should occur.  The test suite should produce &quot;success&quot;
     messages very similar to the following:<br /><br />
-    PASSED: 254<br />
-    TOTAL: 254<br />
+    PASSED: 504<br />
+    SKIPPED: 54<br />
+    SKIPPED: name-of-skipped-test-1&nbsp;&#8230;&nbsp;&#8230;<br />
+    TOTAL: 558<br />
+    SKIP PERCENTAGE: 9.6774%<br />
     PASS PERCENTAGE: 100%<br />
     OVERALL RESULT: SUCCESS<br />
   </li>
