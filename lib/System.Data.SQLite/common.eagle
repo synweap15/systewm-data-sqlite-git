@@ -4551,8 +4551,7 @@ namespace eval ::Eagle {
             [getBuildFileName SQLite.Designer.dll false]
 
         set systemDataSQLiteDllFile \
-            [getBuildFileName System.Data.SQLite.dll \
-            [expr {![hasRuntimeOption native]}]]
+            [getBuildFileName System.Data.SQLite.dll false]
 
         set systemDataSQLiteLinqDllFile \
             [getBuildFileName System.Data.SQLite.Linq.dll false]
