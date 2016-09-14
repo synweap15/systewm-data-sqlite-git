@@ -3731,7 +3731,7 @@ namespace eval ::Eagle {
         #       by a previous test run.
         #
         file copy -force $northwindEfDbFile \
-          [file join [getBuildDirectory true] [file tail $northwindEfDbFile]]
+          [file join [getBuildDirectory false] [file tail $northwindEfDbFile]]
       }
     }
 
