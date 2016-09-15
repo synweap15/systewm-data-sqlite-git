@@ -445,14 +445,14 @@
         <a name="sqlite-netFx-source"></a>
         <a href="/downloads/1.0.103.0/sqlite-netFx-source-1.0.103.0.zip">sqlite-netFx-source-1.0.103.0.zip</a>
         <br />
-        (5.93 MiB)
+        (5.91 MiB)
       </td>
       <td width="5"></td>
       <td valign="top">
         This ZIP archive contains all current source code for System.Data.SQLite
         1.0.103.0 (3.14.2) combined into a single archive file.
         <br />
-        (sha1: e827e5ce33918ab84d6e093495ef370289507674)
+        (sha1: bb44757c83102da88b48d3bcc514a42e9e593a7b)
       </td>
     </tr>
 
@@ -462,7 +462,7 @@
         <a name="sqlite-netFx-full-source"></a>
         <a href="/downloads/1.0.103.0/sqlite-netFx-full-source-1.0.103.0.zip">sqlite-netFx-full-source-1.0.103.0.zip</a>
         <br />
-        (7.32 MiB)
+        (7.31 MiB)
       </td>
       <td width="5"></td>
       <td valign="top">
@@ -470,7 +470,7 @@
         1.0.103.0 (3.14.2) and the extra files needed to run the unit test suite,
         combined into a single archive file.
         <br />
-        (sha1: 2e69b089de7163905b1fa9f8b5eb875b6645e3e2)
+        (sha1: f827ef03209961937988b59bd978cdfe49f39232)
       </td>
     </tr>
 
@@ -486,7 +486,7 @@
         <a name="sqlite-netFx20-setup-bundle-x86-2005"></a>
         <a href="/downloads/1.0.103.0/sqlite-netFx20-setup-bundle-x86-2005-1.0.103.0.exe">sqlite-netFx20-setup-bundle-x86-2005-1.0.103.0.exe</a>
         <br />
-        (5.35 MiB)
+        (5.36 MiB)
       </td>
       <td width="5"></td>
       <td valign="top">
@@ -505,7 +505,7 @@
         instead.</b></big>
         <br />
         <br />
-        (sha1: dcca74db685d7f7344d259ab6c3d7644d79e71ce)
+        (sha1: 28283f7e3a363c6a3282517aa1472ee8bd7cd326)
       </td>
     </tr>
 
@@ -515,7 +515,7 @@
         <a name="sqlite-netFx20-setup-x86-2005"></a>
         <a href="/downloads/1.0.103.0/sqlite-netFx20-setup-x86-2005-1.0.103.0.exe">sqlite-netFx20-setup-x86-2005-1.0.103.0.exe</a>
         <br />
-        (5.34 MiB)
+        (5.35 MiB)
       </td>
       <td width="5"></td>
       <td valign="top">
@@ -524,7 +524,7 @@
         (3.14.2) package.  The Visual C++ 2005 SP1 runtime for x86 is included.
         The .NET Framework 2.0 SP2 is required.
         <br />
-        (sha1: 3078433d070aa126066635327983cc53116f1f5b)
+        (sha1: aa1604423888f9d49c5f393cb587a684e38c5f82)
       </td>
     </tr>
 
@@ -540,7 +540,7 @@
         <a name="sqlite-netFx20-setup-bundle-x64-2005"></a>
         <a href="/downloads/1.0.103.0/sqlite-netFx20-setup-bundle-x64-2005-1.0.103.0.exe">sqlite-netFx20-setup-bundle-x64-2005-1.0.103.0.exe</a>
         <br />
-        (5.98 MiB)
+        (5.99 MiB)
       </td>
       <td width="5"></td>
       <td valign="top">
@@ -550,7 +550,7 @@
         SP1 runtime for x64 is included.  The .NET Framework 2.0 SP2 is
         required.
         <br />
-        (sha1: cbcf91f256ba75dbc6773ec7aa30364c1e55c226)
+        (sha1: 2e22d80b65c89686ef57a5c0aeba01ee7d133f1f)
       </td>
     </tr>
 
@@ -560,7 +560,7 @@
         <a name="sqlite-netFx20-setup-x64-2005"></a>
         <a href="/downloads/1.0.103.0/sqlite-netFx20-setup-x64-2005-1.0.103.0.exe">sqlite-netFx20-setup-x64-2005-1.0.103.0.exe</a>
         <br />
-        (5.97 MiB)
+        (5.98 MiB)
       </td>
       <td width="5"></td>
       <td valign="top">
@@ -569,7 +569,7 @@
         (3.14.2) package.  The Visual C++ 2005 SP1 runtime for x64 is included.
         The .NET Framework 2.0 SP2 is required.
         <br />
-        (sha1: edc0eda91493dac40a2fb61901598391cd9d566d)
+        (sha1: a5689a6958ba9227fa1c60e7c064b8fa708f69cb)
       </td>
     </tr>
 
@@ -585,7 +585,7 @@
         <a name="sqlite-netFx35-setup-bundle-x86-2008"></a>
         <a href="/downloads/1.0.103.0/sqlite-netFx35-setup-bundle-x86-2008-1.0.103.0.exe">sqlite-netFx35-setup-bundle-x86-2008-1.0.103.0.exe</a>
         <br />
-        (7.38 MiB)
+        (7.39 MiB)
       </td>
       <td width="5"></td>
       <td valign="top">
@@ -604,7 +604,7 @@
         instead.</b></big>
         <br />
         <br />
-        (sha1: d24df8bdfb87e505447447a787ffb3f1415e4cf2)
+        (sha1: 733493afdd96e07edb2da1c0385d19796e6e0d87)
       </td>
     </tr>
 
@@ -614,7 +614,7 @@
         <a name="sqlite-netFx35-setup-x86-2008"></a>
         <a href="/downloads/1.0.103.0/sqlite-netFx35-setup-x86-2008-1.0.103.0.exe">sqlite-netFx35-setup-x86-2008-1.0.103.0.exe</a>
         <br />
-        (7.37 MiB)
+        (7.38 MiB)
       </td>
       <td width="5"></td>
       <td valign="top">
@@ -623,7 +623,7 @@
         (3.14.2) package.  The Visual C++ 2008 SP1 runtime for x86 is included.
         The .NET Framework 3.5 SP1 is required.
         <br />
-        (sha1: f2ea0338c3051bdff89dcafd0438578690e06196)
+        (sha1: aed2b7cbec29759851c9b3cc6f6d80b785a32952)
       </td>
     </tr>
 
@@ -639,7 +639,7 @@
         <a name="sqlite-netFx35-setup-bundle-x64-2008"></a>
         <a href="/downloads/1.0.103.0/sqlite-netFx35-setup-bundle-x64-2008-1.0.103.0.exe">sqlite-netFx35-setup-bundle-x64-2008-1.0.103.0.exe</a>
         <br />
-        (8.14 MiB)
+        (8.15 MiB)
       </td>
       <td width="5"></td>
       <td valign="top">
@@ -649,7 +649,7 @@
         SP1 runtime for x64 is included.  The .NET Framework 3.5 SP1 is
         required.
         <br />
-        (sha1: 2a3741a33278a96cf20a6b0149c5844b4ef5c63a)
+        (sha1: 5d0d1f39d5122a9fdbd07b89bc229488c56add2a)
       </td>
     </tr>
 
@@ -659,7 +659,7 @@
         <a name="sqlite-netFx35-setup-x64-2008"></a>
         <a href="/downloads/1.0.103.0/sqlite-netFx35-setup-x64-2008-1.0.103.0.exe">sqlite-netFx35-setup-x64-2008-1.0.103.0.exe</a>
         <br />
-        (8.13 MiB)
+        (8.14 MiB)
       </td>
       <td width="5"></td>
       <td valign="top">
@@ -668,7 +668,7 @@
         (3.14.2) package.  The Visual C++ 2008 SP1 runtime for x64 is included.
         The .NET Framework 3.5 SP1 is required.
         <br />
-        (sha1: 3ebdd7135adacd77fa1bb2d3911cc03e3613cbef)
+        (sha1: de3e01b22f0e6c565118d6c76829c2003e4d7b05)
       </td>
     </tr>
 
@@ -684,7 +684,7 @@
         <a name="sqlite-netFx40-setup-bundle-x86-2010"></a>
         <a href="/downloads/1.0.103.0/sqlite-netFx40-setup-bundle-x86-2010-1.0.103.0.exe">sqlite-netFx40-setup-bundle-x86-2010-1.0.103.0.exe</a>
         <br />
-        (12.96 MiB)
+        (12.97 MiB)
       </td>
       <td width="5"></td>
       <td valign="top">
@@ -702,7 +702,7 @@
         instead.</b></big>
         <br />
         <br />
-        (sha1: a584487989a77fd68d57207d31a2efdb8467ee0c)
+        (sha1: dee225e04b1a2a426cf7f201ff25097e115f0585)
       </td>
     </tr>
 
@@ -712,7 +712,7 @@
         <a name="sqlite-netFx40-setup-x86-2010"></a>
         <a href="/downloads/1.0.103.0/sqlite-netFx40-setup-x86-2010-1.0.103.0.exe">sqlite-netFx40-setup-x86-2010-1.0.103.0.exe</a>
         <br />
-        (12.95 MiB)
+        (12.96 MiB)
       </td>
       <td width="5"></td>
       <td valign="top">
@@ -721,7 +721,7 @@
         (3.14.2) package.  The Visual C++ 2010 SP1 runtime for x86 is included.
         The .NET Framework 4.0 is required.
         <br />
-        (sha1: 63b8f627c9180d5e0054b0e32d3936524dd510bc)
+        (sha1: 04310dc19bdac701f6b813f47d906cfb7279ca3b)
       </td>
     </tr>
 
@@ -737,7 +737,7 @@
         <a name="sqlite-netFx40-setup-bundle-x64-2010"></a>
         <a href="/downloads/1.0.103.0/sqlite-netFx40-setup-bundle-x64-2010-1.0.103.0.exe">sqlite-netFx40-setup-bundle-x64-2010-1.0.103.0.exe</a>
         <br />
-        (14.23 MiB)
+        (14.24 MiB)
       </td>
       <td width="5"></td>
       <td valign="top">
@@ -746,7 +746,7 @@
         the System.Data.SQLite 1.0.103.0 (3.14.2) package.  The Visual C++ 2010
         SP1 runtime for x64 is included.  The .NET Framework 4.0 is required.
         <br />
-        (sha1: 8093642a418dce03290f4b72b28e91f9c0e85150)
+        (sha1: 2347ff722feaa4a966b8d75e23c3761a4585264d)
       </td>
     </tr>
 
@@ -765,7 +765,7 @@
         (3.14.2) package.  The Visual C++ 2010 SP1 runtime for x64 is included.
         The .NET Framework 4.0 is required.
         <br />
-        (sha1: c27217eb6ed7ff12a4499b48fe2145a74df51e08)
+        (sha1: 8c3cef824d1b1d8d347597bec32c2db4e18d37e4)
       </td>
     </tr>
 
@@ -781,7 +781,7 @@
         <a name="sqlite-netFx45-setup-bundle-x86-2012"></a>
         <a href="/downloads/1.0.103.0/sqlite-netFx45-setup-bundle-x86-2012-1.0.103.0.exe">sqlite-netFx45-setup-bundle-x86-2012-1.0.103.0.exe</a>
         <br />
-        (10.38 MiB)
+        (10.39 MiB)
       </td>
       <td width="5"></td>
       <td valign="top">
@@ -806,7 +806,7 @@
         Entity Framework 6 Tools for Visual Studio 2012 &amp; 2013</a>.</b></big>
         <br />
         <br />
-        (sha1: 1edf436caf551a5b684d038b506c190506f5ceb0)
+        (sha1: e772984293d7274226b78fdca208a9da04a079e5)
       </td>
     </tr>
 
@@ -816,7 +816,7 @@
         <a name="sqlite-netFx45-setup-x86-2012"></a>
         <a href="/downloads/1.0.103.0/sqlite-netFx45-setup-x86-2012-1.0.103.0.exe">sqlite-netFx45-setup-x86-2012-1.0.103.0.exe</a>
         <br />
-        (10.42 MiB)
+        (10.43 MiB)
       </td>
       <td width="5"></td>
       <td valign="top">
@@ -825,7 +825,7 @@
         (3.14.2) package.  The Visual C++ 2012 Update 4 runtime for x86 is
         included.  The .NET Framework 4.5 is required.
         <br />
-        (sha1: e2422d85a278aea6709512955a771db4916e3f87)
+        (sha1: b4335c5fce70b90d4cbcefa22abec0c00bb3892e)
       </td>
     </tr>
 
@@ -841,7 +841,7 @@
         <a name="sqlite-netFx45-setup-bundle-x64-2012"></a>
         <a href="/downloads/1.0.103.0/sqlite-netFx45-setup-bundle-x64-2012-1.0.103.0.exe">sqlite-netFx45-setup-bundle-x64-2012-1.0.103.0.exe</a>
         <br />
-        (11.05 MiB)
+        (11.06 MiB)
       </td>
       <td width="5"></td>
       <td valign="top">
@@ -851,7 +851,7 @@
         Update 4 runtime for x64 is included.  The .NET Framework 4.5 is
         required.
         <br />
-        (sha1: 47e28b2ebc7e34078c0b1dd619fd856e1b530c33)
+        (sha1: c89a9358c0765eeeb02444eedb27b96614eb425b)
       </td>
     </tr>
 
@@ -861,7 +861,7 @@
         <a name="sqlite-netFx45-setup-x64-2012"></a>
         <a href="/downloads/1.0.103.0/sqlite-netFx45-setup-x64-2012-1.0.103.0.exe">sqlite-netFx45-setup-x64-2012-1.0.103.0.exe</a>
         <br />
-        (11.11 MiB)
+        (11.12 MiB)
       </td>
       <td width="5"></td>
       <td valign="top">
@@ -870,7 +870,7 @@
         (3.14.2) package.  The Visual C++ 2012 Update 4 runtime for x64 is
         included.  The .NET Framework 4.5 is required.
         <br />
-        (sha1: 2ff9550362f6f21d25ce7de744fa82c7d3469efe)
+        (sha1: 9136c5e2164622c2d3bc598c86a622912d937490)
       </td>
     </tr>
 
@@ -886,7 +886,7 @@
         <a name="sqlite-netFx451-setup-bundle-x86-2013"></a>
         <a href="/downloads/1.0.103.0/sqlite-netFx451-setup-bundle-x86-2013-1.0.103.0.exe">sqlite-netFx451-setup-bundle-x86-2013-1.0.103.0.exe</a>
         <br />
-        (10.34 MiB)
+        (10.35 MiB)
       </td>
       <td width="5"></td>
       <td valign="top">
@@ -911,7 +911,7 @@
         Entity Framework 6 Tools for Visual Studio 2012 &amp; 2013</a>.</b></big>
         <br />
         <br />
-        (sha1: d4f909e339fddaa094ba94685f1c91f8281ee91d)
+        (sha1: e7b2a5042b19640f08710fc9f900e5a8100a594c)
       </td>
     </tr>
 
@@ -921,7 +921,7 @@
         <a name="sqlite-netFx451-setup-x86-2013"></a>
         <a href="/downloads/1.0.103.0/sqlite-netFx451-setup-x86-2013-1.0.103.0.exe">sqlite-netFx451-setup-x86-2013-1.0.103.0.exe</a>
         <br />
-        (10.37 MiB)
+        (10.38 MiB)
       </td>
       <td width="5"></td>
       <td valign="top">
@@ -930,7 +930,7 @@
         (3.14.2) package.  The Visual C++ 2013 Update 2 runtime for x86 is
         included.  The .NET Framework 4.5.1 is required.
         <br />
-        (sha1: 4f0d3f31ad462a247329365e7efcc9b3e805b848)
+        (sha1: a6628b1b5b50418ca16cc0e76bb32d5bfad944bb)
       </td>
     </tr>
 
@@ -946,7 +946,7 @@
         <a name="sqlite-netFx451-setup-bundle-x64-2013"></a>
         <a href="/downloads/1.0.103.0/sqlite-netFx451-setup-bundle-x64-2013-1.0.103.0.exe">sqlite-netFx451-setup-bundle-x64-2013-1.0.103.0.exe</a>
         <br />
-        (11.04 MiB)
+        (11.05 MiB)
       </td>
       <td width="5"></td>
       <td valign="top">
@@ -956,7 +956,7 @@
         Update 2 runtime for x64 is included.  The .NET Framework 4.5.1 is
         required.
         <br />
-        (sha1: 1397d9692d20166b0c4300bbe443ae7be986d539)
+        (sha1: ba8cecc0ef161cb3f5ddaa00715c9be028a8d652)
       </td>
     </tr>
 
@@ -966,7 +966,7 @@
         <a name="sqlite-netFx451-setup-x64-2013"></a>
         <a href="/downloads/1.0.103.0/sqlite-netFx451-setup-x64-2013-1.0.103.0.exe">sqlite-netFx451-setup-x64-2013-1.0.103.0.exe</a>
         <br />
-        (11.10 MiB)
+        (11.11 MiB)
       </td>
       <td width="5"></td>
       <td valign="top">
@@ -975,7 +975,7 @@
         (3.14.2) package.  The Visual C++ 2013 Update 2 runtime for x64 is
         included.  The .NET Framework 4.5.1 is required.
         <br />
-        (sha1: a937c46b697ce5192098e19e9d476ebf31eec1bc)
+        (sha1: fa115a42990b68626060352a058ec5db954a074d)
       </td>
     </tr>
 
@@ -991,7 +991,7 @@
         <a name="sqlite-netFx46-setup-bundle-x86-2015"></a>
         <a href="/downloads/1.0.103.0/sqlite-netFx46-setup-bundle-x86-2015-1.0.103.0.exe">sqlite-netFx46-setup-bundle-x86-2015-1.0.103.0.exe</a>
         <br />
-        (16.39 MiB)
+        (16.87 MiB)
       </td>
       <td width="5"></td>
       <td valign="top">
@@ -1010,7 +1010,7 @@
         instead.</b></big>
         <br />
         <br />
-        (sha1: fb59c95198285c30dafa6bafb99e1fe0eb46dfe1)
+        (sha1: 8eeb2ea2cd2c7f87f310614e3666889ca9ce64fa)
       </td>
     </tr>
 
@@ -1020,7 +1020,7 @@
         <a name="sqlite-netFx46-setup-x86-2015"></a>
         <a href="/downloads/1.0.103.0/sqlite-netFx46-setup-x86-2015-1.0.103.0.exe">sqlite-netFx46-setup-x86-2015-1.0.103.0.exe</a>
         <br />
-        (16.57 MiB)
+        (17.04 MiB)
       </td>
       <td width="5"></td>
       <td valign="top">
@@ -1029,7 +1029,7 @@
         (3.14.2) package.  The Visual C++ 2015 Update 2 runtime for x86 is
         included.  The .NET Framework 4.6 is required.
         <br />
-        (sha1: 93fbb546ae46112daf5a0ac5f9b5a0fde2c2f2bf)
+        (sha1: 45d7b7e6ef9470b7e067d5d62d8f5d85de00765d)
       </td>
     </tr>
 
@@ -1045,7 +1045,7 @@
         <a name="sqlite-netFx46-setup-bundle-x64-2015"></a>
         <a href="/downloads/1.0.103.0/sqlite-netFx46-setup-bundle-x64-2015-1.0.103.0.exe">sqlite-netFx46-setup-bundle-x64-2015-1.0.103.0.exe</a>
         <br />
-        (17.18 MiB)
+        (17.72 MiB)
       </td>
       <td width="5"></td>
       <td valign="top">
@@ -1055,7 +1055,7 @@
         Update 2 runtime for x64 is included.  The .NET Framework 4.6 is
         required.
         <br />
-        (sha1: 47efe0ee083fc84913186f7248764c03a9701128)
+        (sha1: 6483c2b14cee08e8f66b1053c6f7d0e5aeb4aaf3)
       </td>
     </tr>
 
@@ -1065,7 +1065,7 @@
         <a name="sqlite-netFx46-setup-x64-2015"></a>
         <a href="/downloads/1.0.103.0/sqlite-netFx46-setup-x64-2015-1.0.103.0.exe">sqlite-netFx46-setup-x64-2015-1.0.103.0.exe</a>
         <br />
-        (17.41 MiB)
+        (17.94 MiB)
       </td>
       <td width="5"></td>
       <td valign="top">
@@ -1074,7 +1074,7 @@
         (3.14.2) package.  The Visual C++ 2015 Update 2 runtime for x64 is
         included.  The .NET Framework 4.6 is required.
         <br />
-        (sha1: ee9052681d1b4f268413f365ee293dd02af8252e)
+        (sha1: 9c510d76682e7c7ebecbea978592a1e06e0ef6d3)
       </td>
     </tr>
 
@@ -1090,7 +1090,7 @@
         <a name="sqlite-netFx20-binary-bundle-Win32-2005"></a>
         <a href="/downloads/1.0.103.0/sqlite-netFx20-binary-bundle-Win32-2005-1.0.103.0.zip">sqlite-netFx20-binary-bundle-Win32-2005-1.0.103.0.zip</a>
         <br />
-        (1.73 MiB)
+        (1.74 MiB)
       </td>
       <td width="5"></td>
       <td valign="top">
@@ -1099,7 +1099,7 @@
         (3.14.2) package.  The Visual C++ 2005 SP1 runtime for x86 and the .NET
         Framework 2.0 SP2 are required.
         <br />
-        (sha1: 5ebf3d9a08f011c9824156ac3a24e6a856ffd2a5)
+        (sha1: 07da629e18dea81be5486e40895bcf5445bad5ba)
       </td>
     </tr>
 
@@ -1109,7 +1109,7 @@
         <a name="sqlite-netFx20-binary-Win32-2005"></a>
         <a href="/downloads/1.0.103.0/sqlite-netFx20-binary-Win32-2005-1.0.103.0.zip">sqlite-netFx20-binary-Win32-2005-1.0.103.0.zip</a>
         <br />
-        (1.72 MiB)
+        (1.73 MiB)
       </td>
       <td width="5"></td>
       <td valign="top">
@@ -1117,7 +1117,7 @@
         System.Data.SQLite 1.0.103.0 (3.14.2) package.  The Visual C++ 2005 SP1
         runtime for x86 and the .NET Framework 2.0 SP2 are required.
         <br />
-        (sha1: d5bd94a6fb223e9d55c568dab978392765393ed0)
+        (sha1: e1b11ede851de846c17a62179454519caba5070a)
       </td>
     </tr>
 
@@ -1133,7 +1133,7 @@
         <a name="sqlite-netFx20-binary-bundle-x64-2005"></a>
         <a href="/downloads/1.0.103.0/sqlite-netFx20-binary-bundle-x64-2005-1.0.103.0.zip">sqlite-netFx20-binary-bundle-x64-2005-1.0.103.0.zip</a>
         <br />
-        (1.99 MiB)
+        (2.00 MiB)
       </td>
       <td width="5"></td>
       <td valign="top">
@@ -1142,7 +1142,7 @@
         (3.14.2) package.  The Visual C++ 2005 SP1 runtime for x64 and the .NET
         Framework 2.0 SP2 are required.
         <br />
-        (sha1: f5f0cc7b729363ee995ebaf390694e1f13f0ea6c)
+        (sha1: 68f813c12655b488ea8a422c85d473dbc2e1ce02)
       </td>
     </tr>
 
@@ -1152,7 +1152,7 @@
         <a name="sqlite-netFx20-binary-x64-2005"></a>
         <a href="/downloads/1.0.103.0/sqlite-netFx20-binary-x64-2005-1.0.103.0.zip">sqlite-netFx20-binary-x64-2005-1.0.103.0.zip</a>
         <br />
-        (1.98 MiB)
+        (2.00 MiB)
       </td>
       <td width="5"></td>
       <td valign="top">
@@ -1160,7 +1160,7 @@
         System.Data.SQLite 1.0.103.0 (3.14.2) package.  The Visual C++ 2005 SP1
         runtime for x64 and the .NET Framework 2.0 SP2 are required.
         <br />
-        (sha1: 4e7e7ff92a16a240b57082d74e3602fa5180b571)
+        (sha1: ef57fb3ea52ef482c2975e2665e313f8f85e8288)
       </td>
     </tr>
 
@@ -1176,7 +1176,7 @@
         <a name="sqlite-netFx35-binary-bundle-Win32-2008"></a>
         <a href="/downloads/1.0.103.0/sqlite-netFx35-binary-bundle-Win32-2008-1.0.103.0.zip">sqlite-netFx35-binary-bundle-Win32-2008-1.0.103.0.zip</a>
         <br />
-        (2.17 MiB)
+        (2.19 MiB)
       </td>
       <td width="5"></td>
       <td valign="top">
@@ -1185,7 +1185,7 @@
         (3.14.2) package.  The Visual C++ 2008 SP1 runtime for x86 and the .NET
         Framework 3.5 SP1 are required.
         <br />
-        (sha1: b9cdd8f716f9a529ed41e99a1c5e481ccaf0ba2b)
+        (sha1: 8f71710a04d79fa704a5571fbac4cdeff0a59c09)
       </td>
     </tr>
 
@@ -1195,7 +1195,7 @@
         <a name="sqlite-netFx35-binary-Win32-2008"></a>
         <a href="/downloads/1.0.103.0/sqlite-netFx35-binary-Win32-2008-1.0.103.0.zip">sqlite-netFx35-binary-Win32-2008-1.0.103.0.zip</a>
         <br />
-        (2.17 MiB)
+        (2.18 MiB)
       </td>
       <td width="5"></td>
       <td valign="top">
@@ -1203,7 +1203,7 @@
         System.Data.SQLite 1.0.103.0 (3.14.2) package.  The Visual C++ 2008 SP1
         runtime for x86 and the .NET Framework 3.5 SP1 are required.
         <br />
-        (sha1: deaa68abe03dc5884cee41f930a4283e25970bc9)
+        (sha1: 9c4b6f75a544cece347538e30826a0d1552a5723)
       </td>
     </tr>
 
@@ -1219,7 +1219,7 @@
         <a name="sqlite-netFx35-binary-bundle-x64-2008"></a>
         <a href="/downloads/1.0.103.0/sqlite-netFx35-binary-bundle-x64-2008-1.0.103.0.zip">sqlite-netFx35-binary-bundle-x64-2008-1.0.103.0.zip</a>
         <br />
-        (2.28 MiB)
+        (2.29 MiB)
       </td>
       <td width="5"></td>
       <td valign="top">
@@ -1228,7 +1228,7 @@
         (3.14.2) package.  The Visual C++ 2008 SP1 runtime for x64 and the .NET
         Framework 3.5 SP1 are required.
         <br />
-        (sha1: 4d8dc78b9674b8e00e815c0aac63bc805fbabcf9)
+        (sha1: cbdcc14d23cf6a973b128e729e96318b89b5467b)
       </td>
     </tr>
 
@@ -1238,7 +1238,7 @@
         <a name="sqlite-netFx35-binary-x64-2008"></a>
         <a href="/downloads/1.0.103.0/sqlite-netFx35-binary-x64-2008-1.0.103.0.zip">sqlite-netFx35-binary-x64-2008-1.0.103.0.zip</a>
         <br />
-        (2.27 MiB)
+        (2.28 MiB)
       </td>
       <td width="5"></td>
       <td valign="top">
@@ -1246,7 +1246,7 @@
         System.Data.SQLite 1.0.103.0 (3.14.2) package.  The Visual C++ 2008 SP1
         runtime for x64 and the .NET Framework 3.5 SP1 are required.
         <br />
-        (sha1: 0c8b91a4e496c4fff5e8ea72d2974074e6cc343a)
+        (sha1: 0293cc3590d0be626d309f7e67408c469a609096)
       </td>
     </tr>
 
@@ -1262,7 +1262,7 @@
         <a name="sqlite-netFx40-binary-bundle-Win32-2010"></a>
         <a href="/downloads/1.0.103.0/sqlite-netFx40-binary-bundle-Win32-2010-1.0.103.0.zip">sqlite-netFx40-binary-bundle-Win32-2010-1.0.103.0.zip</a>
         <br />
-        (2.41 MiB)
+        (2.42 MiB)
       </td>
       <td width="5"></td>
       <td valign="top">
@@ -1271,7 +1271,7 @@
         (3.14.2) package.  The Visual C++ 2010 SP1 runtime for x86 and the .NET
         Framework 4.0 are required.
         <br />
-        (sha1: e25dcbfc7ed4e128b5b326ad4263f1cdfe609557)
+        (sha1: 37510afda4f29167c496c61e838edc1d1218918b)
       </td>
     </tr>
 
@@ -1281,7 +1281,7 @@
         <a name="sqlite-netFx40-binary-Win32-2010"></a>
         <a href="/downloads/1.0.103.0/sqlite-netFx40-binary-Win32-2010-1.0.103.0.zip">sqlite-netFx40-binary-Win32-2010-1.0.103.0.zip</a>
         <br />
-        (2.40 MiB)
+        (2.41 MiB)
       </td>
       <td width="5"></td>
       <td valign="top">
@@ -1289,7 +1289,7 @@
         System.Data.SQLite 1.0.103.0 (3.14.2) package.  The Visual C++ 2010 SP1
         runtime for x86 and the .NET Framework 4.0 are required.
         <br />
-        (sha1: 1b0d5387e6c5e525f476d74df618f14b64b6225d)
+        (sha1: 5929d4ddd9a899952d2cb3cd896cfa99cf03cf0f)
       </td>
     </tr>
 
@@ -1305,7 +1305,7 @@
         <a name="sqlite-netFx40-binary-bundle-x64-2010"></a>
         <a href="/downloads/1.0.103.0/sqlite-netFx40-binary-bundle-x64-2010-1.0.103.0.zip">sqlite-netFx40-binary-bundle-x64-2010-1.0.103.0.zip</a>
         <br />
-        (2.45 MiB)
+        (2.46 MiB)
       </td>
       <td width="5"></td>
       <td valign="top">
@@ -1314,7 +1314,7 @@
         (3.14.2) package.  The Visual C++ 2010 SP1 runtime for x64 and the .NET
         Framework 4.0 are required.
         <br />
-        (sha1: 5821d37837bc4530be31394871841584ef8fe33a)
+        (sha1: 8b04716619286a792dfd891dfd68db3695402e93)
       </td>
     </tr>
 
@@ -1324,7 +1324,7 @@
         <a name="sqlite-netFx40-binary-x64-2010"></a>
         <a href="/downloads/1.0.103.0/sqlite-netFx40-binary-x64-2010-1.0.103.0.zip">sqlite-netFx40-binary-x64-2010-1.0.103.0.zip</a>
         <br />
-        (2.45 MiB)
+        (2.46 MiB)
       </td>
       <td width="5"></td>
       <td valign="top">
@@ -1332,7 +1332,7 @@
         System.Data.SQLite 1.0.103.0 (3.14.2) package.  The Visual C++ 2010 SP1
         runtime for x64 and the .NET Framework 4.0 are required.
         <br />
-        (sha1: cc4df3baa88189eb4390ce5d998191ef9edc485e)
+        (sha1: cd771d85e5002eefd29bec7f9eb0ade6dc3e0945)
       </td>
     </tr>
 
@@ -1348,7 +1348,7 @@
         <a name="sqlite-netFx45-binary-bundle-Win32-2012"></a>
         <a href="/downloads/1.0.103.0/sqlite-netFx45-binary-bundle-Win32-2012-1.0.103.0.zip">sqlite-netFx45-binary-bundle-Win32-2012-1.0.103.0.zip</a>
         <br />
-        (2.32 MiB)
+        (2.33 MiB)
       </td>
       <td width="5"></td>
       <td valign="top">
@@ -1357,7 +1357,7 @@
         (3.14.2) package.  The Visual C++ 2012 Update 4 runtime for x86 and
         the .NET Framework 4.5 are required.
         <br />
-        (sha1: fc650ce9bd62aaf1ac94cd8cca5159096c4ed612)
+        (sha1: 4d13b07310ee6b398bd58e789548764e371904c5)
       </td>
     </tr>
 
@@ -1367,7 +1367,7 @@
         <a name="sqlite-netFx45-binary-Win32-2012"></a>
         <a href="/downloads/1.0.103.0/sqlite-netFx45-binary-Win32-2012-1.0.103.0.zip">sqlite-netFx45-binary-Win32-2012-1.0.103.0.zip</a>
         <br />
-        (2.37 MiB)
+        (2.38 MiB)
       </td>
       <td width="5"></td>
       <td valign="top">
@@ -1375,7 +1375,7 @@
         System.Data.SQLite 1.0.103.0 (3.14.2) package.  The Visual C++ 2012
         Update 4 runtime for x86 and the .NET Framework 4.5 are required.
         <br />
-        (sha1: 770b29d25b795f6a0f6874ebc8b0da5b463d02ac)
+        (sha1: 15e0d99ba82391ad6582674e0e3a90508875de99)
       </td>
     </tr>
 
@@ -1391,7 +1391,7 @@
         <a name="sqlite-netFx45-binary-bundle-x64-2012"></a>
         <a href="/downloads/1.0.103.0/sqlite-netFx45-binary-bundle-x64-2012-1.0.103.0.zip">sqlite-netFx45-binary-bundle-x64-2012-1.0.103.0.zip</a>
         <br />
-        (2.37 MiB)
+        (2.38 MiB)
       </td>
       <td width="5"></td>
       <td valign="top">
@@ -1400,7 +1400,7 @@
         (3.14.2) package.  The Visual C++ 2012 Update 4 runtime for x64 and
         the .NET Framework 4.5 are required.
         <br />
-        (sha1: fc42cd1e435cd52ebcc8b264b92ddc28bb760281)
+        (sha1: b9f3579623032b1fe8ac059528621da6d3c63616)
       </td>
     </tr>
 
@@ -1410,7 +1410,7 @@
         <a name="sqlite-netFx45-binary-x64-2012"></a>
         <a href="/downloads/1.0.103.0/sqlite-netFx45-binary-x64-2012-1.0.103.0.zip">sqlite-netFx45-binary-x64-2012-1.0.103.0.zip</a>
         <br />
-        (2.46 MiB)
+        (2.47 MiB)
       </td>
       <td width="5"></td>
       <td valign="top">
@@ -1418,7 +1418,7 @@
         System.Data.SQLite 1.0.103.0 (3.14.2) package.  The Visual C++ 2012
         Update 4 runtime for x64 and the .NET Framework 4.5 are required.
         <br />
-        (sha1: 7365acc44e0433ae402615527697171d56c79686)
+        (sha1: 54cd7fe6d18b54cd1ac147f01d37a83bdee03466)
       </td>
     </tr>
 
@@ -1434,7 +1434,7 @@
         <a name="sqlite-netFx451-binary-bundle-Win32-2013"></a>
         <a href="/downloads/1.0.103.0/sqlite-netFx451-binary-bundle-Win32-2013-1.0.103.0.zip">sqlite-netFx451-binary-bundle-Win32-2013-1.0.103.0.zip</a>
         <br />
-        (2.33 MiB)
+        (2.34 MiB)
       </td>
       <td width="5"></td>
       <td valign="top">
@@ -1443,7 +1443,7 @@
         (3.14.2) package.  The Visual C++ 2013 Update 2 runtime for x86 and the
         .NET Framework 4.5.1 are required.
         <br />
-        (sha1: c81fc280eed168ff4aefe1d741c13d16d089e62a)
+        (sha1: d4e9fbe5936579129247571bae27ae6eef60cf09)
       </td>
     </tr>
 
@@ -1453,7 +1453,7 @@
         <a name="sqlite-netFx451-binary-Win32-2013"></a>
         <a href="/downloads/1.0.103.0/sqlite-netFx451-binary-Win32-2013-1.0.103.0.zip">sqlite-netFx451-binary-Win32-2013-1.0.103.0.zip</a>
         <br />
-        (2.38 MiB)
+        (2.39 MiB)
       </td>
       <td width="5"></td>
       <td valign="top">
@@ -1461,7 +1461,7 @@
         System.Data.SQLite 1.0.103.0 (3.14.2) package.  The Visual C++ 2013
         Update 2 runtime for x86 and the .NET Framework 4.5.1 are required.
         <br />
-        (sha1: c73f5b5ee95cb387cdff41e1ec794f6bdee1e768)
+        (sha1: 57089858bad82dfaf2f5aaec73dd05f76e5d33cf)
       </td>
     </tr>
 
@@ -1486,7 +1486,7 @@
         (3.14.2) package.  The Visual C++ 2013 Update 2 runtime for x64 and the
         .NET Framework 4.5.1 are required.
         <br />
-        (sha1: b4c9c54f965cc3882a4f0e24634a24133d14954c)
+        (sha1: 7c17b9073cbe187f3fe77014eb6317822e6c4b2d)
       </td>
     </tr>
 
@@ -1496,7 +1496,7 @@
         <a name="sqlite-netFx451-binary-x64-2013"></a>
         <a href="/downloads/1.0.103.0/sqlite-netFx451-binary-x64-2013-1.0.103.0.zip">sqlite-netFx451-binary-x64-2013-1.0.103.0.zip</a>
         <br />
-        (2.46 MiB)
+        (2.47 MiB)
       </td>
       <td width="5"></td>
       <td valign="top">
@@ -1504,7 +1504,7 @@
         System.Data.SQLite 1.0.103.0 (3.14.2) package.  The Visual C++ 2013
         Update 2 runtime for x64 and the .NET Framework 4.5.1 are required.
         <br />
-        (sha1: 3f6f551ee1ba1f9594d09989591e91189d42111c)
+        (sha1: b28292a4a02b4670e4b4e10f4119ef5aa3e10faf)
       </td>
     </tr>
 
@@ -1520,7 +1520,7 @@
         <a name="sqlite-netFx46-binary-bundle-Win32-2015"></a>
         <a href="/downloads/1.0.103.0/sqlite-netFx46-binary-bundle-Win32-2015-1.0.103.0.zip">sqlite-netFx46-binary-bundle-Win32-2015-1.0.103.0.zip</a>
         <br />
-        (2.87 MiB)
+        (2.88 MiB)
       </td>
       <td width="5"></td>
       <td valign="top">
@@ -1529,7 +1529,7 @@
         (3.14.2) package.  The Visual C++ 2015 Update 2 runtime for x86 and the
         .NET Framework 4.6 are required.
         <br />
-        (sha1: d0a7530f224f051c4c416b772e7f7868d4cb214f)
+        (sha1: 9de9e084ded7a51c01104e0114ec86b40ad67075)
       </td>
     </tr>
 
@@ -1539,7 +1539,7 @@
         <a name="sqlite-netFx46-binary-Win32-2015"></a>
         <a href="/downloads/1.0.103.0/sqlite-netFx46-binary-Win32-2015-1.0.103.0.zip">sqlite-netFx46-binary-Win32-2015-1.0.103.0.zip</a>
         <br />
-        (3.10 MiB)
+        (3.11 MiB)
       </td>
       <td width="5"></td>
       <td valign="top">
@@ -1547,7 +1547,7 @@
         System.Data.SQLite 1.0.103.0 (3.14.2) package.  The Visual C++ 2015
         Update 2 runtime for x86 and the .NET Framework 4.6 are required.
         <br />
-        (sha1: e1f6721c76f57778d742bfb03bb768efe7382925)
+        (sha1: 95eb13dccfc82d4bd666e5554ccfc6fddc0b1654)
       </td>
     </tr>
 
@@ -1563,7 +1563,7 @@
         <a name="sqlite-netFx46-binary-bundle-x64-2015"></a>
         <a href="/downloads/1.0.103.0/sqlite-netFx46-binary-bundle-x64-2015-1.0.103.0.zip">sqlite-netFx46-binary-bundle-x64-2015-1.0.103.0.zip</a>
         <br />
-        (2.92 MiB)
+        (2.93 MiB)
       </td>
       <td width="5"></td>
       <td valign="top">
@@ -1572,7 +1572,7 @@
         (3.14.2) package.  The Visual C++ 2015 Update 2 runtime for x64 and the
         .NET Framework 4.6 are required.
         <br />
-        (sha1: 2a9825e60c4528077af740c15c37b3e77eec4647)
+        (sha1: 4df98e6f5108669ca41982ec63498d7889782787)
       </td>
     </tr>
 
@@ -1582,7 +1582,7 @@
         <a name="sqlite-netFx46-binary-x64-2015"></a>
         <a href="/downloads/1.0.103.0/sqlite-netFx46-binary-x64-2015-1.0.103.0.zip">sqlite-netFx46-binary-x64-2015-1.0.103.0.zip</a>
         <br />
-        (3.21 MiB)
+        (3.22 MiB)
       </td>
       <td width="5"></td>
       <td valign="top">
@@ -1590,7 +1590,7 @@
         System.Data.SQLite 1.0.103.0 (3.14.2) package.  The Visual C++ 2015
         Update 2 runtime for x64 and the .NET Framework 4.6 are required.
         <br />
-        (sha1: fc1c8f3928134ea15f5ec8340d6ee6ce18ddaf78)
+        (sha1: 35a048550e5dda8c892834366a7f15403aa6ec96)
       </td>
     </tr>
 
@@ -1606,7 +1606,7 @@
         <a name="sqlite-netFx451-binary-Mono-2013"></a>
         <a href="/downloads/1.0.103.0/sqlite-netFx451-binary-Mono-2013-1.0.103.0.zip">sqlite-netFx451-binary-Mono-2013-1.0.103.0.zip</a>
         <br />
-        (1.20 MiB)
+        (1.21 MiB)
       </td>
       <td width="5"></td>
       <td valign="top">
@@ -1615,7 +1615,7 @@
         <a href="https://www.mono-project.com/">Mono runtime</a> (4.2.3.4 or
         higher) is required.
         <br />
-        (sha1: 0222ff765a5d716aaca17134aee4ceb95b87544d)
+        (sha1: eb0aef0bbccab2d55787a3405a43d00474f8d873)
       </td>
     </tr>
 
@@ -1631,7 +1631,7 @@
         <a name="sqlite-netFx20-static-binary-bundle-Win32-2005"></a>
         <a href="/downloads/1.0.103.0/sqlite-netFx20-static-binary-bundle-Win32-2005-1.0.103.0.zip">sqlite-netFx20-static-binary-bundle-Win32-2005-1.0.103.0.zip</a>
         <br />
-        (1.92 MiB)
+        (1.93 MiB)
       </td>
       <td width="5"></td>
       <td valign="top">
@@ -1640,7 +1640,7 @@
         (3.14.2) package.  The Visual C++ 2005 SP1 runtime for x86 is statically
         linked.  The .NET Framework 2.0 SP2 is required.
         <br />
-        (sha1: 7ad11bcea3f52801da5bde01fbe5c83fbd621942)
+        (sha1: 5fff5e851ab269ae06dddd3f047f575b5486209a)
       </td>
     </tr>
 
@@ -1650,7 +1650,7 @@
         <a name="sqlite-netFx20-static-binary-Win32-2005"></a>
         <a href="/downloads/1.0.103.0/sqlite-netFx20-static-binary-Win32-2005-1.0.103.0.zip">sqlite-netFx20-static-binary-Win32-2005-1.0.103.0.zip</a>
         <br />
-        (1.91 MiB)
+        (1.92 MiB)
       </td>
       <td width="5"></td>
       <td valign="top">
@@ -1659,7 +1659,7 @@
         runtime for x86 is statically linked.  The .NET Framework 2.0 SP2 is
         required.
         <br />
-        (sha1: f44d3fbca2feb9355c5b3f65596a64276e354bd1)
+        (sha1: f0facca1c9b07884154ed098ecb4f2910969c73b)
       </td>
     </tr>
 
@@ -1675,7 +1675,7 @@
         <a name="sqlite-netFx20-static-binary-bundle-x64-2005"></a>
         <a href="/downloads/1.0.103.0/sqlite-netFx20-static-binary-bundle-x64-2005-1.0.103.0.zip">sqlite-netFx20-static-binary-bundle-x64-2005-1.0.103.0.zip</a>
         <br />
-        (2.13 MiB)
+        (2.14 MiB)
       </td>
       <td width="5"></td>
       <td valign="top">
@@ -1684,7 +1684,7 @@
         (3.14.2) package.  The Visual C++ 2005 SP1 runtime for x64 is statically
         linked.  The .NET Framework 2.0 SP2 is required.
         <br />
-        (sha1: 2a88e3badebc18093589e009c3b0b432d1979681)
+        (sha1: b9a0b00d2ce525d88fec65724d2c52e3e58581eb)
       </td>
     </tr>
 
@@ -1694,7 +1694,7 @@
         <a name="sqlite-netFx20-static-binary-x64-2005"></a>
         <a href="/downloads/1.0.103.0/sqlite-netFx20-static-binary-x64-2005-1.0.103.0.zip">sqlite-netFx20-static-binary-x64-2005-1.0.103.0.zip</a>
         <br />
-        (2.12 MiB)
+        (2.13 MiB)
       </td>
       <td width="5"></td>
       <td valign="top">
@@ -1703,7 +1703,7 @@
         runtime for x64 is statically linked.  The .NET Framework 2.0 SP2 is
         required.
         <br />
-        (sha1: 5527eed42c106e645c8e82c1816d36f5bc0aa795)
+        (sha1: 5b20e1cdd2be614b57c952a3f63795b0aedecac2)
       </td>
     </tr>
 
@@ -1719,7 +1719,7 @@
         <a name="sqlite-netFx35-static-binary-bundle-Win32-2008"></a>
         <a href="/downloads/1.0.103.0/sqlite-netFx35-static-binary-bundle-Win32-2008-1.0.103.0.zip">sqlite-netFx35-static-binary-bundle-Win32-2008-1.0.103.0.zip</a>
         <br />
-        (2.37 MiB)
+        (2.38 MiB)
       </td>
       <td width="5"></td>
       <td valign="top">
@@ -1728,7 +1728,7 @@
         (3.14.2) package.  The Visual C++ 2008 SP1 runtime for x86 is statically
         linked.  The .NET Framework 3.5 SP1 is required.
         <br />
-        (sha1: 1372a013e2651f2e547e699229246c69d99c7fd7)
+        (sha1: 97d396620f85325845f951aa1a3a993b02e922a4)
       </td>
     </tr>
 
@@ -1738,7 +1738,7 @@
         <a name="sqlite-netFx35-static-binary-Win32-2008"></a>
         <a href="/downloads/1.0.103.0/sqlite-netFx35-static-binary-Win32-2008-1.0.103.0.zip">sqlite-netFx35-static-binary-Win32-2008-1.0.103.0.zip</a>
         <br />
-        (2.36 MiB)
+        (2.37 MiB)
       </td>
       <td width="5"></td>
       <td valign="top">
@@ -1747,7 +1747,7 @@
         runtime for x86 is statically linked.  The .NET Framework 3.5 SP1 is
         required.
         <br />
-        (sha1: acad4074cab516d6fb057b2674f1f0ca4f7a2e26)
+        (sha1: 44007f8c942768d4440e585cf231009d56bb9e6d)
       </td>
     </tr>
 
@@ -1763,7 +1763,7 @@
         <a name="sqlite-netFx35-static-binary-bundle-x64-2008"></a>
         <a href="/downloads/1.0.103.0/sqlite-netFx35-static-binary-bundle-x64-2008-1.0.103.0.zip">sqlite-netFx35-static-binary-bundle-x64-2008-1.0.103.0.zip</a>
         <br />
-        (2.44 MiB)
+        (2.45 MiB)
       </td>
       <td width="5"></td>
       <td valign="top">
@@ -1772,7 +1772,7 @@
         (3.14.2) package.  The Visual C++ 2008 SP1 runtime for x64 is statically
         linked.  The .NET Framework 3.5 SP1 is required.
         <br />
-        (sha1: fdb2b34ed62e67d5c96a3deaaa671a093c449408)
+        (sha1: f792af40bf0ca9397ed6208c0d21a7498724e3c7)
       </td>
     </tr>
 
@@ -1782,7 +1782,7 @@
         <a name="sqlite-netFx35-static-binary-x64-2008"></a>
         <a href="/downloads/1.0.103.0/sqlite-netFx35-static-binary-x64-2008-1.0.103.0.zip">sqlite-netFx35-static-binary-x64-2008-1.0.103.0.zip</a>
         <br />
-        (2.43 MiB)
+        (2.44 MiB)
       </td>
       <td width="5"></td>
       <td valign="top">
@@ -1791,7 +1791,7 @@
         runtime for x64 is statically linked.  The .NET Framework 3.5 SP1 is
         required.
         <br />
-        (sha1: 8532c727b9fe95707aad2bbbde0b373a1b8e9455)
+        (sha1: c69919d154855d1c6dc39830e5dd3c7880b4754d)
       </td>
     </tr>
 
@@ -1807,7 +1807,7 @@
         <a name="sqlite-netFx40-static-binary-bundle-Win32-2010"></a>
         <a href="/downloads/1.0.103.0/sqlite-netFx40-static-binary-bundle-Win32-2010-1.0.103.0.zip">sqlite-netFx40-static-binary-bundle-Win32-2010-1.0.103.0.zip</a>
         <br />
-        (2.61 MiB)
+        (2.62 MiB)
       </td>
       <td width="5"></td>
       <td valign="top">
@@ -1816,7 +1816,7 @@
         (3.14.2) package.  The Visual C++ 2010 SP1 runtime for x86 is statically
         linked.  The .NET Framework 4.0 is required.
         <br />
-        (sha1: 15541b443ad185ec51ee6fa2d508b8fb52df4adc)
+        (sha1: 7fed01e950d46ac721896b2ff494e9ba168d6a63)
       </td>
     </tr>
 
@@ -1826,7 +1826,7 @@
         <a name="sqlite-netFx40-static-binary-Win32-2010"></a>
         <a href="/downloads/1.0.103.0/sqlite-netFx40-static-binary-Win32-2010-1.0.103.0.zip">sqlite-netFx40-static-binary-Win32-2010-1.0.103.0.zip</a>
         <br />
-        (2.60 MiB)
+        (2.61 MiB)
       </td>
       <td width="5"></td>
       <td valign="top">
@@ -1835,7 +1835,7 @@
         runtime for x86 is statically linked.  The .NET Framework 4.0 is
         required.
         <br />
-        (sha1: 8a541088268250368e63d28a0078421b0394c2ba)
+        (sha1: 88450cfb3b6d2b9f8771ad404c8c6c3d0c0b3080)
       </td>
     </tr>
 
@@ -1851,7 +1851,7 @@
         <a name="sqlite-netFx40-static-binary-bundle-x64-2010"></a>
         <a href="/downloads/1.0.103.0/sqlite-netFx40-static-binary-bundle-x64-2010-1.0.103.0.zip">sqlite-netFx40-static-binary-bundle-x64-2010-1.0.103.0.zip</a>
         <br />
-        (2.63 MiB)
+        (2.64 MiB)
       </td>
       <td width="5"></td>
       <td valign="top">
@@ -1860,7 +1860,7 @@
         (3.14.2) package.  The Visual C++ 2010 SP1 runtime for x64 is statically
         linked.  The .NET Framework 4.0 is required.
         <br />
-        (sha1: c9e86c0bc76a3e72b4a877b05dd3dbf7d9717eea)
+        (sha1: 0e33e443c2d64c29228ad3c7b3e2cf0584446e44)
       </td>
     </tr>
 
@@ -1870,7 +1870,7 @@
         <a name="sqlite-netFx40-static-binary-x64-2010"></a>
         <a href="/downloads/1.0.103.0/sqlite-netFx40-static-binary-x64-2010-1.0.103.0.zip">sqlite-netFx40-static-binary-x64-2010-1.0.103.0.zip</a>
         <br />
-        (2.62 MiB)
+        (2.63 MiB)
       </td>
       <td width="5"></td>
       <td valign="top">
@@ -1879,7 +1879,7 @@
         runtime for x64 is statically linked.  The .NET Framework 4.0 is
         required.
         <br />
-        (sha1: 4bd6e5543233180d770f7df8bfcd82411e48694b)
+        (sha1: 65ab47f5b356948213e2c9412d0e96c07a224334)
       </td>
     </tr>
 
@@ -1895,7 +1895,7 @@
         <a name="sqlite-netFx45-static-binary-bundle-Win32-2012"></a>
         <a href="/downloads/1.0.103.0/sqlite-netFx45-static-binary-bundle-Win32-2012-1.0.103.0.zip">sqlite-netFx45-static-binary-bundle-Win32-2012-1.0.103.0.zip</a>
         <br />
-        (2.65 MiB)
+        (2.66 MiB)
       </td>
       <td width="5"></td>
       <td valign="top">
@@ -1904,7 +1904,7 @@
         (3.14.2) package.  The Visual C++ 2012 Update 4 runtime for x86 is
         statically linked.  The .NET Framework 4.5 is required.
         <br />
-        (sha1: 8ccf4ad8ec561259865b0a9bb74c06f67f7d162e)
+        (sha1: fad0bca55446f084463bf12a54bcabe6fa5602f5)
       </td>
     </tr>
 
@@ -1914,7 +1914,7 @@
         <a name="sqlite-netFx45-static-binary-Win32-2012"></a>
         <a href="/downloads/1.0.103.0/sqlite-netFx45-static-binary-Win32-2012-1.0.103.0.zip">sqlite-netFx45-static-binary-Win32-2012-1.0.103.0.zip</a>
         <br />
-        (2.70 MiB)
+        (2.71 MiB)
       </td>
       <td width="5"></td>
       <td valign="top">
@@ -1923,7 +1923,7 @@
         Update 4 runtime for x86 is statically linked.  The .NET Framework 4.5
         is required.
         <br />
-        (sha1: 5ae6e5a557946a3936e396e9cb5aa37656760f11)
+        (sha1: 8ac0bf778a7bd59a8141dd3e2f988dab36a23f6a)
       </td>
     </tr>
 
@@ -1939,7 +1939,7 @@
         <a name="sqlite-netFx45-static-binary-bundle-x64-2012"></a>
         <a href="/downloads/1.0.103.0/sqlite-netFx45-static-binary-bundle-x64-2012-1.0.103.0.zip">sqlite-netFx45-static-binary-bundle-x64-2012-1.0.103.0.zip</a>
         <br />
-        (2.63 MiB)
+        (2.64 MiB)
       </td>
       <td width="5"></td>
       <td valign="top">
@@ -1948,7 +1948,7 @@
         (3.14.2) package.  The Visual C++ 2012 Update 4 runtime for x64 is
         statically linked.  The .NET Framework 4.5 is required.
         <br />
-        (sha1: 97861f5dd92003d5d9b0f0f56738aead4ed52a56)
+        (sha1: 45cafc7065b9511d0939eb4985a79617cf69bdca)
       </td>
     </tr>
 
@@ -1967,7 +1967,7 @@
         Update 4 runtime for x64 is statically linked.  The .NET Framework 4.5
         is required.
         <br />
-        (sha1: 2a55a3350b1a59275e69d7e6ed805031eba84ef2)
+        (sha1: f169707435e5db12e36459d432df073ec41f5214)
       </td>
     </tr>
 
@@ -1983,7 +1983,7 @@
         <a name="sqlite-netFx451-static-binary-bundle-Win32-2013"></a>
         <a href="/downloads/1.0.103.0/sqlite-netFx451-static-binary-bundle-Win32-2013-1.0.103.0.zip">sqlite-netFx451-static-binary-bundle-Win32-2013-1.0.103.0.zip</a>
         <br />
-        (2.67 MiB)
+        (2.69 MiB)
       </td>
       <td width="5"></td>
       <td valign="top">
@@ -1992,7 +1992,7 @@
         (3.14.2) package.  The Visual C++ 2013 Update 2 runtime for x86 is
         statically linked.  The .NET Framework 4.5.1 is required.
         <br />
-        (sha1: cc04ed82a365cca63e3a528c4ad89daf7f3fa3b0)
+        (sha1: 677b7970877ea389ec9ce58ace16d820ce90f738)
       </td>
     </tr>
 
@@ -2002,7 +2002,7 @@
         <a name="sqlite-netFx451-static-binary-Win32-2013"></a>
         <a href="/downloads/1.0.103.0/sqlite-netFx451-static-binary-Win32-2013-1.0.103.0.zip">sqlite-netFx451-static-binary-Win32-2013-1.0.103.0.zip</a>
         <br />
-        (2.72 MiB)
+        (2.73 MiB)
       </td>
       <td width="5"></td>
       <td valign="top">
@@ -2011,7 +2011,7 @@
         Update 2 runtime for x86 is statically linked.  The .NET Framework 4.5.1
         is required.
         <br />
-        (sha1: 1b0abc343547647b59bebecf427810c0dc223a2a)
+        (sha1: 0e58fdd09a0ad3ae55a5521f6c38b00d9306d078)
       </td>
     </tr>
 
@@ -2036,7 +2036,7 @@
         (3.14.2) package.  The Visual C++ 2013 Update 2 runtime for x64 is
         statically linked.  The .NET Framework 4.5.1 is required.
         <br />
-        (sha1: 964b747d3ed7e847ccd35b42564c0575256cbe89)
+        (sha1: c3d72b38fa735e4fe3abde0e172846c3aa7c58d7)
       </td>
     </tr>
 
@@ -2046,7 +2046,7 @@
         <a name="sqlite-netFx451-static-binary-x64-2013"></a>
         <a href="/downloads/1.0.103.0/sqlite-netFx451-static-binary-x64-2013-1.0.103.0.zip">sqlite-netFx451-static-binary-x64-2013-1.0.103.0.zip</a>
         <br />
-        (2.75 MiB)
+        (2.76 MiB)
       </td>
       <td width="5"></td>
       <td valign="top">
@@ -2055,7 +2055,7 @@
         Update 2 runtime for x64 is statically linked.  The .NET Framework 4.5.1
         is required.
         <br />
-        (sha1: 277f70234445261de92009cc11afa5def09f05c6)
+        (sha1: acbb6821507016af960ba7ef1b28f13b5a86628c)
       </td>
     </tr>
 
@@ -2080,7 +2080,7 @@
         (3.14.2) package.  The Visual C++ 2015 Update 2 runtime for x86 is
         statically linked.  The .NET Framework 4.6 is required.
         <br />
-        (sha1: d6e89f5a5f0e966ce232b5563f718925a1134940)
+        (sha1: 538a03a7371757565c7a897642b54b4e0f8a7b60)
       </td>
     </tr>
 
@@ -2090,7 +2090,7 @@
         <a name="sqlite-netFx46-static-binary-Win32-2015"></a>
         <a href="/downloads/1.0.103.0/sqlite-netFx46-static-binary-Win32-2015-1.0.103.0.zip">sqlite-netFx46-static-binary-Win32-2015-1.0.103.0.zip</a>
         <br />
-        (3.63 MiB)
+        (3.62 MiB)
       </td>
       <td width="5"></td>
       <td valign="top">
@@ -2099,7 +2099,7 @@
         Update 2 runtime for x86 is statically linked.  The .NET Framework 4.6
         is required.
         <br />
-        (sha1: 1fffadd1ceb3ca801324f72d8dd433d769da888e)
+        (sha1: cca965f5ca8f275d4a4cc9a856be97cbfd3c2e32)
       </td>
     </tr>
 
@@ -2115,7 +2115,7 @@
         <a name="sqlite-netFx46-static-binary-bundle-x64-2015"></a>
         <a href="/downloads/1.0.103.0/sqlite-netFx46-static-binary-bundle-x64-2015-1.0.103.0.zip">sqlite-netFx46-static-binary-bundle-x64-2015-1.0.103.0.zip</a>
         <br />
-        (3.41 MiB)
+        (3.40 MiB)
       </td>
       <td width="5"></td>
       <td valign="top">
@@ -2124,7 +2124,7 @@
         (3.14.2) package.  The Visual C++ 2015 Update 2 runtime for x64 is
         statically linked.  The .NET Framework 4.6 is required.
         <br />
-        (sha1: 8c9595631b08d9f7c5013fc81b89f39848de8da8)
+        (sha1: c2d1b33eb49fe8e6125d13fb8552953b994ca355)
       </td>
     </tr>
 
@@ -2134,7 +2134,7 @@
         <a name="sqlite-netFx46-static-binary-x64-2015"></a>
         <a href="/downloads/1.0.103.0/sqlite-netFx46-static-binary-x64-2015-1.0.103.0.zip">sqlite-netFx46-static-binary-x64-2015-1.0.103.0.zip</a>
         <br />
-        (3.71 MiB)
+        (3.70 MiB)
       </td>
       <td width="5"></td>
       <td valign="top">
@@ -2143,7 +2143,7 @@
         Update 2 runtime for x64 is statically linked.  The .NET Framework 4.6
         is required.
         <br />
-        (sha1: 0cb1eb5c631a4c6e46c7aef382f6d6825d70870b)
+        (sha1: f19863f50bb679860261c92cac2329fc686abf01)
       </td>
     </tr>
 
@@ -2159,7 +2159,7 @@
         <a name="sqlite-netFx35-binary-PocketPC-ARM-2008"></a>
         <a href="/downloads/1.0.103.0/sqlite-netFx35-binary-PocketPC-ARM-2008-1.0.103.0.zip">sqlite-netFx35-binary-PocketPC-ARM-2008-1.0.103.0.zip</a>
         <br />
-        (1.31 MiB)
+        (1.32 MiB)
       </td>
       <td width="5"></td>
       <td valign="top">
@@ -2169,7 +2169,7 @@
         to Windows Embedded Compact 2013.  The .NET Compact Framework 3.5 is
         required.
         <br />
-        (sha1: 4e686edf9106adf4a56d276decf5b383d7479d9e)
+        (sha1: dfe8bf57d04bfa649a3260d059ef4cfedf990c4a)
       </td>
     </tr>
 
@@ -2179,7 +2179,7 @@
         <a name="sqlite-netFx39-binary-WinCE-ARM-2012"></a>
         <a href="/downloads/1.0.103.0/sqlite-netFx39-binary-WinCE-ARM-2012-1.0.103.0.zip">sqlite-netFx39-binary-WinCE-ARM-2012-1.0.103.0.zip</a>
         <br />
-        (1.45 MiB)
+        (1.46 MiB)
       </td>
       <td width="5"></td>
       <td valign="top">
@@ -2187,7 +2187,7 @@
         Compact 2013 (ARM) version of the System.Data.SQLite 1.0.103.0 (3.14.2)
         package.  The .NET Compact Framework 3.9 is required.
         <br />
-        (sha1: 1565884624f0fb1f2687db9471908f9ebc99f8b1)
+        (sha1: b09d73c6dea4a93c847f7a673179343f9bffe93b)
       </td>
     </tr>
 
@@ -2197,7 +2197,7 @@
         <a name="sqlite-netFx39-binary-WinCE-x86-2012"></a>
         <a href="/downloads/1.0.103.0/sqlite-netFx39-binary-WinCE-x86-2012-1.0.103.0.zip">sqlite-netFx39-binary-WinCE-x86-2012-1.0.103.0.zip</a>
         <br />
-        (1.50 MiB)
+        (1.51 MiB)
       </td>
       <td width="5"></td>
       <td valign="top">
@@ -2205,7 +2205,7 @@
         Compact 2013 (x86) version of the System.Data.SQLite 1.0.103.0 (3.14.2)
         package.  The .NET Compact Framework 3.9 is required.
         <br />
-        (sha1: 93340679f1fa33242836a299bb277d1dfaaf8916)
+        (sha1: 6471f7d82700cb906cceaf2504886748d360ace2)
       </td>
     </tr>
 
@@ -2255,7 +2255,7 @@
         &quot;System.Data.SQLite.EF6&quot; packages.</i></b></big>
         <br />
         <br />
-        (sha1: 2f615e4c42e5f1a2dec1177fb09b90f36416b859)
+        (sha1: bca473dcf115c88458543cbd92049375ee11b612)
       </td>
     </tr>
 
@@ -2264,7 +2264,7 @@
       <td width="30%" valign="top" align="right">
         <a href="/downloads/1.0.103.0/System.Data.SQLite.Core.1.0.103.0.nupkg">System.Data.SQLite.Core.1.0.103.0.nupkg</a>
         <br />
-        (7.41 MiB)
+        (7.43 MiB)
       </td>
       <td width="5"></td>
       <td valign="top">
@@ -2278,7 +2278,7 @@
         <br />
         <big><b>This package does not depend on any other package.</b></big>
         <br />
-        (sha1: 7eac6725e61d66a453cd4c692623022c83a13ebb)
+        (sha1: b4d809442ac609a413a426253733844a4ae1429d)
       </td>
     </tr>
 
@@ -2287,7 +2287,7 @@
       <td width="30%" valign="top" align="right">
         <a href="/downloads/1.0.103.0/System.Data.SQLite.Core.MSIL.1.0.103.0.nupkg">System.Data.SQLite.Core.MSIL.1.0.103.0.nupkg</a>
         <br />
-        (0.99 MiB)
+        (1.01 MiB)
       </td>
       <td width="5"></td>
       <td valign="top">
@@ -2305,7 +2305,7 @@
         native library search path.</i></b></big>
         <br />
         <br />
-        (sha1: dc33551694518bb710a3e84e962bc39f1938e37e)
+        (sha1: d14c5065c910b48ba13a09b9ac33b29fab4c4446)
       </td>
     </tr>
 
@@ -2325,7 +2325,7 @@
         <big><b>This package depends on the &quot;EntityFramework&quot;
         package, version 6.0 or higher.</b></big>
         <br />
-        (sha1: f102ded93cb34b6a205747e0b0341bd37d6ad211)
+        (sha1: f529f339e6394ac22620939b19a86adcd4991771)
       </td>
     </tr>
 
@@ -2344,7 +2344,7 @@
         <br />
         <big><b>This package does not depend on any other package.</b></big>
         <br />
-        (sha1: 94695f54a4694642131f634f0fa07ee411ed776e)
+        (sha1: 646355431433ea6b81ad69d70e39bff23354db17)
       </td>
     </tr>
 
@@ -2380,7 +2380,7 @@
         &quot;System.Data.SQLite.EF6&quot; packages.</i></b></big>
         <br />
         <br />
-        (sha1: af401941264e579b479283e5685eb23b12c56458)
+        (sha1: e3157eb599495c1bc7eacfc19f53d199c2d0c903)
       </td>
     </tr>
 
@@ -2389,7 +2389,7 @@
       <td width="30%" valign="top" align="right">
         <a href="/downloads/1.0.103.0/System.Data.SQLite.x86.1.0.103.0.nupkg">System.Data.SQLite.x86.1.0.103.0.nupkg</a>
         <br />
-        (3.73 MiB)
+        (3.75 MiB)
       </td>
       <td width="5"></td>
       <td valign="top">
@@ -2404,7 +2404,7 @@
         &quot;System.Data.SQLite&quot; or &quot;System.Data.SQLite.Core&quot;
         package instead.</b></big>
         <br />
-        (sha1: af25ca01ce19c86749731ec8f7da4547e177fd62)
+        (sha1: 5a3e2e4b2ff7d08afa2d769dbfe337263014fd21)
       </td>
     </tr>
 
@@ -2413,7 +2413,7 @@
       <td width="30%" valign="top" align="right">
         <a href="/downloads/1.0.103.0/System.Data.SQLite.x64.1.0.103.0.nupkg">System.Data.SQLite.x64.1.0.103.0.nupkg</a>
         <br />
-        (4.22 MiB)
+        (4.25 MiB)
       </td>
       <td width="5"></td>
       <td valign="top">
@@ -2428,7 +2428,7 @@
         &quot;System.Data.SQLite&quot; or &quot;System.Data.SQLite.Core&quot;
         package instead.</b></big>
         <br />
-        (sha1: 1a2a986d7c1b14bf760b4e6d48056ef7d595a5dd)
+        (sha1: a09fb6b90e96fc398b692755f14185d3f81dc540)
       </td>
     </tr>
 
