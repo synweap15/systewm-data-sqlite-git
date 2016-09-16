@@ -9,5 +9,5 @@ else
 fi
 
 pushd "$scriptdir/.."
-mono Externals/Eagle/bin/EagleShell.exe -preInitialize "set root_path {$scriptdir/..}; set test_configuration Release; set build_directory {bin/2013/Release/bin}; set interop_assembly_file_names $libname" -file Tests/all.eagle
+mono Externals/Eagle/bin/EagleShell.exe -preInitialize "set root_path {$scriptdir/..}; set test_configuration Release; set build_directory {bin/2013/Release/bin}; set interop_assembly_file_names $libname" -initialize -postInitialize "unset no(deleteSqliteImplicitNativeFiles); unset no(copySqliteImplicitNativeFiles)" -file Tests/all.eagle
 popd
