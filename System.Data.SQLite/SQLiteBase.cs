@@ -932,12 +932,12 @@ namespace System.Data.SQLite
   internal enum SQLiteOpenFlagsEnum
   {
     None = 0,
-    ReadOnly = 0x01,
-    ReadWrite = 0x02,
-    Create = 0x04,
+    ReadOnly = 0x1,
+    ReadWrite = 0x2,
+    Create = 0x4,
     Uri = 0x40,
-    SharedCache = 0x01000000,
-    Default = 0x06,
+    Memory = 0x80,
+    Default = ReadWrite | Create,
   }
 
   /// <summary>
