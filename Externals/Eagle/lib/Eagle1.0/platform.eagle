@@ -60,7 +60,7 @@ namespace eval ::Eagle {
   #
   proc isAdministrator {} {
     return [expr {[info exists ::eagle_platform(administrator)] && \
-        $::eagle_platform(administrator)}]
+        [string is true -strict $::eagle_platform(administrator)]}]
   }
 
   #
@@ -88,7 +88,8 @@ namespace eval ::Eagle {
     #
     # TODO: Is something more complex required here?
     #
-    return [expr {[info exists ::tcl_interactive] && $::tcl_interactive}]
+    return [expr {[info exists ::tcl_interactive] && \
+        [string is true -strict $::tcl_interactive]}]
   }
 
   #

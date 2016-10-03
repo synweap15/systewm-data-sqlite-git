@@ -119,7 +119,7 @@ namespace eval ::Eagle {
 
   #
   # NOTE: This procedure was adapted from the one listed on the Tcl Wiki page
-  #       at "http://wiki.tcl.tk/43".  It is only intended to be used on very
+  #       at "https://wiki.tcl.tk/43".  It is only intended to be used on very
   #       small lists because of its heavy use of recursion and complexity on
   #       the order of O(N!).
   #
@@ -508,7 +508,7 @@ namespace eval ::Eagle {
             #         attempt is made here to work around any such bug.
             #         For further information, please see:
             #
-            #         http://core.tcl.tk/tcllib/info/ad20454023
+            #         https://core.tcl.tk/tcllib/info/ad20454023
             #
             set sha1 [sha1::sha1 -hex -filename $fileName]
           }

@@ -96,7 +96,7 @@ namespace eval ::Eagle {
 
   proc getSoftwareRegistryKey { wow64 } {
     if {$wow64 && [info exists ::tcl_platform(machine)] && [lsearch -exact \
-        [list ia64 amd64] $::tcl_platform(machine)] != -1} then {
+        [list ia64 amd64 arm64] $::tcl_platform(machine)] != -1} then {
       #
       # NOTE: Return the WoW64 registry key name because we are running on a
       #       64-bit operating system and the caller specifically requested
