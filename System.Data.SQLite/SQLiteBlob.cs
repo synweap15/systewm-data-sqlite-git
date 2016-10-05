@@ -47,6 +47,27 @@ namespace System.Data.SQLite
         ///////////////////////////////////////////////////////////////////////////////////////////////
 
         #region Static "Factory" Methods
+        /// <summary>
+        /// Creates a <see cref="SQLiteBlob" /> object.  This will not work
+        /// for tables that were created WITHOUT ROWID -OR- if the query
+        /// does not include the "rowid" column or one of its aliases -OR-
+        /// if the <see cref="SQLiteDataReader" /> was not created with the
+        /// <see cref="CommandBehavior.KeyInfo" /> flag.
+        /// </summary>
+        /// <param name="dataReader">
+        /// The <see cref="SQLiteDataReader" /> instance with a result set
+        /// containing the desired blob column.
+        /// </param>
+        /// <param name="i">
+        /// The index of the blob column.
+        /// </param>
+        /// <param name="readOnly">
+        /// Non-zero to open the blob object for read-only access.
+        /// </param>
+        /// <returns>
+        /// The newly created <see cref="SQLiteBlob" /> instance -OR- null
+        /// if an error occurs.
+        /// </returns>
         public static SQLiteBlob Create(
             SQLiteDataReader dataReader,
             int i,
@@ -335,6 +356,9 @@ namespace System.Data.SQLite
         ///////////////////////////////////////////////////////////////////////////////////////////////
 
         #region Destructor
+        /// <summary>
+        /// The destructor.
+        /// </summary>
         ~SQLiteBlob()
         {
             Dispose(false);

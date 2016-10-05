@@ -502,11 +502,16 @@ namespace System.Data.SQLite
     /// if the <see cref="SQLiteDataReader" /> was not created with the
     /// <see cref="CommandBehavior.KeyInfo"/> flag.
     /// </summary>
+    /// <param name="i">
+    /// The index of the BLOB column.
+    /// </param>
     /// <returns>
     /// The integer identifier for the current row -OR- null if it could not
     /// be determined.
     /// </returns>
-    internal long? GetRowId(int i)
+    internal long? GetRowId(
+        int i
+        )
     {
         // CheckDisposed();
         VerifyForGet();
@@ -528,7 +533,8 @@ namespace System.Data.SQLite
     /// This will not work for tables that were created WITHOUT ROWID
     /// -OR- if the query does not include the "rowid" column or one
     /// of its aliases -OR- if the <see cref="SQLiteDataReader" /> was
-    /// not created with the <see cref="CommandBehavior.KeyInfo"/> flag.
+    /// not created with the <see cref="CommandBehavior.KeyInfo" />
+    /// flag.
     /// </summary>
     /// <param name="i">The index of the column.</param>
     /// <param name="readOnly">
