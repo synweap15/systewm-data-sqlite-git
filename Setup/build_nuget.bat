@@ -37,7 +37,7 @@ SET TOOLS=%TOOLS:~0,-1%
 %_VECHO% Tools = '%TOOLS%'
 
 IF NOT DEFINED NUGET (
-  SET NUGET=NuGet.exe
+  SET NUGET=NuGet2.exe
 )
 
 %_VECHO% NuGet = '%NUGET%'
