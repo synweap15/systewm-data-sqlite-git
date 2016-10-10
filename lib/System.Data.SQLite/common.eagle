@@ -2661,7 +2661,7 @@ namespace eval ::Eagle {
           $db $connection
     }
 
-    proc getRowsFromDataTable { dataTable } {
+    proc getRowsFromDataTable { dataTable {valueCallback ""} } {
       set rows [list]
       set count [$dataTable Columns.Count]
 
@@ -2670,17 +2670,57 @@ namespace eval ::Eagle {
         set names($index) [$dataColumn ColumnName]
       }
 
+      #
+      # NOTE: Setup some Tcl return code constants.
+      #
+      set Ok 0; set Error 1; set Return 2; set Break 3; set Continue 4
+
       object foreach -alias dataRow [set dataRows [$dataTable Rows]] {
         set row [list]
 
         for {set index 0} {$index < $count} {incr index} {
           set value [$dataRow -create -alias get_Item $index]
 
-          if {[string length $value] > 0 && \
-              ![object invoke Convert IsDBNull $value]} then {
-            lappend row [list $names($index) [$value ToString]]
+          if {[string length $valueCallback] > 0} then {
+            set code [catch {
+              $valueCallback $dataTable $dataRow $index $value
+            } newValue]
+
+            if {$code == $Ok} then {
+              #
+              # NOTE: Use the specified (new?) row value.
+              #
+              lappend row [list $names($index) $newValue]
+            } elseif {$code == $Error} then {
+              #
+              # NOTE: Use the (new?) NULL row value.
+              #
+              lappend row [list $names($index)]
+            } elseif {$code == $Return} then {
+              #
+              # NOTE: Skip remaining values for this row.
+              #
+              break
+            } elseif {$code == $Break} then {
+              #
+              # NOTE: Skip processing this row value.
+              #
+            } elseif {$code == $Continue} then {
+              #
+              # NOTE: Use default row value handling.
+              #
+            }
           } else {
-            lappend row [list $names($index)]
+            set code $Continue
+          }
+
+          if {$code == $Continue} then {
+            if {[string length $value] > 0 && \
+                ![object invoke Convert IsDBNull $value]} then {
+              lappend row [list $names($index) [$value ToString]]
+            } else {
+              lappend row [list $names($index)]
+            }
           }
         }
 
