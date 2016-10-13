@@ -481,7 +481,7 @@
       <UpdateFileHashes>true</UpdateFileHashes>
     </Manifest>
   </ItemDefinitionGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseNativeOnly|Win32'">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseNativeOnly|x64'">
     <BaseConfiguration>Release</BaseConfiguration>
     <AfterBuildLinkTargets>
       $(AfterBuildLinkTargets);
