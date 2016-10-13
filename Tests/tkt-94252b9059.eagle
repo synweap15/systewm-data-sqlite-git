@@ -30,9 +30,12 @@ runTest {test tkt-94252b9059-1.1 {GetDataTypeName with no current row} -setup {
   set dataReader [sql execute -execute reader -format datareader \
       -alias $db "SELECT x, y, z FROM t1;"]
 
-  list [$dataReader GetDataTypeName 0] [$dataReader GetDataTypeName 1] \
-      [$dataReader GetDataTypeName 2] [$dataReader GetFieldType 0] \
-      [$dataReader GetFieldType 1] [$dataReader GetFieldType 2]
+  list [$dataReader GetDataTypeName 0] \
+      [$dataReader GetDataTypeName 1] \
+      [$dataReader GetDataTypeName 2] \
+      [$dataReader -tostring GetFieldType 0] \
+      [$dataReader -tostring GetFieldType 1] \
+      [$dataReader -tostring GetFieldType 2]
 } -cleanup {
   unset -nocomplain dataReader
 

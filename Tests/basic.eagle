@@ -3992,15 +3992,18 @@ runTest {test data-1.78 {basic and extended column metadata} -setup {
         [list [$dataReader GetOrdinal x] [$dataReader GetName 0] \
         [$dataReader GetValue 0] [$dataReader GetDatabaseName 0] \
         [$dataReader GetTableName 0] [$dataReader GetOriginalName 0] \
-        [$dataReader GetDataTypeName 0] [$dataReader GetFieldType 0]] \
+        [$dataReader GetDataTypeName 0] \
+        [$dataReader -tostring GetFieldType 0]] \
         [list [$dataReader GetOrdinal y] [$dataReader GetName 1] \
         [$dataReader GetValue 1] [$dataReader GetDatabaseName 1] \
         [$dataReader GetTableName 1] [$dataReader GetOriginalName 1] \
-        [$dataReader GetDataTypeName 1] [$dataReader GetFieldType 1]] \
+        [$dataReader GetDataTypeName 1] \
+        [$dataReader -tostring GetFieldType 1]] \
         [list [$dataReader GetOrdinal z] [$dataReader GetName 2] \
         [$dataReader GetValue 2] [$dataReader GetDatabaseName 2] \
         [$dataReader GetTableName 2] [$dataReader GetOriginalName 2] \
-        [$dataReader GetDataTypeName 2] [$dataReader GetFieldType 2]]
+        [$dataReader GetDataTypeName 2] \
+        [$dataReader -tostring GetFieldType 2]]
   }
 
   set result
