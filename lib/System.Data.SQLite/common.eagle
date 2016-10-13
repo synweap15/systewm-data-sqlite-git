@@ -1868,7 +1868,9 @@ namespace eval ::Eagle {
       }
 
       if {[catch {
-        set dateTime [object invoke -create DateTime ParseExact \
+        set dateTime [object invoke -create \
+            -parametertypes [list String String IFormatProvider \
+            System.Globalization.DateTimeStyles] DateTime ParseExact \
             $value [getDateTimeFormat] null AdjustToUniversal]
       }]} then {
         return $default
