@@ -22,18 +22,65 @@ runSQLiteTestPrologue
 
 runTest {test tkt-aba4549801-1.1 {SQLiteConnection.Changed event} -setup {
   proc onChanged { sender e } {
-    set list [list $sender]
+    set list [list]
+
+    if {[isObjectHandle $sender] && \
+        [regexp -- $::patterns(connection) $sender]} then {
+      lappend list 1
+    } else {
+      lappend list $sender
+    }
 
     if {[string length $e] > 0} then {
       lappend list [$e EventType]
-      lappend list [set o1 [$e -objectflags NoDispose Transaction]]
-      lappend list [set o2 [$e -objectflags NoDispose Command]]
-      lappend list [set o3 [$e -objectflags NoDispose DataReader]]
-      lappend list [set o4 [$e -objectflags NoDispose CriticalHandle]]
+
+      set o1 [$e -objectflags NoDispose Transaction]
+
+      if {[isObjectHandle $o1] && \
+          [regexp -- $::patterns(transaction) $o1]} then {
+        lappend list 1
+      } else {
+        lappend list $o1
+      }
+
+      set o2 [$e -objectflags NoDispose Command]
+
+      if {[isObjectHandle $o2] && \
+          [regexp -- $::patterns(command) $o2]} then {
+        lappend list 1
+      } else {
+        lappend list $o2
+      }
+
+      set o3 [$e -objectflags NoDispose DataReader]
+
+      if {[isObjectHandle $o3] && \
+          [regexp -- $::patterns(dataReader) $o3]} then {
+        lappend list 1
+      } else {
+        lappend list $o3
+      }
+
+      set o4 [$e -objectflags NoDispose CriticalHandle]
+
+      if {[isObjectHandle $o4] && \
+          ([regexp -- $::patterns(handle1) $o4] || \
+           [regexp -- $::patterns(handle2) $o4])} then {
+        lappend list 1
+      } else {
+        lappend list $o4
+      }
     }
 
     lappend ::result $list
   }
+
+  set patterns(connection) {^System#Data#SQLite#SQLiteConnection#\d+$}
+  set patterns(transaction) {^System#Data#SQLite#SQLiteTransaction#\d+$}
+  set patterns(command) {^System#Data#SQLite#SQLiteCommand#\d+$}
+  set patterns(dataReader) {^System#Data#SQLite#SQLiteDataReader#\d+$}
+  set patterns(handle1) {^System#Data#SQLite#SQLiteConnectionHandle#\d+$}
+  set patterns(handle2) {^System#Data#SQLite#SQLiteStatementHandle#\d+$}
 
   set callback onChanged
   object invoke System.Data.SQLite.SQLiteConnection add_Changed $callback
@@ -57,87 +104,28 @@ runTest {test tkt-aba4549801-1.1 {SQLiteConnection.Changed event} -setup {
   object invoke System.Data.SQLite.SQLiteConnection remove_Changed $callback
   catch {object removecallback $callback}
 
-  unset -nocomplain rows transaction result callback db fileName
+  unset -nocomplain rows transaction result callback patterns db fileName
 
   rename onChanged ""
 } -constraints {eagle command.object monoBug28 monoBug211 command.sql\
-compile.DATA SQLite System.Data.SQLite} -match regexp -result \
-{^\{System#Data#SQLite#SQLiteConnection#\d+ Opening \{\} \{\} \{\} \{\}\}\
-\{System#Data#SQLite#SQLiteConnection#\d+ Closing \{\} \{\} \{\} \{\}\}\
-\{System#Data#SQLite#SQLiteConnection#\d+ Closed \{\} \{\} \{\} \{\}\}\
-\{System#Data#SQLite#SQLiteConnection#\d+ ConnectionString \{\} \{\} \{\}\
-\{\}\} \{\{\} NewCriticalHandle \{\} \{\} \{\}\
-System#Data#SQLite#SQLiteConnectionHandle#\d+\}\
-\{System#Data#SQLite#SQLiteConnection#\d+ NewCommand \{\}\
-System#Data#SQLite#SQLiteCommand#\d+ \{\} \{\}\}\
-\{System#Data#SQLite#SQLiteConnection#\d+ DisposingCommand \{\}\
-System#Data#SQLite#SQLiteCommand#\d+ \{\} \{\}\}\
-\{System#Data#SQLite#SQLiteConnection#\d+ Opened \{\} \{\} \{\} \{\}\}\
-\{System#Data#SQLite#SQLiteConnection#\d+ NewCommand \{\}\
-System#Data#SQLite#SQLiteCommand#\d+ \{\} \{\}\}\
-\{System#Data#SQLite#SQLiteConnection#\d+ NewDataReader \{\}\
-System#Data#SQLite#SQLiteCommand#\d+ System#Data#SQLite#SQLiteDataReader#\d+\
-\{\}\} \{\{\} NewCriticalHandle \{\} \{\} \{\}\
-System#Data#SQLite#SQLiteStatementHandle#\d+\}\
-\{System#Data#SQLite#SQLiteConnection#\d+ DisposingDataReader \{\}\
-System#Data#SQLite#SQLiteCommand#\d+ System#Data#SQLite#SQLiteDataReader#\d+\
-\{\}\} \{System#Data#SQLite#SQLiteConnection#\d+ ClosingDataReader \{\}\
-System#Data#SQLite#SQLiteCommand#\d+ System#Data#SQLite#SQLiteDataReader#\d+\
-\{\}\} \{System#Data#SQLite#SQLiteConnection#\d+ DisposingCommand \{\}\
-System#Data#SQLite#SQLiteCommand#\d+ \{\} \{\}\}\
-\{System#Data#SQLite#SQLiteConnection#\d+ NewCommand \{\}\
-System#Data#SQLite#SQLiteCommand#\d+ \{\} \{\}\}\
-\{System#Data#SQLite#SQLiteConnection#\d+ NewDataReader \{\}\
-System#Data#SQLite#SQLiteCommand#\d+ System#Data#SQLite#SQLiteDataReader#\d+\
-\{\}\} \{\{\} NewCriticalHandle \{\} \{\} \{\}\
-System#Data#SQLite#SQLiteStatementHandle#\d+\}\
-\{System#Data#SQLite#SQLiteConnection#\d+ DisposingDataReader \{\}\
-System#Data#SQLite#SQLiteCommand#\d+ System#Data#SQLite#SQLiteDataReader#\d+\
-\{\}\} \{System#Data#SQLite#SQLiteConnection#\d+ ClosingDataReader \{\}\
-System#Data#SQLite#SQLiteCommand#\d+ System#Data#SQLite#SQLiteDataReader#\d+\
-\{\}\} \{System#Data#SQLite#SQLiteConnection#\d+ DisposingCommand \{\}\
-System#Data#SQLite#SQLiteCommand#\d+ \{\} \{\}\}\
-\{System#Data#SQLite#SQLiteConnection#\d+ NewCommand \{\}\
-System#Data#SQLite#SQLiteCommand#\d+ \{\} \{\}\}\
-\{System#Data#SQLite#SQLiteConnection#\d+ NewDataReader \{\}\
-System#Data#SQLite#SQLiteCommand#\d+ System#Data#SQLite#SQLiteDataReader#\d+\
-\{\}\} \{\{\} NewCriticalHandle \{\} \{\} \{\}\
-System#Data#SQLite#SQLiteStatementHandle#\d+\}\
-\{System#Data#SQLite#SQLiteConnection#\d+ DisposingDataReader \{\}\
-System#Data#SQLite#SQLiteCommand#\d+ System#Data#SQLite#SQLiteDataReader#\d+\
-\{\}\} \{System#Data#SQLite#SQLiteConnection#\d+ ClosingDataReader \{\}\
-System#Data#SQLite#SQLiteCommand#\d+ System#Data#SQLite#SQLiteDataReader#\d+\
-\{\}\} \{System#Data#SQLite#SQLiteConnection#\d+ DisposingCommand \{\}\
-System#Data#SQLite#SQLiteCommand#\d+ \{\} \{\}\}\
-\{System#Data#SQLite#SQLiteConnection#\d+ NewTransaction\
-System#Data#SQLite#SQLiteTransaction#\d+ \{\} \{\} \{\}\}\
-\{System#Data#SQLite#SQLiteConnection#\d+ NewCommand \{\}\
-System#Data#SQLite#SQLiteCommand#\d+ \{\} \{\}\}\
-\{System#Data#SQLite#SQLiteConnection#\d+ NewDataReader \{\}\
-System#Data#SQLite#SQLiteCommand#\d+ System#Data#SQLite#SQLiteDataReader#\d+\
-\{\}\} \{\{\} NewCriticalHandle \{\} \{\} \{\}\
-System#Data#SQLite#SQLiteStatementHandle#\d+\} \{\{\} NewCriticalHandle \{\}\
-\{\} \{\} System#Data#SQLite#SQLiteStatementHandle#\d+\}\
-\{System#Data#SQLite#SQLiteConnection#\d+ ClosingDataReader \{\}\
-System#Data#SQLite#SQLiteCommand#\d+ System#Data#SQLite#SQLiteDataReader#\d+\
-\{\}\} \{System#Data#SQLite#SQLiteConnection#\d+ DisposingCommand \{\}\
-System#Data#SQLite#SQLiteCommand#\d+ \{\} \{\}\}\
-\{System#Data#SQLite#SQLiteConnection#\d+ NewCommand \{\}\
-System#Data#SQLite#SQLiteCommand#\d+ \{\} \{\}\}\
-\{System#Data#SQLite#SQLiteConnection#\d+ NewDataReader \{\}\
-System#Data#SQLite#SQLiteCommand#\d+ System#Data#SQLite#SQLiteDataReader#\d+\
-\{\}\} \{\{\} NewCriticalHandle \{\} \{\} \{\}\
-System#Data#SQLite#SQLiteStatementHandle#\d+\}\
-\{System#Data#SQLite#SQLiteConnection#\d+ DisposingDataReader \{\}\
-System#Data#SQLite#SQLiteCommand#\d+ System#Data#SQLite#SQLiteDataReader#\d+\
-\{\}\} \{System#Data#SQLite#SQLiteConnection#\d+ ClosingDataReader \{\}\
-System#Data#SQLite#SQLiteCommand#\d+ System#Data#SQLite#SQLiteDataReader#\d+\
-\{\}\} \{System#Data#SQLite#SQLiteConnection#\d+ DisposingCommand \{\}\
-System#Data#SQLite#SQLiteCommand#\d+ \{\} \{\}\}\
-\{System#Data#SQLite#SQLiteConnection#\d+ Closing \{\} \{\} \{\} \{\}\}\
-\{System#Data#SQLite#SQLiteConnection#\d+ Closed \{\} \{\} \{\} \{\}\}\
-\{System#Data#SQLite#SQLiteConnection#\d+ Closing \{\} \{\} \{\} \{\}\}\
-\{System#Data#SQLite#SQLiteConnection#\d+ Closed \{\} \{\} \{\} \{\}\}$}}
+compile.DATA SQLite System.Data.SQLite} -result {{1 Opening {} {} {} {}} {1\
+Closing {} {} {} {}} {1 Closed {} {} {} {}} {1 ConnectionString {} {} {} {}}\
+{{} NewCriticalHandle {} {} {} 1} {1 NewCommand {} 1 {} {}} {1 DisposingCommand\
+{} 1 {} {}} {1 Opened {} {} {} {}} {1 NewCommand {} 1 {} {}} {1 NewDataReader\
+{} 1 1 {}} {{} NewCriticalHandle {} {} {} 1} {1 DisposingDataReader {} 1 1 {}}\
+{1 ClosingDataReader {} 1 1 {}} {1 DisposingCommand {} 1 {} {}} {1 NewCommand\
+{} 1 {} {}} {1 NewDataReader {} 1 1 {}} {{} NewCriticalHandle {} {} {} 1} {1\
+DisposingDataReader {} 1 1 {}} {1 ClosingDataReader {} 1 1 {}} {1\
+DisposingCommand {} 1 {} {}} {1 NewCommand {} 1 {} {}} {1 NewDataReader {} 1 1\
+{}} {{} NewCriticalHandle {} {} {} 1} {1 DisposingDataReader {} 1 1 {}} {1\
+ClosingDataReader {} 1 1 {}} {1 DisposingCommand {} 1 {} {}} {1 NewTransaction\
+1 {} {} {}} {1 NewCommand {} 1 {} {}} {1 NewDataReader {} 1 1 {}} {{}\
+NewCriticalHandle {} {} {} 1} {{} NewCriticalHandle {} {} {} 1} {1\
+ClosingDataReader {} 1 1 {}} {1 DisposingCommand {} 1 {} {}} {1 NewCommand {} 1\
+{} {}} {1 NewDataReader {} 1 1 {}} {{} NewCriticalHandle {} {} {} 1} {1\
+DisposingDataReader {} 1 1 {}} {1 ClosingDataReader {} 1 1 {}} {1\
+DisposingCommand {} 1 {} {}} {1 Closing {} {} {} {}} {1 Closed {} {} {} {}} {1\
+Closing {} {} {} {}} {1 Closed {} {} {} {}}}}
 
 ###############################################################################
 
