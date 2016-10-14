@@ -20,21 +20,24 @@ runSQLiteTestPrologue
 
 ###############################################################################
 
-#
-# HACK: Make sure that any stray connections or other IDisposable items for
-#       System.Data.SQLite are disposed prior to running this test, this is
-#       needed to prevent "stray" events from messing up the results.
-#
-collectGarbage $test_channel
-
-###############################################################################
-
 runTest {test tkt-aba4549801-1.1 {SQLiteConnection.Changed event} -setup {
   proc onChanged { sender e } {
     set list [list]
 
     if {[isObjectHandle $sender] && \
         [regexp -- $::patterns(connection) $sender]} then {
+      set connectionString [$sender ConnectionString]
+
+      if {![string match "*\[/\\\]tkt-aba4549801-1.1.db\;*" \
+          $connectionString]} then {
+        #
+        # NOTE: This is a "stray" connection (i.e. it is not
+        #       part of this test); therefore, ignore events
+        #       for it.
+        #
+        return
+      }
+
       lappend list 1
     } else {
       lappend list $sender
