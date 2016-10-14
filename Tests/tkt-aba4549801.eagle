@@ -93,9 +93,9 @@ runTest {test tkt-aba4549801-1.1 {SQLiteConnection.Changed event} -setup {
 
   set callback onChanged
   object invoke System.Data.SQLite.SQLiteConnection add_Changed $callback
-
-  setupDb [set fileName tkt-aba4549801-1.1.db]
 } -body {
+  setupDb [set fileName tkt-aba4549801-1.1.db]
+
   sql execute $db "CREATE TABLE t1(x);"
 
   set transaction [sql transaction begin $db]
