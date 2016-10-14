@@ -2130,27 +2130,11 @@ namespace eval ::Eagle {
     }
 
     proc getDbDefaultPageSize {} {
-      try {
-        set db [sql open -type SQLite {Data Source=:memory:;}]
-        return [sql execute -execute scalar $db "PRAGMA page_size;"]
-      } finally {
-        if {[info exists db]} then {
-          catch {sql close $db}
-          unset -nocomplain db
-        }
-      }
+      return [executeSql "PRAGMA page_size;" scalar]
     }
 
     proc getDbDefaultCacheSize {} {
-      try {
-        set db [sql open -type SQLite {Data Source=:memory:;}]
-        return [sql execute -execute scalar $db "PRAGMA cache_size;"]
-      } finally {
-        if {[info exists db]} then {
-          catch {sql close $db}
-          unset -nocomplain db
-        }
-      }
+      return [executeSql "PRAGMA cache_size;" scalar]
     }
 
     proc useLegacyDbPageAndCacheSizes { varName } {
@@ -2214,7 +2198,13 @@ namespace eval ::Eagle {
         return [uplevel 1 [list \
             sql execute -execute $execute -format $format $db $sql]]
       } finally {
-        cleanupDb $fileName db false false false
+        set connection [getDbConnection]
+
+        try {
+          cleanupDb $fileName db false false false
+        } finally {
+          object flags $connection -NoDispose; freeDbConnection
+        }
       }
     }
 
@@ -2536,6 +2526,11 @@ namespace eval ::Eagle {
       if {[string length $extra] > 0} then {
         append connection \; $extra
       }
+
+      #
+      # NOTE: For clarity, append a final semicolon to the connection string.
+      #
+      append connection \;
 
       #
       # NOTE: Open the database connection now, placing the opaque handle value

@@ -124,8 +124,7 @@ NewCriticalHandle {} {} {} 1} {{} NewCriticalHandle {} {} {} 1} {1\
 ClosingDataReader {} 1 1 {}} {1 DisposingCommand {} 1 {} {}} {1 NewCommand {} 1\
 {} {}} {1 NewDataReader {} 1 1 {}} {{} NewCriticalHandle {} {} {} 1} {1\
 DisposingDataReader {} 1 1 {}} {1 ClosingDataReader {} 1 1 {}} {1\
-DisposingCommand {} 1 {} {}} {1 Closing {} {} {} {}} {1 Closed {} {} {} {}} {1\
-Closing {} {} {} {}} {1 Closed {} {} {} {}}}}
+DisposingCommand {} 1 {} {}} {1 Closing {} {} {} {}} {1 Closed {} {} {} {}}}}
 
 ###############################################################################
 
