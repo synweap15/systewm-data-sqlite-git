@@ -20,6 +20,15 @@ runSQLiteTestPrologue
 
 ###############################################################################
 
+#
+# HACK: Make sure that any stray connections or other IDisposable items for
+#       System.Data.SQLite are disposed prior to running this test, this is
+#       needed to prevent "stray" events from messing up the results.
+#
+collectGarbage $test_channel
+
+###############################################################################
+
 runTest {test tkt-aba4549801-1.1 {SQLiteConnection.Changed event} -setup {
   proc onChanged { sender e } {
     set list [list]
@@ -97,7 +106,6 @@ runTest {test tkt-aba4549801-1.1 {SQLiteConnection.Changed event} -setup {
   sql transaction commit $transaction
 
   cleanupDb $fileName
-  collectGarbage $test_channel
 
   set result
 } -cleanup {
