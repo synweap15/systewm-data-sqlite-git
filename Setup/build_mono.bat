@@ -42,6 +42,11 @@ SET NOUSER=1
 SET MSBUILD_ARGS=/property:ConfigurationSuffix=MonoOnPosix
 SET MSBUILD_ARGS=%MSBUILD_ARGS% /property:InteropCodec=false
 SET MSBUILD_ARGS=%MSBUILD_ARGS% /property:InteropLog=false
+
+IF DEFINED MSBUILD_ARGS_MONO (
+  SET MSBUILD_ARGS=%MSBUILD_ARGS% %MSBUILD_ARGS_MONO%
+)
+
 SET MSBUILD_ARGS_DEBUG=/property:CheckState=true
 SET MSBUILD_ARGS_DEBUG=%MSBUILD_ARGS_DEBUG% /property:CountHandle=true
 SET MSBUILD_ARGS_DEBUG=%MSBUILD_ARGS_DEBUG% /property:TraceConnection=true
