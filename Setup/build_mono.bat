@@ -19,7 +19,7 @@ IF NOT DEFINED _VECHO (SET _VECHO=REM)
 
 %_AECHO% Running %0 %*
 
-SET DUMMY2=%1
+SET DUMMY2=%2
 
 IF DEFINED DUMMY2 (
   GOTO usage
@@ -30,14 +30,60 @@ SET TOOLS=%TOOLS:~0,-1%
 
 %_VECHO% Tools = '%TOOLS%'
 
-IF DEFINED BUILD_DEBUG (
-  SET BUILD_CONFIGURATIONS=DebugManagedOnly ReleaseManagedOnly
+SET BUILD_CONFIGURATIONS=%1
+
+IF DEFINED BUILD_CONFIGURATIONS (
+  CALL :fn_UnquoteVariable BUILD_CONFIGURATIONS
 ) ELSE (
-  SET BUILD_CONFIGURATIONS=ReleaseManagedOnly
+  %_AECHO% No build configurations specified, using default...
+  IF DEFINED BUILD_DEBUG (
+    SET BUILD_CONFIGURATIONS=DebugManagedOnly ReleaseManagedOnly
+  ) ELSE (
+    SET BUILD_CONFIGURATIONS=ReleaseManagedOnly
+  )
+)
+
+%_VECHO% BuildConfigurations = '%BUILD_CONFIGURATIONS%'
+
+CALL :fn_ResetErrorLevel
+
+%__ECHO3% CALL "%TOOLS%\vsSp.bat"
+
+IF ERRORLEVEL 1 (
+  ECHO Could not detect Visual Studio.
+  GOTO errors
+)
+
+CALL :fn_UnsetVariable YEARS
+
+IF NOT DEFINED NOVS2013 (
+  IF DEFINED VS2013SP (
+    SET YEARS=2013
+  ) ELSE (
+    ECHO Could not detect Visual Studio 2013.
+  )
+) ELSE (
+  ECHO Use of Visual Studio 2013 is disallowed.
+)
+
+IF NOT DEFINED YEARS (
+  IF NOT DEFINED NOVS2012 (
+    IF DEFINED VS2012SP (
+      SET YEARS=2012
+    ) ELSE (
+      ECHO Could not detect Visual Studio 2012.
+    )
+  ) ELSE (
+    ECHO Use of Visual Studio 2012 is disallowed.
+  )
+)
+
+IF NOT DEFINED YEARS (
+  ECHO No supported version of Visual Studio was detected and allowed.
+  goto errors
 )
 
 SET PLATFORMS="Any CPU"
-SET YEARS=2013
 SET NOUSER=1
 SET MSBUILD_ARGS=/property:ConfigurationSuffix=MonoOnPosix
 SET MSBUILD_ARGS=%MSBUILD_ARGS% /property:InteropCodec=false
@@ -55,8 +101,6 @@ SET MSBUILD_ARGS_DEBUG=%MSBUILD_ARGS_DEBUG% /property:TraceHandle=true
 SET MSBUILD_ARGS_DEBUG=%MSBUILD_ARGS_DEBUG% /property:TraceStatement=true
 SET MSBUILD_ARGS_DEBUG=%MSBUILD_ARGS_DEBUG% /property:TrackMemoryBytes=true
 
-CALL :fn_ResetErrorLevel
-
 %__ECHO3% CALL "%TOOLS%\build_all.bat"
 
 IF ERRORLEVEL 1 (
@@ -65,6 +109,31 @@ IF ERRORLEVEL 1 (
 )
 
 GOTO no_errors
+
+:fn_UnquoteVariable
+  IF NOT DEFINED %1 GOTO :EOF
+  SETLOCAL
+  SET __ECHO_CMD=ECHO %%%1%%
+  FOR /F "delims=" %%V IN ('%__ECHO_CMD%') DO (
+    SET VALUE=%%V
+  )
+  SET VALUE=%VALUE:"=%
+  REM "
+  ENDLOCAL && SET %1=%VALUE%
+  GOTO :EOF
+
+:fn_UnsetVariable
+  SETLOCAL
+  SET VALUE=%1
+  IF DEFINED VALUE (
+    SET VALUE=
+    ENDLOCAL
+    SET %VALUE%=
+  ) ELSE (
+    ENDLOCAL
+  )
+  CALL :fn_ResetErrorLevel
+  GOTO :EOF
 
 :fn_ResetErrorLevel
   VERIFY > NUL
@@ -76,7 +145,7 @@ GOTO no_errors
 
 :usage
   ECHO.
-  ECHO Usage: %~nx0
+  ECHO Usage: %~nx0 [configurations]
   ECHO.
   GOTO errors
 
