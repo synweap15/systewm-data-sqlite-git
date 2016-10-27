@@ -6,7 +6,7 @@
  */
 
 #ifndef INTEROP_VERSION
-#define INTEROP_VERSION          "1.0.103.0"
+#define INTEROP_VERSION          "1.0.104.0"
 #endif
 
 #ifndef INTEROP_SOURCE_ID

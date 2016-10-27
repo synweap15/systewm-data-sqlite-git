@@ -271,6 +271,7 @@ namespace System.Data.SQLite
     internal abstract UInt64 GetUInt64(SQLiteStatement stmt, int index);
     internal abstract string GetText(SQLiteStatement stmt, int index);
     internal abstract long GetBytes(SQLiteStatement stmt, int index, int nDataoffset, byte[] bDest, int nStart, int nLength);
+    internal abstract char GetChar(SQLiteStatement stmt, int index);
     internal abstract long GetChars(SQLiteStatement stmt, int index, int nDataoffset, char[] bDest, int nStart, int nLength);
     internal abstract DateTime GetDateTime(SQLiteStatement stmt, int index);
     internal abstract bool IsNull(SQLiteStatement stmt, int index);

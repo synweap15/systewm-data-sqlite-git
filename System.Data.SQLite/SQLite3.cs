@@ -58,7 +58,7 @@ namespace System.Data.SQLite
         "d8215c18a4349a436dd499e3c385cc683015f886f6c10bd90115eb2bd61b67750839e3a19941dc9c";
 
 #if !PLATFORM_COMPACTFRAMEWORK
-    internal const string DesignerVersion = "1.0.103.0";
+    internal const string DesignerVersion = "1.0.104.0";
 #endif
 
     /// <summary>
@@ -2225,6 +2225,11 @@ namespace System.Data.SQLite
       }
 
       return nCopied;
+    }
+
+    internal override char GetChar(SQLiteStatement stmt, int index)
+    {
+      return Convert.ToChar(GetUInt16(stmt, index));
     }
 
     internal override long GetChars(SQLiteStatement stmt, int index, int nDataOffset, char[] bDest, int nStart, int nLength)

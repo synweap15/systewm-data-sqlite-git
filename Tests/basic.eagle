@@ -4482,6 +4482,8 @@ runTest {test data-1.84 {GetBlob method and SQLiteBlob class} -setup {
     lappend result [$dataReader GetString 1]
   }
 
+  $dataReader Close; unset dataReader
+
   set result
 } -cleanup {
   unset -nocomplain blob

@@ -630,7 +630,7 @@ namespace System.Data.SQLite
             return _keyInfo.GetByte(i - PrivateVisibleFieldCount);
 
         VerifyType(i, DbType.Byte);
-        return Convert.ToByte(_activeStatement._sql.GetInt32(_activeStatement, i));
+        return _activeStatement._sql.GetByte(_activeStatement, i);
     }
 
     /// <summary>
@@ -724,7 +724,7 @@ namespace System.Data.SQLite
             return _keyInfo.GetChar(i - PrivateVisibleFieldCount);
 
         VerifyType(i, DbType.SByte);
-        return Convert.ToChar(_activeStatement._sql.GetInt32(_activeStatement, i));
+        return _activeStatement._sql.GetChar(_activeStatement, i);
     }
 
     /// <summary>
@@ -1028,7 +1028,7 @@ namespace System.Data.SQLite
             return _keyInfo.GetInt16(i - PrivateVisibleFieldCount);
 
         VerifyType(i, DbType.Int16);
-        return Convert.ToInt16(_activeStatement._sql.GetInt32(_activeStatement, i));
+        return _activeStatement._sql.GetInt16(_activeStatement, i);
     }
 
     /// <summary>

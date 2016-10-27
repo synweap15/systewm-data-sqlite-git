@@ -5,8 +5,8 @@
 </head>
 <body>
 ADO.NET SQLite Data Provider<br />
-Version 1.0.103.0 - September 15, 2016<br />
-Using <a href="https://www.sqlite.org/releaselog/3_14_2.html">SQLite 3.14.2</a><br />
+Version 1.0.104.0 - December XX, 2016<br />
+Using <a href="https://www.sqlite.org/releaselog/3_15_0.html">SQLite 3.15.0</a><br />
 Originally written by Robert Simpson<br />
 Released to the public domain, use at your own risk!<br />
 Official provider website:&nbsp;<a href="https://system.data.sqlite.org/">https://system.data.sqlite.org/</a><br />
@@ -146,7 +146,7 @@ app.config file:<br />
         &lt;DbProviderFactories&gt;
             &lt;remove invariant="System.Data.SQLite" /&gt;
             &lt;add name="SQLite Data Provider" invariant="System.Data.SQLite" description=".NET Framework Data Provider for SQLite"
-                 type="System.Data.SQLite.SQLiteFactory, System.Data.SQLite, Version=1.0.103.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139" /&gt;
+                 type="System.Data.SQLite.SQLiteFactory, System.Data.SQLite, Version=1.0.104.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139" /&gt;
         &lt;/DbProviderFactories&gt;
     &lt;/system.data&gt;
 &lt;/configuration&gt;
@@ -208,6 +208,13 @@ released versions of System.Data.SQLite.
 
 <h2><b>Version History</b></h2>
 
+<p>
+    <b>1.0.104.0 - December XX, 2016</b>
+</p>
+<ul>
+    <li>Updated to <a href="https://www.sqlite.org/releaselog/3_15_0.html">SQLite 3.15.0</a>.</li>
+    <li>Prevent the GetByte, GetChar, and GetInt16 methods of the SQLiteDataReader class from throwing exceptions for large integer values. Pursuant to [5535448538].&nbsp;<b>** Potentially Incompatible Change **</b></li>
+</ul>
 <p>
     <b>1.0.103.0 - September 15, 2016</b>
 </p>
