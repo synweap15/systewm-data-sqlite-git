@@ -177,20 +177,30 @@ namespace System.Data.SQLite
 
       if (cnn != null)
       {
-        try
+        if (_cnn._transactionLevel - 1 == 0)
         {
-          using (SQLiteCommand cmd = cnn.CreateCommand())
+          try
           {
-            cmd.CommandText = "ROLLBACK";
-            cmd.ExecuteNonQuery();
+            using (SQLiteCommand cmd = cnn.CreateCommand())
+            {
+              cmd.CommandText = "ROLLBACK";
+              cmd.ExecuteNonQuery();
+            }
           }
+          catch
+          {
+            if (throwError)
+              throw;
+          }
+          cnn._transactionLevel--;
         }
-        catch
+        else
         {
+          cnn._transactionLevel--;
+
           if (throwError)
-            throw;
+            throw new SQLiteException("Cannot rollback a nested transaction");
         }
-        cnn._transactionLevel = 0;
       }
     }
 
