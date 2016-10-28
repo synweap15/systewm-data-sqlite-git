@@ -581,6 +581,28 @@ namespace System.Data.SQLite
       private static readonly string XmlConfigFileName =
           typeof(UnsafeNativeMethods).Namespace + DllFileExtension +
           ConfigFileExtension;
+
+      /////////////////////////////////////////////////////////////////////////
+      /// <summary>
+      /// This is the XML configuratrion file token that will be replaced with
+      /// the qualified path to the directory containing the XML configuration
+      /// file.
+      /// </summary>
+      private static readonly string XmlConfigDirectoryToken =
+          "%SQLite_XmlConfigDirectory%";
+      #endregion
+
+      /////////////////////////////////////////////////////////////////////////
+
+      #region Private Constants (Desktop Framework Only)
+#if !PLATFORM_COMPACTFRAMEWORK
+      /// <summary>
+      /// This is the environment variable token that will be replaced with
+      /// the qualified path to the directory containing this assembly.
+      /// </summary>
+      private static readonly string AssemblyDirectoryToken =
+          "%SQLite_AssemblyDirectory%";
+#endif
       #endregion
 
       /////////////////////////////////////////////////////////////////////////
@@ -769,6 +791,69 @@ namespace System.Data.SQLite
       /////////////////////////////////////////////////////////////////////////
 
       /// <summary>
+      /// If necessary, replaces all supported XML configuration file tokens
+      /// with their associated values.
+      /// </summary>
+      /// <param name="fileName">
+      /// The name of the XML configuration file being read.
+      /// </param>
+      /// <param name="value">
+      /// A setting value read from the XML configuration file.
+      /// </param>
+      /// <returns>
+      /// The value of the <paramref name="value" /> will all supported XML
+      /// configuration file tokens replaced.  No return value is reserved
+      /// to indicate an error.  This method cannot fail.
+      /// </returns>
+      private static string ReplaceXmlConfigFileTokens(
+          string fileName,
+          string value
+          )
+      {
+          if (!String.IsNullOrEmpty(value))
+          {
+              if (!String.IsNullOrEmpty(fileName))
+              {
+                  try
+                  {
+                      string directory = Path.GetDirectoryName(fileName);
+
+                      if (!String.IsNullOrEmpty(directory))
+                      {
+                          value = value.Replace(
+                              XmlConfigDirectoryToken, directory);
+                      }
+                  }
+#if !NET_COMPACT_20 && TRACE_SHARED
+                  catch (Exception e)
+#else
+                  catch (Exception)
+#endif
+                  {
+#if !NET_COMPACT_20 && TRACE_SHARED
+                      try
+                      {
+                          Trace.WriteLine(HelperMethods.StringFormat(
+                              CultureInfo.CurrentCulture, "Native library " +
+                              "pre-loader failed to replace XML " +
+                              "configuration file \"{0}\" tokens: {1}",
+                              fileName, e)); /* throw */
+                      }
+                      catch
+                      {
+                          // do nothing.
+                      }
+#endif
+                  }
+              }
+          }
+
+          return value;
+      }
+
+      /////////////////////////////////////////////////////////////////////////
+
+      /// <summary>
       /// Queries and returns the value of the specified setting, using the
       /// specified XML configuration file.
       /// </summary>
@@ -820,10 +905,17 @@ namespace System.Data.SQLite
                   if (element.HasAttribute("value"))
                       value = element.GetAttribute("value");
 
+                  if (!String.IsNullOrEmpty(value))
+                  {
 #if !PLATFORM_COMPACTFRAMEWORK
-                  if (expand && !String.IsNullOrEmpty(value))
-                      value = Environment.ExpandEnvironmentVariables(value);
+                      if (expand)
+                          value = Environment.ExpandEnvironmentVariables(value);
+
+                      value = ReplaceEnvironmentVariableTokens(value);
 #endif
+
+                      value = ReplaceXmlConfigFileTokens(fileName, value);
+                  }
 
                   if (value != null)
                       return value;
@@ -853,6 +945,63 @@ namespace System.Data.SQLite
 
           return @default;
       }
+
+      /////////////////////////////////////////////////////////////////////////
+
+#if !PLATFORM_COMPACTFRAMEWORK
+      /// <summary>
+      /// If necessary, replaces all supported environment variable tokens
+      /// with their associated values.
+      /// </summary>
+      /// <param name="value">
+      /// A setting value read from an environment variable.
+      /// </param>
+      /// <returns>
+      /// The value of the <paramref name="value" /> will all supported
+      /// environment variable tokens replaced.  No return value is reserved
+      /// to indicate an error.  This method cannot fail.
+      /// </returns>
+      private static string ReplaceEnvironmentVariableTokens(
+          string value
+          )
+      {
+          if (!String.IsNullOrEmpty(value))
+          {
+              string directory = GetAssemblyDirectory();
+
+              if (!String.IsNullOrEmpty(directory))
+              {
+                  try
+                  {
+                      value = value.Replace(
+                          AssemblyDirectoryToken, directory);
+                  }
+#if !NET_COMPACT_20 && TRACE_SHARED
+                  catch (Exception e)
+#else
+                  catch (Exception)
+#endif
+                  {
+#if !NET_COMPACT_20 && TRACE_SHARED
+                      try
+                      {
+                          Trace.WriteLine(HelperMethods.StringFormat(
+                              CultureInfo.CurrentCulture, "Native library " +
+                              "pre-loader failed to replace environment " +
+                              "variable tokens: {0}", e)); /* throw */
+                      }
+                      catch
+                      {
+                          // do nothing.
+                      }
+#endif
+                  }
+              }
+          }
+
+          return value;
+      }
+#endif
 
       /////////////////////////////////////////////////////////////////////////
       /// <summary>
@@ -934,8 +1083,13 @@ namespace System.Data.SQLite
 
           value = Environment.GetEnvironmentVariable(name);
 
-          if (expand && !String.IsNullOrEmpty(value))
-              value = Environment.ExpandEnvironmentVariables(value);
+          if (!String.IsNullOrEmpty(value))
+          {
+              if (expand)
+                  value = Environment.ExpandEnvironmentVariables(value);
+
+              value = ReplaceEnvironmentVariableTokens(value);
+          }
 
           if (value != null)
               return value;
