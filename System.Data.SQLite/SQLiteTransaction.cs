@@ -23,8 +23,18 @@ namespace System.Data.SQLite
         /// The connection to which this transaction is bound
         /// </summary>
         internal SQLiteConnection _cnn;
-        internal int _version; // Matches the version of the connection
+
+        /// <summary>
+        /// Matches the version of the connection.
+        /// </summary>
+        private int _version;
+
+        /// <summary>
+        /// The isolation level for this transaction.
+        /// </summary>
         private IsolationLevel _level;
+
+        ///////////////////////////////////////////////////////////////////////////////////////////////
 
         /// <summary>
         /// Constructs the transaction object, binding it to the supplied connection
@@ -228,7 +238,7 @@ namespace System.Data.SQLite
         /// <param name="throwError">
         /// Non-zero to re-throw caught exceptions.
         /// </param>
-        internal void IssueRollback(bool throwError)
+        private void IssueRollback(bool throwError)
         {
             SQLiteConnection cnn = Interlocked.Exchange(ref _cnn, null);
 
@@ -304,7 +314,7 @@ namespace System.Data.SQLite
         /// <returns>
         /// Non-zero if this transaction is valid; otherwise, false.
         /// </returns>
-        internal bool IsValid(bool throwError)
+        private bool IsValid(bool throwError)
         {
             if (_cnn == null)
             {
