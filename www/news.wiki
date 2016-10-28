@@ -8,6 +8,7 @@
 <ul>
     <li>Updated to [https://www.sqlite.org/releaselog/3_15_0.html|SQLite 3.15.0].</li>
     <li>Prevent the GetByte, GetChar, and GetInt16 methods of the SQLiteDataReader class from throwing exceptions for large integer values. Pursuant to [5535448538].&nbsp;<b>** Potentially Incompatible Change **</b></li>
+    <li>Use [https://www.sqlite.org/lang_savepoint.html|SAVEPOINTs] to properly implement nested transactions. Fix for [1f7bfff467].&nbsp;<b>** Potentially Incompatible Change **</b></li>
 </ul>
 <p>
     <b>1.0.103.0 - September 15, 2016</b>
