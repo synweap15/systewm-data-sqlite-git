@@ -32,10 +32,10 @@ runTest {test tkt-1f7bfff467-1.1 {rollback nested transaction} -setup {
 
   set result [list]
 
-  set transaction(1) [sql transaction begin $db]
-
-  lappend result [sql execute -transaction $transaction(1) \
+  lappend result [sql execute \
       -execute scalar $db "SELECT COUNT(*) FROM t1;"]
+
+  set transaction(1) [sql transaction begin $db]
 
   sql execute -transaction $transaction(1) $db \
       "INSERT INTO t1(x) VALUES(4);"
