@@ -7,230 +7,330 @@
 
 namespace System.Data.SQLite
 {
-  using System;
-  using System.Data;
-  using System.Data.Common;
-  using System.Threading;
-
-  /// <summary>
-  /// SQLite implementation of DbTransaction.
-  /// </summary>
-  public sealed class SQLiteTransaction : DbTransaction
-  {
-    /// <summary>
-    /// The connection to which this transaction is bound
-    /// </summary>
-    internal SQLiteConnection _cnn;
-    internal int _version; // Matches the version of the connection
-    private IsolationLevel _level;
-
-    /// <summary>
-    /// Constructs the transaction object, binding it to the supplied connection
-    /// </summary>
-    /// <param name="connection">The connection to open a transaction on</param>
-    /// <param name="deferredLock">TRUE to defer the writelock, or FALSE to lock immediately</param>
-    internal SQLiteTransaction(SQLiteConnection connection, bool deferredLock)
-    {
-      _cnn = connection;
-      _version = _cnn._version;
-
-      _level = (deferredLock == true) ?
-          SQLiteConnection.DeferredIsolationLevel :
-          SQLiteConnection.ImmediateIsolationLevel;
-
-      if (_cnn._transactionLevel++ == 0)
-      {
-        try
-        {
-          using (SQLiteCommand cmd = _cnn.CreateCommand())
-          {
-            if (!deferredLock)
-              cmd.CommandText = "BEGIN IMMEDIATE";
-            else
-              cmd.CommandText = "BEGIN";
-
-            cmd.ExecuteNonQuery();
-          }
-        }
-        catch (SQLiteException)
-        {
-          _cnn._transactionLevel--;
-          _cnn = null;
-          throw;
-        }
-      }
-    }
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////
-
-    #region IDisposable "Pattern" Members
-    private bool disposed;
-    private void CheckDisposed() /* throw */
-    {
-#if THROW_ON_DISPOSED
-        if (disposed)
-            throw new ObjectDisposedException(typeof(SQLiteTransaction).Name);
-#endif
-    }
+    using System;
+    using System.Data;
+    using System.Data.Common;
+    using System.Threading;
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
 
     /// <summary>
-    /// Disposes the transaction.  If it is currently active, any changes are rolled back.
+    /// SQLite implementation of DbTransaction.
     /// </summary>
-    protected override void Dispose(bool disposing)
+    public sealed class SQLiteTransaction : DbTransaction
     {
-        try
+        /// <summary>
+        /// The connection to which this transaction is bound
+        /// </summary>
+        internal SQLiteConnection _cnn;
+        internal int _version; // Matches the version of the connection
+        private IsolationLevel _level;
+
+        /// <summary>
+        /// Constructs the transaction object, binding it to the supplied connection
+        /// </summary>
+        /// <param name="connection">The connection to open a transaction on</param>
+        /// <param name="deferredLock">TRUE to defer the writelock, or FALSE to lock immediately</param>
+        internal SQLiteTransaction(SQLiteConnection connection, bool deferredLock)
         {
-            if (!disposed)
+            _cnn = connection;
+            _version = _cnn._version;
+
+            _level = (deferredLock == true) ?
+                SQLiteConnection.DeferredIsolationLevel :
+                SQLiteConnection.ImmediateIsolationLevel;
+
+            int level;
+
+            if ((level = _cnn._transactionLevel++) == 0)
             {
-                if (disposing)
+                try
                 {
-                    ////////////////////////////////////
-                    // dispose managed resources here...
-                    ////////////////////////////////////
-
-                    if (IsValid(false))
+                    using (SQLiteCommand cmd = _cnn.CreateCommand())
                     {
-                        IssueRollback(false);
+                        if (!deferredLock)
+                            cmd.CommandText = "BEGIN IMMEDIATE;";
+                        else
+                            cmd.CommandText = "BEGIN;";
+
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+                catch (SQLiteException)
+                {
+                    _cnn._transactionLevel--;
+                    _cnn = null;
+
+                    throw;
+                }
+            }
+            else
+            {
+                try
+                {
+                    using (SQLiteCommand cmd = _cnn.CreateCommand())
+                    {
+                        cmd.CommandText = String.Format(
+                            "SAVEPOINT {0};", GetSavePointName(level));
+
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+                catch (SQLiteException)
+                {
+                    _cnn._transactionLevel--;
+                    _cnn = null;
+
+                    throw;
+                }
+            }
+        }
+
+        ///////////////////////////////////////////////////////////////////////////////////////////////
+
+        #region IDisposable "Pattern" Members
+        private bool disposed;
+        private void CheckDisposed() /* throw */
+        {
+#if THROW_ON_DISPOSED
+            if (disposed)
+                throw new ObjectDisposedException(typeof(SQLiteTransaction).Name);
+#endif
+        }
+
+        ///////////////////////////////////////////////////////////////////////////////////////////////
+
+        /// <summary>
+        /// Disposes the transaction.  If it is currently active, any changes are rolled back.
+        /// </summary>
+        protected override void Dispose(bool disposing)
+        {
+            try
+            {
+                if (!disposed)
+                {
+                    if (disposing)
+                    {
+                        ////////////////////////////////////
+                        // dispose managed resources here...
+                        ////////////////////////////////////
+
+                        if (IsValid(false))
+                        {
+                            IssueRollback(false);
+                        }
+                    }
+
+                    //////////////////////////////////////
+                    // release unmanaged resources here...
+                    //////////////////////////////////////
+                }
+            }
+            finally
+            {
+                base.Dispose(disposing);
+
+                //
+                // NOTE: Everything should be fully disposed at this point.
+                //
+                disposed = true;
+            }
+        }
+        #endregion
+
+        ///////////////////////////////////////////////////////////////////////////////////////////////
+
+        /// <summary>
+        /// Commits the current transaction.
+        /// </summary>
+        public override void Commit()
+        {
+            CheckDisposed();
+            SQLiteConnection.Check(_cnn);
+            IsValid(true);
+
+            int level = _cnn._transactionLevel;
+
+            if (level - 1 == 0)
+            {
+                using (SQLiteCommand cmd = _cnn.CreateCommand())
+                {
+                    cmd.CommandText = "COMMIT;";
+                    cmd.ExecuteNonQuery();
+                }
+
+                _cnn._transactionLevel--;
+                _cnn = null;
+            }
+            else
+            {
+                using (SQLiteCommand cmd = _cnn.CreateCommand())
+                {
+                    cmd.CommandText = String.Format(
+                        "RELEASE {0};", GetSavePointName(level - 1));
+
+                    cmd.ExecuteNonQuery();
+                }
+
+                _cnn._transactionLevel--;
+            }
+        }
+
+        ///////////////////////////////////////////////////////////////////////////////////////////////
+
+        /// <summary>
+        /// Returns the underlying connection to which this transaction applies.
+        /// </summary>
+        public new SQLiteConnection Connection
+        {
+            get { CheckDisposed(); return _cnn; }
+        }
+
+        ///////////////////////////////////////////////////////////////////////////////////////////////
+
+        /// <summary>
+        /// Forwards to the local Connection property
+        /// </summary>
+        protected override DbConnection DbConnection
+        {
+            get { return Connection; }
+        }
+
+        ///////////////////////////////////////////////////////////////////////////////////////////////
+
+        /// <summary>
+        /// Gets the isolation level of the transaction.  SQLite only supports Serializable transactions.
+        /// </summary>
+        public override IsolationLevel IsolationLevel
+        {
+            get { CheckDisposed(); return _level; }
+        }
+
+        ///////////////////////////////////////////////////////////////////////////////////////////////
+
+        /// <summary>
+        /// Rolls back the active transaction.
+        /// </summary>
+        public override void Rollback()
+        {
+            CheckDisposed();
+            SQLiteConnection.Check(_cnn);
+            IsValid(true);
+            IssueRollback(true);
+        }
+
+        ///////////////////////////////////////////////////////////////////////////////////////////////
+
+        /// <summary>
+        /// Issue a ROLLBACK command against the database connection,
+        /// optionally re-throwing any caught exception.
+        /// </summary>
+        /// <param name="throwError">
+        /// Non-zero to re-throw caught exceptions.
+        /// </param>
+        internal void IssueRollback(bool throwError)
+        {
+            SQLiteConnection cnn = Interlocked.Exchange(ref _cnn, null);
+
+            if (cnn != null)
+            {
+                int level = cnn._transactionLevel;
+
+                if (level - 1 == 0)
+                {
+                    try
+                    {
+                        using (SQLiteCommand cmd = cnn.CreateCommand())
+                        {
+                            cmd.CommandText = "ROLLBACK;";
+                            cmd.ExecuteNonQuery();
+                        }
+                    }
+                    catch
+                    {
+                        if (throwError)
+                            throw;
+                    }
+                }
+                else
+                {
+                    try
+                    {
+                        using (SQLiteCommand cmd = cnn.CreateCommand())
+                        {
+                            cmd.CommandText = String.Format(
+                                "ROLLBACK TO {0};", GetSavePointName(level - 1));
+
+                            cmd.ExecuteNonQuery();
+                        }
+                    }
+                    catch
+                    {
+                        if (throwError)
+                            throw;
                     }
                 }
 
-                //////////////////////////////////////
-                // release unmanaged resources here...
-                //////////////////////////////////////
+                cnn._transactionLevel--;
             }
         }
-        finally
-        {
-            base.Dispose(disposing);
 
-            //
-            // NOTE: Everything should be fully disposed at this point.
-            //
-            disposed = true;
+        ///////////////////////////////////////////////////////////////////////////////////////////////
+
+        /// <summary>
+        /// Constructs the name of a new or existing savepoint.
+        /// </summary>
+        /// <param name="level">
+        /// The transaction level associated with the connection.
+        /// </param>
+        /// <returns>
+        /// The name of the savepoint -OR- null if it cannot be constructed.
+        /// </returns>
+        private static string GetSavePointName(
+            int level
+            )
+        {
+            return String.Format("sqlite_dotnet_savepoint_{0}", level);
         }
-    }
-    #endregion
 
-    ///////////////////////////////////////////////////////////////////////////////////////////////
+        ///////////////////////////////////////////////////////////////////////////////////////////////
 
-    /// <summary>
-    /// Commits the current transaction.
-    /// </summary>
-    public override void Commit()
-    {
-      CheckDisposed();
-      SQLiteConnection.Check(_cnn);
-      IsValid(true);
-
-      if (_cnn._transactionLevel - 1 == 0)
-      {
-        using (SQLiteCommand cmd = _cnn.CreateCommand())
+        /// <summary>
+        /// Checks the state of this transaction, optionally throwing an exception if a state inconsistency is found.
+        /// </summary>
+        /// <param name="throwError">
+        /// Non-zero to throw an exception if a state inconsistency is found.
+        /// </param>
+        /// <returns>
+        /// Non-zero if this transaction is valid; otherwise, false.
+        /// </returns>
+        internal bool IsValid(bool throwError)
         {
-          cmd.CommandText = "COMMIT";
-          cmd.ExecuteNonQuery();
-        }
-      }
-      _cnn._transactionLevel--;
-      _cnn = null;
-    }
-
-    /// <summary>
-    /// Returns the underlying connection to which this transaction applies.
-    /// </summary>
-    public new SQLiteConnection Connection
-    {
-      get { CheckDisposed(); return _cnn; }
-    }
-
-    /// <summary>
-    /// Forwards to the local Connection property
-    /// </summary>
-    protected override DbConnection DbConnection
-    {
-      get { return Connection; }
-    }
-
-    /// <summary>
-    /// Gets the isolation level of the transaction.  SQLite only supports Serializable transactions.
-    /// </summary>
-    public override IsolationLevel IsolationLevel
-    {
-      get { CheckDisposed(); return _level; }
-    }
-
-    /// <summary>
-    /// Rolls back the active transaction.
-    /// </summary>
-    public override void Rollback()
-    {
-      CheckDisposed();
-      SQLiteConnection.Check(_cnn);
-      IsValid(true);
-      IssueRollback(true);
-    }
-
-    internal void IssueRollback(bool throwError)
-    {
-      SQLiteConnection cnn = Interlocked.Exchange(ref _cnn, null);
-
-      if (cnn != null)
-      {
-        if (_cnn._transactionLevel - 1 == 0)
-        {
-          try
-          {
-            using (SQLiteCommand cmd = cnn.CreateCommand())
+            if (_cnn == null)
             {
-              cmd.CommandText = "ROLLBACK";
-              cmd.ExecuteNonQuery();
+                if (throwError == true) throw new ArgumentNullException("No connection associated with this transaction");
+                else return false;
             }
-          }
-          catch
-          {
-            if (throwError)
-              throw;
-          }
-          cnn._transactionLevel--;
+
+            if (_cnn._version != _version)
+            {
+                if (throwError == true) throw new SQLiteException("The connection was closed and re-opened, changes were already rolled back");
+                else return false;
+            }
+            if (_cnn.State != ConnectionState.Open)
+            {
+                if (throwError == true) throw new SQLiteException("Connection was closed");
+                else return false;
+            }
+
+            if (_cnn._transactionLevel == 0 || _cnn._sql.AutoCommit == true)
+            {
+                _cnn._transactionLevel = 0; // Make sure the transaction level is reset before returning
+                if (throwError == true) throw new SQLiteException("No transaction is active on this connection");
+                else return false;
+            }
+
+            return true;
         }
-        else
-        {
-          cnn._transactionLevel--;
-
-          if (throwError)
-            throw new SQLiteException("Cannot rollback a nested transaction");
-        }
-      }
     }
-
-    internal bool IsValid(bool throwError)
-    {
-      if (_cnn == null)
-      {
-        if (throwError == true) throw new ArgumentNullException("No connection associated with this transaction");
-        else return false;
-      }
-
-      if (_cnn._version != _version)
-      {
-        if (throwError == true) throw new SQLiteException("The connection was closed and re-opened, changes were already rolled back");
-        else return false;
-      }
-      if (_cnn.State != ConnectionState.Open)
-      {
-        if (throwError == true) throw new SQLiteException("Connection was closed");
-        else return false;
-      }
-
-      if (_cnn._transactionLevel == 0 || _cnn._sql.AutoCommit == true)
-      {
-        _cnn._transactionLevel = 0; // Make sure the transaction level is reset before returning
-        if (throwError == true) throw new SQLiteException("No transaction is active on this connection");
-        else return false;
-      }
-
-      return true;
-    }
-  }
 }
