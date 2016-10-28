@@ -314,7 +314,7 @@ namespace System.Data.SQLite
         /// <returns>
         /// Non-zero if this transaction is valid; otherwise, false.
         /// </returns>
-        private bool IsValid(bool throwError)
+        internal bool IsValid(bool throwError)
         {
             if (_cnn == null)
             {
