@@ -1081,6 +1081,10 @@ namespace eval ::Eagle {
       }
     }
 
+    proc getStringMapForTclEscape {} {
+      return [list \\ \\\\ \[ \\\[ \] \\\] \$ \\\$]
+    }
+
     proc getTestOverridesPreamble { {extraVarNames ""} } {
       set varNames [list]
 
@@ -1122,7 +1126,8 @@ namespace eval ::Eagle {
           # NOTE: Append a script fragment to the result that will correctly
           #       copy any contained value to another interpreter context.
           #
-          append result \n "set " $fullVarName " \{" [set $fullVarName] \}
+          append result \n "set " $fullVarName " \{" [string map \
+              [getStringMapForTclEscape] [set $fullVarName]] \}
         }
       }
 
