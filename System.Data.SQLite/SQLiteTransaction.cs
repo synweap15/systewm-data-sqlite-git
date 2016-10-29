@@ -8,6 +8,7 @@
 namespace System.Data.SQLite
 {
     using System;
+    using System.Collections.Generic;
     using System.Data;
     using System.Data.Common;
     using System.Threading;
@@ -33,6 +34,16 @@ namespace System.Data.SQLite
         /// The isolation level for this transaction.
         /// </summary>
         private IsolationLevel _level;
+
+        /// <summary>
+        /// The SAVEPOINT names for each transaction level.
+        /// </summary>
+        private Dictionary<int, string> _savePointNames;
+
+        /// <summary>
+        /// Random number generator used when creating new SAVEPOINT names.
+        /// </summary>
+        private Random _random;
 
         ///////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -296,11 +307,27 @@ namespace System.Data.SQLite
         /// <returns>
         /// The name of the savepoint -OR- null if it cannot be constructed.
         /// </returns>
-        private static string GetSavePointName(
+        private string GetSavePointName(
             int level
             )
         {
-            return String.Format("sqlite_dotnet_savepoint_{0}", level);
+            if (_savePointNames == null)
+                _savePointNames = new Dictionary<int, string>();
+
+            string name;
+
+            if (!_savePointNames.TryGetValue(level, out name))
+            {
+                if (_random == null)
+                    _random = new Random();
+
+                name = String.Format(
+                    "sqlite_dotnet_savepoint_{0}_{1}", level, _random.Next());
+
+                _savePointNames[level] = name;
+            }
+
+            return name;
         }
 
         ///////////////////////////////////////////////////////////////////////////////////////////////
