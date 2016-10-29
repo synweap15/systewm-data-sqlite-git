@@ -24,8 +24,12 @@ namespace System.Data.SQLite
 
   using System.Runtime.InteropServices;
 
+#if (NET_40 || NET_45 || NET_451 || NET_452 || NET_46 || NET_461 || NET_462) && !PLATFORM_COMPACTFRAMEWORK
+  using System.Runtime.Versioning;
+#endif
+
 #if !PLATFORM_COMPACTFRAMEWORK
-  using System.Text;
+    using System.Text;
 #endif
 
 #if !PLATFORM_COMPACTFRAMEWORK || COUNT_HANDLE
@@ -602,6 +606,15 @@ namespace System.Data.SQLite
       /// </summary>
       private static readonly string AssemblyDirectoryToken =
           "%PreLoadSQLite_AssemblyDirectory%";
+
+      /////////////////////////////////////////////////////////////////////////
+      /// <summary>
+      /// This is the environment variable token that will be replaced with an
+      /// abbreviation of the target framework attribute value associated with
+      /// this assembly.
+      /// </summary>
+      private static readonly string TargetFrameworkToken =
+          "%PreLoadSQLite_TargetFramework%";
 #endif
       #endregion
 
@@ -950,6 +963,84 @@ namespace System.Data.SQLite
 
 #if !PLATFORM_COMPACTFRAMEWORK
       /// <summary>
+      /// Attempts to determine the target framework attribute value that is
+      /// associated with the specified managed assembly, if applicable.
+      /// </summary>
+      /// <param name="assembly">
+      /// The managed assembly to read the target framework attribute value
+      /// from.
+      /// </param>
+      /// <returns>
+      /// The value of the target framework attribute value for the specified
+      /// managed assembly -OR- null if it cannot be determined.  If this
+      /// assembly was compiled with a version of the .NET Framework prior to
+      /// version 4.0, the value returned MAY reflect that version of the .NET
+      /// Framework instead of the one associated with the specified managed
+      /// assembly.
+      /// </returns>
+      private static string GetAssemblyTargetFramework(
+          Assembly assembly
+          )
+      {
+          if (assembly != null)
+          {
+#if (NET_40 || NET_45 || NET_451 || NET_452 || NET_46 || NET_461 || NET_462) && !PLATFORM_COMPACTFRAMEWORK
+              try
+              {
+                  if (assembly.IsDefined(
+                          typeof(TargetFrameworkAttribute), false))
+                  {
+                      TargetFrameworkAttribute targetFramework =
+                          (TargetFrameworkAttribute)
+                          assembly.GetCustomAttributes(
+                              typeof(TargetFrameworkAttribute), false)[0];
+
+                      return targetFramework.FrameworkName;
+                  }
+              }
+              catch
+              {
+                  // do nothing.
+              }
+#elif NET_35
+              return ".NETFramework,Version=v3.5";
+#elif NET_20
+              return ".NETFramework,Version=v2.0";
+#endif
+          }
+
+          return null;
+      }
+
+      /////////////////////////////////////////////////////////////////////////
+
+      /// <summary>
+      /// Accepts a long target framework attribute value and makes it into a
+      /// much shorter version, suitable for use with NuGet packages.
+      /// </summary>
+      /// <param name="value">
+      /// The long target framework attribute value to convert.
+      /// </param>
+      /// <returns>
+      /// The short target framework attribute value -OR- null if it cannot
+      /// be determined or converted.
+      /// </returns>
+      private static string AbbreviateTargetFramework(
+          string value
+          )
+      {
+          if (String.IsNullOrEmpty(value))
+              return value;
+
+          value = value.Replace(".NETFramework,Version=v", "net");
+          value = value.Replace(".", String.Empty);
+
+          return value;
+      }
+
+      /////////////////////////////////////////////////////////////////////////
+
+      /// <summary>
       /// If necessary, replaces all supported environment variable tokens
       /// with their associated values.
       /// </summary>
@@ -987,8 +1078,67 @@ namespace System.Data.SQLite
                       {
                           Trace.WriteLine(HelperMethods.StringFormat(
                               CultureInfo.CurrentCulture, "Native library " +
-                              "pre-loader failed to replace environment " +
-                              "variable tokens: {0}", e)); /* throw */
+                              "pre-loader failed to replace assembly " +
+                              "directory token: {0}", e)); /* throw */
+                      }
+                      catch
+                      {
+                          // do nothing.
+                      }
+#endif
+                  }
+              }
+
+              Assembly assembly = null;
+
+              try
+              {
+                  assembly = Assembly.GetExecutingAssembly();
+              }
+#if !NET_COMPACT_20 && TRACE_SHARED
+              catch (Exception e)
+#else
+              catch (Exception)
+#endif
+              {
+#if !NET_COMPACT_20 && TRACE_SHARED
+                  try
+                  {
+                      Trace.WriteLine(HelperMethods.StringFormat(
+                          CultureInfo.CurrentCulture, "Native library " +
+                          "pre-loader failed to obtain executing " +
+                          "assembly: {0}", e)); /* throw */
+                  }
+                  catch
+                  {
+                      // do nothing.
+                  }
+#endif
+              }
+
+              string targetFramework = AbbreviateTargetFramework(
+                  GetAssemblyTargetFramework(assembly));
+
+              if (!String.IsNullOrEmpty(targetFramework))
+              {
+                  try
+                  {
+                      value = value.Replace(
+                          TargetFrameworkToken, targetFramework);
+                  }
+#if !NET_COMPACT_20 && TRACE_SHARED
+                  catch (Exception e)
+#else
+                  catch (Exception)
+#endif
+                  {
+#if !NET_COMPACT_20 && TRACE_SHARED
+                      try
+                      {
+                          Trace.WriteLine(HelperMethods.StringFormat(
+                              CultureInfo.CurrentCulture, "Native library " +
+                              "pre-loader failed to replace target " +
+                              "framework token: {0}", e)); /* throw */
                       }
                       catch
                       {

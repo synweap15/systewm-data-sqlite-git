@@ -59,9 +59,18 @@
           <td>%PreLoadSQLite_AssemblyDirectory%</td>
           <td>If this token (which is <b>case-sensitive</b> and <b>must include
           the percent characters</b>) is present within a setting value being
-          returned, it will be replaced with the qualified name of the directory
-          containing the System.Data.SQLite assembly.  If the name of the
-          directory is not available, the token will not be replaced.</td>
+          returned, it will be replaced with the qualified name of the
+          directory containing the System.Data.SQLite assembly.  If the name of
+          the directory is not available, the token will not be replaced.</td>
+        </tr>
+        <tr valign="top">
+          <td>%PreLoadSQLite_TargetFramework%</td>
+          <td>If this token (which is <b>case-sensitive</b> and <b>must include
+          the percent characters</b>) is present within a setting value being
+          returned, it will be replaced with an abbreviation of the target
+          framework attribute value for the System.Data.SQLite assembly.  If
+          the target framework attribute value is not available, the token will
+          not be replaced.</td>
         </tr>
         <tr valign="top">
           <td>%PreLoadSQLite_XmlConfigDirectory%</td>

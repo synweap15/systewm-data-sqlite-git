@@ -25,6 +25,7 @@ moveSystemDataSQLiteDllConfig false
 ###############################################################################
 
 set d472_binary_directory [string map [list \\ /] [getBinaryDirectory]]
+set d472_target_framework [string map [list Fx ""] [getBuildNetFx]]
 
 ###############################################################################
 
@@ -34,10 +35,11 @@ runTest {test tkt-d4728aecb7-1.1 {tokens in environment variable} -setup \
   package require Eagle.Test
   package require System.Data.SQLite.Test
 
-  saveEnvironmentVariables [list d472_1 d472_2] savedEnv
+  saveEnvironmentVariables [list d472_1 d472_2 d472_3] savedEnv
 
   set env(d472_1) {prfx1/%PreLoadSQLite_AssemblyDirectory%/sufx1}
-  set env(d472_2) {prfx2/%PreLoadSQLite_XmlConfigDirectory%/sufx2}
+  set env(d472_2) {prfx2/%PreLoadSQLite_TargetFramework%/sufx2}
+  set env(d472_3) {prfx3/%PreLoadSQLite_XmlConfigDirectory%/sufx3}
 
   object load -loadtype File [file join \
       [getBinaryDirectory] System.Data.SQLite.dll]
@@ -50,15 +52,18 @@ runTest {test tkt-d4728aecb7-1.1 {tokens in environment variable} -setup \
   lappend result [string map [list \\ /] [object invoke -flags +NonPublic \
       System.Data.SQLite.UnsafeNativeMethods GetSettingValue d472_2 null]]
 
+  lappend result [string map [list \\ /] [object invoke -flags +NonPublic \
+      System.Data.SQLite.UnsafeNativeMethods GetSettingValue d472_3 null]]
+
   set result
 } -cleanup {
-  restoreEnvironmentVariables [list d472_1 d472_2] savedEnv
+  restoreEnvironmentVariables [list d472_1 d472_2 d472_3] savedEnv
 
   unset -nocomplain result
 } -isolationLevel AppDomain -constraints {eagle command.object\
 compile.ISOLATED_INTERPRETERS System.Data.SQLite} -result [list [appendArgs \
-prfx1/ $d472_binary_directory /sufx1] \
-prfx2/%PreLoadSQLite_XmlConfigDirectory%/sufx2]}
+prfx1/ $d472_binary_directory /sufx1] [appendArgs prfx2/ \
+$d472_target_framework /sufx2] prfx3/%PreLoadSQLite_XmlConfigDirectory%/sufx3]}
 
 ###############################################################################
 
@@ -80,7 +85,9 @@ runTest {test tkt-d4728aecb7-1.2 {tokens in XML configuration file} -setup \
         <add key="d472_1"
              value="prfx1/%PreLoadSQLite_AssemblyDirectory%/sufx1" />
         <add key="d472_2"
-             value="prfx2/%PreLoadSQLite_XmlConfigDirectory%/sufx2" />
+             value="prfx2/%PreLoadSQLite_TargetFramework%/sufx2" />
+        <add key="d472_3"
+             value="prfx3/%PreLoadSQLite_XmlConfigDirectory%/sufx3" />
       </appSettings>
     </configuration>
   }]
@@ -96,6 +103,9 @@ runTest {test tkt-d4728aecb7-1.2 {tokens in XML configuration file} -setup \
   lappend result [string map [list \\ /] [object invoke -flags +NonPublic \
       System.Data.SQLite.UnsafeNativeMethods GetSettingValue d472_2 null]]
 
+  lappend result [string map [list \\ /] [object invoke -flags +NonPublic \
+      System.Data.SQLite.UnsafeNativeMethods GetSettingValue d472_3 null]]
+
   set result
 } -cleanup {
   catch {file delete $fileName}
@@ -106,11 +116,12 @@ runTest {test tkt-d4728aecb7-1.2 {tokens in XML configuration file} -setup \
 } -isolationLevel AppDomain -constraints {eagle command.object\
 compile.ISOLATED_INTERPRETERS System.Data.SQLite} -result [list [appendArgs \
 prfx1/ $d472_binary_directory /sufx1] [appendArgs prfx2/ \
-$d472_binary_directory /sufx2]]}
+$d472_target_framework /sufx2] [appendArgs prfx3/ $d472_binary_directory \
+/sufx3]]}
 
 ###############################################################################
 
-unset -nocomplain d472_binary_directory
+unset -nocomplain d472_target_framework d472_binary_directory
 
 ###############################################################################
 
