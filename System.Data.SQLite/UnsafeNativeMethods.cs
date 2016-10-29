@@ -29,7 +29,7 @@ namespace System.Data.SQLite
 #endif
 
 #if !PLATFORM_COMPACTFRAMEWORK
-    using System.Text;
+  using System.Text;
 #endif
 
 #if !PLATFORM_COMPACTFRAMEWORK || COUNT_HANDLE
