@@ -984,7 +984,7 @@ namespace System.Data.SQLite
       {
           if (assembly != null)
           {
-#if (NET_40 || NET_45 || NET_451 || NET_452 || NET_46 || NET_461 || NET_462) && !PLATFORM_COMPACTFRAMEWORK
+#if NET_40 || NET_45 || NET_451 || NET_452 || NET_46 || NET_461 || NET_462
               try
               {
                   if (assembly.IsDefined(
