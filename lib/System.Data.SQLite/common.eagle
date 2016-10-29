@@ -1143,13 +1143,13 @@ namespace eval ::Eagle {
     }
 
     proc moveSystemDataSQLiteDllConfig { {restore false} {verbose true} } {
-      set directory [object invoke AppDomain CurrentDomain.BaseDirectory]
+      set directory [getBinaryDirectory]
 
       if {[string length $directory] == 0} then {
         if {$verbose} then {
           tputs $::test_channel [appendArgs \
               "---- skipped moving \"System.Data.SQLite.dll.config\", " \
-              "no base directory\n"]
+              "no binary directory\n"]
         }
 
         return
