@@ -43,6 +43,38 @@
     <div id="mainSection">
     <div id="mainBody">
       <p>
+        The following <b>special replacement tokens</b> may be recognized and
+        replaced with their associated runtime value, depending on context,
+        when setting values are being read by the native library pre-loading
+        subsystem.  Unless otherwise stated explicitly, all of these tokens
+        are <b>case-sensitive</b> and the percent characters <b>must be
+        included</b> in order for them to be recognized.
+      </p>
+      <table width="80%" cellpadding="0" cellspacing="0">
+        <tr valign="top">
+          <th>Name</th>
+          <th>Description</th>
+        </tr>
+        <tr valign="top">
+          <td>%PreLoadSQLite_AssemblyDirectory%</td>
+          <td>If this token (which is <b>case-sensitive</b> and <b>must include
+          the percent characters</b>) is present within a setting value being
+          returned, it will be replaced with the qualified name of the directory
+          containing the System.Data.SQLite assembly.  If the name of the
+          directory is not available, the token will not be replaced.</td>
+        </tr>
+        <tr valign="top">
+          <td>%PreLoadSQLite_XmlConfigDirectory%</td>
+          <td>If this token (which is <b>case-sensitive</b> and <b>must include
+          the percent characters</b>) is present within a setting value
+          being returned, it will be replaced with the qualified name of the
+          directory containing the XML configuration file.  If the name of the
+          directory is not available, the token will not be replaced.
+          Generally, this token may only be used within the XML configuration
+          file itself.</td>
+        </tr>
+      </table>
+      <p>
         These environment variables are used to control several features of
         the System.Data.SQLite library.  All of these environment variables
         are optional.  If a particular environment variable is not present,

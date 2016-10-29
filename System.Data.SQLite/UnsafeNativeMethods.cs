@@ -589,7 +589,7 @@ namespace System.Data.SQLite
       /// file.
       /// </summary>
       private static readonly string XmlConfigDirectoryToken =
-          "%SQLite_XmlConfigDirectory%";
+          "%PreLoadSQLite_XmlConfigDirectory%";
       #endregion
 
       /////////////////////////////////////////////////////////////////////////
@@ -601,7 +601,7 @@ namespace System.Data.SQLite
       /// the qualified path to the directory containing this assembly.
       /// </summary>
       private static readonly string AssemblyDirectoryToken =
-          "%SQLite_AssemblyDirectory%";
+          "%PreLoadSQLite_AssemblyDirectory%";
 #endif
       #endregion
 
