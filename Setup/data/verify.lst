@@ -235,6 +235,8 @@ set sds_manifests(source) {
   NuGet/shared/Core/content/
   NuGet/shared/Core/content/config.install.xdt
   NuGet/shared/Core/content/config.transform
+  NuGet/shared/Core/lib/
+  NuGet/shared/Core/lib/System.Data.SQLite.dll.config
   NuGet/SQLite.Beta.nuspec
   NuGet/SQLite.Core.Beta.nuspec
   NuGet/SQLite.Core.MSIL.Beta.nuspec
