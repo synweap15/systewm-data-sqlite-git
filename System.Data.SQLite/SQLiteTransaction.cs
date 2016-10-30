@@ -179,9 +179,6 @@ namespace System.Data.SQLite
                     cmd.CommandText = "COMMIT;";
                     cmd.ExecuteNonQuery();
                 }
-
-                _cnn._transactionLevel--;
-                _cnn = null;
             }
             else
             {
@@ -192,9 +189,10 @@ namespace System.Data.SQLite
 
                     cmd.ExecuteNonQuery();
                 }
-
-                _cnn._transactionLevel--;
             }
+
+            _cnn._transactionLevel--;
+            _cnn = null;
         }
 
         ///////////////////////////////////////////////////////////////////////////////////////////////
