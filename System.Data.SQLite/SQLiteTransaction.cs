@@ -36,14 +36,15 @@ namespace System.Data.SQLite
         private IsolationLevel _level;
 
         /// <summary>
+        /// The original transaction level for the associated connection
+        /// when this transaction was created (i.e. begun).
+        /// </summary>
+        private int _beginLevel;
+
+        /// <summary>
         /// The SAVEPOINT names for each transaction level.
         /// </summary>
         private Dictionary<int, string> _savePointNames;
-
-        /// <summary>
-        /// Random number generator used when creating new SAVEPOINT names.
-        /// </summary>
-        private Random _random;
 
         ///////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -61,9 +62,9 @@ namespace System.Data.SQLite
                 SQLiteConnection.DeferredIsolationLevel :
                 SQLiteConnection.ImmediateIsolationLevel;
 
-            int level;
+            int transactionLevel;
 
-            if ((level = _cnn._transactionLevel++) == 0)
+            if ((transactionLevel = _cnn._transactionLevel++) == 0)
             {
                 try
                 {
@@ -75,6 +76,8 @@ namespace System.Data.SQLite
                             cmd.CommandText = "BEGIN;";
 
                         cmd.ExecuteNonQuery();
+
+                        _beginLevel = transactionLevel;
                     }
                 }
                 catch (SQLiteException)
@@ -92,9 +95,12 @@ namespace System.Data.SQLite
                     using (SQLiteCommand cmd = _cnn.CreateCommand())
                     {
                         cmd.CommandText = String.Format(
-                            "SAVEPOINT {0};", GetSavePointName(level));
+                            "SAVEPOINT {0};", GetSavePointName(
+                            transactionLevel));
 
                         cmd.ExecuteNonQuery();
+
+                        _beginLevel = transactionLevel;
                     }
                 }
                 catch (SQLiteException)
@@ -170,29 +176,33 @@ namespace System.Data.SQLite
             SQLiteConnection.Check(_cnn);
             IsValid(true);
 
-            int level = _cnn._transactionLevel;
-
-            if (level - 1 == 0)
+            if (_beginLevel == 0)
             {
                 using (SQLiteCommand cmd = _cnn.CreateCommand())
                 {
                     cmd.CommandText = "COMMIT;";
                     cmd.ExecuteNonQuery();
                 }
+
+                _cnn._transactionLevel = 0;
+                _cnn = null;
             }
             else
             {
                 using (SQLiteCommand cmd = _cnn.CreateCommand())
                 {
+                    int transactionLevel = _cnn._transactionLevel;
+
                     cmd.CommandText = String.Format(
-                        "RELEASE {0};", GetSavePointName(level - 1));
+                        "RELEASE {0};", GetSavePointName(
+                        transactionLevel - 1));
 
                     cmd.ExecuteNonQuery();
                 }
-            }
 
-            _cnn._transactionLevel--;
-            _cnn = null;
+                _cnn._transactionLevel--;
+                _cnn = null;
+            }
         }
 
         ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -253,9 +263,7 @@ namespace System.Data.SQLite
 
             if (cnn != null)
             {
-                int level = cnn._transactionLevel;
-
-                if (level - 1 == 0)
+                if (_beginLevel == 0)
                 {
                     try
                     {
@@ -264,6 +272,8 @@ namespace System.Data.SQLite
                             cmd.CommandText = "ROLLBACK;";
                             cmd.ExecuteNonQuery();
                         }
+
+                        cnn._transactionLevel = 0;
                     }
                     catch
                     {
@@ -277,11 +287,16 @@ namespace System.Data.SQLite
                     {
                         using (SQLiteCommand cmd = cnn.CreateCommand())
                         {
+                            int transactionLevel = cnn._transactionLevel;
+
                             cmd.CommandText = String.Format(
-                                "ROLLBACK TO {0};", GetSavePointName(level - 1));
+                                "ROLLBACK TO {0};", GetSavePointName(
+                                transactionLevel - 1));
 
                             cmd.ExecuteNonQuery();
                         }
+
+                        cnn._transactionLevel--;
                     }
                     catch
                     {
@@ -289,8 +304,6 @@ namespace System.Data.SQLite
                             throw;
                     }
                 }
-
-                cnn._transactionLevel--;
             }
         }
 
@@ -299,14 +312,14 @@ namespace System.Data.SQLite
         /// <summary>
         /// Constructs the name of a new or existing savepoint.
         /// </summary>
-        /// <param name="level">
+        /// <param name="transactionLevel">
         /// The transaction level associated with the connection.
         /// </param>
         /// <returns>
         /// The name of the savepoint -OR- null if it cannot be constructed.
         /// </returns>
         private string GetSavePointName(
-            int level
+            int transactionLevel
             )
         {
             if (_savePointNames == null)
@@ -314,15 +327,15 @@ namespace System.Data.SQLite
 
             string name;
 
-            if (!_savePointNames.TryGetValue(level, out name))
+            if (!_savePointNames.TryGetValue(transactionLevel, out name))
             {
-                if (_random == null)
-                    _random = new Random();
+                int sequence = ++_cnn._transactionSequence;
 
                 name = String.Format(
-                    "sqlite_dotnet_savepoint_{0}_{1}", level, _random.Next());
+                    "sqlite_dotnet_savepoint_{0}_{1}",
+                    transactionLevel, sequence);
 
-                _savePointNames[level] = name;
+                _savePointNames[transactionLevel] = name;
             }
 
             return name;

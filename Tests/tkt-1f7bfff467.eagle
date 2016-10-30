@@ -69,8 +69,89 @@ runTest {test tkt-1f7bfff467-1.1 {rollback nested transaction} -setup {
   cleanupDb $fileName
 
   unset -nocomplain result transaction db fileName
-} -constraints {eagle command.object monoBug28 monoBug211 command.sql\
-compile.DATA SQLite System.Data.SQLite} -result {3 {1 2 3 4} {1 3 4} {1 2 4 9}}}
+} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
+System.Data.SQLite} -result {3 {1 2 3 4} {1 3 4} {1 2 4 9}}}
+
+###############################################################################
+
+runTest {test tkt-1f7bfff467-1.2 {commit outer transaction} -setup {
+  setupDb [set fileName tkt-1f7bfff467-1.2.db]
+} -body {
+  sql execute $db {
+    CREATE TABLE t1(x);
+    INSERT INTO t1(x) VALUES(1);
+  }
+
+  set sql(1) { \
+    INSERT INTO t1(x) VALUES(2); \
+  }
+
+  set sql(2) { \
+    INSERT INTO t1(x) VALUES(3); \
+  }
+
+  set id [object invoke Interpreter.GetActive NextId]
+  set dataSource [file join [getDatabaseDirectory] $fileName]
+
+  unset -nocomplain results errors
+
+  set code [compileCSharpWith [subst {
+    using System.Data.SQLite;
+
+    namespace _Dynamic${id}
+    {
+      public static class Test${id}
+      {
+        public static void Main()
+        {
+          using (SQLiteConnection connection = new SQLiteConnection(
+              "Data Source=${dataSource};[getFlagsProperty]"))
+          {
+            connection.Open();
+
+            using (SQLiteTransaction transaction1 =
+                connection.BeginTransaction())
+            {
+              using (SQLiteCommand command1 = new SQLiteCommand("${sql(1)}",
+                  connection))
+              {
+                command1.Transaction = transaction1;
+                command1.ExecuteNonQuery();
+              }
+
+              using (SQLiteTransaction transaction2 =
+                  connection.BeginTransaction())
+              {
+                using (SQLiteCommand command2 = new SQLiteCommand("${sql(2)}",
+                    connection))
+                {
+                  command2.Transaction = transaction2;
+                  command2.ExecuteNonQuery();
+
+                  transaction1.Commit();
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }] true true true results errors System.Data.SQLite.dll]
+
+  list $code $results \
+      [expr {[info exists errors] ? $errors : ""}] \
+      [expr {$code eq "Ok" ? [catch {
+        object invoke _Dynamic${id}.Test${id} Main
+      } result] : [set result ""]}] $result \
+      [sql execute -execute reader -format list $db \
+          "SELECT x FROM t1 ORDER BY x;"]
+} -cleanup {
+  cleanupDb $fileName
+
+  unset -nocomplain result results errors code sql dataSource id db fileName
+} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
+System.Data.SQLite compileCSharp} -match regexp -result {^Ok\
+System#CodeDom#Compiler#CompilerResults#\d+ \{\} 0 \{\} \{1 2 3\}$}}
 
 ###############################################################################
 
