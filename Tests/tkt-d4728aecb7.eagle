@@ -61,12 +61,19 @@ runTest {test tkt-d4728aecb7-1.1 {tokens in environment variable} -setup \
 
   unset -nocomplain result
 } -isolationLevel AppDomain -constraints {eagle command.object\
-compile.ISOLATED_INTERPRETERS System.Data.SQLite} -result [list [appendArgs \
+compile.ISOLATED_INTERPRETERS System.Data.SQLite\
+defineConstant.System.Data.SQLite.USE_INTEROP_DLL} -result [list [appendArgs \
 prfx1/ $d472_binary_directory /sufx1] [appendArgs prfx2/ \
 $d472_target_framework /sufx2] prfx3/%PreLoadSQLite_XmlConfigDirectory%/sufx3]}
 
 ###############################################################################
 
+#
+# HACK: This test relies (indirectly) upon the CodeBase property being set on
+#       the assembly loaded via its bytes to the Eagle core library assembly
+#       file name (i.e. because it is the calling assembly).  This appears to
+#       be non-portable and will not work on Mono.
+#
 runTest {test tkt-d4728aecb7-1.2 {tokens in XML configuration file} -setup \
     [getAppDomainPreamble] -body {
   package require Eagle.Library
@@ -113,8 +120,9 @@ runTest {test tkt-d4728aecb7-1.2 {tokens in XML configuration file} -setup \
   unset -nocomplain result fileName
 
   moveSystemDataSQLiteDllConfig true
-} -isolationLevel AppDomain -constraints {eagle command.object\
-compile.ISOLATED_INTERPRETERS System.Data.SQLite} -result [list [appendArgs \
+} -isolationLevel AppDomain -constraints {eagle command.object dotNet\
+compile.ISOLATED_INTERPRETERS System.Data.SQLite\
+defineConstant.System.Data.SQLite.USE_INTEROP_DLL} -result [list [appendArgs \
 prfx1/ $d472_binary_directory /sufx1] [appendArgs prfx2/ \
 $d472_target_framework /sufx2] [appendArgs prfx3/ $d472_binary_directory \
 /sufx3]]}

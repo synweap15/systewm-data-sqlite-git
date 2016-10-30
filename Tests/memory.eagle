@@ -125,9 +125,10 @@ runTest {test memory-1.1 {SQLiteDataReader memory testing} -setup {
   cleanupDb $fileName db true false false
 
   unset -nocomplain working sql counter db fileName
-} -constraints {eagle fossil_repository_file variable_test_repository_file\
-command.object windows monoBug28 command.sql compile.DATA SQLite\
-System.Data.SQLite} -result {}}
+} -constraints \
+{eagle command.object windows monoBug28 command.sql compile.DATA SQLite\
+System.Data.SQLite fossil_repository_file variable_test_repository_file} \
+-result {}}
 
 ###############################################################################
 
