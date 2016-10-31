@@ -47,5 +47,10 @@
     <file src="shared\Core\build\System.Data.SQLite.Core.targets" target="build\net45\System.Data.SQLite.Core.Test.targets" />
     <file src="shared\Core\build\System.Data.SQLite.Core.targets" target="build\net451\System.Data.SQLite.Core.Test.targets" />
     <file src="shared\Core\build\System.Data.SQLite.Core.targets" target="build\net46\System.Data.SQLite.Core.Test.targets" />
+    <file src="shared\Core\lib\System.Data.SQLite.dll.config" target="lib\net20" />
+    <file src="shared\Core\lib\System.Data.SQLite.dll.config" target="lib\net40" />
+    <file src="shared\Core\lib\System.Data.SQLite.dll.config" target="lib\net45" />
+    <file src="shared\Core\lib\System.Data.SQLite.dll.config" target="lib\net451" />
+    <file src="shared\Core\lib\System.Data.SQLite.dll.config" target="lib\net46" />
   </files>
 </package>

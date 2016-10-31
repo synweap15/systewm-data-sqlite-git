@@ -1081,6 +1081,10 @@ namespace eval ::Eagle {
       }
     }
 
+    proc getStringMapForTclEscape {} {
+      return [list \\ \\\\ \[ \\\[ \] \\\] \$ \\\$]
+    }
+
     proc getTestOverridesPreamble { {extraVarNames ""} } {
       set varNames [list]
 
@@ -1122,7 +1126,8 @@ namespace eval ::Eagle {
           # NOTE: Append a script fragment to the result that will correctly
           #       copy any contained value to another interpreter context.
           #
-          append result \n "set " $fullVarName " \{" [set $fullVarName] \}
+          append result \n "set " $fullVarName " \{" [string map \
+              [getStringMapForTclEscape] [set $fullVarName]] \}
         }
       }
 
@@ -1138,13 +1143,13 @@ namespace eval ::Eagle {
     }
 
     proc moveSystemDataSQLiteDllConfig { {restore false} {verbose true} } {
-      set directory [object invoke AppDomain CurrentDomain.BaseDirectory]
+      set directory [getBinaryDirectory]
 
       if {[string length $directory] == 0} then {
         if {$verbose} then {
           tputs $::test_channel [appendArgs \
               "---- skipped moving \"System.Data.SQLite.dll.config\", " \
-              "no base directory\n"]
+              "no binary directory\n"]
         }
 
         return

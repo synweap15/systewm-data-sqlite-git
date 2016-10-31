@@ -1528,7 +1528,7 @@ runTest {test data-1.29 {LINQ ISQLiteSchemaExtensions.BuildTempSchema} -setup {
   freeDbConnection
 
   unset -nocomplain providerServices connection db fileName
-} -constraints {eagle monoToDo command.object SQLite System.Data.SQLite\
+} -constraints {eagle command.object monoToDo SQLite System.Data.SQLite\
 System.Data.SQLite.Linq} -result {}}
 
 ###############################################################################
@@ -1550,7 +1550,7 @@ runTest {test data-1.30 {EF6 ISQLiteSchemaExtensions.BuildTempSchema} -setup {
   freeDbConnection
 
   unset -nocomplain providerServices connection db fileName
-} -constraints {eagle monoToDo command.object SQLite System.Data.SQLite\
+} -constraints {eagle command.object monoToDo SQLite System.Data.SQLite\
 System.Data.SQLite.EF6} -result {}}
 
 ###############################################################################
