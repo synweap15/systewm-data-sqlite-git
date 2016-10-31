@@ -42,9 +42,10 @@ namespace System.Data.SQLite
         private int _beginLevel;
 
         /// <summary>
-        /// The SAVEPOINT names for each transaction level.
+        /// The SAVEPOINT name for this transaction, if any.  This will
+        /// only be non-null if this transaction is a nested one.
         /// </summary>
-        private Dictionary<int, string> _savePointNames;
+        private string _savePointName;
 
         ///////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -94,9 +95,10 @@ namespace System.Data.SQLite
                 {
                     using (SQLiteCommand cmd = _cnn.CreateCommand())
                     {
+                        _savePointName = GetSavePointName();
+
                         cmd.CommandText = String.Format(
-                            "SAVEPOINT {0};", GetSavePointName(
-                            transactionLevel));
+                            "SAVEPOINT {0};", _savePointName);
 
                         cmd.ExecuteNonQuery();
 
@@ -191,11 +193,11 @@ namespace System.Data.SQLite
             {
                 using (SQLiteCommand cmd = _cnn.CreateCommand())
                 {
-                    int transactionLevel = _cnn._transactionLevel;
+                    if (String.IsNullOrEmpty(_savePointName))
+                        throw new SQLiteException("Cannot commit, unknown SAVEPOINT");
 
                     cmd.CommandText = String.Format(
-                        "RELEASE {0};", GetSavePointName(
-                        transactionLevel - 1));
+                        "RELEASE {0};", _savePointName);
 
                     cmd.ExecuteNonQuery();
                 }
@@ -287,11 +289,11 @@ namespace System.Data.SQLite
                     {
                         using (SQLiteCommand cmd = cnn.CreateCommand())
                         {
-                            int transactionLevel = cnn._transactionLevel;
+                            if (String.IsNullOrEmpty(_savePointName))
+                                throw new SQLiteException("Cannot rollback, unknown SAVEPOINT");
 
                             cmd.CommandText = String.Format(
-                                "ROLLBACK TO {0};", GetSavePointName(
-                                transactionLevel - 1));
+                                "ROLLBACK TO {0};", _savePointName);
 
                             cmd.ExecuteNonQuery();
                         }
@@ -310,35 +312,18 @@ namespace System.Data.SQLite
         ///////////////////////////////////////////////////////////////////////////////////////////////
 
         /// <summary>
-        /// Constructs the name of a new or existing savepoint.
+        /// Constructs the name of a new savepoint for this transaction.  It
+        /// should only be called from the constructor of this class.
         /// </summary>
-        /// <param name="transactionLevel">
-        /// The transaction level associated with the connection.
-        /// </param>
         /// <returns>
-        /// The name of the savepoint -OR- null if it cannot be constructed.
+        /// The name of the new savepoint -OR- null if it cannot be constructed.
         /// </returns>
-        private string GetSavePointName(
-            int transactionLevel
-            )
+        private string GetSavePointName()
         {
-            if (_savePointNames == null)
-                _savePointNames = new Dictionary<int, string>();
+            int sequence = ++_cnn._transactionSequence;
 
-            string name;
-
-            if (!_savePointNames.TryGetValue(transactionLevel, out name))
-            {
-                int sequence = ++_cnn._transactionSequence;
-
-                name = String.Format(
-                    "sqlite_dotnet_savepoint_{0}_{1}",
-                    transactionLevel, sequence);
-
-                _savePointNames[transactionLevel] = name;
-            }
-
-            return name;
+            return String.Format(
+                "sqlite_dotnet_savepoint_{0}", sequence);
         }
 
         ///////////////////////////////////////////////////////////////////////////////////////////////
