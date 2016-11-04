@@ -12,6 +12,8 @@ namespace System.Data.SQLite
     using System.Data.Common;
     using System.Threading;
 
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+
     /// <summary>
     /// SQLite implementation of DbTransaction.
     /// </summary>
@@ -21,8 +23,18 @@ namespace System.Data.SQLite
         /// The connection to which this transaction is bound
         /// </summary>
         internal SQLiteConnection _cnn;
-        internal int _version; // Matches the version of the connection
+
+        /// <summary>
+        /// Matches the version of the connection.
+        /// </summary>
+        private int _version;
+
+        /// <summary>
+        /// The isolation level for this transaction.
+        /// </summary>
         private IsolationLevel _level;
+
+        ///////////////////////////////////////////////////////////////////////////////////////////////
 
         /// <summary>
         /// Constructs the transaction object, binding it to the supplied connection
@@ -136,6 +148,8 @@ namespace System.Data.SQLite
             _cnn = null;
         }
 
+        ///////////////////////////////////////////////////////////////////////////////////////////////
+
         /// <summary>
         /// Returns the underlying connection to which this transaction applies.
         /// </summary>
@@ -143,6 +157,8 @@ namespace System.Data.SQLite
         {
             get { CheckDisposed(); return _cnn; }
         }
+
+        ///////////////////////////////////////////////////////////////////////////////////////////////
 
         /// <summary>
         /// Forwards to the local Connection property
@@ -152,6 +168,8 @@ namespace System.Data.SQLite
             get { return Connection; }
         }
 
+        ///////////////////////////////////////////////////////////////////////////////////////////////
+
         /// <summary>
         /// Gets the isolation level of the transaction.  SQLite only supports Serializable transactions.
         /// </summary>
@@ -159,6 +177,8 @@ namespace System.Data.SQLite
         {
             get { CheckDisposed(); return _level; }
         }
+
+        ///////////////////////////////////////////////////////////////////////////////////////////////
 
         /// <summary>
         /// Rolls back the active transaction.
@@ -170,6 +190,8 @@ namespace System.Data.SQLite
             IsValid(true);
             IssueRollback(true);
         }
+
+        ///////////////////////////////////////////////////////////////////////////////////////////////
 
         internal void IssueRollback(bool throwError)
         {
@@ -193,6 +215,8 @@ namespace System.Data.SQLite
                 cnn._transactionLevel = 0;
             }
         }
+
+        ///////////////////////////////////////////////////////////////////////////////////////////////
 
         internal bool IsValid(bool throwError)
         {
