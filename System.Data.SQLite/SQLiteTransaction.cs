@@ -57,9 +57,9 @@ namespace System.Data.SQLite
                     using (SQLiteCommand cmd = _cnn.CreateCommand())
                     {
                         if (!deferredLock)
-                            cmd.CommandText = "BEGIN IMMEDIATE";
+                            cmd.CommandText = "BEGIN IMMEDIATE;";
                         else
-                            cmd.CommandText = "BEGIN";
+                            cmd.CommandText = "BEGIN;";
 
                         cmd.ExecuteNonQuery();
                     }
@@ -68,6 +68,7 @@ namespace System.Data.SQLite
                 {
                     _cnn._transactionLevel--;
                     _cnn = null;
+
                     throw;
                 }
             }
@@ -140,7 +141,7 @@ namespace System.Data.SQLite
             {
                 using (SQLiteCommand cmd = _cnn.CreateCommand())
                 {
-                    cmd.CommandText = "COMMIT";
+                    cmd.CommandText = "COMMIT;";
                     cmd.ExecuteNonQuery();
                 }
             }
@@ -193,6 +194,13 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////////////////////////////
 
+        /// <summary>
+        /// Issue a ROLLBACK command against the database connection,
+        /// optionally re-throwing any caught exception.
+        /// </summary>
+        /// <param name="throwError">
+        /// Non-zero to re-throw caught exceptions.
+        /// </param>
         internal void IssueRollback(bool throwError)
         {
             SQLiteConnection cnn = Interlocked.Exchange(ref _cnn, null);
@@ -203,7 +211,7 @@ namespace System.Data.SQLite
                 {
                     using (SQLiteCommand cmd = cnn.CreateCommand())
                     {
-                        cmd.CommandText = "ROLLBACK";
+                        cmd.CommandText = "ROLLBACK;";
                         cmd.ExecuteNonQuery();
                     }
                 }
@@ -218,6 +226,15 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////////////////////////////
 
+        /// <summary>
+        /// Checks the state of this transaction, optionally throwing an exception if a state inconsistency is found.
+        /// </summary>
+        /// <param name="throwError">
+        /// Non-zero to throw an exception if a state inconsistency is found.
+        /// </param>
+        /// <returns>
+        /// Non-zero if this transaction is valid; otherwise, false.
+        /// </returns>
         internal bool IsValid(bool throwError)
         {
             if (_cnn == null)
