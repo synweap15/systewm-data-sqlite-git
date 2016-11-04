@@ -106,19 +106,6 @@ namespace System.Data.SQLite
         ///////////////////////////////////////////////////////////////////////////////////////////////
 
         /// <summary>
-        /// Rolls back the active transaction.
-        /// </summary>
-        public override void Rollback()
-        {
-            CheckDisposed();
-            SQLiteConnection.Check(_cnn);
-            IsValid(true);
-            IssueRollback(true);
-        }
-
-        ///////////////////////////////////////////////////////////////////////////////////////////////
-
-        /// <summary>
         /// Attempts to start a transaction.  An exception will be thrown if the transaction cannot
         /// be started for any reason.
         /// </summary>
