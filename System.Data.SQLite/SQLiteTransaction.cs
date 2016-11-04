@@ -201,7 +201,7 @@ namespace System.Data.SQLite
         /// <param name="throwError">
         /// Non-zero to re-throw caught exceptions.
         /// </param>
-        internal void IssueRollback(bool throwError)
+        private void IssueRollback(bool throwError)
         {
             SQLiteConnection cnn = Interlocked.Exchange(ref _cnn, null);
 
