@@ -51,6 +51,8 @@
     <Compile Include="SQLitePatchLevel.cs" />
     <Compile Include="SQLiteStatement.cs" />
     <Compile Include="SQLiteTransaction.cs" />
+    <Compile Include="SQLiteTransaction2.cs" />
+    <Compile Include="SQLiteTransactionBase.cs" />
     <Compile Include="UnsafeNativeMethods.cs" />
     <Compile Include="Resources\SR.Designer.cs">
       <DependentUpon>SR.resx</DependentUpon>

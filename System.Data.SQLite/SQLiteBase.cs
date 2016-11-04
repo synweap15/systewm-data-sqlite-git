@@ -1238,6 +1238,14 @@ namespace System.Data.SQLite
       NoVerifyTypeAffinity = 0x4000000000,
 
       /// <summary>
+      /// Allow transactions to be nested.  The outermost transaction still
+      /// controls whether or not any changes are ultimately committed or
+      /// rolled back.  All non-outermost transactions are implemented using
+      /// the SAVEPOINT construct.
+      /// </summary>
+      AllowNestedTransactions = 0x8000000000,
+
+      /// <summary>
       /// When binding parameter values or returning column values, always
       /// treat them as though they were plain text (i.e. no numeric,
       /// date/time, or other conversions should be attempted).

@@ -590,6 +590,8 @@ set sds_manifests(source) {
   System.Data.SQLite/SQLitePatchLevel.cs
   System.Data.SQLite/SQLiteStatement.cs
   System.Data.SQLite/SQLiteTransaction.cs
+  System.Data.SQLite/SQLiteTransaction2.cs
+  System.Data.SQLite/SQLiteTransactionBase.cs
   System.Data.SQLite/System.Data.SQLite.2005.csproj
   System.Data.SQLite/System.Data.SQLite.2008.csproj
   System.Data.SQLite/System.Data.SQLite.2010.csproj

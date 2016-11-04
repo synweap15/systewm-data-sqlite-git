@@ -2803,8 +2803,19 @@ namespace System.Data.SQLite
       if (isolationLevel != ImmediateIsolationLevel && isolationLevel != DeferredIsolationLevel)
         throw new ArgumentException("isolationLevel");
 
-      SQLiteTransaction transaction =
-          new SQLiteTransaction(this, isolationLevel != ImmediateIsolationLevel);
+      SQLiteTransaction transaction;
+
+      if ((_flags & SQLiteConnectionFlags.AllowNestedTransactions)
+            == SQLiteConnectionFlags.AllowNestedTransactions)
+      {
+          transaction = new SQLiteTransaction2(
+              this, isolationLevel != ImmediateIsolationLevel);
+      }
+      else
+      {
+          transaction = new SQLiteTransaction(
+              this, isolationLevel != ImmediateIsolationLevel);
+      }
 
       OnChanged(this, new ConnectionEventArgs(
           SQLiteConnectionEventType.NewTransaction, null, transaction,

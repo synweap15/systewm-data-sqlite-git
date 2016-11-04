@@ -8,26 +8,60 @@
 namespace System.Data.SQLite
 {
     using System;
-    using System.Threading;
+    using System.Data;
+    using System.Data.Common;
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
 
     /// <summary>
-    /// SQLite implementation of DbTransaction that does not support nested transactions.
+    /// Base class used by to implement DbTransaction for SQLite.
     /// </summary>
-    public class SQLiteTransaction : SQLiteTransactionBase
+    public abstract class SQLiteTransactionBase : DbTransaction
     {
+        /// <summary>
+        /// The connection to which this transaction is bound.
+        /// </summary>
+        internal SQLiteConnection _cnn;
+
+        /// <summary>
+        /// Matches the version of the connection.
+        /// </summary>
+        internal int _version;
+
+        /// <summary>
+        /// The isolation level for this transaction.
+        /// </summary>
+        private IsolationLevel _level;
+
+        ///////////////////////////////////////////////////////////////////////////////////////////////
+
         /// <summary>
         /// Constructs the transaction object, binding it to the supplied connection
         /// </summary>
         /// <param name="connection">The connection to open a transaction on</param>
         /// <param name="deferredLock">TRUE to defer the writelock, or FALSE to lock immediately</param>
-        internal SQLiteTransaction(SQLiteConnection connection, bool deferredLock)
-            : base(connection, deferredLock)
+        internal SQLiteTransactionBase(SQLiteConnection connection, bool deferredLock)
         {
-            // do nothing.
+            _cnn = connection;
+            _version = _cnn._version;
+
+            _level = (deferredLock == true) ?
+                SQLiteConnection.DeferredIsolationLevel :
+                SQLiteConnection.ImmediateIsolationLevel;
+
+            Begin(deferredLock);
         }
 
+        ///////////////////////////////////////////////////////////////////////////////////////////////
+
+        /// <summary>
+        /// Gets the isolation level of the transaction.  SQLite only supports Serializable transactions.
+        /// </summary>
+        public override IsolationLevel IsolationLevel
+        {
+            get { CheckDisposed(); return _level; }
+        }
+ 
         ///////////////////////////////////////////////////////////////////////////////////////////////
 
         #region IDisposable "Pattern" Members
@@ -36,7 +70,10 @@ namespace System.Data.SQLite
         {
 #if THROW_ON_DISPOSED
             if (disposed)
-                throw new ObjectDisposedException(typeof(SQLiteTransaction).Name);
+            {
+                throw new ObjectDisposedException(
+                    typeof(SQLiteTransactionBase).Name);
+            }
 #endif
         }
 
@@ -83,24 +120,21 @@ namespace System.Data.SQLite
         ///////////////////////////////////////////////////////////////////////////////////////////////
 
         /// <summary>
-        /// Commits the current transaction.
+        /// Returns the underlying connection to which this transaction applies.
         /// </summary>
-        public override void Commit()
+        public new SQLiteConnection Connection
         {
-            CheckDisposed();
-            SQLiteConnection.Check(_cnn);
-            IsValid(true);
+            get { CheckDisposed(); return _cnn; }
+        }
 
-            if (_cnn._transactionLevel - 1 == 0)
-            {
-                using (SQLiteCommand cmd = _cnn.CreateCommand())
-                {
-                    cmd.CommandText = "COMMIT;";
-                    cmd.ExecuteNonQuery();
-                }
-            }
-            _cnn._transactionLevel--;
-            _cnn = null;
+        ///////////////////////////////////////////////////////////////////////////////////////////////
+
+        /// <summary>
+        /// Forwards to the local Connection property
+        /// </summary>
+        protected override DbConnection DbConnection
+        {
+            get { return Connection; }
         }
 
         ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -123,37 +157,7 @@ namespace System.Data.SQLite
         /// be started for any reason.
         /// </summary>
         /// <param name="deferredLock">TRUE to defer the writelock, or FALSE to lock immediately</param>
-        protected override void Begin(
-            bool deferredLock
-            )
-        {
-            if (_cnn._transactionLevel++ == 0)
-            {
-                try
-                {
-                    using (SQLiteCommand cmd = _cnn.CreateCommand())
-                    {
-                        if (!deferredLock)
-                            cmd.CommandText = "BEGIN IMMEDIATE;";
-                        else
-                            cmd.CommandText = "BEGIN;";
-
-                        cmd.ExecuteNonQuery();
-                    }
-                }
-                catch (SQLiteException)
-                {
-                    _cnn._transactionLevel--;
-                    _cnn = null;
-
-                    throw;
-                }
-            }
-            else
-            {
-                throw new SQLiteException("Transaction is already active on this connection");
-            }
-        }
+        protected abstract void Begin(bool deferredLock);
 
         ///////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -164,29 +168,47 @@ namespace System.Data.SQLite
         /// <param name="throwError">
         /// Non-zero to re-throw caught exceptions.
         /// </param>
-        protected override void IssueRollback(
-            bool throwError
-            )
-        {
-            SQLiteConnection cnn = Interlocked.Exchange(ref _cnn, null);
+        protected abstract void IssueRollback(bool throwError);
 
-            if (cnn != null)
+        ///////////////////////////////////////////////////////////////////////////////////////////////
+
+        /// <summary>
+        /// Checks the state of this transaction, optionally throwing an exception if a state
+        /// inconsistency is found.
+        /// </summary>
+        /// <param name="throwError">
+        /// Non-zero to throw an exception if a state inconsistency is found.
+        /// </param>
+        /// <returns>
+        /// Non-zero if this transaction is valid; otherwise, false.
+        /// </returns>
+        internal bool IsValid(bool throwError)
+        {
+            if (_cnn == null)
             {
-                try
-                {
-                    using (SQLiteCommand cmd = cnn.CreateCommand())
-                    {
-                        cmd.CommandText = "ROLLBACK;";
-                        cmd.ExecuteNonQuery();
-                    }
-                }
-                catch
-                {
-                    if (throwError)
-                        throw;
-                }
-                cnn._transactionLevel = 0;
+                if (throwError == true) throw new ArgumentNullException("No connection associated with this transaction");
+                else return false;
             }
+
+            if (_cnn._version != _version)
+            {
+                if (throwError == true) throw new SQLiteException("The connection was closed and re-opened, changes were already rolled back");
+                else return false;
+            }
+            if (_cnn.State != ConnectionState.Open)
+            {
+                if (throwError == true) throw new SQLiteException("Connection was closed");
+                else return false;
+            }
+
+            if (_cnn._transactionLevel == 0 || _cnn._sql.AutoCommit == true)
+            {
+                _cnn._transactionLevel = 0; // Make sure the transaction level is reset before returning
+                if (throwError == true) throw new SQLiteException("No transaction is active on this connection");
+                else return false;
+            }
+
+            return true;
         }
     }
 }

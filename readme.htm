@@ -215,7 +215,7 @@ released versions of System.Data.SQLite.
     <li>Updated to <a href="https://www.sqlite.org/releaselog/3_15_0.html">SQLite 3.15.0</a>.</li>
     <li>Add the &quot;%PreLoadSQLite_AssemblyDirectory%&quot;, &quot;%PreLoadSQLite_TargetFramework%&quot;, and &quot;%PreLoadSQLite_XmlConfigDirectory%&quot; <a href="https://system.data.sqlite.org/index.html/artifact?ci=trunk&filename=Doc/Extra/Provider/environment.html">replacement tokens</a> for use in configuration setting values. Pursuant to [d4728aecb7].</li>
     <li>Prevent the GetByte, GetChar, and GetInt16 methods of the SQLiteDataReader class from throwing exceptions for large integer values. Pursuant to [5535448538].&nbsp;<b>** Potentially Incompatible Change **</b></li>
-    <li>Use <a href="https://www.sqlite.org/lang_savepoint.html">SAVEPOINTs</a> to properly implement nested transactions. Fix for [1f7bfff467].&nbsp;<b>** Potentially Incompatible Change **</b></li>
+    <li>Use <a href="https://www.sqlite.org/lang_savepoint.html">SAVEPOINTs</a> to properly implement nested transactions when the new AllowNestedTransactions connection flag is used. Fix for [1f7bfff467].</li>
 </ul>
 <p>
     <b>1.0.103.0 - September 15, 2016</b>
