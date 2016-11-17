@@ -1035,6 +1035,11 @@ namespace System.Data.SQLite
           value = value.Replace(".NETFramework,Version=v", "net");
           value = value.Replace(".", String.Empty);
 
+          int index = value.IndexOf(',');
+
+          if (index != -1)
+              value = value.Substring(0, index);
+
           return value;
       }
 
