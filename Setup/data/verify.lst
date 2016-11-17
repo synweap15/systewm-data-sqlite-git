@@ -590,6 +590,8 @@ set sds_manifests(source) {
   System.Data.SQLite/SQLitePatchLevel.cs
   System.Data.SQLite/SQLiteStatement.cs
   System.Data.SQLite/SQLiteTransaction.cs
+  System.Data.SQLite/SQLiteTransaction2.cs
+  System.Data.SQLite/SQLiteTransactionBase.cs
   System.Data.SQLite/System.Data.SQLite.2005.csproj
   System.Data.SQLite/System.Data.SQLite.2008.csproj
   System.Data.SQLite/System.Data.SQLite.2010.csproj
@@ -791,6 +793,7 @@ set sds_manifests(source) {
   Tests/tkt-0ed01c447c.eagle
   Tests/tkt-17045010df.eagle
   Tests/tkt-1c456ae75f.eagle
+  Tests/tkt-1f7bfff467.eagle
   Tests/tkt-201128cc88.eagle
   Tests/tkt-2556655d1b.eagle
   Tests/tkt-2abbf2c244.eagle

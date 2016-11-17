@@ -1446,6 +1446,12 @@ namespace System.Data.SQLite
     internal int _transactionLevel;
 
     /// <summary>
+    /// Transaction counter for the connection.  Currently, this is only used
+    /// to build SAVEPOINT names.
+    /// </summary>
+    internal int _transactionSequence;
+
+    /// <summary>
     /// If this flag is non-zero, the <see cref="Dispose()" /> method will have
     /// no effect; however, the <see cref="Close" /> method will continue to
     /// behave as normal.
@@ -2797,8 +2803,19 @@ namespace System.Data.SQLite
       if (isolationLevel != ImmediateIsolationLevel && isolationLevel != DeferredIsolationLevel)
         throw new ArgumentException("isolationLevel");
 
-      SQLiteTransaction transaction =
-          new SQLiteTransaction(this, isolationLevel != ImmediateIsolationLevel);
+      SQLiteTransaction transaction;
+
+      if ((_flags & SQLiteConnectionFlags.AllowNestedTransactions)
+            == SQLiteConnectionFlags.AllowNestedTransactions)
+      {
+          transaction = new SQLiteTransaction2(
+              this, isolationLevel != ImmediateIsolationLevel);
+      }
+      else
+      {
+          transaction = new SQLiteTransaction(
+              this, isolationLevel != ImmediateIsolationLevel);
+      }
 
       OnChanged(this, new ConnectionEventArgs(
           SQLiteConnectionEventType.NewTransaction, null, transaction,
@@ -2845,6 +2862,7 @@ namespace System.Data.SQLite
           SQLiteConnection cnn = new SQLiteConnection();
           cnn._sql = _sql;
           cnn._transactionLevel = _transactionLevel;
+          cnn._transactionSequence = _transactionSequence;
           cnn._enlistment = _enlistment;
           cnn._connectionState = _connectionState;
           cnn._version = _version;
@@ -2862,6 +2880,7 @@ namespace System.Data.SQLite
           _sql = null;
         }
         _transactionLevel = 0;
+        _transactionSequence = 0;
       }
 
       StateChangeEventArgs eventArgs = null;

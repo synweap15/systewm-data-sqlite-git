@@ -13,16 +13,30 @@ namespace System.Data.SQLite
     ///////////////////////////////////////////////////////////////////////////////////////////////////
 
     /// <summary>
-    /// SQLite implementation of DbTransaction that does not support nested transactions.
+    /// SQLite implementation of DbTransaction that does support nested transactions.
     /// </summary>
-    public class SQLiteTransaction : SQLiteTransactionBase
+    public sealed class SQLiteTransaction2 : SQLiteTransaction
     {
+        /// <summary>
+        /// The original transaction level for the associated connection
+        /// when this transaction was created (i.e. begun).
+        /// </summary>
+        private int _beginLevel;
+
+        /// <summary>
+        /// The SAVEPOINT name for this transaction, if any.  This will
+        /// only be non-null if this transaction is a nested one.
+        /// </summary>
+        private string _savePointName;
+
+        ///////////////////////////////////////////////////////////////////////////////////////////////
+
         /// <summary>
         /// Constructs the transaction object, binding it to the supplied connection
         /// </summary>
         /// <param name="connection">The connection to open a transaction on</param>
         /// <param name="deferredLock">TRUE to defer the writelock, or FALSE to lock immediately</param>
-        internal SQLiteTransaction(SQLiteConnection connection, bool deferredLock)
+        internal SQLiteTransaction2(SQLiteConnection connection, bool deferredLock)
             : base(connection, deferredLock)
         {
             // do nothing.
@@ -36,7 +50,7 @@ namespace System.Data.SQLite
         {
 #if THROW_ON_DISPOSED
             if (disposed)
-                throw new ObjectDisposedException(typeof(SQLiteTransaction).Name);
+                throw new ObjectDisposedException(typeof(SQLiteTransaction2).Name);
 #endif
         }
 
@@ -91,16 +105,33 @@ namespace System.Data.SQLite
             SQLiteConnection.Check(_cnn);
             IsValid(true);
 
-            if (_cnn._transactionLevel - 1 == 0)
+            if (_beginLevel == 0)
             {
                 using (SQLiteCommand cmd = _cnn.CreateCommand())
                 {
                     cmd.CommandText = "COMMIT;";
                     cmd.ExecuteNonQuery();
                 }
+
+                _cnn._transactionLevel = 0;
+                _cnn = null;
             }
-            _cnn._transactionLevel--;
-            _cnn = null;
+            else
+            {
+                using (SQLiteCommand cmd = _cnn.CreateCommand())
+                {
+                    if (String.IsNullOrEmpty(_savePointName))
+                        throw new SQLiteException("Cannot commit, unknown SAVEPOINT");
+
+                    cmd.CommandText = String.Format(
+                        "RELEASE {0};", _savePointName);
+
+                    cmd.ExecuteNonQuery();
+                }
+
+                _cnn._transactionLevel--;
+                _cnn = null;
+            }
         }
 
         ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -114,7 +145,9 @@ namespace System.Data.SQLite
             bool deferredLock
             )
         {
-            if (_cnn._transactionLevel++ == 0)
+            int transactionLevel;
+
+            if ((transactionLevel = _cnn._transactionLevel++) == 0)
             {
                 try
                 {
@@ -126,6 +159,32 @@ namespace System.Data.SQLite
                             cmd.CommandText = "BEGIN;";
 
                         cmd.ExecuteNonQuery();
+
+                        _beginLevel = transactionLevel;
+                    }
+                }
+                catch (SQLiteException)
+                {
+                    _cnn._transactionLevel--;
+                    _cnn = null;
+
+                    throw;
+                }
+            }
+            else
+            {
+                try
+                {
+                    using (SQLiteCommand cmd = _cnn.CreateCommand())
+                    {
+                        _savePointName = GetSavePointName();
+
+                        cmd.CommandText = String.Format(
+                            "SAVEPOINT {0};", _savePointName);
+
+                        cmd.ExecuteNonQuery();
+
+                        _beginLevel = transactionLevel;
                     }
                 }
                 catch (SQLiteException)
@@ -147,29 +206,71 @@ namespace System.Data.SQLite
         /// <param name="throwError">
         /// Non-zero to re-throw caught exceptions.
         /// </param>
-        protected override void IssueRollback(
-            bool throwError
-            )
+        protected override void IssueRollback(bool throwError)
         {
             SQLiteConnection cnn = Interlocked.Exchange(ref _cnn, null);
 
             if (cnn != null)
             {
-                try
+                if (_beginLevel == 0)
                 {
-                    using (SQLiteCommand cmd = cnn.CreateCommand())
+                    try
                     {
-                        cmd.CommandText = "ROLLBACK;";
-                        cmd.ExecuteNonQuery();
+                        using (SQLiteCommand cmd = cnn.CreateCommand())
+                        {
+                            cmd.CommandText = "ROLLBACK;";
+                            cmd.ExecuteNonQuery();
+                        }
+
+                        cnn._transactionLevel = 0;
+                    }
+                    catch
+                    {
+                        if (throwError)
+                            throw;
                     }
                 }
-                catch
+                else
                 {
-                    if (throwError)
-                        throw;
+                    try
+                    {
+                        using (SQLiteCommand cmd = cnn.CreateCommand())
+                        {
+                            if (String.IsNullOrEmpty(_savePointName))
+                                throw new SQLiteException("Cannot rollback, unknown SAVEPOINT");
+
+                            cmd.CommandText = String.Format(
+                                "ROLLBACK TO {0};", _savePointName);
+
+                            cmd.ExecuteNonQuery();
+                        }
+
+                        cnn._transactionLevel--;
+                    }
+                    catch
+                    {
+                        if (throwError)
+                            throw;
+                    }
                 }
-                cnn._transactionLevel = 0;
             }
+        }
+
+        ///////////////////////////////////////////////////////////////////////////////////////////////
+
+        /// <summary>
+        /// Constructs the name of a new savepoint for this transaction.  It
+        /// should only be called from the constructor of this class.
+        /// </summary>
+        /// <returns>
+        /// The name of the new savepoint -OR- null if it cannot be constructed.
+        /// </returns>
+        private string GetSavePointName()
+        {
+            int sequence = ++_cnn._transactionSequence;
+
+            return String.Format(
+                "sqlite_dotnet_savepoint_{0}", sequence);
         }
     }
 }
