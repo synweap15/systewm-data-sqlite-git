@@ -70,14 +70,18 @@ runTest {test tkt-1f7bfff467-1.0 {rollback nested transaction} -setup {
 
   extractSystemDataSQLiteExceptionMessage $error
 } -cleanup {
+  catch {sql transaction rollback $transaction(2)}
   catch {sql transaction rollback $transaction(1)}
 
   cleanupDb $fileName
 
+  catch {removeDbTransaction $transaction(2)}
+  catch {removeDbTransaction $transaction(1)}
+
   unset -nocomplain error result transaction db fileName
 } -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
-System.Data.SQLite} -result {unknown error -- Transaction is already active on\
-this connection}}
+System.Data.SQLite} -result {unknown error -- No transaction is active on this\
+connection}}
 
 ###############################################################################
 

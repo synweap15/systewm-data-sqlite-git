@@ -2663,6 +2663,15 @@ namespace eval ::Eagle {
           $db $connection
     }
 
+    proc removeDbTransaction { transaction } {
+      #
+      # NOTE: Remove the database transaction provided by our caller from the
+      #       list of those known to the Eagle interpreter.
+      #
+      object invoke -flags +NonPublic Interpreter.GetActive.transactions \
+          Remove $transaction
+    }
+
     proc getRowsFromDataTable { dataTable {valueCallback ""} } {
       set rows [list]
       set count [$dataTable Columns.Count]

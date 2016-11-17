@@ -136,10 +136,6 @@ namespace System.Data.SQLite
                     throw;
                 }
             }
-            else
-            {
-                throw new SQLiteException("Transaction is already active on this connection");
-            }
         }
 
         ///////////////////////////////////////////////////////////////////////////////////////////////
