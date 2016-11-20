@@ -997,8 +997,13 @@ namespace System.Data.SQLite
 
                 SQLiteFunction f = pair.Value;
 
-                if ((f == null) ||
-                    !UnbindFunction(sqlbase, pr, f, flags))
+                if ((f != null) &&
+                    UnbindFunction(sqlbase, pr, f, flags))
+                {
+                    /* IGNORED */
+                    sqlbase.Functions.Remove(pr);
+                }
+                else
                 {
                     result = false;
                 }
