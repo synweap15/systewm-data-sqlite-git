@@ -184,7 +184,8 @@ namespace System.Data.SQLite
         /// than there are hidden columns in the virtual table.
         /// </para>
         /// <para>
-        /// Beginning with SQLite version 3.14.0, the CREATE TABLE statement that
+        /// Beginning with SQLite version 3.14.0 (2016-08-08), 
+        /// the CREATE TABLE statement that
         /// is passed into sqlite3_declare_vtab() may contain a WITHOUT ROWID clause.
         /// This is useful for cases where the virtual table rows 
         /// cannot easily be mapped into unique integers.  A CREATE TABLE
@@ -535,7 +536,8 @@ namespace System.Data.SQLite
         /// in the order by clause and whether or not that column is ASC or DESC.
         /// </para>
         /// <para>
-        /// In SQLite version 3.10.0 and later, the colUsed field is available
+        /// In SQLite version 3.10.0 (2016-01-06) and later, 
+        /// the colUsed field is available
         /// to indicate which fields of the virtual table are actually used by the
         /// statement being prepared.  If the lowest bit of colUsed is set, that
         /// means that the first column is used.  The second lowest bit corresponds
@@ -1061,14 +1063,14 @@ namespace System.Data.SQLite
         /// <![CDATA[<dl>]]>
         /// <![CDATA[<dt>]]><![CDATA[<b>]]>argc = 1<![CDATA[</b>]]>
         /// <![CDATA[</dt>]]><![CDATA[<dd>]]>The single row with rowid equal to argv[0] is deleted. No insert occurs.
-        /// <![CDATA[</dd>]]><![CDATA[<dt>]]><![CDATA[<b>]]>argc &gt; 1 <![CDATA[<br>]]> argv[0] = NULL<![CDATA[</br>]]><![CDATA[</b>]]>
+        /// <![CDATA[</dd>]]><![CDATA[<dt>]]><![CDATA[<b>]]>argc &gt; 1 <![CDATA[<br>]]> argv[0] = NULL<![CDATA[</b>]]>
         /// <![CDATA[</dt>]]><![CDATA[<dd>]]>A new row is inserted with a rowid argv[1] and column values in
         ///        argv[2] and following.  If argv[1] is an SQL NULL,
         ///        the a new unique rowid is generated automatically.
-        /// <![CDATA[</dd>]]><![CDATA[<dt>]]><![CDATA[<b>]]>argc &gt; 1 <![CDATA[<br>]]> argv[0] &#8800; NULL <![CDATA[</br>]]><![CDATA[<br>]]> argv[0] = argv[1]<![CDATA[</br>]]><![CDATA[</b>]]>
+        /// <![CDATA[</dd>]]><![CDATA[<dt>]]><![CDATA[<b>]]>argc &gt; 1 <![CDATA[<br>]]> argv[0] &#8800; NULL <![CDATA[<br>]]> argv[0] = argv[1]<![CDATA[</b>]]>
         /// <![CDATA[</dt>]]><![CDATA[<dd>]]>The row with rowid argv[0] is updated with new values 
         ///        in argv[2] and following parameters.
-        /// <![CDATA[</dd>]]><![CDATA[<dt>]]><![CDATA[<b>]]>argc &gt; 1 <![CDATA[<br>]]> argv[0] &#8800; NULL <![CDATA[</br>]]><![CDATA[<br>]]> argv[0] &#8800; argv[1]<![CDATA[</br>]]><![CDATA[</b>]]>
+        /// <![CDATA[</dd>]]><![CDATA[<dt>]]><![CDATA[<b>]]>argc &gt; 1 <![CDATA[<br>]]> argv[0] &#8800; NULL <![CDATA[<br>]]> argv[0] &#8800; argv[1]<![CDATA[</b>]]>
         /// <![CDATA[</dt>]]><![CDATA[<dd>]]> The row with rowid argv[0] is updated with rowid argv[1] 
         /// and new values in argv[2] and following parameters. This will occur 
         /// when an SQL statement updates a rowid, as in the statement:
@@ -1352,7 +1354,7 @@ namespace System.Data.SQLite
         /// <para>
         /// These methods provide the virtual table implementation an opportunity to
         /// implement nested transactions.  They are always optional and will only be
-        /// called in SQLite version 3.7.7 and later.
+        /// called in SQLite version 3.7.7 (2011-06-23) and later.
         /// </para>
         /// <para>
         /// When xSavepoint(X,N) is invoked, that is a signal to the virtual table X
@@ -1398,7 +1400,7 @@ namespace System.Data.SQLite
         /// <para>
         /// These methods provide the virtual table implementation an opportunity to
         /// implement nested transactions.  They are always optional and will only be
-        /// called in SQLite version 3.7.7 and later.
+        /// called in SQLite version 3.7.7 (2011-06-23) and later.
         /// </para>
         /// <para>
         /// When xSavepoint(X,N) is invoked, that is a signal to the virtual table X
@@ -1445,7 +1447,7 @@ namespace System.Data.SQLite
         /// <para>
         /// These methods provide the virtual table implementation an opportunity to
         /// implement nested transactions.  They are always optional and will only be
-        /// called in SQLite version 3.7.7 and later.
+        /// called in SQLite version 3.7.7 (2011-06-23) and later.
         /// </para>
         /// <para>
         /// When xSavepoint(X,N) is invoked, that is a signal to the virtual table X

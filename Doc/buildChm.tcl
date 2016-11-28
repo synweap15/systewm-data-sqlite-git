@@ -134,11 +134,27 @@ proc transformCoreDocumentationFile { fileName url } {
   set count 0
 
   #
+  # NOTE: Remove references to "!location.origin.match(/http/)" because the
+  #       "match" property does not work in the CHM viewer.  Use the literal
+  #       string syntax supported by the regular expression engine here.
+  #
+  set pattern(1) "***=!location.origin.match(/http/)"
+  set subSpec(1) 1
+
+  #
+  # NOTE: Perform the replacements, if any, keeping track of how many were
+  #       done.
+  #
+  incr count [regsub -all -- $pattern(1) $data $subSpec(1) data]
+
+  #
   # NOTE: Process all "href" attribute values from the data.  This pattern is
   #       not univeral; however, as of this writing (Feb 2014), the core docs
   #       are using it consistently.
   #
-  foreach {dummy href} [regexp -all -inline -nocase -- {href="(.*?)"} $data] {
+  set pattern(2) {href=['"](.*?)['"]}
+
+  foreach {dummy href} [regexp -all -inline -nocase -- $pattern(2) $data] {
     #
     # NOTE: Skip all references to other items on this page.
     #
@@ -185,16 +201,17 @@ proc transformCoreDocumentationFile { fileName url } {
     #
     # NOTE: Replace the reference with an absolute reference using the base
     #       URL specified by the caller, escaping it as necessary for use
-    #       with [regsub].
+    #       with [regsub].  Use the literal string syntax supported by the
+    #       regular expression engine here.
     #
-    set pattern "***=$dummy"; # NOTE: Use literal string syntax.
-    set subSpec "href=\"[escapeSubSpec $url$href]\""
+    set pattern(3) "***=$dummy"
+    set subSpec(3) "href=\"[escapeSubSpec $url$href]\""
 
     #
     # NOTE: Perform the replacements, if any, keeping track of how many were
     #       done.
     #
-    incr count [regsub -all -- $pattern $data $subSpec data]
+    incr count [regsub -all -- $pattern(3) $data $subSpec(3) data]
   }
 
   #

@@ -30,7 +30,9 @@ Small. Fast. Reliable.<br>Choose any three.
 </div>
 <div class="menu submenu" id="submenu">
 <ul>
+<li><a href='about.html'>About</a>
 <li><a href='docs.html'>Documentation</a>
+<li><a href='download.html'>Download</a>
 <li><a href='support.html'>Support</a>
 <li><a href='prosupport.html'>Purchase</a>
 </ul>
@@ -195,8 +197,8 @@ virtual table on demand.
 <p>A virtual table is created using a <a href="lang_createvtab.html">CREATE VIRTUAL TABLE</a> statement.
 
 <p><b><a href="syntax/create-virtual-table-stmt.html">create-virtual-table-stmt:</a></b>
-<button id='x1475' onclick='hideorshow("x1475","x1476")'>hide</button></p>
- <div id='x1476' class='imgcontainer'>
+<button id='x1483' onclick='hideorshow("x1483","x1484")'>hide</button></p>
+ <div id='x1484' class='imgcontainer'>
  <img alt="syntax diagram create-virtual-table-stmt" src="images/syntax/create-virtual-table-stmt.gif" />
 </div>
 
@@ -285,9 +287,11 @@ Eponymous-only virtual tables are useful as
 <a href="vtab.html#tabfunc2">table-valued functions</a>.
 
 </p><p>
-Note that SQLite versions prior to 3.9.0 did not check the xCreate method
+Note that prior to <a href="releaselog/3_9_0.html">version 3.9.0</a> (2015-10-14), 
+SQLite did not check the xCreate method
 for NULL before invoking it.  So if an eponymous-only virtual table is
-registered with SQLite version 3.8.11.1 or earlier and a <a href="lang_createvtab.html">CREATE VIRTUAL TABLE</a>
+registered with SQLite <a href="releaselog/3_8_11_1.html">version 3.8.11.1</a> (2015-07-29)
+or earlier and a <a href="lang_createvtab.html">CREATE VIRTUAL TABLE</a>
 command is attempted against that virtual table module, a jump to a NULL
 pointer will occur, resulting in a crash.
 
@@ -438,7 +442,8 @@ methods do are provided in the sequel.
 
 </p><h2 id="virtual_tables_and_shared_cache"><span>1.3. </span>Virtual Tables And Shared Cache</h2>
 
-<p>Prior to SQLite <a href="releaselog/3_6_17.html">version 3.6.17</a>, the virtual table mechanism assumes 
+<p>Prior to SQLite <a href="releaselog/3_6_17.html">version 3.6.17</a> (2009-08-10), 
+the virtual table mechanism assumes 
 that each <a href="c3ref/sqlite3.html">database connection</a> kept
 its own copy of the database schema. Hence, the virtual table mechanism
 could not be used in a database that has <a href="sharedcache.html">shared cache mode</a> enabled. 
@@ -641,7 +646,8 @@ than there are hidden columns in the virtual table.
 
 </p><h3 id="_without_rowid_virtual_tables_"><span>2.1.3. </span> WITHOUT ROWID Virtual Tables </h3>
 
-<p>Beginning with SQLite <a href="releaselog/3_14.html">version 3.14.0</a>, the CREATE TABLE statement that
+<p>Beginning with SQLite <a href="releaselog/3_14.html">version 3.14.0</a> (2016-08-08), 
+the CREATE TABLE statement that
 is passed into <a href="c3ref/declare_vtab.html">sqlite3_declare_vtab()</a> may contain a <a href="withoutrowid.html">WITHOUT ROWID</a> clause.
 This is useful for cases where the virtual table rows 
 cannot easily be mapped into unique integers.  A CREATE TABLE
@@ -899,7 +905,8 @@ in the order by clause and whether or not that column is ASC or DESC.
 
 <a name="colUsed"></a>
 
-</p><p>In SQLite version 3.10.0 and later, the colUsed field is available
+</p><p>In SQLite <a href="releaselog/3_10_0.html">version 3.10.0</a> (2016-01-06) and later, 
+the colUsed field is available
 to indicate which fields of the virtual table are actually used by the
 statement being prepared.  If the lowest bit of colUsed is set, that
 means that the first column is used.  The second lowest bit corresponds
@@ -1237,16 +1244,16 @@ object itself.
 <dt><b>argc = 1</b>
 </dt><dd><p>The single row with rowid equal to argv[0] is deleted. No insert occurs.
 
-</p></dd><dt><b>argc > 1 <br> argv[0] = NULL</br></b>
+</p></dd><dt><b>argc &gt; 1 <br> argv[0] = NULL</b>
 </dt><dd><p>A new row is inserted with a rowid argv[1] and column values in
        argv[2] and following.  If argv[1] is an SQL NULL,
        the a new unique rowid is generated automatically.
 
-</p></dd><dt><b>argc > 1 <br> argv[0] &ne; NULL </br><br> argv[0] = argv[1]</br></b>
+</p></dd><dt><b>argc &gt; 1 <br> argv[0] &ne; NULL <br> argv[0] = argv[1]</b>
 </dt><dd><p>The row with rowid argv[0] is updated with new values 
        in argv[2] and following parameters.
 
-</p></dd><dt><b>argc > 1 <br> argv[0] &ne; NULL </br><br> argv[0] &ne; argv[1]</br></b>
+</p></dd><dt><b>argc &gt; 1 <br> argv[0] &ne; NULL <br> argv[0] &ne; argv[1]</b>
 </dt><dd><p> The row with rowid argv[0] is updated with rowid argv[1] 
 and new values in argv[2] and following parameters. This will occur 
 when an SQL statement updates a rowid, as in the statement:
@@ -1408,7 +1415,7 @@ int (*xRollbackTo)(sqlite3_vtab *pVtab, int);
 <p>
 These methods provide the virtual table implementation an opportunity to
 implement nested transactions.  They are always optional and will only be
-called in SQLite <a href="releaselog/3_7_7.html">version 3.7.7</a> and later.
+called in SQLite <a href="releaselog/3_7_7.html">version 3.7.7</a> (2011-06-23) and later.
 </p>
 
 <p>
