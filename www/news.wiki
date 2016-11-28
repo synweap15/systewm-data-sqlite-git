@@ -6,8 +6,7 @@
     <b>1.0.104.0 - December XX, 2016</b>
 </p>
 <ul>
-    <li>Updated to [https://www.sqlite.org/releaselog/3_15_1.html|SQLite 3.15.1].</li>
-    <li>Updated the [https://www.sqlite.org/json1.html|JSON1] extension to check-in [https://www.sqlite.org/src/info/b540984915|b540984915].</li>
+    <li>Updated to [https://www.sqlite.org/releaselog/3_15_2.html|SQLite 3.15.2].</li>
     <li>Add the &quot;%PreLoadSQLite_AssemblyDirectory%&quot;, &quot;%PreLoadSQLite_TargetFramework%&quot;, and &quot;%PreLoadSQLite_XmlConfigDirectory%&quot; [https://system.data.sqlite.org/index.html/artifact?ci=trunk&filename=Doc/Extra/Provider/environment.html|replacement tokens] for use in configuration setting values. Pursuant to [d4728aecb7].</li>
     <li>Prevent the GetByte, GetChar, and GetInt16 methods of the SQLiteDataReader class from throwing exceptions for large integer values. Pursuant to [5535448538].&nbsp;<b>** Potentially Incompatible Change **</b></li>
     <li>Use [https://www.sqlite.org/lang_savepoint.html|SAVEPOINTs] to properly implement nested transactions when the new AllowNestedTransactions connection flag is used. Pursuant to [1f7bfff467].</li>

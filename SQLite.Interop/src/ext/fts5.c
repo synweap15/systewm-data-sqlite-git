@@ -5710,7 +5710,7 @@ static int fts5ExprNodeTest_STRING(
           }
         }else{
           Fts5IndexIter *pIter = pPhrase->aTerm[j].pIter;
-          if( pIter->iRowid==iLast ) continue;
+          if( pIter->iRowid==iLast || pIter->bEof ) continue;
           bMatch = 0;
           if( fts5ExprAdvanceto(pIter, bDesc, &iLast, &rc, &pNode->bEof) ){
             return rc;
@@ -10852,6 +10852,7 @@ static void fts5MultiIterNext(
   i64 iFrom                       /* Advance at least as far as this */
 ){
   int bUseFrom = bFrom;
+  assert( pIter->base.bEof==0 );
   while( p->rc==SQLITE_OK ){
     int iFirst = pIter->aFirst[1].iFirst;
     int bNewTerm = 0;
@@ -17117,7 +17118,7 @@ static void fts5SourceIdFunc(
 ){
   assert( nArg==0 );
   UNUSED_PARAM2(nArg, apUnused);
-  sqlite3_result_text(pCtx, "fts5: 2016-11-04 12:08:49 1136863c76576110e710dd5d69ab6bf347c65e36", -1, SQLITE_TRANSIENT);
+  sqlite3_result_text(pCtx, "fts5: 2016-11-28 19:13:37 bbd85d235f7037c6a033a9690534391ffeacecc8", -1, SQLITE_TRANSIENT);
 }
 
 static int fts5Init(sqlite3 *db){
