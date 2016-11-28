@@ -33,6 +33,7 @@ set sds_manifests(source) {
   Doc/Extra/Core/images/syntax/begin-stmt.gif
   Doc/Extra/Core/images/syntax/column-constraint.gif
   Doc/Extra/Core/images/syntax/column-def.gif
+  Doc/Extra/Core/images/syntax/column-name-list.gif
   Doc/Extra/Core/images/syntax/comment-syntax.gif
   Doc/Extra/Core/images/syntax/commit-stmt.gif
   Doc/Extra/Core/images/syntax/common-table-expression.gif
@@ -130,6 +131,7 @@ set sds_manifests(source) {
   Doc/Extra/Core/syntax/begin-stmt.html
   Doc/Extra/Core/syntax/column-constraint.html
   Doc/Extra/Core/syntax/column-def.html
+  Doc/Extra/Core/syntax/column-name-list.html
   Doc/Extra/Core/syntax/comment-syntax.html
   Doc/Extra/Core/syntax/commit-stmt.html
   Doc/Extra/Core/syntax/common-table-expression.html
