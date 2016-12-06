@@ -54,8 +54,6 @@ runTest {test tkt-69cf6e5dc8-1.1 {Julian DateTime precision} -setup {
 compile.DATA SQLite System.Data.SQLite} -result {2457712.53197917 {2016-11-20\
 00:46:03Z}}}
 
-# 2457712.53197917 {2016-11-20 00:46:02.999Z}
-
 ###############################################################################
 
 runSQLiteTestEpilogue
