@@ -257,7 +257,7 @@ namespace System.Data.SQLite
         double julianDay
         )
     {
-        return (long)(julianDay * 86400000.0);
+        return (long)Math.Round(julianDay * 86400000.0);
     }
 
     ///////////////////////////////////////////////////////////////////////////
