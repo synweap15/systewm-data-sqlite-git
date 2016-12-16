@@ -3,7 +3,7 @@
 <b>Version History</b>
 
 <p>
-    <b>1.0.104.0 - December XX, 2016</b>
+    <b>1.0.104.0 - December 16, 2016</b>
 </p>
 <ul>
     <li>Updated to [https://www.sqlite.org/releaselog/3_15_2.html|SQLite 3.15.2].</li>
