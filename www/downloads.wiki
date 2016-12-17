@@ -998,7 +998,7 @@
         This setup package features the mixed-mode assembly and will install all
         the necessary runtime components and dependencies for the x86 version of
         the System.Data.SQLite 1.0.104.0 (3.15.2) package.  The Visual C++ 2015
-        Update 2 runtime for x86 is included.  The .NET Framework 4.6 is
+        Update 3 runtime for x86 is included.  The .NET Framework 4.6 is
         required.
         <br />
         <big><b>This is the only setup package that is capable of installing the
@@ -1026,7 +1026,7 @@
       <td valign="top">
         This setup package will install all the necessary runtime components and
         dependencies for the x86 version of the System.Data.SQLite 1.0.104.0
-        (3.15.2) package.  The Visual C++ 2015 Update 2 runtime for x86 is
+        (3.15.2) package.  The Visual C++ 2015 Update 3 runtime for x86 is
         included.  The .NET Framework 4.6 is required.
         <br />
         (sha1: 83a5e43cd9ef51c26b66fa3f15e3f5c41920b3dd)
@@ -1052,7 +1052,7 @@
         This setup package features the mixed-mode assembly and will install all
         the necessary runtime components and dependencies for the x64 version of
         the System.Data.SQLite 1.0.104.0 (3.15.2) package.  The Visual C++ 2015
-        Update 2 runtime for x64 is included.  The .NET Framework 4.6 is
+        Update 3 runtime for x64 is included.  The .NET Framework 4.6 is
         required.
         <br />
         (sha1: 9188a5308df5628ae82e3c9f3d1b8dee6d069d71)
@@ -1071,7 +1071,7 @@
       <td valign="top">
         This setup package will install all the necessary runtime components and
         dependencies for the x64 version of the System.Data.SQLite 1.0.104.0
-        (3.15.2) package.  The Visual C++ 2015 Update 2 runtime for x64 is
+        (3.15.2) package.  The Visual C++ 2015 Update 3 runtime for x64 is
         included.  The .NET Framework 4.6 is required.
         <br />
         (sha1: 8353af87a963909cc6bbc836e50269a6ab74f65f)
@@ -1526,7 +1526,7 @@
       <td valign="top">
         This binary package features the mixed-mode assembly and contains all
         the binaries for the x86 version of the System.Data.SQLite 1.0.104.0
-        (3.15.2) package.  The Visual C++ 2015 Update 2 runtime for x86 and the
+        (3.15.2) package.  The Visual C++ 2015 Update 3 runtime for x86 and the
         .NET Framework 4.6 are required.
         <br />
         (sha1: be962a664816ee8db81123adebba38e78e38476f)
@@ -1545,7 +1545,7 @@
       <td valign="top">
         This binary package contains all the binaries for the x86 version of the
         System.Data.SQLite 1.0.104.0 (3.15.2) package.  The Visual C++ 2015
-        Update 2 runtime for x86 and the .NET Framework 4.6 are required.
+        Update 3 runtime for x86 and the .NET Framework 4.6 are required.
         <br />
         (sha1: aa0547c26bb1c173f986101e1eb7235263bdf31a)
       </td>
@@ -1569,7 +1569,7 @@
       <td valign="top">
         This binary package features the mixed-mode assembly and contains all
         the binaries for the x64 version of the System.Data.SQLite 1.0.104.0
-        (3.15.2) package.  The Visual C++ 2015 Update 2 runtime for x64 and the
+        (3.15.2) package.  The Visual C++ 2015 Update 3 runtime for x64 and the
         .NET Framework 4.6 are required.
         <br />
         (sha1: dfdfc58b41c0edb86136ed09fa8fdbcf01283eeb)
@@ -1588,7 +1588,7 @@
       <td valign="top">
         This binary package contains all the binaries for the x64 version of the
         System.Data.SQLite 1.0.104.0 (3.15.2) package.  The Visual C++ 2015
-        Update 2 runtime for x64 and the .NET Framework 4.6 are required.
+        Update 3 runtime for x64 and the .NET Framework 4.6 are required.
         <br />
         (sha1: 3b2a428335e3d7dc55332bbfb02d39c9cadf30f9)
       </td>
@@ -2077,7 +2077,7 @@
       <td valign="top">
         This binary package features the mixed-mode assembly and contains all
         the binaries for the x86 version of the System.Data.SQLite 1.0.104.0
-        (3.15.2) package.  The Visual C++ 2015 Update 2 runtime for x86 is
+        (3.15.2) package.  The Visual C++ 2015 Update 3 runtime for x86 is
         statically linked.  The .NET Framework 4.6 is required.
         <br />
         (sha1: d1dea63531697f675d94ae24e411e451a66df9db)
@@ -2096,7 +2096,7 @@
       <td valign="top">
         This binary package contains all the binaries for the x86 version of the
         System.Data.SQLite 1.0.104.0 (3.15.2) package.  The Visual C++ 2015
-        Update 2 runtime for x86 is statically linked.  The .NET Framework 4.6
+        Update 3 runtime for x86 is statically linked.  The .NET Framework 4.6
         is required.
         <br />
         (sha1: 0e0698339eb198d28d9ff9f9a1bc1590905a6fee)
@@ -2121,7 +2121,7 @@
       <td valign="top">
         This binary package features the mixed-mode assembly and contains all
         the binaries for the x64 version of the System.Data.SQLite 1.0.104.0
-        (3.15.2) package.  The Visual C++ 2015 Update 2 runtime for x64 is
+        (3.15.2) package.  The Visual C++ 2015 Update 3 runtime for x64 is
         statically linked.  The .NET Framework 4.6 is required.
         <br />
         (sha1: 4589b74486fcf32f4a4ef76aa2a619798ec7b9e8)
@@ -2140,7 +2140,7 @@
       <td valign="top">
         This binary package contains all the binaries for the x64 version of the
         System.Data.SQLite 1.0.104.0 (3.15.2) package.  The Visual C++ 2015
-        Update 2 runtime for x64 is statically linked.  The .NET Framework 4.6
+        Update 3 runtime for x64 is statically linked.  The .NET Framework 4.6
         is required.
         <br />
         (sha1: 64f401407f77bf4c71c7d3ec70d8c9936f56c5b3)
