@@ -80,8 +80,9 @@ runTest {test tkt-2abbf2c244-1.1 {PRAGMA incremental_vacuum} -setup {
 
   unset -nocomplain result db fileName
 } -constraints \
-{eagle monoBug28 command.sql compile.DATA SQLite System.Data.SQLite} -result \
-{-1 0 2 4096 9 9469952 9 0 4 5 1025 9469952 {} 9465856 True}}
+{eagle monoBug28 command.sql compile.DATA SQLite System.Data.SQLite} -match \
+regexp -result {^-1 (?:-1|0) 2 4096 9 9469952 9 0 4 5 1025 9469952 \{\} 9465856\
+True$}}
 
 ###############################################################################
 
