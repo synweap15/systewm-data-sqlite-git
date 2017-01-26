@@ -219,14 +219,16 @@ if {![info exists no([file tail [info script]])]} then {
   #
   # NOTE: Make sure our primary package path is part of the auto-path.
   #
-  if {[lsearch -exact $auto_path $test_package_path] == -1} then {
+  if {[info exists auto_path] && \
+      [lsearch -exact $auto_path $test_package_path] == -1} then {
     lappend auto_path $test_package_path
   }
 
   #
   # NOTE: Make sure the test suite package is part of the auto-path.
   #
-  if {[lsearch -exact $auto_path $test_all_path] == -1} then {
+  if {[info exists auto_path] && \
+      [lsearch -exact $auto_path $test_all_path] == -1} then {
     lappend auto_path $test_all_path
   }
 
@@ -234,7 +236,8 @@ if {![info exists no([file tail [info script]])]} then {
   # NOTE: Make sure the test suite is part of the auto-path.  This is
   #       now done for legacy compatibility only.
   #
-  if {[lsearch -exact $auto_path $test_path] == -1} then {
+  if {[info exists auto_path] && \
+      [lsearch -exact $auto_path $test_path] == -1} then {
     lappend auto_path $test_path
   }
 
@@ -2226,6 +2229,12 @@ if {![info exists no([file tail [info script]])]} then {
             *TestStringIDictionaryReturnValue*
 
         #
+        # NOTE: For tests "object-3.14" and "object-3.15".
+        #
+        checkForObjectMember $test_channel Eagle._Tests.Default \
+            *TestReturnOfSelf*
+
+        #
         # NOTE: For test "object-4.1".
         #
         checkForObjectMember $test_channel Eagle._Tests.Default \
@@ -3373,6 +3382,8 @@ if {![info exists no([file tail [info script]])]} then {
     checkForNetwork $test_channel $test_host $test_timeout
   }
 
+  #############################################################################
+
   #
   # NOTE: Figure out the approximate relative performance of this machine.
   #
@@ -3474,12 +3485,21 @@ if {![info exists no([file tail [info script]])]} then {
   }
 
   #############################################################################
+
+  #
+  # NOTE: The test constraints should now be fully built, cache them.
+  #
+  if {![info exists test_constraints]} then {
+    set test_constraints [getConstraints]
+  }
+
+  #############################################################################
   ######################## END Eagle & Tcl Constraints ########################
   #############################################################################
 
   #
-  # NOTE: For Eagle, dump the platform information, including
-  #       the compile options.
+  # NOTE: For Eagle, dump the platform information, including the compile
+  #       options.
   #
   if {[isEagle]} then {
     set timeStamp [getPlatformInfo timeStamp ""]
@@ -3545,10 +3565,13 @@ if {![info exists no([file tail [info script]])]} then {
       $test_file : "<none>"}] \n]
 
   #
-  # NOTE: Show the active test constraints.
+  # NOTE: Show the active and cached test constraints.
   #
-  tputs $test_channel [appendArgs "---- constraints: " \
+  tputs $test_channel [appendArgs "---- active constraints: " \
       [formatList [lsort [getConstraints]] <none>] \n]
+
+  tputs $test_channel [appendArgs "---- cached constraints: " \
+      [formatList [lsort [getCachedConstraints]] <none>] \n]
 
   #
   # NOTE: Show the starting command count (for both Tcl and Eagle).

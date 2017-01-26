@@ -169,6 +169,21 @@ namespace eval ::Eagle {
     return $result
   }
 
+  proc getCachedConstraints {} {
+    if {[info exists ::test_constraints] && \
+        [llength $::test_constraints] > 0} then {
+      return $::test_constraints
+    }
+
+    return [getConstraints]
+  }
+
+  proc useCachedConstraints {} {
+    foreach name [getCachedConstraints] {
+      addConstraint $name
+    }
+  }
+
   proc removeConstraint { name } {
     if {[isEagle]} then {
       if {[info exists ::eagle_tests(Constraints)]} then {
@@ -3298,6 +3313,12 @@ namespace eval ::Eagle {
 
       tputs $channel [appendArgs \
           "---- StringOps cleanup results: " $result \n]
+
+      catch {uplevel 1 [list object invoke -flags +NonPublic \
+          Eagle._Comparers.FileName ClearCache]} result
+
+      tputs $channel [appendArgs \
+          "---- Comparers.FileName cleanup results: " $result \n]
     }
 
     proc evalWithTimeout { script {milliseconds 2000} {resultVarName ""} } {
@@ -3727,7 +3748,8 @@ namespace eval ::Eagle {
     #
     exportAndImportPackageCommands [namespace current] [list \
         tputs ttclLog tlog getSoftwareRegistryKey haveConstraint \
-        addConstraint haveOrAddConstraint getConstraints removeConstraint \
+        addConstraint haveOrAddConstraint getConstraints \
+        getCachedConstraints useCachedConstraints removeConstraint \
         fixConstraints fixTimingConstraints calculateBogoCops \
         calculateRelativePerformance formatTimeStamp formatElapsedTime \
         sourceIfValid processTestArguments getTclShellFileName \

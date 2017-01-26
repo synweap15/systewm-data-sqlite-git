@@ -181,51 +181,74 @@ namespace eval ::Eagle {
       }
     }
 
-    #
-    # NOTE: This is the [unknown] command for Eagle.  It will normally be
-    #       executed by the script engine when a command is not found.
-    #       By default, it will simply raise a script error; however, if
-    #       the "eagleUnknownObjectInvoke" runtime option is set, it will
-    #       first attempt to use the (unknown) command name as the name
-    #       of a CLR type.
-    #
-    # <create>
-    proc unknown { name args } {
+    if {![interp issafe]} then {
       #
-      # NOTE: This is an [unknown] procedure that normally produces an
-      #       appropriate error message; however, it can optionally try
-      #       to invoke a static object method.
+      # NOTE: This is the [unknown] command for Eagle.  It will normally be
+      #       executed by the script engine when a command is not found.
+      #       By default, it will simply raise a script error; however, if
+      #       the "eagleUnknownObjectInvoke" runtime option is set, it will
+      #       first attempt to use the (unknown) command name as the name
+      #       of a CLR type.
       #
-      # TODO: Add support for auto-loading packages here in the future?
-      #
-      if {[llength [info commands hasRuntimeOption]] > 0 && \
-          [hasRuntimeOption eagleUnknownObjectInvoke] && \
-          [llength [info commands object]] > 0 && \
-          [llength [info commands unknownObjectInvoke]] > 0} then {
+      # <create>
+      proc unknown { name args } {
         #
-        # NOTE: In the context of the caller, attempt to invoke a static
-        #       object method using the specified arguments (which may
-        #       contain variable names).
+        # NOTE: This is an [unknown] procedure that normally produces an
+        #       appropriate error message; however, it can optionally try
+        #       to invoke a static object method.
         #
-        if {[catch {
-          eval unknownObjectInvoke 1 [list $name] $args
-        } result] == 0} then {
+        # TODO: Add support for auto-loading packages here in the future?
+        #
+        if {[llength [info commands hasRuntimeOption]] > 0 && \
+            [hasRuntimeOption eagleUnknownObjectInvoke] && \
+            [llength [info commands object]] > 0 && \
+            [llength [info commands unknownObjectInvoke]] > 0} then {
           #
-          # NOTE: The static object method was invoked successfully.
-          #       Return its result.
+          # NOTE: In the context of the caller, attempt to invoke a static
+          #       object method using the specified arguments (which may
+          #       contain variable names).
           #
-          return -code ok $result
-        } elseif {[string length $result] > 0} then {
-          #
-          # NOTE: Attempting to invoke the static object method raised
-          #       an error.  Re-raise it now.  If no error message was
-          #       provided, fallback on the default (below).
-          #
-          return -code error $result
+          if {[catch {
+            eval unknownObjectInvoke 1 [list $name] $args
+          } result] == 0} then {
+            #
+            # NOTE: The static object method was invoked successfully.
+            #       Return its result.
+            #
+            return -code ok $result
+          } elseif {[string length $result] > 0} then {
+            #
+            # NOTE: Attempting to invoke the static object method raised
+            #       an error.  Re-raise it now.  If no error message was
+            #       provided, fallback on the default (below).
+            #
+            return -code error $result
+          }
         }
-      }
 
-      return -code error [appendArgs "invalid command name \"" $name \"]
+        return -code error [appendArgs "invalid command name \"" $name \"]
+      }
+    } else {
+      #
+      # NOTE: This is the [unknown] command for Eagle.  It will normally be
+      #       executed by the script engine when a command is not found.
+      #       It will simply raise a script error.  This procedure is also
+      #       defined in "safe.eagle".
+      #
+      # <create>
+      proc unknown { name args } {
+        #
+        # NOTE: This is an [unknown] procedure that produces an appropriate
+        #       error message.
+        #
+        # TODO: Add support for auto-loading packages here in the future?
+        #
+        # NOTE: This command cannot use [appendArgs] because that procedure
+        #       is defined in another file that is never loaded into "safe"
+        #       interpreters.
+        #
+        return -code error "invalid command name \"$name\""
+      }
     }
 
     #

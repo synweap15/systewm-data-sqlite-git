@@ -148,7 +148,9 @@ namespace eval ::Eagle {
   #       empty string) if the value is not a valid opaque object handle.
   #
   proc getStringFromObjectHandle { value {default ""} } {
-    if {[isObjectHandle $value]} then {
+    global null
+
+    if {[isObjectHandle $value] && $value ne $null} then {
       return [object invoke $value ToString]
     }
 

@@ -111,7 +111,7 @@ namespace eval ::Eagle {
     #       COM servers (e.g. Excel).
     #
     if {$collect} then {
-      debug collect true true
+      debug collect
     }
 
     #

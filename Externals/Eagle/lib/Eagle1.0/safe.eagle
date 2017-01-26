@@ -58,6 +58,10 @@ namespace eval ::Eagle {
       #
       # TODO: Add support for auto-loading packages here in the future?
       #
+      # NOTE: This command cannot use [appendArgs] because that procedure
+      #       is defined in another file that is never loaded into "safe"
+      #       interpreters.
+      #
       return -code error "invalid command name \"$name\""
     }
 
