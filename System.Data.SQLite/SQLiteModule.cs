@@ -1471,6 +1471,8 @@ namespace System.Data.SQLite
             IntPtr pConstraint = SQLiteMarshal.ReadIntPtr(
                 pIndex, offset);
 
+            int constraintOffset = offset;
+
             offset = SQLiteMarshal.NextOffsetOf(
                 offset, IntPtr.Size, sizeof(int));
 
@@ -1480,28 +1482,41 @@ namespace System.Data.SQLite
             IntPtr pOrderBy = SQLiteMarshal.ReadIntPtr(
                 pIndex, offset);
 
+            int orderByOffset = offset;
+
             offset = SQLiteMarshal.NextOffsetOf(
                 offset, IntPtr.Size, IntPtr.Size);
 
             IntPtr pConstraintUsage = SQLiteMarshal.ReadIntPtr(
                 pIndex, offset);
 
+            int constraintUsageOffset = offset;
+
             if (pConstraintUsage != IntPtr.Zero)
             {
                 SQLiteMemory.Free(pConstraintUsage);
                 pConstraintUsage = IntPtr.Zero;
+
+                SQLiteMarshal.WriteIntPtr(
+                    pIndex, constraintUsageOffset, pConstraintUsage);
             }
 
             if (pOrderBy != IntPtr.Zero)
             {
                 SQLiteMemory.Free(pOrderBy);
                 pOrderBy = IntPtr.Zero;
+
+                SQLiteMarshal.WriteIntPtr(
+                    pIndex, orderByOffset, pOrderBy);
             }
 
             if (pConstraint != IntPtr.Zero)
             {
                 SQLiteMemory.Free(pConstraint);
                 pConstraint = IntPtr.Zero;
+
+                SQLiteMarshal.WriteIntPtr(
+                    pIndex, constraintOffset, pConstraint);
             }
 
             if (pIndex != IntPtr.Zero)
