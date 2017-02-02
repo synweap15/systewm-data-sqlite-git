@@ -132,6 +132,9 @@ static const char * const azInteropCompileOpt[] = {
 #ifdef INTEROP_REGEXP_EXTENSION
   "REGEXP_EXTENSION",
 #endif
+#ifdef INTEROP_SHA1_EXTENSION
+  "SHA1_EXTENSION",
+#endif
 #ifdef INTEROP_TEST_EXTENSION
   "TEST_EXTENSION",
 #endif
@@ -1111,6 +1114,10 @@ SQLITE_API int WINAPI sqlite3_cursor_rowid_interop(sqlite3_stmt *pstmt, int curs
 
 #if defined(INTEROP_REGEXP_EXTENSION)
 #include "../ext/regexp.c"
+#endif
+
+#if defined(INTEROP_SHA1_EXTENSION)
+#include "../ext/sha1.c"
 #endif
 
 #if defined(INTEROP_TOTYPE_EXTENSION)

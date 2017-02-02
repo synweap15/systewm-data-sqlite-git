@@ -520,6 +520,7 @@ set sds_manifests(source) {
   SQLite.Interop/src/ext/json1.c
   SQLite.Interop/src/ext/percentile.c
   SQLite.Interop/src/ext/regexp.c
+  SQLite.Interop/src/ext/sha1.c
   SQLite.Interop/src/ext/totype.c
   SQLite.Interop/src/ext/vtshim.c
   SQLite.Interop/src/generic/

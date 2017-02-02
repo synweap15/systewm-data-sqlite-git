@@ -510,6 +510,9 @@
     <ClCompile Include="src\ext\regexp.c">
       <ExcludedFromBuild>true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="src\ext\sha1.c">
+      <ExcludedFromBuild>true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="src\ext\totype.c">
       <ExcludedFromBuild>true</ExcludedFromBuild>
     </ClCompile>

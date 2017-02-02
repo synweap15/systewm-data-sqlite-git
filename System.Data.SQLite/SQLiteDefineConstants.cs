@@ -76,6 +76,10 @@ namespace System.Data.SQLite
             "INTEROP_REGEXP_EXTENSION",
 #endif
 
+#if INTEROP_SHA1_EXTENSION
+            "INTEROP_SHA1_EXTENSION",
+#endif
+
 #if INTEROP_TEST_EXTENSION
             "INTEROP_TEST_EXTENSION",
 #endif
