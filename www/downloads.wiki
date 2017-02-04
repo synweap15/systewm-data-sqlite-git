@@ -2446,10 +2446,8 @@
       </td>
       <td width="5"></td>
       <td valign="top">
-        Legacy versions, as well as the original support forums, may still be
-        found at
-        <a href="http://sqlite.phxsoftware.com/">http://sqlite.phxsoftware.com/</a>,
-        though there have been no updates to this version since April of 2010.
+        Legacy versions may still be SourceForge, though there have been no
+        updates there since April of 2010.
       </td>
     </tr>
   </table>
