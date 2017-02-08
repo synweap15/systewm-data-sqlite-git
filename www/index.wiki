@@ -20,9 +20,7 @@
           supporting System.Data.SQLite long-term.
         </p>
         <p>
-          Historical versions, as well as the original support forums, may still
-          be found at
-          <a href="http://sqlite.phxsoftware.com/">http://sqlite.phxsoftware.com/</a>,
+          Historical versions may still be found at <a href="https://sourceforge.net/projects/sqlite-dotnet2/">SourceForge</a>,
           though there have been no updates to this version since April of 2010.
         </p>
         <p>

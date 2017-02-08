@@ -298,7 +298,7 @@
     <i>This assumes that [https://www.activestate.com/activetcl | ActiveTcl]
     version 8.4 or later, the
     [https://www.microsoft.com/download/en/details.aspx?displaylang=en&id=21138 | HTML Help Workshop],
-    and [http://ndoc3.sourceforge.net/ | NDoc3] have all been installed using
+    and [https://sourceforge.net/projects/ndoc3/ | NDoc3] have all been installed using
     the default settings.</i>
   </li>
 
