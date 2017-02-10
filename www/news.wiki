@@ -1,6 +1,48 @@
 <title>News</title>
 
-<b>Version History</b>
+<div align="center"><h2><b>Community Support Policies</b></h2></div>
+<div align="center"><h3><b>Effective May 1, 2017</b></h3></div>
+
+<h4>Legacy CryptoAPI Codec</h4>
+
+<ul>
+  <li>
+    It will be disabled in all default build configurations.
+  </li>
+  <li>
+    However, it will still be possible to build binaries with it enabled.
+  </li>
+</ul>
+
+<h4>Design-Time Components for Visual Studio</h4>
+
+<ul>
+  <li>
+    They will still be built and included in the release packages.
+  </li>
+  <li>
+    However, they will no longer be &quot;officially supported&quot;.
+  </li>
+  <li>
+    The mailing lists may still be used to ask questions about them.
+  </li>
+  <li>
+    However, any tickets opened for them will be deleted.
+  </li>
+</ul>
+
+<h4>Release Rackages</h4>
+
+<ul>
+  <li>
+    Release packages for non-current releases will be archived.
+  </li>
+  <li>
+    Access to archived release packages will be granted on a case-by-case basis.
+  </li>
+</ul>
+
+<div align="center"><h2><b>Version History</b></h2></div>
 
 <p>
     <b>1.0.105.0 - April XX, 2017 <font color="red">(release scheduled)</font></b>
