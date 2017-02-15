@@ -1477,8 +1477,9 @@ PRAGMA <b>main.</b>locking_mode=EXCLUSIVE;
     With synchronous=FULL in WAL mode, an additional
     sync operation of the WAL file happens after each transaction commit.
     The extra WAL sync following each transaction help ensure that 
-    transactions are durable across a power loss, but they do not aid
-    in preserving consistency.
+    transactions are durable across a power loss.  Transactions are
+    consistent with or without the extra syncs provided by
+    synchronous=FULL.
     If durability is not a concern, then synchronous=NORMAL is normally
     all one needs in WAL mode.</p>
 
