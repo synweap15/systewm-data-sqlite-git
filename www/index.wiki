@@ -7,6 +7,11 @@
         &nbsp;
       </td>
       <td>
+        <h1>News for System.Data.SQLite</h1>
+        <p>
+          For the most recent news and developments, please see the
+          <a href="news.wiki">news page</a>.
+        </p>
         <h2>About System.Data.SQLite</h2>
         <p>
           System.Data.SQLite is an ADO.NET provider for
