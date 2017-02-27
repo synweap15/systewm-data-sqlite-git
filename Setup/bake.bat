@@ -39,13 +39,20 @@ IF NOT DEFINED FRAMEWORK (
 
 %_VECHO% Framework = '%FRAMEWORK%'
 
-IF "%PROCESSOR_ARCHITECTURE%"=="x86" GOTO set_path_32
-SET PATH=%ProgramFiles(x86)%\Inno Setup 5;%PATH%
+IF "%PROCESSOR_ARCHITECTURE%" == "x86" GOTO set_path_x86
+
+SET INNOSETUPPATH=%ProgramFiles(x86)%\Inno Setup 5
 GOTO set_path_done
-:set_path_32
-SET PATH=%ProgramFiles%\Inno Setup 5;%PATH%
+
+:set_path_x86
+
+SET INNOSETUPPATH=%ProgramFiles%\Inno Setup 5
+
 :set_path_done
 
+CALL :fn_PrependToPath INNOSETUPPATH
+
+%_VECHO% InnoSetupPath = '%INNOSETUPPATH%'
 %_VECHO% Path = '%PATH%'
 
 %__ECHO% ISCC.exe "%TOOLS%\data\SQLite.iss" "/dAppId=%APPID%" "/dAppPublicKey=%PUBLICKEY%" "/dAppURL=%URL%" "/dIsNetFx2=%ISNETFX2%" "/dVcRuntime=%VCRUNTIME%" "/dAppConfiguration=%CONFIGURATION%" "/dAppPlatform=%PLATFORM%" "/dAppProcessor=%PROCESSOR%" "/dFramework=%FRAMEWORK%" "/dYear=%YEAR%"
@@ -66,6 +73,18 @@ GOTO no_errors
   ENDLOCAL && (
     SET %1=%VALUE%
   )
+  GOTO :EOF
+
+:fn_PrependToPath
+  IF NOT DEFINED %1 GOTO :EOF
+  SETLOCAL
+  SET __ECHO_CMD=ECHO %%%1%%
+  FOR /F "delims=" %%V IN ('%__ECHO_CMD%') DO (
+    SET VALUE=%%V
+  )
+  SET VALUE=%VALUE:"=%
+  REM "
+  ENDLOCAL && SET PATH=%VALUE%;%PATH%
   GOTO :EOF
 
 :fn_ResetErrorLevel

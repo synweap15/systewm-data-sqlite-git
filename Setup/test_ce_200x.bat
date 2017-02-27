@@ -35,8 +35,11 @@ SET TOOLS=%TOOLS:~0,-1%
 
 %_VECHO% Tools = '%TOOLS%'
 
-SET PATH=%ROOT%\Externals\Eagle\bin;%PATH%
+SET EAGLEBINDIR=%ROOT%\Externals\Eagle\bin
 
+CALL :fn_PrependToPath EAGLEBINDIR
+
+%_VECHO% EagleBinDir = '%EAGLEBINDIR%'
 %_VECHO% Path = '%PATH%'
 
 %__ECHO3% CALL "%TOOLS%\vsSp.bat"
@@ -136,6 +139,18 @@ GOTO no_errors
     ENDLOCAL
   )
   CALL :fn_ResetErrorLevel
+  GOTO :EOF
+
+:fn_PrependToPath
+  IF NOT DEFINED %1 GOTO :EOF
+  SETLOCAL
+  SET __ECHO_CMD=ECHO %%%1%%
+  FOR /F "delims=" %%V IN ('%__ECHO_CMD%') DO (
+    SET VALUE=%%V
+  )
+  SET VALUE=%VALUE:"=%
+  REM "
+  ENDLOCAL && SET PATH=%VALUE%;%PATH%
   GOTO :EOF
 
 :fn_ResetErrorLevel
