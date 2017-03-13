@@ -1572,9 +1572,6 @@ namespace System.Data.SQLite
                 bool verbose
                 )
             {
-                if (rootKey == null)
-                    return null;
-
                 if (verbose)
                     TraceOps.DebugAndTrace(writable ?
                         TracePriority.Highest : TracePriority.Higher,
@@ -1582,6 +1579,9 @@ namespace System.Data.SQLite
                         "rootKey = {0}, subKeyName = {1}, writable = {2}",
                         ForDisplay(rootKey), ForDisplay(subKeyName),
                         ForDisplay(writable)), traceCategory);
+
+                if (rootKey == null)
+                    return null;
 
                 //
                 // HACK: Always forbid writable access when operating in
@@ -1604,15 +1604,15 @@ namespace System.Data.SQLite
                 bool verbose
                 )
             {
-                if (rootKey == null)
-                    return null;
-
                 if (verbose)
                     TraceOps.DebugAndTrace(TracePriority.Highest,
                         debugCallback, traceCallback, String.Format(
                         "rootKey = {0}, subKeyName = {1}",
                         ForDisplay(rootKey), ForDisplay(subKeyName)),
                         traceCategory);
+
+                if (rootKey == null)
+                    return null;
 
                 try
                 {
@@ -1658,15 +1658,15 @@ namespace System.Data.SQLite
                 bool verbose
                 )
             {
-                if (rootKey == null)
-                    return;
-
                 if (verbose)
                     TraceOps.DebugAndTrace(TracePriority.Highest,
                         debugCallback, traceCallback, String.Format(
                         "rootKey = {0}, subKeyName = {1}",
                         ForDisplay(rootKey), ForDisplay(subKeyName)),
                         traceCategory);
+
+                if (rootKey == null)
+                    return;
 
                 if (!whatIf)
                     rootKey.DeleteSubKey(subKeyName, throwOnMissing);
@@ -1684,15 +1684,15 @@ namespace System.Data.SQLite
                 bool verbose
                 )
             {
-                if (rootKey == null)
-                    return;
-
                 if (verbose)
                     TraceOps.DebugAndTrace(TracePriority.Highest,
                         debugCallback, traceCallback, String.Format(
                         "rootKey = {0}, subKeyName = {1}",
                         ForDisplay(rootKey), ForDisplay(subKeyName)),
                         traceCategory);
+
+                if (rootKey == null)
+                    return;
 
                 if (!whatIf)
                     rootKey.DeleteSubKeyTree(subKeyName);
@@ -1709,13 +1709,13 @@ namespace System.Data.SQLite
                 bool verbose
                 )
             {
-                if (key == null)
-                    return null;
-
                 if (verbose)
                     TraceOps.DebugAndTrace(TracePriority.High,
                         debugCallback, traceCallback, String.Format(
                         "key = {0}", ForDisplay(key)), traceCategory);
+
+                if (key == null)
+                    return null;
 
                 return key.GetSubKeyNames();
             }
@@ -1731,15 +1731,15 @@ namespace System.Data.SQLite
                 bool verbose
                 )
             {
-                if (key == null)
-                    return null;
-
                 if (verbose)
                     TraceOps.DebugAndTrace(TracePriority.High,
                         debugCallback, traceCallback, String.Format(
                         "key = {0}, name = {1}, defaultValue = {2}",
                         ForDisplay(key), ForDisplay(name),
                         ForDisplay(defaultValue)), traceCategory);
+
+                if (key == null)
+                    return null;
 
                 object value = key.GetValue(name, defaultValue);
 
@@ -1759,15 +1759,15 @@ namespace System.Data.SQLite
                 bool verbose
                 )
             {
-                if (key == null)
-                    return;
-
                 if (verbose)
                     TraceOps.DebugAndTrace(TracePriority.Highest,
                         debugCallback, traceCallback, String.Format(
                         "key = {0}, name = {1}, value = {2}",
                         ForDisplay(key), ForDisplay(name), ForDisplay(value)),
                         traceCategory);
+
+                if (key == null)
+                    return;
 
                 if (!whatIf)
                     key.SetValue(name, value);
@@ -1786,14 +1786,14 @@ namespace System.Data.SQLite
                 bool verbose
                 )
             {
-                if (key == null)
-                    return;
-
                 if (verbose)
                     TraceOps.DebugAndTrace(TracePriority.Highest,
                         debugCallback, traceCallback, String.Format(
                         "key = {0}, name = {1}", ForDisplay(key),
                         ForDisplay(name)), traceCategory);
+
+                if (key == null)
+                    return;
 
                 if (!whatIf)
                     key.DeleteValue(name, throwOnMissing);
