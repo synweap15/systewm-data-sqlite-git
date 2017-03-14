@@ -22,7 +22,7 @@ proc usage { error } {
   exit 1
 }
 
-proc getSha1Hashes { varName } {
+proc getFileHashes { varName } {
   variable fossil
 
   upvar 1 $varName hashes
@@ -41,7 +41,7 @@ proc getSha1Hashes { varName } {
         set fileName [string map [list \\s " "] [lindex $fields 1]]
         set hash [lindex $fields 2]
 
-        if {[regexp -- {[0-9a-f]{40}} $hash]} then {
+        if {[regexp -- {[0-9a-f]{40,64}} $hash]} then {
           set hashes($fileName) $hash; incr result
         }
       }
@@ -58,6 +58,19 @@ proc getSha1Sum { fileName } {
       -trimall -- $fossil sha1sum [appendArgs \" $fileName \"]] 0 39]
 
   if {[regexp -- {[0-9a-f]{40}} $hash]} then {
+    return $hash
+  }
+
+  return ""
+}
+
+proc getSha3Sum { fileName } {
+  variable fossil
+
+  set hash [string range [exec -success Success -nocarriagereturns \
+      -trimall -- $fossil sha3sum [appendArgs \" $fileName \"]] 0 63]
+
+  if {[regexp -- {[0-9a-f]{64}} $hash]} then {
     return $hash
   }
 
@@ -166,7 +179,7 @@ if {$argc >= 2 && $argc <= 3} then {
       usage [appendArgs "tool \"" $fossil "\" is missing"]
     }
 
-    if {[getSha1Hashes hashes] == 0} then {
+    if {[getFileHashes hashes] == 0} then {
       usage "no repository hashes are available"
     }
   }
@@ -309,7 +322,7 @@ if {$argc >= 2 && $argc <= 3} then {
         }
 
         #
-        # NOTE: Skip checking SHA1 hashes if it was not requested on the
+        # NOTE: Skip checking hashes if that was not requested on the
         #       command line.
         #
         if {!$withHashes} then {
@@ -317,7 +330,7 @@ if {$argc >= 2 && $argc <= 3} then {
         }
 
         #
-        # HACK: For now, only verify SHA1 hashes for those files actually
+        # HACK: For now, only verify hashes for those files actually
         #       present in the repository.
         #
         if {![string match -nocase -- *Source* $archiveFileName] && \
@@ -349,7 +362,11 @@ if {$argc >= 2 && $argc <= 3} then {
             if {[catch {
               eval [string map $extractCommandMap $extractCommand]
             } result] == 0} then {
-              set hash [getSha1Sum $extractFileName]
+              if {[string length $hashes($manifestFileName)] == 64} then {
+                set hash [getSha3Sum $extractFileName]
+              } else {
+                set hash [getSha1Sum $extractFileName]
+              }
 
               if {[string length $hash] > 0} then {
                 if {$hash ne $hashes($manifestFileName)} then {
