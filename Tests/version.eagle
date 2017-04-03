@@ -199,7 +199,7 @@ runTest {test version-1.15 {SQLiteVersion} -body {
 runTest {test version-1.16 {SQLiteSourceId} -body {
   object invoke System.Data.SQLite.SQLiteConnection SQLiteSourceId
 } -constraints {eagle command.object SQLite System.Data.SQLite} -match regexp \
--result {^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} [0-9a-f]{40}$}}
+-result {^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} [0-9a-f]{40,64}$}}
 
 ###############################################################################
 
@@ -213,7 +213,7 @@ $version(full)}
 runTest {test version-1.18 {InteropSourceId} -body {
   object invoke System.Data.SQLite.SQLiteConnection InteropSourceId
 } -constraints {eagle command.object SQLiteInterop System.Data.SQLite} -match \
-regexp -result {^[0-9a-f]{40} \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} UTC$}}
+regexp -result {^[0-9a-f]{40,64} \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} UTC$}}
 
 ###############################################################################
 
@@ -230,7 +230,7 @@ runTest {test version-1.20 {ProviderSourceId} -body {
   #
   object invoke System.Data.SQLite.SQLiteConnection ProviderSourceId
 } -constraints {eagle command.object System.Data.SQLite} -match regexp -result \
-{^(?:|[0-9a-f]{40} \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} UTC)$}}
+{^(?:|[0-9a-f]{40,64} \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} UTC)$}}
 
 ###############################################################################
 
