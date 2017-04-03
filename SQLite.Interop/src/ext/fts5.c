@@ -623,7 +623,9 @@ typedef short i16;
 typedef sqlite3_int64 i64;
 typedef sqlite3_uint64 u64;
 
-#define ArraySize(x) ((int)(sizeof(x) / sizeof(x[0])))
+#ifndef ArraySize
+# define ArraySize(x) ((int)(sizeof(x) / sizeof(x[0])))
+#endif
 
 #define testcase(x)
 #define ALWAYS(x) 1
@@ -5918,7 +5920,10 @@ static int fts5ExprNodeNext_OR(
        || (bFromValid && fts5RowidCmp(pExpr, p1->iRowid, iFrom)<0)
       ){
         int rc = fts5ExprNodeNext(pExpr, p1, bFromValid, iFrom);
-        if( rc!=SQLITE_OK ) return rc;
+        if( rc!=SQLITE_OK ){
+          pNode->bNomatch = 0;
+          return rc;
+        }
       }
     }
   }
@@ -5949,7 +5954,10 @@ static int fts5ExprNodeTest_AND(
       if( cmp>0 ){
         /* Advance pChild until it points to iLast or laster */
         rc = fts5ExprNodeNext(pExpr, pChild, 1, iLast);
-        if( rc!=SQLITE_OK ) return rc;
+        if( rc!=SQLITE_OK ){
+          pAnd->bNomatch = 0;
+          return rc;
+        }
       }
 
       /* If the child node is now at EOF, so is the parent AND node. Otherwise,
@@ -5988,6 +5996,8 @@ static int fts5ExprNodeNext_AND(
   int rc = fts5ExprNodeNext(pExpr, pNode->apChild[0], bFromValid, iFrom);
   if( rc==SQLITE_OK ){
     rc = fts5ExprNodeTest_AND(pExpr, pNode);
+  }else{
+    pNode->bNomatch = 0;
   }
   return rc;
 }
@@ -6029,6 +6039,9 @@ static int fts5ExprNodeNext_NOT(
   int rc = fts5ExprNodeNext(pExpr, pNode->apChild[0], bFromValid, iFrom);
   if( rc==SQLITE_OK ){
     rc = fts5ExprNodeTest_NOT(pExpr, pNode);
+  }
+  if( rc!=SQLITE_OK ){
+    pNode->bNomatch = 0;
   }
   return rc;
 }
@@ -17153,7 +17166,7 @@ static void fts5SourceIdFunc(
 ){
   assert( nArg==0 );
   UNUSED_PARAM2(nArg, apUnused);
-  sqlite3_result_text(pCtx, "fts5: 2017-02-13 16:02:40 ada05cfa86ad7f5645450ac7a2a21c9aa6e57d2c", -1, SQLITE_TRANSIENT);
+  sqlite3_result_text(pCtx, "fts5: 2017-03-28 18:48:43 424a0d380332858ee55bdebc4af3789f74e70a2b3ba1cf29d84b9b4bcf3e2e37", -1, SQLITE_TRANSIENT);
 }
 
 static int fts5Init(sqlite3 *db){
@@ -17817,11 +17830,6 @@ static int sqlite3Fts5StorageDelete(Fts5Storage *p, i64 iDel, sqlite3_value **ap
     }
   }
 
-  /* Write the averages record */
-  if( rc==SQLITE_OK ){
-    rc = fts5StorageSaveTotals(p);
-  }
-
   return rc;
 }
 
@@ -18024,11 +18032,6 @@ static int sqlite3Fts5StorageIndexInsert(
     rc = fts5StorageInsertDocsize(p, iRowid, &buf);
   }
   sqlite3_free(buf.p);
-
-  /* Write the averages record */
-  if( rc==SQLITE_OK ){
-    rc = fts5StorageSaveTotals(p);
-  }
 
   return rc;
 }
@@ -18364,12 +18367,17 @@ static int sqlite3Fts5StorageRowCount(Fts5Storage *p, i64 *pnRow){
 ** Flush any data currently held in-memory to disk.
 */
 static int sqlite3Fts5StorageSync(Fts5Storage *p, int bCommit){
-  if( bCommit && p->bTotalsValid ){
-    int rc = fts5StorageSaveTotals(p);
-    p->bTotalsValid = 0;
-    if( rc!=SQLITE_OK ) return rc;
+  int rc = SQLITE_OK;
+  i64 iLastRowid = sqlite3_last_insert_rowid(p->pConfig->db);
+  if( p->bTotalsValid ){
+    rc = fts5StorageSaveTotals(p);
+    if( bCommit ) p->bTotalsValid = 0;
   }
-  return sqlite3Fts5IndexSync(p->pIndex, bCommit);
+  if( rc==SQLITE_OK ){
+    rc = sqlite3Fts5IndexSync(p->pIndex, bCommit);
+  }
+  sqlite3_set_last_insert_rowid(p->pConfig->db, iLastRowid);
+  return rc;
 }
 
 static int sqlite3Fts5StorageRollback(Fts5Storage *p){
