@@ -1,6 +1,6 @@
 <title>Downloads Page</title>
 <nowiki>
-  <h1>System.Data.SQLite Downloads</h1>
+  <h1 class="pageHeader">System.Data.SQLite Downloads</h1>
 
   <table width="100%" cellpadding="5" cellspacing="0">
     <tr bgcolor="#fff1c8">
@@ -427,7 +427,7 @@
   <table width="100%" cellpadding="5">
     <tr>
       <td align="center">
-        <h2>List of Release Packages</h2>
+        <h2 class="pageSubHeader">List of Release Packages</h2>
       </td>
     </tr>
   </table>
@@ -2452,7 +2452,7 @@
     </tr>
   </table>
 
-  <h3>Build Product Names</h3>
+  <h3 class="pageSubSubHeader">Build Product Names</h3>
 
   <p>
     Beginning with System.Data.SQLite version 1.0.101.0 (3.12.2), the following
@@ -2560,7 +2560,7 @@
     </ul>
   </p>
 
-  <h3>Canonical Source Code</h3>
+  <h3 class="pageSubSubHeader">Canonical Source Code</h3>
 
   <p>
     The canonical System.Data.SQLite source code is maintained in a Fossil
