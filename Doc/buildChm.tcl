@@ -423,6 +423,9 @@ set patterns(.html,7) \
 set patterns(.html,8) \
     {"(System\.Data\.SQLite~System\.Data\.SQLite\.SQLiteVirtualTableCursor\.Dispose)\.html"}
 
+set patterns(.html,9) \
+    {"(System\.Data\.SQLite~System\.Data\.SQLite\.ISQLiteManagedModule\.[^(]+)\((?:[^)]+)\)\.html"}
+
 set subSpecs(.hhc,1) [readFileAsSubSpec [file join $path SQLite.NET.hhc]]
 
 set subSpecs(.hhp,1) {Default topic=Provider\welcome.html}
@@ -436,6 +439,7 @@ set subSpecs(.html,5) {"\1~Overloads.html"}
 set subSpecs(.html,6) {"\1~Overloads.html"}
 set subSpecs(.html,7) {"\1~Overloads.html"}
 set subSpecs(.html,8) {"\1~Overloads.html"}
+set subSpecs(.html,9) {"\1.html"}
 
 ###############################################################################
 
