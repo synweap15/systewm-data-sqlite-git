@@ -2135,11 +2135,19 @@ namespace eval ::Eagle {
     }
 
     proc getDbDefaultPageSize {} {
-      return [executeSql "PRAGMA page_size;" scalar]
+      if {[catch {executeSql "PRAGMA page_size;" scalar} result] == 0} then {
+        return $result
+      } else {
+        return 0
+      }
     }
 
     proc getDbDefaultCacheSize {} {
-      return [executeSql "PRAGMA cache_size;" scalar]
+      if {[catch {executeSql "PRAGMA cache_size;" scalar} result] == 0} then {
+        return $result
+      } else {
+        return 0
+      }
     }
 
     proc useLegacyDbPageAndCacheSizes { varName } {
