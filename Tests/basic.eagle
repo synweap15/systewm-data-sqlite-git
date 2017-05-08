@@ -4543,6 +4543,34 @@ a27f5e6f85a3872ed2e4e4018c8fd7dfaff052bc}}
 
 ###############################################################################
 
+runTest {test data-1.86 {connection string integer parsing} -setup {
+  object import System.Globalization
+  object import System.Threading
+
+  set culture [object create -alias CultureInfo en-US]
+  $culture NumberFormat.NegativeSign /
+
+  set savedCulture [object invoke Thread.CurrentThread CurrentCulture]
+  object invoke Thread.CurrentThread CurrentCulture $culture
+} -body {
+  setupDb [set fileName data-1.86.db]
+} -cleanup {
+  cleanupDb $fileName
+
+  unset -nocomplain db fileName
+
+  catch {object invoke Thread.CurrentThread CurrentCulture $savedCulture}
+  unset -nocomplain savedCulture culture
+
+  object unimport -importpattern System.Threading
+  object unimport -importpattern System.Globalization
+} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
+defineConstant.System.Data.SQLite.INTEROP_SHA1_EXTENSION System.Data.SQLite\
+SQLiteInterop} -match regexp -result \
+{^System#Data#SQLite#SQLiteConnection#\d+$}}
+
+###############################################################################
+
 reportSQLiteResources $test_channel
 
 ###############################################################################
