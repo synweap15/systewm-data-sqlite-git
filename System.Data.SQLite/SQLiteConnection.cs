@@ -3723,7 +3723,7 @@ namespace System.Data.SQLite
       bool fullUri = false;
       string fileName;
 
-      if (Convert.ToInt32(FindKey(opts, "Version", DefaultVersion.ToString()), CultureInfo.InvariantCulture) != DefaultVersion)
+      if (Convert.ToInt32(FindKey(opts, "Version", SQLiteConvert.ToString(DefaultVersion)), CultureInfo.InvariantCulture) != DefaultVersion)
         throw new NotSupportedException(HelperMethods.StringFormat(CultureInfo.CurrentCulture, "Only SQLite Version {0} is supported at this time", DefaultVersion));
 
 #if INTEROP_INCLUDE_ZIPVFS
@@ -3814,12 +3814,12 @@ namespace System.Data.SQLite
       try
       {
         bool usePooling = SQLiteConvert.ToBoolean(FindKey(opts, "Pooling", GetDefaultPooling().ToString()));
-        int maxPoolSize = Convert.ToInt32(FindKey(opts, "Max Pool Size", DefaultMaxPoolSize.ToString()), CultureInfo.InvariantCulture);
+        int maxPoolSize = Convert.ToInt32(FindKey(opts, "Max Pool Size", SQLiteConvert.ToString(DefaultMaxPoolSize)), CultureInfo.InvariantCulture);
 
-        _defaultTimeout = Convert.ToInt32(FindKey(opts, "Default Timeout", DefaultConnectionTimeout.ToString()), CultureInfo.InvariantCulture);
-        _busyTimeout = Convert.ToInt32(FindKey(opts, "BusyTimeout", DefaultBusyTimeout.ToString()), CultureInfo.InvariantCulture);
-        _prepareRetries = Convert.ToInt32(FindKey(opts, "PrepareRetries", DefaultPrepareRetries.ToString()), CultureInfo.InvariantCulture);
-        _progressOps = Convert.ToInt32(FindKey(opts, "ProgressOps", DefaultProgressOps.ToString()), CultureInfo.InvariantCulture);
+        _defaultTimeout = Convert.ToInt32(FindKey(opts, "Default Timeout", SQLiteConvert.ToString(DefaultConnectionTimeout)), CultureInfo.InvariantCulture);
+        _busyTimeout = Convert.ToInt32(FindKey(opts, "BusyTimeout", SQLiteConvert.ToString(DefaultBusyTimeout)), CultureInfo.InvariantCulture);
+        _prepareRetries = Convert.ToInt32(FindKey(opts, "PrepareRetries", SQLiteConvert.ToString(DefaultPrepareRetries)), CultureInfo.InvariantCulture);
+        _progressOps = Convert.ToInt32(FindKey(opts, "ProgressOps", SQLiteConvert.ToString(DefaultProgressOps)), CultureInfo.InvariantCulture);
 
         enumValue = TryParseEnum(typeof(IsolationLevel), FindKey(opts, "Default IsolationLevel", DefaultIsolationLevel.ToString()), true);
         _defaultIsolation = (enumValue is IsolationLevel) ? (IsolationLevel)enumValue : DefaultIsolationLevel;
@@ -3920,7 +3920,7 @@ namespace System.Data.SQLite
 
                   if (!fullUri && !isMemory)
                   {
-                      strValue = FindKey(opts, "Page Size", DefaultPageSize.ToString());
+                      strValue = FindKey(opts, "Page Size", SQLiteConvert.ToString(DefaultPageSize));
                       intValue = Convert.ToInt32(strValue, CultureInfo.InvariantCulture);
                       if (intValue != DefaultPageSize)
                       {
@@ -3929,7 +3929,7 @@ namespace System.Data.SQLite
                       }
                   }
 
-                  strValue = FindKey(opts, "Max Page Count", DefaultMaxPageCount.ToString());
+                  strValue = FindKey(opts, "Max Page Count", SQLiteConvert.ToString(DefaultMaxPageCount));
                   intValue = Convert.ToInt32(strValue, CultureInfo.InvariantCulture);
                   if (intValue != DefaultMaxPageCount)
                   {
@@ -3953,7 +3953,7 @@ namespace System.Data.SQLite
                       cmd.ExecuteNonQuery();
                   }
 
-                  strValue = FindKey(opts, "Cache Size", DefaultCacheSize.ToString());
+                  strValue = FindKey(opts, "Cache Size", SQLiteConvert.ToString(DefaultCacheSize));
                   intValue = Convert.ToInt32(strValue, CultureInfo.InvariantCulture);
                   if (intValue != DefaultCacheSize)
                   {

@@ -1172,6 +1172,26 @@ namespace System.Data.SQLite
           source, CultureInfo.InvariantCulture));
     }
 
+    ///////////////////////////////////////////////////////////////////////////
+
+    /// <summary>
+    /// Converts an integer to a string that can be round-tripped using the
+    /// invariant culture.
+    /// </summary>
+    /// <param name="value">
+    /// The integer value to return the string representation for.
+    /// </param>
+    /// <returns>
+    /// The string representation of the specified integer value, using the
+    /// invariant culture.
+    /// </returns>
+    internal static string ToString(int value)
+    {
+        return value.ToString(CultureInfo.InvariantCulture);
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+
     /// <summary>
     /// Attempts to convert a <see cref="String" /> into a <see cref="Boolean" />.
     /// </summary>
