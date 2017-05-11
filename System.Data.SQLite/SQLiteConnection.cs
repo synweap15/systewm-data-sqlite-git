@@ -3050,21 +3050,28 @@ namespace System.Data.SQLite
         )
     {
         string name = "No_SQLiteConnectionNewParser";
-        object value; /* NOT USED */
+        object value;
 
         if ((connection != null) &&
             connection.TryGetCachedSetting(name, null, out value))
         {
-            return true;
+            return (value != null);
         }
 
         if ((connection == null) &&
             TryGetLastCachedSetting(name, null, out value))
         {
-            return true;
+            return (value != null);
         }
 
-        return (UnsafeNativeMethods.GetSettingValue(name, null) != null);
+        value = UnsafeNativeMethods.GetSettingValue(name, null);
+
+        if (connection != null)
+            connection.SetCachedSetting(name, value);
+        else
+            SetLastCachedSetting(name, value);
+
+        return (value != null);
     }
 
     /// <summary>
@@ -4561,10 +4568,12 @@ namespace System.Data.SQLite
         }
     }
 
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+
     /// <summary>
     /// Queries and returns the value of the specified setting, using the
     /// cached setting names and values for the last connection that used
-    /// by the <see cref="SQLiteConnection.Open" /> method, when available.
+    /// the <see cref="SQLiteConnection.Open" /> method, when available.
     /// </summary>
     /// <param name="name">
     /// The name of the setting.
@@ -4596,6 +4605,33 @@ namespace System.Data.SQLite
             name, @default, out value);
     }
 
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+
+    /// <summary>
+    /// Adds or sets the cached setting specified by <paramref name="name" />
+    /// to the value specified by <paramref name="value" /> using the cached
+    /// setting names and values for the last connection that used the
+    /// <see cref="SQLiteConnection.Open" /> method, when available.
+    /// </summary>
+    /// <param name="name">
+    /// The name of the cached setting to add or replace.
+    /// </param>
+    /// <param name="value">
+    /// The new value of the cached setting.
+    /// </param>
+    private static void SetLastCachedSetting(
+        string name, /* in */
+        object value /* in */
+        )
+    {
+        if (_lastConnectionInOpen == null)
+            return;
+
+        _lastConnectionInOpen.SetCachedSetting(name, value);
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+
     /// <summary>
     /// The default connection flags to be used for all opened connections
     /// when they are not present in the connection string.
@@ -4608,7 +4644,10 @@ namespace System.Data.SQLite
             object value;
 
             if (!TryGetLastCachedSetting(name, null, out value))
+            {
                 value = UnsafeNativeMethods.GetSettingValue(name, null);
+                SetLastCachedSetting(name, value);
+            }
 
             if (value == null)
                 return FallbackDefaultFlags;
@@ -4623,6 +4662,9 @@ namespace System.Data.SQLite
         }
     }
 
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+
     /// <summary>
     /// The extra connection flags to be used for all opened connections.
     /// </summary>
@@ -4631,6 +4673,8 @@ namespace System.Data.SQLite
         get { lock (_syncRoot) { return _sharedFlags; } }
         set { lock (_syncRoot) { _sharedFlags = value; } }
     }
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////
 
     /// <summary>
     /// Returns the state of the connection.
