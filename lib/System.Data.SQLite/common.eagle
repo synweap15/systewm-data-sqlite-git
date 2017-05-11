@@ -3475,7 +3475,8 @@ namespace eval ::Eagle {
     proc reportSQLiteResources {
             channel {quiet false} {reset true} {collect true} } {
       #
-      # NOTE: If possible, always reset the cached assembly directory.
+      # NOTE: If possible, always reset the cached assembly directory
+      #       and the cached XML configuration file name.
       #
       if {[haveSQLiteObjectCommand]} then {
         if {[catch {
@@ -3484,13 +3485,29 @@ namespace eval ::Eagle {
               ResetCachedAssemblyDirectory
         } error] == 0} then {
           if {!$quiet} then {
-            tputs $channel "---- reset cached assembly directory"
+            tputs $channel "---- reset cached assembly directory\n"
           }
         } else {
           if {!$quiet} then {
             tputs $channel [appendArgs \
                 "==== WARNING: failed to reset cached assembly directory, " \
                 "error: " \n\t $error \n]
+          }
+        }
+
+        if {[catch {
+          object invoke -flags +NonPublic \
+              System.Data.SQLite.UnsafeNativeMethods \
+              ResetCachedXmlConfigFileName
+        } error] == 0} then {
+          if {!$quiet} then {
+            tputs $channel "---- reset cached XML configuration file name\n"
+          }
+        } else {
+          if {!$quiet} then {
+            tputs $channel [appendArgs \
+                "==== WARNING: failed to reset cached XML configuration " \
+                "file name, error: " \n\t $error \n]
           }
         }
       }
