@@ -690,6 +690,14 @@ namespace System.Data.SQLite
       /// has never returned a valid value.
       /// </summary>
       private static string cachedAssemblyDirectory;
+
+      /////////////////////////////////////////////////////////////////////////
+      /// <summary>
+      /// This is the cached return value from the
+      /// <see cref="GetXmlConfigFileName" /> method -OR- null if that method
+      /// has never returned a valid value.
+      /// </summary>
+      private static string cachedXmlConfigFileName;
       #endregion
 
       /////////////////////////////////////////////////////////////////////////
@@ -825,6 +833,56 @@ namespace System.Data.SQLite
 
       /////////////////////////////////////////////////////////////////////////
       /// <summary>
+      /// Resets the cached XML configuration file name value, thus forcing the
+      /// next call to <see cref="GetCachedXmlConfigFileName" /> method to rely
+      /// upon the <see cref="GetXmlConfigFileName" /> method to fetch the
+      /// XML configuration file name.
+      /// </summary>
+      private static void ResetCachedXmlConfigFileName()
+      {
+          #region Debug Build Only
+#if DEBUG
+          DebugData.IncrementOtherCount("Method_ResetCachedXmlConfigFileName");
+#endif
+          #endregion
+
+          lock (staticSyncRoot)
+          {
+              cachedXmlConfigFileName = null;
+          }
+      }
+
+      /////////////////////////////////////////////////////////////////////////
+      /// <summary>
+      /// Queries and returns the cached XML configuration file name for the
+      /// assembly containing the managed System.Data.SQLite components, if
+      /// available.  If the cached XML configuration file name value is not
+      /// available, the <see cref="GetXmlConfigFileName" /> method will
+      /// be used to obtain the XML configuration file name.
+      /// </summary>
+      /// <returns>
+      /// The XML configuration file name -OR- null if it cannot be determined
+      /// or does not exist.
+      /// </returns>
+      private static string GetCachedXmlConfigFileName()
+      {
+          #region Debug Build Only
+#if DEBUG
+          DebugData.IncrementOtherCount("Method_GetCachedXmlConfigFileName");
+#endif
+          #endregion
+
+          lock (staticSyncRoot)
+          {
+              if (cachedXmlConfigFileName != null)
+                  return cachedXmlConfigFileName;
+          }
+
+          return GetXmlConfigFileName();
+      }
+
+      /////////////////////////////////////////////////////////////////////////
+      /// <summary>
       /// Queries and returns the XML configuration file name for the assembly
       /// containing the managed System.Data.SQLite components.
       /// </summary>
@@ -834,6 +892,12 @@ namespace System.Data.SQLite
       /// </returns>
       private static string GetXmlConfigFileName()
       {
+          #region Debug Build Only
+#if DEBUG
+          DebugData.IncrementOtherCount("Method_GetXmlConfigFileName");
+#endif
+          #endregion
+
           string directory;
           string fileName;
 
@@ -842,14 +906,28 @@ namespace System.Data.SQLite
           fileName = MaybeCombinePath(directory, XmlConfigFileName);
 
           if (File.Exists(fileName))
+          {
+              lock (staticSyncRoot)
+              {
+                  cachedXmlConfigFileName = fileName;
+              }
+
               return fileName;
+          }
 #endif
 
           directory = GetCachedAssemblyDirectory();
           fileName = MaybeCombinePath(directory, XmlConfigFileName);
 
           if (File.Exists(fileName))
+          {
+              lock (staticSyncRoot)
+              {
+                  cachedXmlConfigFileName = fileName;
+              }
+
               return fileName;
+          }
 
           return null;
       }
@@ -1330,7 +1408,7 @@ namespace System.Data.SQLite
           /////////////////////////////////////////////////////////////////////
 
           return GetSettingValueViaXmlConfigFile(
-              GetXmlConfigFileName(), name, @default, expand);
+              GetCachedXmlConfigFileName(), name, @default, expand);
       }
 
       /////////////////////////////////////////////////////////////////////////
