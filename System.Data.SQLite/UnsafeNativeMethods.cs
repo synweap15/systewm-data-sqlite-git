@@ -47,10 +47,12 @@ namespace System.Data.SQLite
   internal static class DebugData
   {
       #region Private Data
+#if DEBUG
       /// <summary>
       /// This lock is used to protect several static fields.
       /// </summary>
       private static readonly object staticSyncRoot = new object();
+#endif
 
       /////////////////////////////////////////////////////////////////////////
 
