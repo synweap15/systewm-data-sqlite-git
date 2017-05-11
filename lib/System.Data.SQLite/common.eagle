@@ -3215,9 +3215,11 @@ namespace eval ::Eagle {
                 $result " bytes\n"]
           }
         } else {
-          tputs $channel [appendArgs \
-              "==== WARNING: failed to get CLR memory usage, error: " \
-              \n\t $result \n]
+          if {!$quiet} then {
+            tputs $channel [appendArgs \
+                "==== WARNING: failed to get CLR memory usage, error: " \
+                \n\t $result \n]
+          }
         }
       }
 
@@ -3240,9 +3242,11 @@ namespace eval ::Eagle {
           if {[catch {
             object invoke GC GetTotalMemory true
           } error]} then {
-            tputs $channel [appendArgs \
-                "==== WARNING: failed full garbage collection, error: " \
-                \n\t $error \n]
+            if {!$quiet} then {
+              tputs $channel [appendArgs \
+                  "==== WARNING: failed full garbage collection, error: " \
+                  \n\t $error \n]
+            }
           }
 
           set now [clock seconds]
@@ -3261,9 +3265,11 @@ namespace eval ::Eagle {
                 $result " bytes\n"]
           }
         } else {
-          tputs $channel [appendArgs \
-              "==== WARNING: failed to get CLR memory usage, error: " \
-              \n\t $result \n]
+          if {!$quiet} then {
+            tputs $channel [appendArgs \
+                "==== WARNING: failed to get CLR memory usage, error: " \
+                \n\t $result \n]
+          }
         }
       }
     }
@@ -3289,9 +3295,11 @@ namespace eval ::Eagle {
 
             lappend result $value
           } else {
-            tputs $channel [appendArgs \
-                "==== WARNING: failed to get critical handle count \"" \
-                $name "\", error: " \n\t $value \n]
+            if {!$quiet} then {
+              tputs $channel [appendArgs \
+                  "==== WARNING: failed to get critical handle count \"" \
+                  $name "\", error: " \n\t $value \n]
+            }
           }
         }
       } elseif {!$quiet} then {
@@ -3382,8 +3390,111 @@ namespace eval ::Eagle {
       }
     }
 
+    proc getSettingReadCount { name {viaFile false} } {
+      if {[haveConstraint buildConfiguration.Debug] && [catch {
+        object invoke -flags +NonPublic -alias \
+            System.Data.SQLite.DebugData [expr {$viaFile ? \
+            "settingFileReadCounts" : "settingReadCounts"}]
+      } settingReadCounts] == 0} then {
+        if {[string length $name] > 0} then {
+          if {[$settingReadCounts TryGetValue $name value]} then {
+            tputs $::test_channel [appendArgs \
+                "---- setting \"" $name "\" was read " $value " times" \
+                [expr {$viaFile ? " from the configuration file" : ""}] \n]
+
+            return $value
+          }
+        } else {
+          set nameCount [$settingReadCounts Count]
+          set valueCount 0
+
+          object foreach -alias pair $settingReadCounts {
+            incr valueCount [$pair Value]
+
+            tputs $::test_channel [appendArgs \
+                "---- setting \"" [$pair Key] "\" was read " [$pair Value] \
+                " times" [expr {$viaFile ? " from the configuration file" : \
+                ""}] \n]
+          }
+
+          return [list $nameCount $valueCount]
+        }
+      }
+
+      if {[string length $name] > 0} then {
+        tputs $::test_channel [appendArgs \
+            "---- setting \"" $name "\" was not read" [expr {$viaFile ? \
+            " from the configuration file" : ""}] \n]
+      } else {
+        tputs $::test_channel [appendArgs \
+            "---- no settings were read" [expr {$viaFile ? \
+            " from the configuration file" : ""}] \n]
+      }
+
+      return -1
+    }
+
+    proc getOtherCount { name } {
+      if {[haveConstraint buildConfiguration.Debug] && [catch {
+        object invoke -flags +NonPublic -alias \
+            System.Data.SQLite.DebugData otherCounts
+      } otherCounts] == 0} then {
+        if {[string length $name] > 0} then {
+          if {[$otherCounts TryGetValue $name value]} then {
+            tputs $::test_channel [appendArgs \
+                "---- other counter \"" $name "\" has value " $value \n]
+
+            return $value
+          }
+        } else {
+          set nameCount [$otherCounts Count]
+          set valueCount 0
+
+          object foreach -alias pair $otherCounts {
+            incr valueCount [$pair Value]
+
+            tputs $::test_channel [appendArgs \
+                "---- other counter \"" [$pair Key] "\" has value " \
+                [$pair Value] \n]
+          }
+
+          return [list $nameCount $valueCount]
+        }
+      }
+
+      if {[string length $name] > 0} then {
+        tputs $::test_channel [appendArgs \
+            "---- other counter \"" $name "\" has no value\n"]
+      } else {
+        tputs $::test_channel "---- there are no other counters\n"
+      }
+
+      return -1
+    }
+
     proc reportSQLiteResources {
             channel {quiet false} {reset true} {collect true} } {
+      #
+      # NOTE: If possible, always reset the cached assembly directory.
+      #
+      if {[haveSQLiteObjectCommand]} then {
+        if {[catch {
+          object invoke -flags +NonPublic \
+              System.Data.SQLite.UnsafeNativeMethods \
+              ResetCachedAssemblyDirectory
+        } error] == 0} then {
+          if {!$quiet} then {
+            tputs $channel "---- reset cached assembly directory"
+          }
+        } else {
+          if {!$quiet} then {
+            tputs $channel [appendArgs \
+                "==== WARNING: failed to reset cached assembly directory, " \
+                "error: " \n\t $error \n]
+          }
+        }
+      }
+
       #
       # NOTE: If available, report on (and possibly reset) the runtime
       #       configuration statistics.
@@ -3415,10 +3526,12 @@ namespace eval ::Eagle {
                     $nameCount " names and " $valueCount " values read\n"]
               }
             } else {
-              tputs $channel [appendArgs \
-                  "==== WARNING: failed to reset setting statistics for " \
-                  "the previous " $nameCount " names and " $valueCount \
-                  " values read, error: " \n\t $error \n]
+              if {!$quiet} then {
+                tputs $channel [appendArgs \
+                    "==== WARNING: failed to reset setting statistics for " \
+                    "the previous " $nameCount " names and " $valueCount \
+                    " values read, error: " \n\t $error \n]
+              }
             }
           }
         }
@@ -3449,11 +3562,48 @@ namespace eval ::Eagle {
                     "from the configuration file\n"]
               }
             } else {
+              if {!$quiet} then {
+                tputs $channel [appendArgs \
+                    "==== WARNING: failed to reset setting statistics for " \
+                    "the previous " $nameCount " names and " $valueCount \
+                    " values read from the configuration file, error: " \n\t \
+                    $error \n]
+              }
+            }
+          }
+        }
+
+        if {[catch {
+          object invoke -flags +NonPublic -alias \
+              System.Data.SQLite.DebugData otherCounts
+        } otherCounts] == 0} then {
+          set nameCount [$otherCounts Count]
+          set valueCount 0
+
+          object foreach -alias pair $otherCounts {
+            incr valueCount [$pair Value]
+
+            if {!$quiet} then {
               tputs $channel [appendArgs \
-                  "==== WARNING: failed to reset setting statistics for " \
-                  "the previous " $nameCount " names and " $valueCount \
-                  " values read from the configuration file, error: " \n\t \
-                  $error \n]
+                  "---- other counter \"" [$pair Key] "\" has value " \
+                  [$pair Value] \n]
+            }
+          }
+
+          if {$reset} then {
+            if {[catch {$otherCounts Clear} error] == 0} then {
+              if {!$quiet} then {
+                tputs $channel [appendArgs \
+                    "---- reset other counters for the previous " \
+                    $nameCount " names and " $valueCount " values\n"]
+              }
+            } else {
+              if {!$quiet} then {
+                tputs $channel [appendArgs \
+                    "==== WARNING: failed to reset other counters for " \
+                    "the previous " $nameCount " names and " $valueCount \
+                    " values, error: " \n\t $error \n]
+              }
             }
           }
         }

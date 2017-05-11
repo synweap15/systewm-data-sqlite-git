@@ -20,52 +20,6 @@ runSQLiteTestPrologue
 
 ###############################################################################
 
-proc getSettingReadCount { name {viaFile false} } {
-  if {[haveConstraint buildConfiguration.Debug] && [catch {
-    object invoke -flags +NonPublic -alias \
-        System.Data.SQLite.DebugData [expr {$viaFile ? \
-        "settingFileReadCounts" : "settingReadCounts"}]
-  } settingReadCounts] == 0} then {
-    if {[string length $name] > 0} then {
-      if {[$settingReadCounts TryGetValue $name value]} then {
-        tputs $::test_channel [appendArgs \
-            "---- setting \"" $name "\" was read " $value " times" \
-            [expr {$viaFile ? " from the configuration file" : ""}] \n]
-
-        return $value
-      }
-    } else {
-      set nameCount [$settingReadCounts Count]
-      set valueCount 0
-
-      object foreach -alias pair $settingReadCounts {
-        incr valueCount [$pair Value]
-
-        tputs $::test_channel [appendArgs \
-            "---- setting \"" [$pair Key] "\" was read " [$pair Value] \
-            " times" [expr {$viaFile ? " from the configuration file" : \
-            ""}] \n]
-      }
-
-      return [list $nameCount $valueCount]
-    }
-  }
-
-  if {[string length $name] > 0} then {
-    tputs $::test_channel [appendArgs \
-        "---- setting \"" $name "\" was not read" [expr {$viaFile ? \
-        " from the configuration file" : ""}] \n]
-  } else {
-    tputs $::test_channel [appendArgs \
-        "---- no settings were read" [expr {$viaFile ? \
-        " from the configuration file" : ""}] \n]
-  }
-
-  return -1
-}
-
-###############################################################################
-
 reportSQLiteResources $test_channel true
 
 ###############################################################################
@@ -463,10 +417,6 @@ runTest {test tkt-58ed318f2f-1.14 {zero XML configuration file usage} -setup {
   unset -nocomplain counts db fileName
 } -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
 System.Data.SQLite buildConfiguration.Debug} -result {True}}
-
-###############################################################################
-
-rename getSettingReadCount ""
 
 ###############################################################################
 

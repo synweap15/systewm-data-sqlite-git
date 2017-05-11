@@ -4571,6 +4571,52 @@ SQLiteInterop} -match regexp -result \
 
 ###############################################################################
 
+reportSQLiteResources $test_channel true
+
+###############################################################################
+
+runTest {test data-1.87 {GetSettingValue cached assembly directory} -setup {
+  moveSystemDataSQLiteDllConfig false
+} -body {
+  object invoke -flags +NonPublic System.Data.SQLite.UnsafeNativeMethods \
+      GetSettingValue setting_for_data-1.87 null
+
+  expr {[getOtherCount Method_ResetCachedAssemblyDirectory] == -1 && \
+      [getOtherCount Method_GetAssemblyDirectory] == 1 && \
+      [getOtherCount Method_GetCachedAssemblyDirectory] >= 1}
+} -cleanup {
+  moveSystemDataSQLiteDllConfig true
+} -constraints {eagle command.object monoBug28 System.Data.SQLite\
+buildConfiguration.Debug} -result {True}}
+
+###############################################################################
+
+reportSQLiteResources $test_channel true
+
+###############################################################################
+
+runTest {test data-1.88 {GetSettingValue cached assembly directory} -setup {
+  moveSystemDataSQLiteDllConfig false
+} -body {
+  object invoke -flags +NonPublic System.Data.SQLite.UnsafeNativeMethods \
+      GetSettingValue setting_for_data-1.88 null
+
+  object invoke -flags +NonPublic \
+      System.Data.SQLite.UnsafeNativeMethods ResetCachedAssemblyDirectory
+
+  object invoke -flags +NonPublic System.Data.SQLite.UnsafeNativeMethods \
+      GetSettingValue setting_for_data-1.88 null
+
+  expr {[getOtherCount Method_ResetCachedAssemblyDirectory] == 1 && \
+      [getOtherCount Method_GetAssemblyDirectory] == 2 && \
+      [getOtherCount Method_GetCachedAssemblyDirectory] >= 2}
+} -cleanup {
+  moveSystemDataSQLiteDllConfig true
+} -constraints {eagle command.object monoBug28 System.Data.SQLite\
+buildConfiguration.Debug} -result {True}}
+
+###############################################################################
+
 reportSQLiteResources $test_channel
 
 ###############################################################################
