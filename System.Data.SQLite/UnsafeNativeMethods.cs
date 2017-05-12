@@ -693,11 +693,33 @@ namespace System.Data.SQLite
 
       /////////////////////////////////////////////////////////////////////////
       /// <summary>
+      /// When this field is non-zero, it indicates the
+      /// <see cref="GetAssemblyDirectory" /> method was not able to locate a
+      /// suitable assembly directory.  The
+      /// <see cref="GetCachedAssemblyDirectory" /> method will check this
+      /// field and skips calls into the <see cref="GetAssemblyDirectory" />
+      /// method whenever it is non-zero.
+      /// </summary>
+      private static bool noAssemblyDirectory;
+
+      /////////////////////////////////////////////////////////////////////////
+      /// <summary>
       /// This is the cached return value from the
       /// <see cref="GetXmlConfigFileName" /> method -OR- null if that method
       /// has never returned a valid value.
       /// </summary>
       private static string cachedXmlConfigFileName;
+
+      /////////////////////////////////////////////////////////////////////////
+      /// <summary>
+      /// When this field is non-zero, it indicates the
+      /// <see cref="GetXmlConfigFileName" /> method was not able to locate a
+      /// suitable XML configuration file name.  The
+      /// <see cref="GetCachedXmlConfigFileName" /> method will check this
+      /// field and skips calls into the <see cref="GetXmlConfigFileName" />
+      /// method whenever it is non-zero.
+      /// </summary>
+      private static bool noXmlConfigFileName;
       #endregion
 
       /////////////////////////////////////////////////////////////////////////
@@ -849,6 +871,7 @@ namespace System.Data.SQLite
           lock (staticSyncRoot)
           {
               cachedXmlConfigFileName = null;
+              noXmlConfigFileName = false;
           }
       }
 
@@ -876,6 +899,9 @@ namespace System.Data.SQLite
           {
               if (cachedXmlConfigFileName != null)
                   return cachedXmlConfigFileName;
+
+              if (noXmlConfigFileName)
+                  return null;
           }
 
           return GetXmlConfigFileName();
@@ -927,6 +953,11 @@ namespace System.Data.SQLite
               }
 
               return fileName;
+          }
+
+          lock (staticSyncRoot)
+          {
+              noXmlConfigFileName = true;
           }
 
           return null;
@@ -1596,6 +1627,7 @@ namespace System.Data.SQLite
           lock (staticSyncRoot)
           {
               cachedAssemblyDirectory = null;
+              noAssemblyDirectory = false;
           }
       }
 
@@ -1622,6 +1654,9 @@ namespace System.Data.SQLite
           {
               if (cachedAssemblyDirectory != null)
                   return cachedAssemblyDirectory;
+
+              if (noAssemblyDirectory)
+                  return null;
           }
 
           return GetAssemblyDirectory();
@@ -1649,7 +1684,14 @@ namespace System.Data.SQLite
               Assembly assembly = Assembly.GetExecutingAssembly();
 
               if (assembly == null)
+              {
+                  lock (staticSyncRoot)
+                  {
+                      noAssemblyDirectory = true;
+                  }
+
                   return null;
+              }
 
               string fileName = null;
 
@@ -1657,7 +1699,14 @@ namespace System.Data.SQLite
               AssemblyName assemblyName = assembly.GetName();
 
               if (assemblyName == null)
+              {
+                  lock (staticSyncRoot)
+                  {
+                      noAssemblyDirectory = true;
+                  }
+
                   return null;
+              }
 
               fileName = assemblyName.CodeBase;
 #else
@@ -1666,12 +1715,26 @@ namespace System.Data.SQLite
 #endif
 
               if (String.IsNullOrEmpty(fileName))
+              {
+                  lock (staticSyncRoot)
+                  {
+                      noAssemblyDirectory = true;
+                  }
+
                   return null;
+              }
 
               string directory = Path.GetDirectoryName(fileName);
 
               if (String.IsNullOrEmpty(directory))
+              {
+                  lock (staticSyncRoot)
+                  {
+                      noAssemblyDirectory = true;
+                  }
+
                   return null;
+              }
 
               lock (staticSyncRoot)
               {
@@ -1699,6 +1762,11 @@ namespace System.Data.SQLite
                   // do nothing.
               }
 #endif
+          }
+
+          lock (staticSyncRoot)
+          {
+              noAssemblyDirectory = true;
           }
 
           return null;
