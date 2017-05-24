@@ -54,6 +54,7 @@ set fileNames [list \
     [file join images syntax begin-stmt.gif] \
     [file join images syntax column-constraint.gif] \
     [file join images syntax column-def.gif] \
+    [file join images syntax column-name-list.gif] \
     [file join images syntax comment-syntax.gif] \
     [file join images syntax commit-stmt.gif] \
     [file join images syntax common-table-expression.gif] \
@@ -113,6 +114,7 @@ set fileNames [list \
     [file join syntax begin-stmt.html] \
     [file join syntax column-constraint.html] \
     [file join syntax column-def.html] \
+    [file join syntax column-name-list.html] \
     [file join syntax comment-syntax.html] \
     [file join syntax commit-stmt.html] \
     [file join syntax common-table-expression.html] \
