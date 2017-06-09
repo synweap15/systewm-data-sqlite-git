@@ -442,7 +442,7 @@ namespace System.Data.SQLite
       get { return (_keyInfo == null) ? 0 : _keyInfo.Length; }
     }
 
-    internal void Sync(int i)
+    private void Sync(int i)
     {
       Sync();
       if (_keyInfo[i].cursor == -1)
@@ -453,7 +453,7 @@ namespace System.Data.SQLite
     /// Make sure all the subqueries are open and ready and sync'd with the current rowid
     /// of the table they're supporting
     /// </summary>
-    internal void Sync()
+    private void Sync()
     {
       if (_isValid == true) return;
 
