@@ -4642,12 +4642,12 @@ runTest {test data-1.89 {using SQLiteBlob without rowid PK index} -setup {
   }
 
   set sql(1) { \
-    SELECT rowid, y FROM t1 \
+    SELECT y FROM t1 \
     WHERE x = '12345678-0000-0000-0000-000000000000'; \
   }
 
   set sql(2) { \
-    SELECT rowid, y FROM t1 \
+    SELECT y FROM t1 \
     WHERE x = '12345679-0000-0000-0000-000000000000'; \
   }
 
@@ -4656,7 +4656,7 @@ runTest {test data-1.89 {using SQLiteBlob without rowid PK index} -setup {
 
   while {[$dataReader Read]} {
     set blob [object invoke -alias \
-        System.Data.SQLite.SQLiteBlob Create $dataReader 1 true]
+        System.Data.SQLite.SQLiteBlob Create $dataReader 0 true]
 
     lappend result [$blob GetCount]
 
@@ -4670,7 +4670,7 @@ runTest {test data-1.89 {using SQLiteBlob without rowid PK index} -setup {
 
   while {[$dataReader Read]} {
     set blob [object invoke -alias \
-        System.Data.SQLite.SQLiteBlob Create $dataReader 1 true]
+        System.Data.SQLite.SQLiteBlob Create $dataReader 0 true]
 
     lappend result [$blob GetCount]
 
