@@ -1046,7 +1046,7 @@ SQLITE_API int WINAPI sqlite3_cursor_rowid_interop(sqlite3_stmt *pstmt, int curs
     else
 #endif
 #if SQLITE_VERSION_NUMBER >= 3010000
-    if(pC->uc.pseudoTableReg > 0)
+    if(pC->eCurType != CURTYPE_BTREE)
 #else
     if(pC->pseudoTableReg > 0)
 #endif
@@ -1075,7 +1075,9 @@ SQLITE_API int WINAPI sqlite3_cursor_rowid_interop(sqlite3_stmt *pstmt, int curs
         break;
       }
 #if SQLITE_VERSION_NUMBER >= 3014000
+      sqlite3BtreeEnterCursor(pC->uc.pCursor);
       *prowid = sqlite3BtreeIntegerKey(pC->uc.pCursor);
+      sqlite3BtreeLeaveCursor(pC->uc.pCursor);
 #elif SQLITE_VERSION_NUMBER >= 3010000
       sqlite3BtreeKeySize(pC->uc.pCursor, prowid);
 #else
