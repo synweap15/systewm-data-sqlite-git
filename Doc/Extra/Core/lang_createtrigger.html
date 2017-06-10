@@ -289,8 +289,14 @@ restrictions apply:</p>
   The name of the table to be modified in an <a href="lang_update.html">UPDATE</a>, <a href="lang_delete.html">DELETE</a>, or <a href="lang_insert.html">INSERT</a>
   statement must be an unqualified table name.  In other words, one must
   use just "<i>tablename</i>" not "<i>database</i><b>.</b><i>tablename</i>"
-  when specifying the table.  The table to be modified must exist in the
+  when specifying the table. </p></li>
+
+<li><p>
+ For non-TEMP triggers,
+  the table to be modified or queried must exist in the
   same database as the table or view to which the trigger is attached.
+  TEMP triggers are not subject to the same-database rule.  A TEMP
+  trigger is allowed to query or modify any table in any <a href="lang_attach.html">ATTACH</a>-ed database.
   </p></li>
 
 <li><p>
