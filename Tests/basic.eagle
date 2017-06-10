@@ -4626,6 +4626,72 @@ buildConfiguration.Debug} -result {True}}
 
 ###############################################################################
 
+runTest {test data-1.89 {using SQLiteBlob without rowid PK index} -setup {
+  setupDb [set fileName data-1.89.db]
+} -body {
+  sql execute $db {
+    CREATE TABLE t1 (x GUID UNIQUE NOT NULL, y BLOB NOT NULL);
+    INSERT INTO t1 (x, y) VALUES(
+      '12345678-0000-0000-0000-000000000000',
+      X'010203040506070809'
+    );
+    INSERT INTO t1 (x, y) VALUES(
+      '12345679-0000-0000-0000-000000000000',
+      X'0102030405060708090A0B0C0D0E0F101113'
+    );
+  }
+
+  set sql(1) { \
+    SELECT rowid, y FROM t1 \
+    WHERE x = '12345678-0000-0000-0000-000000000000'; \
+  }
+
+  set sql(2) { \
+    SELECT rowid, y FROM t1 \
+    WHERE x = '12345679-0000-0000-0000-000000000000'; \
+  }
+
+  set dataReader [sql execute -execute reader -format datareader \
+      -behavior +KeyInfo -alias $db $sql(1)]
+
+  while {[$dataReader Read]} {
+    set blob [object invoke -alias \
+        System.Data.SQLite.SQLiteBlob Create $dataReader 1 true]
+
+    lappend result [$blob GetCount]
+
+    $blob Close
+  }
+
+  $dataReader Close; unset dataReader
+
+  set dataReader [sql execute -execute reader -format datareader \
+      -behavior +KeyInfo -alias $db $sql(2)]
+
+  while {[$dataReader Read]} {
+    set blob [object invoke -alias \
+        System.Data.SQLite.SQLiteBlob Create $dataReader 1 true]
+
+    lappend result [$blob GetCount]
+
+    $blob Close
+  }
+
+  $dataReader Close; unset dataReader
+
+  set result
+} -cleanup {
+  unset -nocomplain blob
+  unset -nocomplain dataReader
+
+  cleanupDb $fileName
+
+  unset -nocomplain result sql db fileName
+} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
+System.Data.SQLite} -result {9 18}}
+
+###############################################################################
+
 reportSQLiteResources $test_channel
 
 ###############################################################################

@@ -368,6 +368,33 @@ namespace System.Data.SQLite
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
 
+    internal long? GetRowId(
+        string databaseName,
+        string tableName
+        )
+    {
+        if ((_keyInfo != null) &&
+            (databaseName != null) &&
+            (tableName != null))
+        {
+            for (int i = 0; i < _keyInfo.Length; i++)
+            {
+                if (_keyInfo[i].databaseName == databaseName &&
+                    _keyInfo[i].tableName == tableName)
+                {
+                    long rowid = _stmt._sql.GetRowIdForCursor(_stmt, _keyInfo[i].cursor);
+
+                    if (rowid != 0)
+                        return rowid;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+
     #region IDisposable Members
     public void Dispose()
     {

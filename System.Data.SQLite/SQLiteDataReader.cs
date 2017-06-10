@@ -519,13 +519,14 @@ namespace System.Data.SQLite
         if (_keyInfo == null)
             return null;
 
-        int iRowId = _keyInfo.GetRowIdIndex(
-            GetDatabaseName(i), GetTableName(i));
+        string databaseName = GetDatabaseName(i);
+        string tableName = GetTableName(i);
+        int iRowId = _keyInfo.GetRowIdIndex(databaseName, tableName);
 
-        if (iRowId == -1)
-            return null;
+        if (iRowId != -1)
+            return GetInt64(iRowId);
 
-        return GetInt64(iRowId);
+        return _keyInfo.GetRowId(databaseName, tableName);
     }
 
     /// <summary>
