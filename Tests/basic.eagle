@@ -2356,9 +2356,9 @@ runTest {test data-1.49 {NoExtensionFunctions connection flag} -setup {
   unset -nocomplain error result db fileName
 } -constraints {eagle monoBug28 command.sql compile.DATA SQLite\
 System.Data.SQLite SQLiteInterop\
-defineConstant.System.Data.SQLite.INTEROP_EXTENSION_FUNCTIONS} -result {0\
-12341234 1 {SQL logic error or missing database -- no such function: replicate}\
-0 1234123412341234}}
+defineConstant.System.Data.SQLite.INTEROP_EXTENSION_FUNCTIONS} -match regexp \
+-result {^0 12341234 1 \{SQL logic error( or missing database)? -- no such\
+function: replicate\} 0 1234123412341234$}}
 
 ###############################################################################
 
@@ -2599,9 +2599,9 @@ runTest {test data-1.54 {bind function to a connection} -setup {
   unset -nocomplain result code results errors sql dataSource id fileName
 } -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
 System.Data.SQLite compileCSharp} -match regexp -result {^Ok\
-System#CodeDom#Compiler#CompilerResults#\d+ \{\} 1 \{SQL logic error or missing\
-database -- no such function: MyRandom\} 0 (?:-)?\d+ 1 \{SQL logic error or\
-missing database -- no such function: MyRandom\}$}}
+System#CodeDom#Compiler#CompilerResults#\d+ \{\} 1 \{SQL logic error( or\
+missing database)? -- no such function: MyRandom\} 0 (?:-)?\d+ 1 \{SQL logic\
+error( or missing database)? -- no such function: MyRandom\}$}}
 
 ###############################################################################
 
@@ -3411,8 +3411,8 @@ runTest {test data-1.72 {unbind function from a connection} -setup {
 } -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
 System.Data.SQLite compileCSharp} -match regexp -result {^Ok\
 System#CodeDom#Compiler#CompilerResults#\d+ \{\} 0 \{\} 0 (?:-)?\d+ 0 True 1\
-\{SQL logic error or missing database -- no such function: MyRandom\} 0 \{\} 0\
-(?:-)?\d+ 0 \{\}$}}
+\{SQL logic error( or missing database)? -- no such function: MyRandom\} 0 \{\}\
+0 (?:-)?\d+ 0 \{\}$}}
 
 ###############################################################################
 
@@ -3569,8 +3569,8 @@ runTest {test data-1.73 {unbind functions from a connection on close} -setup {
 } -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
 System.Data.SQLite compileCSharp} -match regexp -result {^Ok\
 System#CodeDom#Compiler#CompilerResults#\d+ \{\} 0 \{\} 0 (?:-)?\d+ 0 \{\} 1\
-\{SQL logic error or missing database -- no such function: MyRandom\} 0 \{\} 0\
-(?:-)?\d+ 0 \{\}$}}
+\{SQL logic error( or missing database)? -- no such function: MyRandom\} 0 \{\}\
+0 (?:-)?\d+ 0 \{\}$}}
 
 ###############################################################################
 
@@ -4156,11 +4156,12 @@ runTest {test data-1.81 {SQLiteCommand.VerifyOnly method} -setup {
 
   unset -nocomplain result code command connection db fileName
 } -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
-System.Data.SQLite} -result {0 {} 0 {} 0 {} 1 {SQL logic error or missing\
-database -- no such table: t2} 1 {SQL logic error or missing database -- near\
-"BAD": syntax error} 0 {} 1 {SQL logic error or missing database -- no such\
-table: t2} 1 {SQL logic error or missing database -- near "BAD": syntax error}\
-1 {SQL logic error or missing database -- no such table: t2} {1 2 3}}}
+System.Data.SQLite} -match regexp -result {^0 \{\} 0 \{\} 0 \{\} 1 \{SQL logic\
+error( or missing database)? -- no such table: t2\} 1 \{SQL logic error( or\
+missing database)? -- near "BAD": syntax error\} 0 \{\} 1 \{SQL logic error( or\
+missing database)? -- no such table: t2\} 1 \{SQL logic error( or missing\
+database)? -- near "BAD": syntax error\} 1 \{SQL logic error( or missing\
+database)? -- no such table: t2\} \{1 2 3\}$}}
 
 ###############################################################################
 
@@ -4410,11 +4411,11 @@ runTest {test data-1.83 {bind and use REGEXP function} -setup {
   unset -nocomplain result code results errors sql dataSource id fileName
 } -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
 System.Data.SQLite compileCSharp} -match regexp -result {^Ok\
-System#CodeDom#Compiler#CompilerResults#\d+ \{\} 1 \{SQL logic error or missing\
-database -- no such function: REGEXP\} 1 \{SQL logic error or missing database\
--- no such function: REGEXP\} 0 \{\} 0 1 0 0 0 True 1 \{SQL logic error or\
-missing database -- no such function: REGEXP\} 1 \{SQL logic error or missing\
-database -- no such function: REGEXP\} 0 \{\}$}}
+System#CodeDom#Compiler#CompilerResults#\d+ \{\} 1 \{SQL logic error( or\
+missing database)? -- no such function: REGEXP\} 1 \{SQL logic error( or\
+missing database)? -- no such function: REGEXP\} 0 \{\} 0 1 0 0 0 True 1 \{SQL\
+logic error( or missing database)? -- no such function: REGEXP\} 1 \{SQL logic\
+error( or missing database)? -- no such function: REGEXP\} 0 \{\}$}}
 
 ###############################################################################
 

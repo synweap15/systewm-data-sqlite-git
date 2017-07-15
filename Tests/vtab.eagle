@@ -224,7 +224,7 @@ compile.DATA SQLite System.Data.SQLite\
 defineConstant.System.Data.SQLite.INTEROP_VIRTUAL_TABLE compileCSharp} -match \
 regexp -result [normalizeVtabResult {^Ok\
 System#CodeDom#Compiler#CompilerResults#\d+ \{\} 0 \{one two three 4 5\.0 Error\
-\{SQL logic error or missing database -- virtual table "t\d+" is\
+\{SQL logic error( or missing database)? -- virtual table "t\d+" is\
 read-only\}\}$}]}
 
 ###############################################################################
@@ -335,7 +335,7 @@ compile.DATA SQLite System.Data.SQLite\
 defineConstant.System.Data.SQLite.INTEROP_VIRTUAL_TABLE compileCSharp} -match \
 regexp -result [normalizeVtabResult {^Ok\
 System#CodeDom#Compiler#CompilerResults#\d+ \{\} 0 \{one two three 4 5\.0 Error\
-\{SQL logic error or missing database -- virtual table "t\d+" is\
+\{SQL logic error( or missing database)? -- virtual table "t\d+" is\
 read-only\}\}$}]}
 
 ###############################################################################
@@ -444,7 +444,7 @@ compile.DATA SQLite System.Data.SQLite\
 defineConstant.System.Data.SQLite.INTEROP_VIRTUAL_TABLE compileCSharp} -match \
 regexp -result [normalizeVtabResult {^Ok\
 System#CodeDom#Compiler#CompilerResults#\d+ \{\} 0 \{1 2 3 4 5 Error \{SQL\
-logic error or missing database -- virtual table "t\d+" is read-only\}\}$}]}
+logic error( or missing database)? -- virtual table "t\d+" is read-only\}\}$}]}
 
 ###############################################################################
 
@@ -555,7 +555,7 @@ compile.DATA SQLite System.Data.SQLite\
 defineConstant.System.Data.SQLite.INTEROP_VIRTUAL_TABLE compileCSharp} -match \
 regexp -result [normalizeVtabResult {^Ok\
 System#CodeDom#Compiler#CompilerResults#\d+ \{\} 0 \{1 2 3 4 5 Error \{SQL\
-logic error or missing database -- virtual table "t\d+" is read-only\}\}$}]}
+logic error( or missing database)? -- virtual table "t\d+" is read-only\}\}$}]}
 
 ###############################################################################
 
@@ -806,8 +806,8 @@ compile.DATA SQLite System.Data.SQLite\
 defineConstant.System.Data.SQLite.INTEROP_VIRTUAL_TABLE compileCSharp} -match \
 regexp -result [normalizeVtabResult {^Ok\
 System#CodeDom#Compiler#CompilerResults#\d+ \{\} 0 \{\{\} b25l \{SQL logic\
-error or missing database -- unable to use function Base64 in the requested\
-context\} \{SQL logic error or missing database -- no such function:\
+error( or missing database)? -- unable to use function Base64 in the requested\
+context\} \{SQL logic error( or missing database)? -- no such function:\
 Base65\}\}$}]}
 
 ###############################################################################
@@ -1059,9 +1059,9 @@ compile.DATA SQLite System.Data.SQLite\
 defineConstant.System.Data.SQLite.INTEROP_VIRTUAL_TABLE compileCSharp} -match \
 regexp -result [normalizeVtabResult {^Ok\
 System#CodeDom#Compiler#CompilerResults#\d+ \{\} 0 \{\{\} b25l \{SQL logic\
-error or missing database -- (?:unable to use function Base64 in the requested\
-context|need exactly one argument, got 3)\} \{SQL logic error or missing\
-database -- no such function: Base65\}\}$}]}
+error( or missing database)? -- (?:unable to use function Base64 in the\
+requested context|need exactly one argument, got 3)\} \{SQL logic error( or\
+missing database)? -- no such function: Base65\}\}$}]}
 
 ###############################################################################
 

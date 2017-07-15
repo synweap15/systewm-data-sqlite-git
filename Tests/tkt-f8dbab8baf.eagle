@@ -133,8 +133,9 @@ runTest {test tkt-f8dbab8baf-1.6 {SchemaOnly CREATE/SELECT failure} -setup {
 
   unset -nocomplain error rows db fileName
 } -constraints \
-{eagle monoBug40 command.sql compile.DATA SQLite System.Data.SQLite} -result \
-{1 {SQL logic error or missing database -- no such table: t1}}}
+{eagle monoBug40 command.sql compile.DATA SQLite System.Data.SQLite} -match \
+regexp -result {^1 \{SQL logic error( or missing database)? -- no such table:\
+t1\}$}}
 
 ###############################################################################
 
