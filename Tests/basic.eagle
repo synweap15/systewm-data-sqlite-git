@@ -4735,7 +4735,7 @@ runTest {test data-1.91 {Password error (no encryption support)} -body {
 } -cleanup {
   cleanupDb $fileName
 
-  unset -nocomplain db fileName
+  unset -nocomplain msg db fileName
 } -constraints [fixConstraints {eagle !System.Data.SQLite.Encryption monoBug28\
 command.sql compile.DATA SQLite System.Data.SQLite}] -result {1 {SQL logic\
 error -- Cannot use "Password" connection string property: library was not\
@@ -4751,7 +4751,7 @@ runTest {test data-1.92 {HexPassword error (no encryption support)} -body {
 } -cleanup {
   cleanupDb $fileName
 
-  unset -nocomplain db fileName
+  unset -nocomplain msg db fileName
 } -constraints [fixConstraints {eagle !System.Data.SQLite.Encryption monoBug28\
 command.sql compile.DATA SQLite System.Data.SQLite}] -result {1 {SQL logic\
 error -- Cannot use "HexPassword" connection string property: library was not\
