@@ -3899,14 +3899,16 @@ namespace System.Data.SQLite
         {
             throw new SQLiteException(SQLiteErrorCode.Error,
                 "Cannot use \"HexPassword\" connection string property: " +
-                "library was not built with encryption support");
+                "library was not built with encryption support, please " +
+                "see \"https://www.sqlite.org/see\" for more information");
         }
 
         if (FindKey(opts, "Password", DefaultPassword) != null)
         {
             throw new SQLiteException(SQLiteErrorCode.Error,
                 "Cannot use \"Password\" connection string property: " +
-                "library was not built with encryption support");
+                "library was not built with encryption support, please " +
+                "see \"https://www.sqlite.org/see\" for more information");
         }
 #endif
 

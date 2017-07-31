@@ -4739,7 +4739,8 @@ runTest {test data-1.91 {Password error (no encryption support)} -body {
 } -constraints [fixConstraints {eagle !System.Data.SQLite.Encryption monoBug28\
 command.sql compile.DATA SQLite System.Data.SQLite}] -result {1 {SQL logic\
 error -- Cannot use "Password" connection string property: library was not\
-built with encryption support}}}
+built with encryption support, please see "https://www.sqlite.org/see" for more\
+information}}}
 
 ###############################################################################
 
@@ -4754,7 +4755,8 @@ runTest {test data-1.92 {HexPassword error (no encryption support)} -body {
 } -constraints [fixConstraints {eagle !System.Data.SQLite.Encryption monoBug28\
 command.sql compile.DATA SQLite System.Data.SQLite}] -result {1 {SQL logic\
 error -- Cannot use "HexPassword" connection string property: library was not\
-built with encryption support}}}
+built with encryption support, please see "https://www.sqlite.org/see" for more\
+information}}}
 
 ###############################################################################
 
