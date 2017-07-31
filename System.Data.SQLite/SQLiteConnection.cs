@@ -1118,10 +1118,11 @@ namespace System.Data.SQLite
   /// <item>
   /// <description>Password</description>
   /// <description>
-  /// {password} - Using this parameter requires that the CryptoAPI based codec
-  /// be enabled at compile-time for both the native interop assembly and the
-  /// core managed assemblies; otherwise, using this parameter may result in an
-  /// exception being thrown when attempting to open the connection.
+  /// {password} - Using this parameter requires that the legacy CryptoAPI based
+  /// codec (or the SQLite Encryption Extension) be enabled at compile-time for
+  /// both the native interop assembly and the core managed assemblies; otherwise,
+  /// using this parameter may result in an exception being thrown when attempting
+  /// to open the connection.
   /// </description>
   /// <description>N</description>
   /// <description></description>
@@ -1131,10 +1132,10 @@ namespace System.Data.SQLite
   /// <description>
   /// {hexPassword} - Must contain a sequence of zero or more hexadecimal encoded
   /// byte values without a leading "0x" prefix.  Using this parameter requires
-  /// that the CryptoAPI based codec be enabled at compile-time for both the native
-  /// interop assembly and the core managed assemblies; otherwise, using this
-  /// parameter may result in an exception being thrown when attempting to open
-  /// the connection.
+  /// that the legacy CryptoAPI based codec (or the SQLite Encryption Extension)
+  /// be enabled at compile-time for both the native interop assembly and the
+  /// core managed assemblies; otherwise, using this parameter may result in an
+  /// exception being thrown when attempting to open the connection.
   /// </description>
   /// <description>N</description>
   /// <description></description>
@@ -3893,6 +3894,20 @@ namespace System.Data.SQLite
                 _sql.SetPassword(_password);
         }
         _password = null;
+#else
+        if (FindKey(opts, "HexPassword", DefaultHexPassword) != null)
+        {
+            throw new SQLiteException(SQLiteErrorCode.Error,
+                "Cannot use \"HexPassword\" connection string property: " +
+                "library was not built with encryption support");
+        }
+
+        if (FindKey(opts, "Password", DefaultPassword) != null)
+        {
+            throw new SQLiteException(SQLiteErrorCode.Error,
+                "Cannot use \"Password\" connection string property: " +
+                "library was not built with encryption support");
+        }
 #endif
 
         if (!fullUri)

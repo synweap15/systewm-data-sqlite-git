@@ -4728,6 +4728,36 @@ sqlite_stmt;\} 11 1 1 0 0 0 0 0 1 \d+ \{SELECT \* FROM t1;\} 1 1 1 0 0 0 9 0 1\
 
 ###############################################################################
 
+runTest {test data-1.91 {Password error (no encryption support)} -body {
+  list [catch {
+    setupDb [set fileName data-1.91.db] "" "" "" "" "Password=1234;"
+  } msg] [extractSystemDataSQLiteExceptionMessage $msg]
+} -cleanup {
+  cleanupDb $fileName
+
+  unset -nocomplain db fileName
+} -constraints [fixConstraints {eagle !System.Data.SQLite.Encryption monoBug28\
+command.sql compile.DATA SQLite System.Data.SQLite}] -result {1 {SQL logic\
+error -- Cannot use "Password" connection string property: library was not\
+built with encryption support}}}
+
+###############################################################################
+
+runTest {test data-1.92 {HexPassword error (no encryption support)} -body {
+  list [catch {
+    setupDb [set fileName data-1.92.db] "" "" "" "" "HexPassword=1234;"
+  } msg] [extractSystemDataSQLiteExceptionMessage $msg]
+} -cleanup {
+  cleanupDb $fileName
+
+  unset -nocomplain db fileName
+} -constraints [fixConstraints {eagle !System.Data.SQLite.Encryption monoBug28\
+command.sql compile.DATA SQLite System.Data.SQLite}] -result {1 {SQL logic\
+error -- Cannot use "HexPassword" connection string property: library was not\
+built with encryption support}}}
+
+###############################################################################
+
 reportSQLiteResources $test_channel
 
 ###############################################################################
