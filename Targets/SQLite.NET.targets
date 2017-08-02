@@ -282,9 +282,9 @@
     </Exec>
 
     <CreateProperty Condition="'$(VS150INSTALLATIONPATH)' != '' And
-                               HasTrailingSlash('$(VS150INSTALLATIONPATH)') And
-                               Exists('$(VS150INSTALLATIONPATH)VSSDK')"
-                    Value="$(VS150INSTALLATIONPATH)VSSDK">
+                               !HasTrailingSlash('$(VS150INSTALLATIONPATH)') And
+                               Exists('$(VS150INSTALLATIONPATH)\VSSDK')"
+                    Value="$(VS150INSTALLATIONPATH)\VSSDK">
       <Output TaskParameter="Value" PropertyName="VSSDK150Install" />
     </CreateProperty>
   </Target>
