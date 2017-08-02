@@ -13,4 +13,5 @@
 *EnvDTE.*
 *Microsoft.*
 *Newtonsoft.*
+*System.Threading*
 *stdole.*
