@@ -2062,6 +2062,7 @@ namespace System.Data.SQLite
                 bool noVs2012,
                 bool noVs2013,
                 bool noVs2015,
+                bool noVs2017,
                 bool noTrace,
                 bool noConsole,
                 bool noLog,
@@ -2110,6 +2111,7 @@ namespace System.Data.SQLite
                 this.noVs2012 = noVs2012;
                 this.noVs2013 = noVs2013;
                 this.noVs2015 = noVs2015;
+                this.noVs2017 = noVs2017;
                 this.noTrace = noTrace;
                 this.noConsole = noConsole;
                 this.noLog = noLog;
@@ -2306,8 +2308,8 @@ namespace System.Data.SQLite
                     TracePriority.Default, TracePriority.Default, false, true,
                     false, false, false, false, false, false, false, false,
                     false, false, false, false, false, false, false, false,
-                    false, false, false, false, false, false, false, true,
-                    true, false, false, false);
+                    false, false, false, false, false, false, false, false,
+                    true, true, false, false, false);
             }
 
             ///////////////////////////////////////////////////////////////////
@@ -3078,6 +3080,27 @@ namespace System.Data.SQLite
 
                             configuration.noVs2015 = (bool)value;
                         }
+                        else if (MatchOption(newArg, "noVs2017"))
+                        {
+                            bool? value = ParseBoolean(text);
+
+                            if (value == null)
+                            {
+                                error = TraceOps.DebugAndTrace(
+                                    TracePriority.Lowest, debugCallback,
+                                    traceCallback, String.Format(
+                                    "Invalid {0} boolean value: {1}",
+                                    ForDisplay(arg), ForDisplay(text)),
+                                    traceCategory);
+
+                                if (strict)
+                                    return false;
+
+                                continue;
+                            }
+
+                            configuration.noVs2017 = (bool)value;
+                        }
                         else if (MatchOption(newArg, "perUser"))
                         {
                             bool? value = ParseBoolean(text);
@@ -3541,6 +3564,7 @@ namespace System.Data.SQLite
                         configuration.noVs2012 = true;
                         configuration.noVs2013 = true;
                         configuration.noVs2015 = true;
+                        configuration.noVs2017 = true;
 
                         TraceOps.DebugAndTrace(TracePriority.Medium,
                             debugCallback, traceCallback, String.Format(
@@ -4109,6 +4133,10 @@ namespace System.Data.SQLite
                         traceCategory);
 
                     traceCallback(String.Format(NameAndValueFormat,
+                        "NoVs2017", ForDisplay(noVs2017)),
+                        traceCategory);
+
+                    traceCallback(String.Format(NameAndValueFormat,
                         "NoTrace", ForDisplay(noTrace)),
                         traceCategory);
 
@@ -4623,6 +4651,15 @@ namespace System.Data.SQLite
             {
                 get { return noVs2015; }
                 set { noVs2015 = value; }
+            }
+
+            ///////////////////////////////////////////////////////////////////
+
+            private bool noVs2017;
+            public bool NoVs2017
+            {
+                get { return noVs2017; }
+                set { noVs2017 = value; }
             }
 
             ///////////////////////////////////////////////////////////////////
@@ -5860,6 +5897,9 @@ namespace System.Data.SQLite
 
                 if ((configuration == null) || !configuration.NoVs2015)
                     vsList.Versions.Add(new Version(14, 0));// 2015
+
+                if ((configuration == null) || !configuration.NoVs2017)
+                    vsList.Versions.Add(new Version(15, 0));// 2017
             }
         }
 
@@ -7422,6 +7462,28 @@ namespace System.Data.SQLite
                     !Configuration.CheckRuntimeVersion(
                         configuration, true, ref error))
                 {
+                    TraceOps.ShowMessage(TracePriority.Highest,
+                        debugCallback, traceCallback, thisAssembly,
+                        error, traceCategory, MessageBoxButtons.OK,
+                        MessageBoxIcon.Error);
+
+                    TraceOps.DebugAndTrace(TracePriority.MediumHigh,
+                        debugCallback, traceCallback, "Failure.",
+                        traceCategory);
+
+                    return 1; /* FAILURE */
+                }
+                #endregion
+
+                ///////////////////////////////////////////////////////////////
+
+                #region Error Message for Visual Studio 2017
+                if (!configuration.NoVs2017)
+                {
+                    error = "Visual Studio 2017 is not supported, " +
+                        "please see \"https://urn.to/r/vs2017_ddex\" " +
+                        "for more information.";
+
                     TraceOps.ShowMessage(TracePriority.Highest,
                         debugCallback, traceCallback, thisAssembly,
                         error, traceCategory, MessageBoxButtons.OK,
