@@ -209,10 +209,10 @@
   <Import Project="$(SQLiteNetDir)\System.Data.SQLite\Targets\System.Data.SQLite.Properties.targets" />
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <BuildDependsOn>
+    <PrepareForBuildDependsOn>
+      $(PrepareForBuildDependsOn);
       TryToFindVsSdk2017;
-      $(BuildDependsOn);
-    </BuildDependsOn>
+    </PrepareForBuildDependsOn>
   </PropertyGroup>
   <PropertyGroup Condition="'$(NetFx47)' == 'false'">
     <!--
