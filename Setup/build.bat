@@ -65,6 +65,19 @@ SET TOOLS=%TOOLS:~0,-1%
 
 %_VECHO% Tools = '%TOOLS%'
 
+SET EXTERNALS=%ROOT%\Externals
+SET EXTERNALS=%EXTERNALS:\\=\%
+
+%_VECHO% Externals = '%EXTERNALS%'
+
+IF NOT DEFINED VSWHERE_EXE (
+  SET VSWHERE_EXE=%EXTERNALS%\vswhere\vswhere.exe
+)
+
+SET VSWHERE_EXE=%VSWHERE_EXE:\\=\%
+
+%_VECHO% VsWhereExe = '%VSWHERE_EXE%'
+
 IF EXIST "%TOOLS%\set_%CONFIGURATION%_%PLATFORM%.bat" (
   CALL :fn_ResetErrorLevel
 
