@@ -14,9 +14,9 @@
       <td colspan="3" class="importantNotes">
         All downloadable packages on this web page that do not include
         the word &quot;<b>static</b>&quot; in their file name require the
-        appropriate version (e.g. 2005, 2008, 2010, 2012, 2013, or 2015) of the
-        Microsoft Visual C++ Runtime Library, to be successfully installed on
-        the target machine, prior to making use of the executables contained
+        appropriate version (e.g. 2005, 2008, 2010, 2012, 2013, 2015, 2017) of
+        the Microsoft Visual C++ Runtime Library, to be successfully installed
+        on the target machine, prior to making use of the executables contained
         therein.  It should also be noted that the downloadable packages on this
         web page that include the word &quot;<b>setup</b>&quot; (i.e. the setup
         packages) already include and will attempt to automatically install the
@@ -2238,8 +2238,8 @@
       <td valign="top">
         This NuGet package includes all the binaries for both the x86 and x64
         versions of System.Data.SQLite 1.0.105.2 (3.19.3).  The .NET Framework
-        3.5 SP1, 4.0, 4.5, 4.5.1, 4.5.2, 4.6, 4.6.1, or 4.6.2 is required.  For
-        the included native binaries, the version of the Visual C++ runtime
+        3.5 SP1, 4.0, 4.5, 4.5.1, 4.5.2, 4.6, 4.6.1, 4.6.2, or 4.7 is required.
+        For the included native binaries, the version of the Visual C++ runtime
         corresponding to the .NET Framework used by the associated managed
         assembly is statically linked.
         <br />
@@ -2271,7 +2271,7 @@
         This NuGet package contains all the binaries for both the x86 and x64
         versions of System.Data.SQLite 1.0.105.2 (3.19.3), <big><b>except those
         needed to support LINQ and Entity Framework 6</b></big>.  The .NET
-        Framework 3.5 SP1, 4.0, 4.5, 4.5.1, 4.5.2, 4.6, 4.6.1, or 4.6.2 is
+        Framework 3.5 SP1, 4.0, 4.5, 4.5.1, 4.5.2, 4.6, 4.6.1, 4.6.2, or 4.7 is
         required.  For the included native binaries, the version of the Visual
         C++ runtime corresponding to the .NET Framework used by the associated
         managed assembly is statically linked.
@@ -2293,7 +2293,7 @@
       <td valign="top">
         This NuGet package contains the managed binaries for System.Data.SQLite
         1.0.105.2.  The .NET Framework 3.5 SP1, 4.0, 4.5, 4.5.1, 4.5.2, 4.6,
-        4.6.1, or 4.6.2 is required.
+        4.6.1, 4.6.2, or 4.7 is required.
         <br />
         <big><b>This package does not depend on any other package.</b></big>
         <br />
@@ -2320,7 +2320,7 @@
       <td valign="top">
         This NuGet package contains just the binaries to support Entity
         Framework 6 using System.Data.SQLite 1.0.105.2 (3.19.3).  The .NET
-        Framework 4.0, 4.5, 4.5.1, 4.5.2, 4.6, 4.6.1, or 4.6.2 is required.
+        Framework 4.0, 4.5, 4.5.1, 4.5.2, 4.6, 4.6.1, 4.6.2, or 4.7 is required.
         <br />
         <big><b>This package depends on the &quot;EntityFramework&quot;
         package, version 6.0 or higher.</b></big>
@@ -2340,7 +2340,7 @@
       <td valign="top">
         This NuGet package contains just the binaries to support LINQ using
         System.Data.SQLite 1.0.105.2 (3.19.3).  The .NET Framework 3.5 SP1, 4.0,
-        4.5, 4.5.1, 4.5.2, 4.6, 4.6.1, or 4.6.2 is required.
+        4.5, 4.5.1, 4.5.2, 4.6, 4.6.1, 4.6.2, or 4.7 is required.
         <br />
         <big><b>This package does not depend on any other package.</b></big>
         <br />
@@ -2359,7 +2359,7 @@
       <td valign="top">
         This NuGet package contains the managed binaries for System.Data.SQLite
         1.0.105.2.  The .NET Framework 3.5 SP1, 4.0, 4.5, 4.5.1, 4.5.2, 4.6,
-        4.6.1, or 4.6.2 is required.
+        4.6.1, 4.6.2, or 4.7 is required.
         <br />
         <big><b>This is a legacy package; if possible, please use either the
         &quot;System.Data.SQLite&quot; or &quot;System.Data.SQLite.Core&quot;
@@ -2395,7 +2395,7 @@
       <td valign="top">
         This NuGet package contains all the binaries for the x86 version of
         System.Data.SQLite 1.0.105.2 (3.19.3).  The .NET Framework 3.5 SP1,
-        4.0, 4.5, 4.5.1, 4.5.2, 4.6, 4.6.1, or 4.6.2 is required.  For the
+        4.0, 4.5, 4.5.1, 4.5.2, 4.6, 4.6.1, 4.6.2, or 4.7 is required.  For the
         included native binaries, the version of the Visual C++ runtime
         corresponding to the .NET Framework used by the associated managed
         assembly is statically linked.
@@ -2419,7 +2419,7 @@
       <td valign="top">
         This NuGet package contains all the binaries for the x64 version of
         System.Data.SQLite 1.0.105.2 (3.19.3).  The .NET Framework 3.5 SP1,
-        4.0, 4.5, 4.5.1, 4.5.2, 4.6, 4.6.1, or 4.6.2 is required.  For the
+        4.0, 4.5, 4.5.1, 4.5.2, 4.6, 4.6.1, 4.6.2, or 4.7 is required.  For the
         included native binaries, the version of the Visual C++ runtime
         corresponding to the .NET Framework used by the associated managed
         assembly is statically linked.
@@ -2512,7 +2512,7 @@
   <p>
     The <b>framework</b> in templates (5), (6), (7), (8), (9), and (10) will
     be one of netFx20, netFx35, netFx40, netFx45, netFx451, netFx452, netFx46,
-    netFx461.
+    netFx461, netFx462, netFx47.
   </p>
 
   <p>
@@ -2527,7 +2527,7 @@
 
   <p>
     The <b>year</b> in templates (5), (6), (7), (8), (9), and (10) will be
-    one of 2005, 2008, 2010, 2012, 2013, 2015, 20XX.
+    one of 2005, 2008, 2010, 2012, 2013, 2015, 2017, 20XX.
   </p>
 
   <p>

@@ -107,6 +107,17 @@
   </PropertyGroup>
 
   <!--
+      NOTE: Only use functionality available in the .NET Framework 4.7?  By
+            default, this is disabled.  This must be enabled to successfully
+            build the project using Visual Studio 2017 and/or the .NET
+            Framework 4.7 (if necessary, it will typically be enabled from
+            within the project file itself).
+  -->
+  <PropertyGroup Condition="'$(NetFx47)' != 'false'">
+    <DefineConstants>$(DefineConstants);NET_47</DefineConstants>
+  </PropertyGroup>
+
+  <!--
       NOTE: Only use functionality available in the .NET Compact Framework 2.0?
             By default, this is disabled.  This must be enabled to successfully
             build the project using Visual Studio 2005 and/or the .NET Compact

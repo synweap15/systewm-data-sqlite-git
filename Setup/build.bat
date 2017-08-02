@@ -199,6 +199,28 @@ IF DEFINED NETFX462ONLY (
   GOTO setup_buildToolDir
 )
 
+IF DEFINED NETFX47ONLY (
+  %_AECHO% Forcing the use of the .NET Framework 4.7...
+  SET YEAR=2017
+  CALL :fn_CheckFrameworkDir v4.0.30319
+  CALL :fn_CheckMsBuildDir 14.0
+  CALL :fn_CheckVisualStudioMsBuildDir 15.0 15.0
+  GOTO setup_buildToolDir
+)
+
+REM
+REM TODO: When the next version of Visual Studio and/or MSBuild is released,
+REM       this section may need updating.
+REM
+IF NOT DEFINED VISUALSTUDIOMSBUILDDIR (
+  CALL :fn_CheckVisualStudioMsBuildDir 15.0 15.0
+  IF DEFINED VISUALSTUDIOMSBUILDDIR (
+    IF NOT DEFINED YEAR (
+      SET YEAR=2017
+    )
+  )
+)
+
 REM
 REM TODO: When the next version of MSBuild is released, this section may need
 REM       updating.
@@ -264,6 +286,7 @@ IF DEFINED BUILDTOOLDIR (
 %_VECHO% Year = '%YEAR%'
 %_VECHO% FrameworkDir = '%FRAMEWORKDIR%'
 %_VECHO% MsBuildDir = '%MSBUILDDIR%'
+%_VECHO% VisualStudioMsBuildDir = '%VISUALSTUDIOMSBUILDDIR%'
 %_VECHO% BuildToolDir = '%BUILDTOOLDIR%'
 
 IF NOT DEFINED BUILDTOOLDIR (
@@ -556,11 +579,67 @@ GOTO no_errors
   %_AECHO% MSBuild directory "%MSBUILDDIR%" verified.
   GOTO :EOF
 
+:fn_CheckVisualStudioMsBuildDir
+  IF DEFINED NOVISUALSTUDIOMSBUILDDIR GOTO :EOF
+  SET MSBUILDVER=%1
+  SET VISUALSTUDIOVER=%2
+  %_AECHO% Checking for MSBuild "%MSBUILDVER%" within Visual Studio "%VISUALSTUDIOVER%"...
+  IF NOT DEFINED MSBUILDVER GOTO :EOF
+  IF NOT DEFINED VISUALSTUDIOVER GOTO :EOF
+  IF NOT DEFINED VSWHERE_EXE GOTO :EOF
+  IF NOT EXIST "%VSWHERE_EXE%" GOTO :EOF
+  SET VS_WHEREIS_CMD="%VSWHERE_EXE%" -version %VISUALSTUDIOVER% -products * -requires Microsoft.Component.MSBuild -property installationPath
+  IF DEFINED __ECHO (
+    %__ECHO% %VS_WHEREIS_CMD%
+    SET VISUALSTUDIOINSTALLDIR=C:\Program Files\Microsoft Visual Studio\2017\Community
+    GOTO skip_visualStudioInstallDir
+  )
+  FOR /F "delims=" %%D IN ('%VS_WHEREIS_CMD%') DO (SET VISUALSTUDIOINSTALLDIR=%%D)
+  :skip_visualStudioInstallDir
+  IF NOT DEFINED VISUALSTUDIOINSTALLDIR (
+    %_AECHO% Visual Studio "%VISUALSTUDIOVER%" is not installed.
+    GOTO :EOF
+  )
+  %_AECHO% Visual Studio "%VISUALSTUDIOVER%" is installed.
+  SET VISUALSTUDIOMSBUILDDIR=%VISUALSTUDIOINSTALLDIR%\MSBuild\%MSBUILDVER%\bin
+  SET VISUALSTUDIOMSBUILDDIR=%VISUALSTUDIOMSBUILDDIR:\\=\%
+  CALL :fn_VerifyVisualStudioMsBuildDir
+  GOTO :EOF
+
+:fn_VerifyVisualStudioMsBuildDir
+  IF DEFINED NOVISUALSTUDIOMSBUILDDIR GOTO :EOF
+  IF NOT DEFINED VISUALSTUDIOMSBUILDDIR (
+    %_AECHO% Visual Studio directory is not defined.
+    GOTO :EOF
+  )
+  IF DEFINED VISUALSTUDIOMSBUILDDIR IF NOT EXIST "%VISUALSTUDIOMSBUILDDIR%" (
+    %_AECHO% Visual Studio directory does not exist, unsetting...
+    CALL :fn_UnsetVariable VISUALSTUDIOMSBUILDDIR
+    GOTO :EOF
+  )
+  IF DEFINED VISUALSTUDIOMSBUILDDIR IF NOT EXIST "%VISUALSTUDIOMSBUILDDIR%\%MSBUILD%" (
+    %_AECHO% File "%MSBUILD%" not in Visual Studio directory, unsetting...
+    CALL :fn_UnsetVariable VISUALSTUDIOMSBUILDDIR
+    GOTO :EOF
+  )
+  IF DEFINED VISUALSTUDIOMSBUILDDIR IF NOT EXIST "%VISUALSTUDIOMSBUILDDIR%\Roslyn\%CSC%" (
+    %_AECHO% File "%CSC%" not in Visual Studio directory, unsetting...
+    CALL :fn_UnsetVariable VISUALSTUDIOMSBUILDDIR
+    GOTO :EOF
+  )
+  %_AECHO% Visual Studio directory "%VISUALSTUDIOMSBUILDDIR%" verified.
+  GOTO :EOF
+
 :fn_CheckBuildToolDir
   %_AECHO% Checking for build tool directories...
+  IF DEFINED VISUALSTUDIOMSBUILDDIR GOTO set_visualstudio_msbuild_tools
   IF DEFINED MSBUILDDIR GOTO set_msbuild_tools
   IF DEFINED FRAMEWORKDIR GOTO set_framework_tools
   %_AECHO% No build tool directories found.
+  GOTO :EOF
+  :set_visualstudio_msbuild_tools
+  %_AECHO% Using Visual Studio MSBuild directory "%VISUALSTUDIOMSBUILDDIR%"...
+  CALL :fn_CopyVariable VISUALSTUDIOMSBUILDDIR BUILDTOOLDIR
   GOTO :EOF
   :set_msbuild_tools
   %_AECHO% Using MSBuild directory "%MSBUILDDIR%"...
@@ -586,7 +665,7 @@ GOTO no_errors
     CALL :fn_UnsetVariable BUILDTOOLDIR
     GOTO :EOF
   )
-  IF DEFINED BUILDTOOLDIR IF NOT EXIST "%BUILDTOOLDIR%\%CSC%" (
+  IF DEFINED BUILDTOOLDIR IF NOT EXIST "%BUILDTOOLDIR%\%CSC%" IF NOT EXIST "%BUILDTOOLDIR%\Roslyn\%CSC%" (
     %_AECHO% File "%CSC%" not in build tool directory, unsetting...
     CALL :fn_UnsetVariable BUILDTOOLDIR
     GOTO :EOF

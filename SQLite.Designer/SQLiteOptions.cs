@@ -51,7 +51,7 @@ namespace SQLite.Designer
 
         ///////////////////////////////////////////////////////////////////////
 
-#if NET_40 || NET_45 || NET_451 || NET_452 || NET_46 || NET_461 || NET_462
+#if NET_40 || NET_45 || NET_451 || NET_452 || NET_46 || NET_461 || NET_462 || NET_47
         /// <summary>
         /// This is the provider name used when Entity Framework 6.x support is
         /// required for use with the System.Data.SQLite design-time components.
@@ -116,7 +116,7 @@ namespace SQLite.Designer
 
                 if (IsValidValue(key, value))
                     options[key] = value;
-#if !NET_40 && !NET_45 && !NET_451 && !NET_452 && !NET_46 && !NET_461 && !NET_462
+#if !NET_40 && !NET_45 && !NET_451 && !NET_452 && !NET_46 && !NET_461 && !NET_462 && !NET_47
                 else
                     options[key] = LegacyProviderName;
 #endif
@@ -139,7 +139,7 @@ namespace SQLite.Designer
         /// </returns>
         public static string GetProviderName()
         {
-#if NET_40 || NET_45 || NET_451 || NET_452 || NET_46 || NET_461 || NET_462
+#if NET_40 || NET_45 || NET_451 || NET_452 || NET_46 || NET_461 || NET_462 || NET_47
             return GetProviderName(Ef6ProviderName);
 #else
             return GetProviderName(LegacyProviderName);
@@ -355,7 +355,7 @@ namespace SQLite.Designer
 
             IList<string> names = new List<string>();
 
-#if NET_40 || NET_45 || NET_451 || NET_452 || NET_46 || NET_461 || NET_462
+#if NET_40 || NET_45 || NET_451 || NET_452 || NET_46 || NET_461 || NET_462 || NET_47
             names.Add(Ef6ProviderName);
 #endif
 
@@ -432,7 +432,7 @@ namespace SQLite.Designer
                     key, ProviderNameKey, StringComparison.Ordinal) &&
                 (String.Equals(
                     value, LegacyProviderName, StringComparison.Ordinal)
-#if NET_40 || NET_45 || NET_451 || NET_452 || NET_46 || NET_461 || NET_462
+#if NET_40 || NET_45 || NET_451 || NET_452 || NET_46 || NET_461 || NET_462 || NET_47
                 || String.Equals(
                     value, Ef6ProviderName, StringComparison.Ordinal)
 #endif
