@@ -265,9 +265,9 @@
 
   <Target Name="TryToFindVsSdk2017"
           Condition="'$(TryToFindVsSdk2017)' != 'false' And
-                     '$(SQLiteNetDir)' != '' And
-                     !HasTrailingSlash('$(SQLiteNetDir)') And
-                     Exists('$(SQLiteNetDir)\Externals\vswhere\vswhere.exe')">
+                     '$(MSBuildProjectDirectory)' != '' And
+                     !HasTrailingSlash('$(MSBuildProjectDirectory)') And
+                     Exists('$(MSBuildProjectDirectory)\..\Externals\vswhere\vswhere.exe')">
     <!--
         HACK: Use a couple undocumented properties of the Exec task in order
               to capture the console output of the "vswhere" command.  This
@@ -276,15 +276,15 @@
 
               https://stackoverflow.com/questions/8938679
     -->
-    <Exec ConsoleToMSBuild="true" Command="&quot;$(SQLiteNetDir)\Externals\vswhere\vswhere.exe&quot; -version 15.0 -products * -requires Microsoft.VisualStudio.Component.VSSDK -property installationPath"
-          WorkingDirectory="$(EagleLibraryToolsDir)">
+    <Exec ConsoleToMSBuild="true" Command="&quot;$(MSBuildProjectDirectory)\..\Externals\vswhere\vswhere.exe&quot; -version 15.0 -products * -requires Microsoft.VisualStudio.Component.VSSDK -property installationPath"
+          WorkingDirectory="$(MSBuildProjectDirectory)\..\Externals\vswhere">
       <Output TaskParameter="ConsoleOutput" PropertyName="VS150INSTALLATIONPATH" />
     </Exec>
 
     <CreateProperty Condition="'$(VS150INSTALLATIONPATH)' != '' And
                                !HasTrailingSlash('$(VS150INSTALLATIONPATH)') And
                                Exists('$(VS150INSTALLATIONPATH)\VSSDK')"
-                    Value="$(VS150INSTALLATIONPATH)\VSSDK">
+                    Value="$(VS150INSTALLATIONPATH)\VSSDK\">
       <Output TaskParameter="Value" PropertyName="VSSDK150Install" />
     </CreateProperty>
   </Target>
