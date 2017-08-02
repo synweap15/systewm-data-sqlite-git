@@ -69,7 +69,7 @@
       <HintPath>$(VSSDK150Install)VisualStudioIntegration\Common\Assemblies\v2.0\Microsoft.VisualStudio.OLE.Interop.dll</HintPath>
       <SpecificVersion>False</SpecificVersion>
     </Reference>
-    <Reference Include="Microsoft.VisualStudio.Shell.14.0">
+    <Reference Include="Microsoft.VisualStudio.Shell.15.0">
       <HintPath>$(VSSDK150Install)VisualStudioIntegration\Common\Assemblies\v4.0\Microsoft.VisualStudio.Shell.15.0.dll</HintPath>
       <SpecificVersion>False</SpecificVersion>
     </Reference>
