@@ -264,3 +264,18 @@ a:visited { color: #734559 }
   padding-bottom: 1px;
   border-top: 2px solid #044a64;
 }
+
+th.sort:after {
+  margin-left: .4em;
+  cursor: pointer;
+  text-shadow: 0 0 0 #000; /* Makes arrow darker */
+}
+th.sort.none:after {
+  content: '\2666';
+}
+th.sort.asc:after {
+  content: '\2193';
+}
+th.sort.desc:after {
+  content: '\2191'
+}
