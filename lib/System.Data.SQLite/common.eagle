@@ -1678,6 +1678,15 @@ namespace eval ::Eagle {
         } else {
           tputs $channel no\n
 
+          if {![file exists $directory] || \
+              ![file isdirectory $directory]} then {
+            tputs $channel [appendArgs \
+                "---- environment variable \"System.Data.SQLite\" is an " \
+                "invalid directory, skipping check for releases...\n"]
+
+            return false
+          }
+
           foreach path [lsort -decreasing [file list $directory *]] {
             if {[file exists $path] && [file isdirectory $path]} then {
               tputs $channel [appendArgs \
