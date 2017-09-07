@@ -1625,8 +1625,12 @@ namespace System.Data.SQLite
     /// For a given type, return the closest-match SQLite TypeAffinity, which only understands a very limited subset of types.
     /// </summary>
     /// <param name="typ">The type to evaluate</param>
+    /// <param name="flags">The flags associated with the connection.</param>
     /// <returns>The SQLite type affinity for that type.</returns>
-    internal static TypeAffinity TypeToAffinity(Type typ)
+    internal static TypeAffinity TypeToAffinity(
+        Type typ,
+        SQLiteConnectionFlags flags
+        )
     {
       TypeCode tc = Type.GetTypeCode(typ);
       if (tc == TypeCode.Object)
@@ -1634,6 +1638,11 @@ namespace System.Data.SQLite
         if (typ == typeof(byte[]) || typ == typeof(Guid))
           return TypeAffinity.Blob;
         else
+          return TypeAffinity.Text;
+      }
+      if ((tc == TypeCode.Decimal) &&
+          ((flags & SQLiteConnectionFlags.GetDecimalAsText) == SQLiteConnectionFlags.GetDecimalAsText))
+      {
           return TypeAffinity.Text;
       }
       return _typecodeAffinities[(int)tc];

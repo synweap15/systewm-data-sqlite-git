@@ -1246,6 +1246,13 @@ namespace System.Data.SQLite
       AllowNestedTransactions = 0x8000000000,
 
       /// <summary>
+      /// When returning column values, always return <see cref="Decimal" />
+      /// values as though they were plain text (i.e. not <see cref="Double" />,
+      /// which is the legacy behavior).
+      /// </summary>
+      GetDecimalAsText = 0x10000000000,
+
+      /// <summary>
       /// When binding parameter values or returning column values, always
       /// treat them as though they were plain text (i.e. no numeric,
       /// date/time, or other conversions should be attempted).

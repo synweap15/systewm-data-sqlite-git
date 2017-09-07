@@ -377,7 +377,7 @@ namespace System.Data.SQLite
         }
       }
 
-      switch (SQLiteConvert.TypeToAffinity(t))
+      switch (SQLiteConvert.TypeToAffinity(t, _flags))
       {
         case TypeAffinity.Null:
           _base.ReturnNull(context);
