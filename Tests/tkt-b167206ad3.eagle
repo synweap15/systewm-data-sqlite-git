@@ -164,11 +164,11 @@ System.Data.SQLite} -result {{1 123456789123456780 123456789123456780} {2\
 
 ###############################################################################
 
-runTest {test tkt-b167206ad3-2.1 {bind type for DECIMAL} -setup {
+runTest {test tkt-b167206ad3-2.1 {bind type for DECIMALTEXT} -setup {
   setupDb [set fileName tkt-b167206ad3-2.1.db]
 } -body {
   sql execute $db {
-    CREATE TABLE t1(x INTEGER, y DECIMAL(38,9));
+    CREATE TABLE t1(x INTEGER, y DECIMALTEXT(38,9));
   }
 
   set d(1) [object invoke -create Decimal Parse 123456789123456780]
@@ -203,16 +203,16 @@ runTest {test tkt-b167206ad3-2.1 {bind type for DECIMAL} -setup {
   unset -nocomplain y2 y1 x d result db fileName
 } -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
 System.Data.SQLite} -result {{1 123456789123456780 123456789123457000} {2\
-12345678912345.2 12345678912345.2}}}
+12345678912345.1556346 12345678912345.2}}}
 
 ###############################################################################
 
-runTest {test tkt-b167206ad3-2.2 {bind type for DECIMAL} -setup {
+runTest {test tkt-b167206ad3-2.2 {bind type for DECIMALTEXT} -setup {
   setupDb [set fileName tkt-b167206ad3-2.2.db] "" "" "" \
       "BindDecimalAsText GetAllAsText"
 } -body {
   sql execute $db {
-    CREATE TABLE t1(x INTEGER, y DECIMAL(38,9));
+    CREATE TABLE t1(x INTEGER, y DECIMALTEXT(38,9));
   }
 
   set d(1) [object invoke -create Decimal Parse 123456789123456780]
@@ -251,11 +251,11 @@ System.Data.SQLite} -result {{1 123456789123456780 123456789123456780} {2\
 
 ###############################################################################
 
-runTest {test tkt-b167206ad3-2.3 {bind type for NUMERIC} -setup {
+runTest {test tkt-b167206ad3-2.3 {bind type for NUMERICTEXT} -setup {
   setupDb [set fileName tkt-b167206ad3-2.3.db]
 } -body {
   sql execute $db {
-    CREATE TABLE t1(x INTEGER, y NUMERIC);
+    CREATE TABLE t1(x INTEGER, y NUMERICTEXT);
   }
 
   set d(1) [object invoke -create Decimal Parse 123456789123456780]
@@ -290,16 +290,16 @@ runTest {test tkt-b167206ad3-2.3 {bind type for NUMERIC} -setup {
   unset -nocomplain y2 y1 x d result db fileName
 } -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
 System.Data.SQLite} -result {{1 123456789123456780 123456789123457000} {2\
-12345678912345.2 12345678912345.2}}}
+12345678912345.1556346 12345678912345.2}}}
 
 ###############################################################################
 
-runTest {test tkt-b167206ad3-2.4 {bind type for NUMERIC} -setup {
+runTest {test tkt-b167206ad3-2.4 {bind type for NUMERICTEXT} -setup {
   setupDb [set fileName tkt-b167206ad3-2.4.db] "" "" "" \
       "BindDecimalAsText GetAllAsText"
 } -body {
   sql execute $db {
-    CREATE TABLE t1(x INTEGER, y NUMERIC);
+    CREATE TABLE t1(x INTEGER, y NUMERICTEXT);
   }
 
   set d(1) [object invoke -create Decimal Parse 123456789123456780]
