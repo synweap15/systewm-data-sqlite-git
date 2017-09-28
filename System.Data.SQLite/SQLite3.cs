@@ -3267,7 +3267,7 @@ namespace System.Data.SQLite
       if (typ.Type != DbType.Object)
       {
         t = SQLiteConvert.SQLiteTypeToType(typ);
-        aff = TypeToAffinity(t);
+        aff = TypeToAffinity(t, flags);
       }
 
       if ((flags & SQLiteConnectionFlags.GetAllAsText) == SQLiteConnectionFlags.GetAllAsText)

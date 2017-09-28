@@ -45,10 +45,11 @@
 <div align="center"><h2><b>Version History</b></h2></div>
 
 <p>
-    <b>1.0.106.0 - August XX, 2017 <font color="red">(release scheduled)</font></b>
+    <b>1.0.106.0 - September XX, 2017 <font color="red">(release scheduled)</font></b>
 </p>
 <ul>
-    <li>Updated to [https://www.sqlite.org/draft/releaselog/3_20_0.html|SQLite 3.20.0].</li>
+    <li>Updated to [https://www.sqlite.org/releaselog/3_20_1.html|SQLite 3.20.1].</li>
+    <li>Add BindDecimalAsText and GetDecimalAsText connection flags to force binding and returning of decimal values as text. Pursuant to [b167206ad3].</li>
     <li>Add preliminary support for Visual Studio 2017 and the .NET Framework 4.7.</li>
 </ul>
 <p>

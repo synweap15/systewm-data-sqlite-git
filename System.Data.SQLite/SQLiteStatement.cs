@@ -435,6 +435,18 @@ namespace System.Data.SQLite
           return;
       }
 
+      if ((_flags & SQLiteConnectionFlags.BindDecimalAsText) == SQLiteConnectionFlags.BindDecimalAsText)
+      {
+          if (obj is Decimal)
+          {
+              _sql.Bind_Text(this, _flags, index, invariantText ?
+                  SQLiteConvert.ToStringWithProvider(obj, invariantCultureInfo) :
+                  obj.ToString());
+
+              return;
+          }
+      }
+
       CultureInfo cultureInfo = CultureInfo.CurrentCulture;
 
       if ((_flags & SQLiteConnectionFlags.ConvertInvariantText) == SQLiteConnectionFlags.ConvertInvariantText)
