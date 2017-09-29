@@ -27,6 +27,11 @@ if {![info exists no([file tail [info script]])]} then {
       user password percent checkout timeStamp loaded
 
   #
+  # NOTE: Remove any stale test suite error messages from prior runs.
+  #
+  unset -nocomplain test_suite_errors
+
+  #
   # NOTE: Indicate that the test suite is currently running.
   #
   if {![info exists test_suite_running] || !$test_suite_running} then {
@@ -1147,6 +1152,13 @@ if {![info exists no([file tail [info script]])]} then {
     }
 
     #
+    # NOTE: Check if the image runtime version matches the framework.
+    #
+    if {![info exists no(matchingFrameworkVersion)]} then {
+      checkForMatchingFrameworkVersion $test_channel
+    }
+
+    #
     # NOTE: Has process bits detection support been disabled?
     #
     if {![info exists no(processBits)]} then {
@@ -1636,7 +1648,7 @@ if {![info exists no([file tail [info script]])]} then {
         #
         if {![info exists no(compileTclThreaded)]} then {
           #
-          # NOTE: For tests "tclLoad-3.1" and "tclLoad-3.2".
+          # NOTE: For tests "tclLoad-3.*".
           #
           checkForCompileOption $test_channel TCL_THREADED
         }
@@ -1647,7 +1659,7 @@ if {![info exists no([file tail [info script]])]} then {
         #
         if {![info exists no(compileTclThreads)]} then {
           #
-          # NOTE: For tests "tclLoad-3.1" and "tclLoad-3.2".
+          # NOTE: For tests "tclLoad-3.*".
           #
           checkForCompileOption $test_channel TCL_THREADS
         }
@@ -2518,7 +2530,7 @@ if {![info exists no([file tail [info script]])]} then {
     # NOTE: Has Visual Studio testing support been disabled?
     #
     if {![info exists no(visualStudio)]} then {
-      checkForVisualStudio $test_channel
+      checkForVisualStudioViaRegistry $test_channel
     }
 
     #
@@ -2690,6 +2702,13 @@ if {![info exists no([file tail [info script]])]} then {
 
     tputs $test_channel \
         "---- added all known Mono test constraints (forced)\n"
+  }
+
+  #
+  # NOTE: Has Visual Studio testing support been disabled?
+  #
+  if {![info exists no(visualStudio)]} then {
+    checkForVisualStudioViaVsWhere $test_channel
   }
 
   #
@@ -3268,8 +3287,8 @@ if {![info exists no([file tail [info script]])]} then {
   }
 
   #
-  # NOTE: Check for various features that were added through
-  #       the TIP process.
+  # NOTE: Check for various native Tcl features that were added
+  #       (or simply proposed) through the TIP process.
   #
   if {![info exists no(tip127)]} then {
     checkForTip127 $test_channel
@@ -3305,6 +3324,18 @@ if {![info exists no([file tail [info script]])]} then {
 
   if {![info exists no(tip440)]} then {
     checkForTip440 $test_channel
+  }
+
+  if {![info exists no(tip461)]} then {
+    checkForTip461 $test_channel
+  }
+
+  if {![info exists no(tip463)]} then {
+    checkForTip463 $test_channel
+  }
+
+  if {![info exists no(tip471)]} then {
+    checkForTip471 $test_channel
   }
 
   #

@@ -379,6 +379,29 @@ namespace eval ::Eagle {
   }
 
   #
+  # NOTE: This procedure returns the base URI that should be used to download
+  #       available scripts, if a specific base URI is not specified via the
+  #       manifest of available scripts.
+  #
+  proc getScriptBaseUri {} {
+    #
+    # NOTE: Just return the current base URI for scripts.
+    #
+    return [info engine ScriptBaseUri]; # NOTE: Current.
+  }
+
+  #
+  # NOTE: This procedure returns the base URI that should be used to download
+  #       auxiliary data.
+  #
+  proc getAuxiliaryBaseUri {} {
+    #
+    # NOTE: Just return the current base URI for auxiliary data.
+    #
+    return [info engine AuxiliaryBaseUri]; # NOTE: Current.
+  }
+
+  #
   # NOTE: This procedure is used to check for new versions -OR- new update
   #       scripts for the runtime when a user executes the interactive
   #       "#check" command.  To disable this functionality, simply redefine
@@ -611,8 +634,20 @@ namespace eval ::Eagle {
               #
               set baseUri [lindex $fields 6]
 
-              if {$checkBuild && [string length $baseUri] == 0} then {
-                set baseUri [getDownloadBaseUri]; # primary site.
+              if {$checkBuild} then {
+                if {[string length $baseUri] > 0} then {
+                  set buildUri $baseUri
+                } else {
+                  set buildUri [getDownloadBaseUri]; # primary site.
+                }
+              }
+
+              if {$checkScript} then {
+                if {[string length $baseUri] > 0} then {
+                  set scriptUri $baseUri
+                } else {
+                  set scriptUri [getScriptBaseUri]; # primary site.
+                }
               }
 
               #
@@ -671,7 +706,7 @@ namespace eval ::Eagle {
                   }
                 }
 
-                return [list $text [list $baseUri $patchLevel] [list $notes]]
+                return [list $text [list $buildUri $patchLevel] [list $notes]]
               }
 
               #
@@ -696,7 +731,7 @@ namespace eval ::Eagle {
                 #       For update scripts, this must be the location
                 #       where the update script data can be downloaded.
                 #
-                if {[string length $baseUri] == 0} then {
+                if {[string length $scriptUri] == 0} then {
                   if {!$quiet} then {
                     tqputs $channel [appendArgs \
                         "---- invalid baseUri value for update script " \
@@ -762,7 +797,7 @@ namespace eval ::Eagle {
                 #
                 if {!$quiet} then {
                   tqputs $channel [appendArgs \
-                      "---- fetching update script from \"" $baseUri \
+                      "---- fetching update script from \"" $scriptUri \
                       "\" (" $dateTime ") with notes:\n"]
 
                   set trimNotes [string trim $notes]
@@ -775,7 +810,7 @@ namespace eval ::Eagle {
                 #
                 # NOTE: Next, attempt to fetch the update script data.
                 #
-                set code [catch {getUpdateScriptData $baseUri} result]
+                set code [catch {getUpdateScriptData $scriptUri} result]
 
                 if {$code == 0} then {
                   #
@@ -837,7 +872,7 @@ namespace eval ::Eagle {
                 #
                 if {!$quiet} then {
                   tqputs $channel [appendArgs \
-                      "---- evaluating update script from \"" $baseUri \
+                      "---- evaluating update script from \"" $scriptUri \
                       \"...\n]
                 }
 
@@ -856,7 +891,7 @@ namespace eval ::Eagle {
 
                 if {[llength [info commands object]] > 0} then {
                   object invoke -flags +NonPublic Interpreter.GetActive \
-                      PushScriptLocation $baseUri true
+                      PushScriptLocation $scriptUri true
 
                   set pushed true
                 }

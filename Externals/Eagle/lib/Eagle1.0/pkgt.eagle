@@ -1,0 +1,119 @@
+###############################################################################
+#
+# pkgt.eagle --
+#
+# Extensible Adaptable Generalized Logic Engine (Eagle)
+# Eagle Package Toolset Package File
+#
+# Copyright (c) 2007-2012 by Joe Mistachkin.  All rights reserved.
+#
+# See the file "license.terms" for information on usage and redistribution of
+# this file, and for a DISCLAIMER OF ALL WARRANTIES.
+#
+# RCS: @(#) $Id: $
+#
+###############################################################################
+
+#
+# NOTE: Use our own namespace here because even though we do not directly
+#       support namespaces ourselves, we do not want to pollute the global
+#       namespace if this script actually ends up being evaluated in Tcl.
+#
+namespace eval ::Eagle {
+  #
+  # NOTE: This procedure sets up the default values for all configuration
+  #       parameters used by this package.  If the force argument is non-zero,
+  #       any existing values will be overwritten and set back to their
+  #       default values.
+  #
+  proc setupPackageToolsetVars { force } {
+    #
+    # NOTE: Using the [getAuxiliaryBaseUri] procedure requires the update
+    #       package.
+    #
+    # NOTE: The base URI used to build the URIs for the Package Client
+    #       Toolset downloads.
+    #
+    variable baseUri; # DEFAULT: [getAuxiliaryBaseUri] -OR- https://urn.to/r
+
+    if {$force || ![info exists baseUri]} then {
+      if {[isEagle]} then {
+        package require Eagle.Update
+        set baseUri [getAuxiliaryBaseUri]
+      } else {
+        set baseUri https://urn.to/r
+      }
+    }
+
+    #
+    # NOTE: The URN, relative to the base URI, where the Package Client
+    #       Toolset may be downloaded.
+    #
+    variable packageToolsetUrn; # DEFAULT: pkg_client_only
+
+    if {$force || ![info exists packageToolsetUrn]} then {
+      set packageToolsetUrn pkg_client_only
+    }
+
+    #
+    # NOTE: The URI where the Package Client Toolset may be downloaded.
+    #
+    variable packageToolsetUri; # DEFAULT: ${baseUri}/${packageToolsetUrn}
+
+    if {$force || ![info exists packageToolsetUri]} then {
+      set packageToolsetUri {${baseUri}/${packageToolsetUrn}}
+    }
+  }
+
+  #
+  # NOTE: This procedure attempts to download and extract the Package Client
+  #       Toolset.  The optional channel argument is the output channel where
+  #       diagnostic information is sent.  The optional quiet argument should
+  #       be non-zero to prevent diagnostic information from being emitted.
+  #       This procedure may raise script errors.  The return value is the
+  #       full path to the directory that should be added to the auto-path.
+  #
+  proc downloadAndExtractPackageClientToolset {
+          {channel stdout} {quiet false} } {
+    setupPackageToolsetVars false
+
+    variable baseUri
+    variable packageToolsetUri
+    variable packageToolsetUrn
+
+    package require Eagle.Test
+    package require Eagle.Unzip
+
+    set extractRootDirectory [getTemporaryPath]
+
+    set directory [file join $extractRootDirectory [appendArgs \
+        ea-pt-di- [pid] - [string trim [clock seconds] -]]]
+
+    set uri [subst $packageToolsetUri]
+    set fileName [getTemporaryFileName]
+
+    if {[isEagle]} then {
+      uri download $uri $fileName
+    } else {
+      package require Eagle.Tools.Common
+
+      namespace import \
+          ::Eagle::Tools::Common::getFileViaHttp \
+          ::Eagle::Tools::Common::writeFile
+
+      set data [getFileViaHttp $uri 20 $channel $quiet -binary true]
+
+      writeFile $fileName $data
+    }
+
+    set extractDirectory [extractZipArchive $fileName $extractRootDirectory]
+    return [file join $extractDirectory pkgr_an_d client 1.0 neutral]
+  }
+
+  #
+  # NOTE: Provide the Eagle "package toolset" package to the interpreter.
+  #
+  package provide Eagle.Package.Toolset \
+    [expr {[isEagle] ? [info engine PatchLevel] : "1.0"}]
+}
+

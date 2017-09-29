@@ -53,6 +53,9 @@ package ifneeded Eagle.List 1.0 \
 package ifneeded Eagle.Object 1.0 \
     [list source [file join $dir object.eagle]]
 
+package ifneeded Eagle.Package.Toolset 1.0 \
+    [list source [file join $dir pkgt.eagle]]
+
 package ifneeded Eagle.Platform 1.0 \
     [list source [file join $dir platform.eagle]]
 
@@ -79,6 +82,9 @@ package ifneeded Eagle.Test.Log 1.0 \
 
 package ifneeded Eagle.Unknown.Object 1.0 \
     [list source [file join $dir unkobj.eagle]]
+
+package ifneeded Eagle.Unzip 1.0 \
+    [list source [file join $dir unzip.eagle]]
 
 package ifneeded Eagle.Update 1.0 \
     [list source [file join $dir update.eagle]]

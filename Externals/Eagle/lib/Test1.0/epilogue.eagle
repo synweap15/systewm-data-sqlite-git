@@ -213,6 +213,10 @@ if {![info exists no([file tail [info script]])]} then {
     # NOTE: Has the test pass threshold been set?  If so, is it set to
     #       the default value?
     #
+    # HACK: If the test suite error message exists, the entire run will be
+    #       considered a "failure", without regard for the pass percentage
+    #       or the configured test pass threshold.
+    #
     if {![info exists test_threshold] || $test_threshold == 100} then {
       #
       # NOTE: The test pass threshold is set to the default value (100%).
@@ -222,7 +226,8 @@ if {![info exists no([file tail [info script]])]} then {
       set passedOrSkipped [expr {$eagle_tests(Passed) + \
           $eagle_tests(Skipped)}]
 
-      if {$passedOrSkipped == $eagle_tests(Total)} then {
+      if {![info exists test_suite_errors] && \
+          $passedOrSkipped == $eagle_tests(Total)} then {
         set exitCode Success
 
         if {$eagle_tests(Total) > 0} then {
@@ -232,6 +237,12 @@ if {![info exists no([file tail [info script]])]} then {
         }
       } else {
         set exitCode Failure
+
+        if {[info exists test_suite_errors]} then {
+          tresult Error [appendArgs "OVERALL ERRORS: " \
+              [expr {[llength $test_suite_errors] > 0 ? \
+              $test_suite_errors : "<empty>"}] \n]
+        }
 
         tresult Error "OVERALL RESULT: FAILURE\n"
       }
@@ -243,21 +254,31 @@ if {![info exists no([file tail [info script]])]} then {
       #       make sure that we meet or exceed the requirement and then
       #       set the exit code to success; otherwise, set it to failure.
       #
-      if {$percent >= $test_threshold} then {
+      if {![info exists test_suite_errors] && \
+          $percent >= $test_threshold} then {
         set exitCode Success
 
         if {$eagle_tests(Total) > 0} then {
           tresult Ok [appendArgs \
-              "OVERALL RESULT: SUCCESS (" $percent "% >= " $test_threshold %)\n]
+              "OVERALL RESULT: SUCCESS (" \
+              $percent "% >= " $test_threshold %)\n]
         } else {
           tresult Ok [appendArgs \
-              "OVERALL RESULT: NONE (" $percent "% >= " $test_threshold %)\n]
+              "OVERALL RESULT: NONE (" \
+              $percent "% >= " $test_threshold %)\n]
         }
       } else {
         set exitCode Failure
 
+        if {[info exists test_suite_errors]} then {
+          tresult Error [appendArgs "OVERALL ERRORS: " \
+              [expr {[llength $test_suite_errors] > 0 ? \
+              $test_suite_errors : "<empty>"}] \n]
+        }
+
         tresult Error [appendArgs \
-            "OVERALL RESULT: FAILURE (" $percent "% < " $test_threshold %)\n]
+            "OVERALL RESULT: FAILURE (" \
+            $percent "% < " $test_threshold %)\n]
       }
     }
 

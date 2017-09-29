@@ -121,7 +121,7 @@ namespace eval ::Eagle {
     loadScripts [file dirname [info script]] [list \
         auxiliary.eagle database.eagle exec.eagle file1.eagle \
         file2.eagle file3.eagle info.eagle list.eagle \
-        platform.eagle testlog.eagle]
+        pkgt.eagle platform.eagle testlog.eagle unzip.eagle]
 
     #
     # NOTE: Load the extra script library files that contain procedures that
@@ -351,7 +351,8 @@ namespace eval ::Eagle {
           execShell lshuffle ldifference filter map reduce \
           getLengthModifier debug findDirectories \
           findDirectoriesRecursive findFiles findFilesRecursive \
-          exportAndImportPackageCommands] false false
+          exportAndImportPackageCommands setupUnzipVars \
+          unzipMustBeInstalled extractZipArchive] false false
     }
 
     ###########################################################################

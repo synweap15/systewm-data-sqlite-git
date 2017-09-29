@@ -403,7 +403,8 @@ namespace eval ::Eagle {
       #
       # NOTE: Calculate the starting and ending values of [clock seconds].
       #
-      set now [clock seconds]; set start $now; set stop [expr {$now + $seconds}]
+      set now [clock seconds]
+      set start $now; set stop [expr {$now + $seconds}]
 
       #
       # NOTE: Do nothing for X seconds (i.e. except call [clock seconds]).
@@ -870,6 +871,36 @@ namespace eval ::Eagle {
     }
   }
 
+  proc getTemporaryFileName { {seconds 5} } {
+    if {[isEagle]} then {
+      return [file tempname]
+    } else {
+      set path [getTemporaryPath]
+
+      set now [clock seconds]
+      set start $now; set stop [expr {$now + $seconds}]
+
+      while {$start <= $now && $now < $stop} {
+        binary scan [binary format d* [expr {rand()}]] h* random
+
+        set fileNameOnly [appendArgs \
+            tmp [string index $random 0] [string index $random 1] \
+            [string index $random end-1] [string index $random end] \
+            .tmp]
+
+        set fileName [file join $path $fileNameOnly]
+
+        if {![file exists $fileName]} then {
+          return $fileName
+        }
+
+        set now [clock seconds]
+      }
+
+      error "cannot generate temporary file name"
+    }
+  }
+
   proc getFiles { directory pattern } {
     if {[isEagle]} then {
       set result [list]
@@ -956,7 +987,7 @@ namespace eval ::Eagle {
     } else {
       #
       # NOTE: Generate a random number using [expr] and then convert it
-      #       to hexadecimal.
+      #       to a 64-bit integer.
       #
       binary scan [binary format d* [expr {rand()}]] w* random
 
@@ -2382,6 +2413,17 @@ namespace eval ::Eagle {
                   incr ::tcltest::numTests(Failed)
                 }
               }
+            } else {
+              #
+              # NOTE: At this point, we know the test file had an error that
+              #       probably caused it to skip a bunch of tests -AND- the
+              #       option to stop-testing-on-error is not enabled.  That
+              #       being said, we must not simply ignore the error.  The
+              #       overall results of the test suite run must now reflect
+              #       the failure.  Set a special variable for the epilogue
+              #       to pick up on (later).
+              #
+              lappend ::test_suite_errors $error
             }
           }
 
