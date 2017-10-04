@@ -416,8 +416,14 @@ namespace System.Data.SQLite
       }
 
       CultureInfo invariantCultureInfo = CultureInfo.InvariantCulture;
+
       bool invariantText = ((_flags & SQLiteConnectionFlags.BindInvariantText)
           == SQLiteConnectionFlags.BindInvariantText);
+
+      CultureInfo cultureInfo = CultureInfo.CurrentCulture;
+
+      if ((_flags & SQLiteConnectionFlags.ConvertInvariantText) == SQLiteConnectionFlags.ConvertInvariantText)
+          cultureInfo = invariantCultureInfo;
 
       if ((_flags & SQLiteConnectionFlags.BindAllAsText) == SQLiteConnectionFlags.BindAllAsText)
       {
@@ -429,7 +435,7 @@ namespace System.Data.SQLite
           {
               _sql.Bind_Text(this, _flags, index, invariantText ?
                   SQLiteConvert.ToStringWithProvider(obj, invariantCultureInfo) :
-                  obj.ToString());
+                  SQLiteConvert.ToStringWithProvider(obj, cultureInfo));
           }
 
           return;
@@ -441,16 +447,11 @@ namespace System.Data.SQLite
           {
               _sql.Bind_Text(this, _flags, index, invariantText ?
                   SQLiteConvert.ToStringWithProvider(obj, invariantCultureInfo) :
-                  obj.ToString());
+                  SQLiteConvert.ToStringWithProvider(obj, cultureInfo));
 
               return;
           }
       }
-
-      CultureInfo cultureInfo = CultureInfo.CurrentCulture;
-
-      if ((_flags & SQLiteConnectionFlags.ConvertInvariantText) == SQLiteConnectionFlags.ConvertInvariantText)
-          cultureInfo = invariantCultureInfo;
 
       switch (objType)
       {
@@ -509,16 +510,18 @@ namespace System.Data.SQLite
           {
             _sql.Bind_Text(this, _flags, index, invariantText ?
               SQLiteConvert.ToStringWithProvider(obj, invariantCultureInfo) :
-              obj.ToString());
+              SQLiteConvert.ToStringWithProvider(obj, cultureInfo));
           }
           break;
         case DbType.Decimal: // Dont store decimal as double ... loses precision
-          _sql.Bind_Text(this, _flags, index, Convert.ToDecimal(obj, cultureInfo).ToString(invariantCultureInfo));
+          _sql.Bind_Text(this, _flags, index, invariantText ?
+              SQLiteConvert.ToStringWithProvider(Convert.ToDecimal(obj, cultureInfo), invariantCultureInfo) :
+              SQLiteConvert.ToStringWithProvider(Convert.ToDecimal(obj, cultureInfo), cultureInfo));
           break;
         default:
           _sql.Bind_Text(this, _flags, index, invariantText ?
-            SQLiteConvert.ToStringWithProvider(obj, invariantCultureInfo) :
-            obj.ToString());
+              SQLiteConvert.ToStringWithProvider(obj, invariantCultureInfo) :
+              SQLiteConvert.ToStringWithProvider(obj, cultureInfo));
           break;
       }
     }
