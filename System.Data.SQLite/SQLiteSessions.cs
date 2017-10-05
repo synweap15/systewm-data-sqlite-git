@@ -59,6 +59,17 @@ namespace System.Data.SQLite
 
         ISQLiteChangeSet Invert();
         ISQLiteChangeSet CombineWith(ISQLiteChangeSet changeSet);
+
+        void Apply(
+            SessionConflictCallback conflictCallback,
+            object clientData
+        );
+
+        void Apply(
+            SessionConflictCallback conflictCallback,
+            SessionTableFilterCallback tableFilterCallback,
+            object clientData
+        );
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -120,19 +131,6 @@ namespace System.Data.SQLite
         void LoadDifferencesFromTable(
             string fromDatabaseName,
             string tableName
-        );
-
-        void ApplyChangeSet(
-            byte[] rawData,
-            SessionConflictCallback conflictCallback,
-            object clientData
-        );
-
-        void ApplyChangeSet(
-            Stream stream,
-            SessionConflictCallback conflictCallback,
-            SessionTableFilterCallback tableFilterCallback,
-            object clientData
         );
     }
     #endregion
@@ -863,156 +861,6 @@ namespace System.Data.SQLite
                 }
             }
         }
-
-        ///////////////////////////////////////////////////////////////////////
-
-        public void ApplyChangeSet(
-            byte[] rawData,
-            SessionConflictCallback conflictCallback,
-            object clientData
-            )
-        {
-            CheckDisposed();
-
-            SQLiteConnectionFlags flags = GetConnectionFlags();
-
-            int nData = 0;
-            IntPtr pData = IntPtr.Zero;
-
-            UnsafeNativeMethods.xSessionConflict xConflict =
-                new UnsafeNativeMethods.xSessionConflict(
-                    delegate(IntPtr context,
-                             SQLiteChangeSetConflictType type,
-                             IntPtr iterator)
-            {
-                ISQLiteChangeSetMetadataItem item = null;
-
-                try
-                {
-                    return conflictCallback(clientData, type, item);
-                }
-                catch (Exception e)
-                {
-                    try
-                    {
-                        if ((flags & SQLiteConnectionFlags.LogCallbackException) ==
-                                SQLiteConnectionFlags.LogCallbackException)
-                        {
-                            SQLiteLog.LogMessage(SQLiteBase.COR_E_EXCEPTION,
-                                HelperMethods.StringFormat(CultureInfo.CurrentCulture,
-                                "Caught exception in \"xConflict\" method: {0}",
-                                e)); /* throw */
-                        }
-                    }
-                    catch
-                    {
-                        // do nothing.
-                    }
-                }
-
-                return SQLiteChangeSetConflictResult.Abort;
-            });
-
-            SQLiteConnectionHandle handle = SQLiteConnection.GetNativeHandle(
-                connection);
-
-            SQLiteErrorCode rc = UnsafeNativeMethods.sqlite3changeset_apply(
-                handle, nData, pData, null, xConflict, IntPtr.Zero);
-
-            if (rc != SQLiteErrorCode.Ok)
-                throw new SQLiteException(rc, "sqlite3changeset_apply");
-        }
-
-        ///////////////////////////////////////////////////////////////////////
-
-        public void ApplyChangeSet(
-            Stream stream,
-            SessionConflictCallback conflictCallback,
-            SessionTableFilterCallback tableFilterCallback,
-            object clientData
-            )
-        {
-            CheckDisposed();
-
-            SQLiteConnectionFlags flags = GetConnectionFlags();
-
-            UnsafeNativeMethods.xSessionFilter xFilter =
-                new UnsafeNativeMethods.xSessionFilter(
-                    delegate(IntPtr context, byte[] tblName)
-            {
-                try
-                {
-                    string name = SQLiteString.GetStringFromUtf8Bytes(
-                        tblName);
-
-                    return tableFilterCallback(clientData, name) ? 1 : 0;
-                }
-                catch (Exception e)
-                {
-                    try
-                    {
-                        if ((flags & SQLiteConnectionFlags.LogCallbackException) ==
-                                SQLiteConnectionFlags.LogCallbackException)
-                        {
-                            SQLiteLog.LogMessage(SQLiteBase.COR_E_EXCEPTION,
-                                HelperMethods.StringFormat(CultureInfo.CurrentCulture,
-                                "Caught exception in \"xFilter\" method: {0}",
-                                e)); /* throw */
-                        }
-                    }
-                    catch
-                    {
-                        // do nothing.
-                    }
-                }
-
-                return 0;
-            });
-
-            UnsafeNativeMethods.xSessionConflict xConflict =
-                new UnsafeNativeMethods.xSessionConflict(
-                    delegate(IntPtr context,
-                             SQLiteChangeSetConflictType type,
-                             IntPtr iterator)
-            {
-                ISQLiteChangeSetMetadataItem item = null;
-
-                try
-                {
-                    return conflictCallback(clientData, type, item);
-                }
-                catch (Exception e)
-                {
-                    try
-                    {
-                        if ((flags & SQLiteConnectionFlags.LogCallbackException) ==
-                                SQLiteConnectionFlags.LogCallbackException)
-                        {
-                            SQLiteLog.LogMessage(SQLiteBase.COR_E_EXCEPTION,
-                                HelperMethods.StringFormat(CultureInfo.CurrentCulture,
-                                "Caught exception in \"xConflict\" method: {0}",
-                                e)); /* throw */
-                        }
-                    }
-                    catch
-                    {
-                        // do nothing.
-                    }
-                }
-
-                return SQLiteChangeSetConflictResult.Abort;
-            });
-
-            SQLiteConnectionHandle handle = SQLiteConnection.GetNativeHandle(
-                connection);
-
-            SQLiteErrorCode rc = UnsafeNativeMethods.sqlite3changeset_apply_strm(
-                handle, new SQLiteStreamAdapter(stream, flags).xInput,
-                IntPtr.Zero, xFilter, xConflict, IntPtr.Zero);
-
-            if (rc != SQLiteErrorCode.Ok)
-                throw new SQLiteException(rc, "sqlite3changeset_apply_strm");
-        }
         #endregion
 
         ///////////////////////////////////////////////////////////////////////
@@ -1093,6 +941,8 @@ namespace System.Data.SQLite
     {
         #region Private Data
         private byte[] rawData;
+        private SQLiteConnectionHandle handle;
+        private SQLiteConnectionFlags flags;
         private bool? isPatchSet;
         #endregion
 
@@ -1101,10 +951,14 @@ namespace System.Data.SQLite
         #region Private Constructors
         internal SQLiteMemoryChangeSet(
             byte[] rawData,
+            SQLiteConnectionHandle handle,
+            SQLiteConnectionFlags flags,
             bool? isPatchSet
             )
         {
             this.rawData = rawData;
+            this.handle= handle;
+            this.flags = flags;
             this.isPatchSet = isPatchSet;
         }
         #endregion
@@ -1135,6 +989,113 @@ namespace System.Data.SQLite
             CheckDisposed();
 
             throw new NotImplementedException();
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+
+        public void Apply(
+            SessionConflictCallback conflictCallback,
+            object clientData
+            )
+        {
+            CheckDisposed();
+
+            Apply(conflictCallback, null, clientData);
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+
+        public void Apply(
+            SessionConflictCallback conflictCallback,
+            SessionTableFilterCallback tableFilterCallback,
+            object clientData
+            )
+        {
+            if (conflictCallback == null)
+                throw new ArgumentNullException("conflictCallback");
+
+            CheckDisposed();
+
+            UnsafeNativeMethods.xSessionFilter xFilter = null;
+
+            if (tableFilterCallback != null)
+            {
+                xFilter = new UnsafeNativeMethods.xSessionFilter(
+                    delegate(IntPtr context, byte[] tblName)
+                {
+                    try
+                    {
+                        string name = SQLiteString.GetStringFromUtf8Bytes(
+                            tblName);
+
+                        return tableFilterCallback(clientData, name) ? 1 : 0;
+                    }
+                    catch (Exception e)
+                    {
+                        try
+                        {
+                            if ((flags & SQLiteConnectionFlags.LogCallbackException) ==
+                                    SQLiteConnectionFlags.LogCallbackException)
+                            {
+                                SQLiteLog.LogMessage(SQLiteBase.COR_E_EXCEPTION,
+                                    HelperMethods.StringFormat(CultureInfo.CurrentCulture,
+                                    "Caught exception in \"xFilter\" method: {0}",
+                                    e)); /* throw */
+                            }
+                        }
+                        catch
+                        {
+                            // do nothing.
+                        }
+                    }
+
+                    return 0;
+                });
+            }
+
+            UnsafeNativeMethods.xSessionConflict xConflict;
+
+            xConflict = new UnsafeNativeMethods.xSessionConflict(
+                delegate(IntPtr context,
+                         SQLiteChangeSetConflictType type,
+                         IntPtr iterator)
+            {
+                ISQLiteChangeSetMetadataItem item = null;
+
+                try
+                {
+                    return conflictCallback(clientData, type, item);
+                }
+                catch (Exception e)
+                {
+                    try
+                    {
+                        if ((flags & SQLiteConnectionFlags.LogCallbackException) ==
+                                SQLiteConnectionFlags.LogCallbackException)
+                        {
+                            SQLiteLog.LogMessage(SQLiteBase.COR_E_EXCEPTION,
+                                HelperMethods.StringFormat(CultureInfo.CurrentCulture,
+                                "Caught exception in \"xConflict\" method: {0}",
+                                e)); /* throw */
+                        }
+                    }
+                    catch
+                    {
+                        // do nothing.
+                    }
+                }
+
+                return SQLiteChangeSetConflictResult.Abort;
+            });
+
+            int nData = 0;
+            IntPtr pData = IntPtr.Zero;
+
+            SQLiteErrorCode rc = UnsafeNativeMethods.sqlite3changeset_apply(
+                handle, nData, pData, xFilter, xConflict, IntPtr.Zero);
+
+            if (rc != SQLiteErrorCode.Ok)
+                throw new SQLiteException(rc, "sqlite3changeset_apply");
         }
         #endregion
 
@@ -1234,6 +1195,7 @@ namespace System.Data.SQLite
     {
         #region Private Data
         private Stream stream;
+        private SQLiteConnectionHandle handle;
         private SQLiteConnectionFlags flags;
         private bool? isPatchSet;
         #endregion
@@ -1243,11 +1205,13 @@ namespace System.Data.SQLite
         #region Private Constructors
         internal SQLiteStreamChangeSet(
             Stream stream,
+            SQLiteConnectionHandle handle,
             SQLiteConnectionFlags flags,
             bool? isPatchSet
             )
         {
             this.stream = stream;
+            this.handle = handle;
             this.flags = flags;
             this.isPatchSet = isPatchSet;
         }
@@ -1279,6 +1243,105 @@ namespace System.Data.SQLite
             CheckDisposed();
 
             throw new NotImplementedException();
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+
+        public void Apply(
+            SessionConflictCallback conflictCallback,
+            object clientData
+            )
+        {
+            CheckDisposed();
+
+            throw new NotImplementedException();
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+
+        public void Apply(
+            SessionConflictCallback conflictCallback,
+            SessionTableFilterCallback tableFilterCallback,
+            object clientData
+            )
+        {
+            CheckDisposed();
+
+            UnsafeNativeMethods.xSessionFilter xFilter;
+
+            xFilter = new UnsafeNativeMethods.xSessionFilter(
+                delegate(IntPtr context, byte[] tblName)
+            {
+                try
+                {
+                    string name = SQLiteString.GetStringFromUtf8Bytes(
+                        tblName);
+
+                    return tableFilterCallback(clientData, name) ? 1 : 0;
+                }
+                catch (Exception e)
+                {
+                    try
+                    {
+                        if ((flags & SQLiteConnectionFlags.LogCallbackException) ==
+                                SQLiteConnectionFlags.LogCallbackException)
+                        {
+                            SQLiteLog.LogMessage(SQLiteBase.COR_E_EXCEPTION,
+                                HelperMethods.StringFormat(CultureInfo.CurrentCulture,
+                                "Caught exception in \"xFilter\" method: {0}",
+                                e)); /* throw */
+                        }
+                    }
+                    catch
+                    {
+                        // do nothing.
+                    }
+                }
+
+                return 0;
+            });
+
+            UnsafeNativeMethods.xSessionConflict xConflict;
+
+            xConflict = new UnsafeNativeMethods.xSessionConflict(
+                delegate(IntPtr context,
+                         SQLiteChangeSetConflictType type,
+                         IntPtr iterator)
+            {
+                ISQLiteChangeSetMetadataItem item = null;
+
+                try
+                {
+                    return conflictCallback(clientData, type, item);
+                }
+                catch (Exception e)
+                {
+                    try
+                    {
+                        if ((flags & SQLiteConnectionFlags.LogCallbackException) ==
+                                SQLiteConnectionFlags.LogCallbackException)
+                        {
+                            SQLiteLog.LogMessage(SQLiteBase.COR_E_EXCEPTION,
+                                HelperMethods.StringFormat(CultureInfo.CurrentCulture,
+                                "Caught exception in \"xConflict\" method: {0}",
+                                e)); /* throw */
+                        }
+                    }
+                    catch
+                    {
+                        // do nothing.
+                    }
+                }
+
+                return SQLiteChangeSetConflictResult.Abort;
+            });
+
+            SQLiteErrorCode rc = UnsafeNativeMethods.sqlite3changeset_apply_strm(
+                handle, new SQLiteStreamAdapter(stream, flags).xInput,
+                IntPtr.Zero, xFilter, xConflict, IntPtr.Zero);
+
+            if (rc != SQLiteErrorCode.Ok)
+                throw new SQLiteException(rc, "sqlite3changeset_apply_strm");
         }
         #endregion
 
@@ -1507,8 +1570,8 @@ namespace System.Data.SQLite
     ///////////////////////////////////////////////////////////////////////////
 
     #region SQLiteChangeSetMetadataItem Class
-    public sealed class SQLiteChangeSetMetadataItem
-            : ISQLiteChangeSetMetadataItem, IDisposable
+    public sealed class SQLiteChangeSetMetadataItem :
+        ISQLiteChangeSetMetadataItem, IDisposable
     {
         #region Private Data
         private IntPtr iterator;
