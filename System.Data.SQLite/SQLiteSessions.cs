@@ -5,6 +5,7 @@
  * Released to the public domain, use at your own risk!
  ********************************************************/
 
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Globalization;
@@ -35,14 +36,14 @@ namespace System.Data.SQLite
     ///////////////////////////////////////////////////////////////////////////
 
     #region Session Extension Delegates
-    public delegate bool TableFilterDelegate(
+    public delegate bool SessionTableFilterCallback(
         object context,
         string name
     );
 
     ///////////////////////////////////////////////////////////////////////////
 
-    public delegate SQLiteChangeSetConflictResult ConflictDelegate(
+    public delegate SQLiteChangeSetConflictResult SessionConflictCallback(
         object context,
         SQLiteChangeSetConflictType type,
         ISQLiteChangeSetMetadataItem item
@@ -57,7 +58,6 @@ namespace System.Data.SQLite
         bool? IsPatchSet { get; }
 
         ISQLiteChangeSet Invert();
-
         ISQLiteChangeSet CombineWith(ISQLiteChangeSet changeSet);
     }
 
@@ -76,17 +76,18 @@ namespace System.Data.SQLite
 
     public interface ISQLiteChangeSetMetadataItem
     {
-        SQLiteAuthorizerActionCode OperationCode { get; }
         string TableName { get; }
         int NumberOfColumns { get; }
+        SQLiteAuthorizerActionCode OperationCode { get; }
         bool Indirect { get; }
+
         bool[] PrimaryKeyColumns { get; }
+
+        int NumberOfForeignKeyConflicts { get; }
 
         SQLiteValue GetOldValue(int columnIndex);
         SQLiteValue GetNewValue(int columnIndex);
-
         SQLiteValue GetConflictValue(int columnIndex);
-        int NumberOfForeignKeyConflicts { get; }
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -104,7 +105,11 @@ namespace System.Data.SQLite
         bool IsEmpty();
 
         void AttachTable(string name);
-        void SetTableFilter(TableFilterDelegate callback, object context);
+
+        void SetTableFilter(
+            SessionTableFilterCallback callback,
+            object context
+        );
 
         void CreateChangeSet(ref byte[] rawData);
         void CreateChangeSet(Stream stream, SQLiteConnectionFlags flags);
@@ -119,14 +124,14 @@ namespace System.Data.SQLite
 
         void ApplyChangeSet(
             byte[] rawData,
-            ConflictDelegate conflictCallback,
+            SessionConflictCallback conflictCallback,
             object context
         );
 
         void ApplyChangeSet(
             Stream stream,
-            ConflictDelegate conflictCallback,
-            TableFilterDelegate tableFilterCallback,
+            SessionConflictCallback conflictCallback,
+            SessionTableFilterCallback tableFilterCallback,
             object context
         );
     }
@@ -152,6 +157,16 @@ namespace System.Data.SQLite
         {
             this.pData = pData;
             this.iterator = iterator;
+        }
+        #endregion
+
+        ///////////////////////////////////////////////////////////////////////
+
+        #region Private Methods
+        private void CheckHandle()
+        {
+            if (iterator == IntPtr.Zero)
+                throw new InvalidOperationException("iterator is not open");
         }
         #endregion
 
@@ -207,6 +222,63 @@ namespace System.Data.SQLite
             }
 
             return result;
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+
+        public static SQLiteChangeSetIterator Create(
+            Stream stream,
+            SQLiteConnectionFlags flags
+            )
+        {
+            if (stream == null)
+                throw new ArgumentNullException("stream");
+
+            SQLiteChangeSetIterator result = null;
+            IntPtr iterator = IntPtr.Zero;
+
+            try
+            {
+                SQLiteErrorCode rc = UnsafeNativeMethods.sqlite3changeset_start_strm(
+                    ref iterator, new SQLiteStreamAdapter(stream, flags).xInput,
+                    IntPtr.Zero);
+
+                if (rc != SQLiteErrorCode.Ok)
+                    throw new SQLiteException(rc, "sqlite3changeset_start_strm");
+
+                result = new SQLiteChangeSetIterator(IntPtr.Zero, iterator);
+            }
+            finally
+            {
+                if (result == null)
+                {
+                    if (iterator != IntPtr.Zero)
+                    {
+                        UnsafeNativeMethods.sqlite3changeset_finalize(
+                            iterator);
+
+                        iterator = IntPtr.Zero;
+                    }
+                }
+            }
+
+            return result;
+        }
+        #endregion
+
+        ///////////////////////////////////////////////////////////////////////
+
+        #region Public Methods
+        public void Next()
+        {
+            CheckDisposed();
+            CheckHandle();
+
+            SQLiteErrorCode rc = UnsafeNativeMethods.sqlite3changeset_next(
+                iterator);
+
+            if (rc != SQLiteErrorCode.Ok)
+                throw new SQLiteException(rc, "sqlite3changeset_next");
         }
         #endregion
 
@@ -487,7 +559,7 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
-        private TableFilterDelegate tableFilterCallback;
+        private SessionTableFilterCallback tableFilterCallback;
         private object tableFilterContext;
         #endregion
 
@@ -619,7 +691,7 @@ namespace System.Data.SQLite
         ///////////////////////////////////////////////////////////////////////
 
         public void SetTableFilter(
-            TableFilterDelegate callback,
+            SessionTableFilterCallback callback,
             object context
             )
         {
@@ -787,7 +859,7 @@ namespace System.Data.SQLite
 
         public void ApplyChangeSet(
             byte[] rawData,
-            ConflictDelegate conflictCallback,
+            SessionConflictCallback conflictCallback,
             object clientData
             )
         {
@@ -836,8 +908,8 @@ namespace System.Data.SQLite
 
         public void ApplyChangeSet(
             Stream stream,
-            ConflictDelegate conflictCallback,
-            TableFilterDelegate tableFilterCallback,
+            SessionConflictCallback conflictCallback,
+            SessionTableFilterCallback tableFilterCallback,
             object context
             )
         {
@@ -919,10 +991,12 @@ namespace System.Data.SQLite
     ///////////////////////////////////////////////////////////////////////////
 
     #region SQLiteMemoryChangeSet Class
-    public sealed class SQLiteMemoryChangeSet : ISQLiteChangeSet, IDisposable
+    public sealed class SQLiteMemoryChangeSet :
+        ISQLiteChangeSet, IEnumerable<ISQLiteChangeSetMetadataItem>,
+        IDisposable
     {
         #region Private Data
-        private SQLiteChangeSetIterator iterator;
+        private byte[] rawData;
         private bool? isPatchSet;
         #endregion
 
@@ -930,11 +1004,11 @@ namespace System.Data.SQLite
 
         #region Private Constructors
         internal SQLiteMemoryChangeSet(
-            SQLiteChangeSetIterator iterator,
+            byte[] rawData,
             bool? isPatchSet
             )
         {
-            this.iterator = iterator;
+            this.rawData = rawData;
             this.isPatchSet = isPatchSet;
         }
         #endregion
@@ -965,6 +1039,24 @@ namespace System.Data.SQLite
             CheckDisposed();
 
             throw new NotImplementedException();
+        }
+        #endregion
+
+        ///////////////////////////////////////////////////////////////////////
+
+        #region IEnumerable<ISQLiteChangeSetMetadataItem> Members
+        public IEnumerator<ISQLiteChangeSetMetadataItem> GetEnumerator()
+        {
+            return new SQLiteChangeSetEnumerator(rawData);
+        }
+        #endregion
+
+        ///////////////////////////////////////////////////////////////////////
+
+        #region IEnumerable Members
+        IEnumerator System.Collections.IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
         }
         #endregion
 
@@ -1007,11 +1099,8 @@ namespace System.Data.SQLite
                         // dispose managed resources here...
                         ////////////////////////////////////
 
-                        if (iterator != null)
-                        {
-                            iterator.Dispose();
-                            iterator = null;
-                        }
+                        if (rawData != null)
+                            rawData = null;
                     }
 
                     //////////////////////////////////////
@@ -1042,16 +1131,176 @@ namespace System.Data.SQLite
 
     ///////////////////////////////////////////////////////////////////////////
 
-    #region SQLiteChangeSetEnumerator Class
-    public sealed class SQLiteChangeSetEnumerator
-            : IEnumerator<ISQLiteChangeSetMetadataItem>
+    #region SQLiteStreamChangeSet Class
+    public sealed class SQLiteStreamChangeSet :
+        ISQLiteChangeSet, IEnumerable<ISQLiteChangeSetMetadataItem>,
+        IDisposable
     {
+        #region Private Data
+        private Stream stream;
+        private SQLiteConnectionFlags flags;
+        private bool? isPatchSet;
+        #endregion
+
+        ///////////////////////////////////////////////////////////////////////
+
         #region Private Constructors
-        internal SQLiteChangeSetEnumerator(
+        internal SQLiteStreamChangeSet(
+            Stream stream,
+            SQLiteConnectionFlags flags,
+            bool? isPatchSet
+            )
+        {
+            this.stream = stream;
+            this.flags = flags;
+            this.isPatchSet = isPatchSet;
+        }
+        #endregion
+
+        ///////////////////////////////////////////////////////////////////////
+
+        #region ISQLiteChangeSet Members
+        public bool? IsPatchSet
+        {
+            get { CheckDisposed(); return isPatchSet; }
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+
+        public ISQLiteChangeSet Invert()
+        {
+            CheckDisposed();
+
+            throw new NotImplementedException();
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+
+        public ISQLiteChangeSet CombineWith(
             ISQLiteChangeSet changeSet
             )
         {
+            CheckDisposed();
 
+            throw new NotImplementedException();
+        }
+        #endregion
+
+        ///////////////////////////////////////////////////////////////////////
+
+        #region IEnumerable<ISQLiteChangeSetMetadataItem> Members
+        public IEnumerator<ISQLiteChangeSetMetadataItem> GetEnumerator()
+        {
+            return new SQLiteChangeSetEnumerator(stream, flags);
+        }
+        #endregion
+
+        ///////////////////////////////////////////////////////////////////////
+
+        #region IEnumerable Members
+        IEnumerator System.Collections.IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+        #endregion
+
+        ///////////////////////////////////////////////////////////////////////
+
+        #region IDisposable Members
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+        #endregion
+
+        ///////////////////////////////////////////////////////////////////////
+
+        #region IDisposable "Pattern" Members
+        private bool disposed;
+        private void CheckDisposed() /* throw */
+        {
+#if THROW_ON_DISPOSED
+            if (disposed)
+            {
+                throw new ObjectDisposedException(
+                    typeof(SQLiteStreamChangeSet).Name);
+            }
+#endif
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+
+        private /* protected virtual */ void Dispose(bool disposing)
+        {
+            try
+            {
+                if (!disposed)
+                {
+                    if (disposing)
+                    {
+                        ////////////////////////////////////
+                        // dispose managed resources here...
+                        ////////////////////////////////////
+
+                        if (stream != null)
+                            stream = null; /* NOT OWNED */
+                    }
+
+                    //////////////////////////////////////
+                    // release unmanaged resources here...
+                    //////////////////////////////////////
+                }
+            }
+            finally
+            {
+                //
+                // NOTE: Everything should be fully disposed at this point.
+                //
+                disposed = true;
+            }
+        }
+        #endregion
+
+        ///////////////////////////////////////////////////////////////////////
+
+        #region Destructor
+        ~SQLiteStreamChangeSet()
+        {
+            Dispose(false);
+        }
+        #endregion
+    }
+    #endregion
+
+    ///////////////////////////////////////////////////////////////////////////
+
+    #region SQLiteChangeSetEnumerator Class
+    internal sealed class SQLiteChangeSetEnumerator :
+        IEnumerator<ISQLiteChangeSetMetadataItem>
+    {
+        #region Private Data
+        private SQLiteChangeSetIterator iterator;
+        #endregion
+
+        ///////////////////////////////////////////////////////////////////////
+
+        #region Public Constructors
+        public SQLiteChangeSetEnumerator(
+            byte[] rawData
+            )
+        {
+            iterator = SQLiteChangeSetIterator.Create(rawData);
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+
+        public SQLiteChangeSetEnumerator(
+            Stream stream,
+            SQLiteConnectionFlags flags
+            )
+        {
+            iterator = SQLiteChangeSetIterator.Create(stream, flags);
         }
         #endregion
 
@@ -1125,6 +1374,12 @@ namespace System.Data.SQLite
                         ////////////////////////////////////
                         // dispose managed resources here...
                         ////////////////////////////////////
+
+                        if (iterator != null)
+                        {
+                            iterator.Dispose();
+                            iterator = null;
+                        }
                     }
 
                     //////////////////////////////////////
@@ -1338,6 +1593,20 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
+        private int? numberOfForeignKeyConflicts;
+        public int NumberOfForeignKeyConflicts
+        {
+            get
+            {
+                CheckDisposed();
+                PopulateNumberOfForeignKeyConflicts();
+
+                return (int)numberOfForeignKeyConflicts;
+            }
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+
         public SQLiteValue GetOldValue(
             int columnIndex
             )
@@ -1381,20 +1650,6 @@ namespace System.Data.SQLite
                 iterator, columnIndex, ref pValue);
 
             return SQLiteValue.FromIntPtr(pValue);
-        }
-
-        ///////////////////////////////////////////////////////////////////////
-
-        private int? numberOfForeignKeyConflicts;
-        public int NumberOfForeignKeyConflicts
-        {
-            get
-            {
-                CheckDisposed();
-                PopulateNumberOfForeignKeyConflicts();
-
-                return (int)numberOfForeignKeyConflicts;
-            }
         }
         #endregion
 
