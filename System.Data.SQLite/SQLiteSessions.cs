@@ -552,7 +552,9 @@ namespace System.Data.SQLite
     public sealed class SQLiteSession : ISQLiteSession, IDisposable
     {
         #region Private Data
-        private SQLiteConnection connection;
+        private SQLiteConnectionHandle handle;
+        private SQLiteConnectionFlags flags;
+        private string databaseName;
         private IntPtr session;
 
         ///////////////////////////////////////////////////////////////////////
@@ -563,17 +565,19 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
-        #region Public Constructors
-        public SQLiteSession(
-            SQLiteConnection connection,
+        #region Private Constructors
+        internal SQLiteSession(
+            SQLiteConnectionHandle handle,
+            SQLiteConnectionFlags flags,
             string databaseName
             )
         {
-            this.connection = connection;
+            this.handle = handle;
+            this.flags = flags;
+            this.databaseName = databaseName;
 
             UnsafeNativeMethods.sqlite3session_create(
-                SQLiteConnection.GetNativeHandle(connection),
-                SQLiteString.GetUtf8BytesFromString(databaseName),
+                handle, SQLiteString.GetUtf8BytesFromString(databaseName),
                 ref session);
         }
         #endregion
@@ -585,13 +589,6 @@ namespace System.Data.SQLite
         {
             if (session == IntPtr.Zero)
                 throw new InvalidOperationException("session is not open");
-        }
-
-        ///////////////////////////////////////////////////////////////////////
-
-        private SQLiteConnectionFlags GetConnectionFlags()
-        {
-            return SQLiteConnectionFlags.None;
         }
 
         ///////////////////////////////////////////////////////////////////////
@@ -752,8 +749,6 @@ namespace System.Data.SQLite
             CheckDisposed();
             CheckHandle();
 
-            SQLiteConnectionFlags flags = GetConnectionFlags();
-
             SQLiteErrorCode rc = UnsafeNativeMethods.sqlite3session_changeset_strm(
                 session, new SQLiteStreamAdapter(stream, flags).xOutput,
                 IntPtr.Zero);
@@ -803,8 +798,6 @@ namespace System.Data.SQLite
         {
             CheckDisposed();
             CheckHandle();
-
-            SQLiteConnectionFlags flags = GetConnectionFlags();
 
             SQLiteErrorCode rc = UnsafeNativeMethods.sqlite3session_patchset_strm(
                 session, new SQLiteStreamAdapter(stream, flags).xOutput,

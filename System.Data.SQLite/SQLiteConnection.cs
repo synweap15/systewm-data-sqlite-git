@@ -3007,6 +3007,68 @@ namespace System.Data.SQLite
       return CreateCommand();
     }
 
+#if INTEROP_SESSION_EXTENSION
+    /// <summary>
+    /// Attempts to create a new <see cref="ISQLiteSession" /> object instance
+    /// using this connection and the specified database name.
+    /// </summary>
+    /// <param name="databaseName">
+    /// The name of the database for the newly created session.
+    /// </param>
+    /// <returns>
+    /// The newly created session -OR- null if it cannot be created.
+    /// </returns>
+    public ISQLiteSession CreateSession(
+        string databaseName
+        )
+    {
+        CheckDisposed();
+
+        return new SQLiteSession(GetNativeHandle(this), _flags, databaseName);
+    }
+
+    /// <summary>
+    /// Attempts to create a new <see cref="ISQLiteChangeSet" /> object instance
+    /// using this connection and the specified raw data.
+    /// </summary>
+    /// <param name="rawData">
+    /// The raw data that contains a change set (or patch set).
+    /// </param>
+    /// <returns>
+    /// The newly created change set -OR- null if it cannot be created.
+    /// </returns>
+    public ISQLiteChangeSet CreateChangeSet(
+        byte[] rawData
+        )
+    {
+        CheckDisposed();
+
+        return new SQLiteMemoryChangeSet(
+            rawData, GetNativeHandle(this), _flags, null);
+    }
+
+    /// <summary>
+    /// Attempts to create a new <see cref="ISQLiteChangeSet" /> object instance
+    /// using this connection and the specified stream.
+    /// </summary>
+    /// <param name="stream">
+    /// The stream where the raw data that contains a change set (or patch set)
+    /// may be read.
+    /// </param>
+    /// <returns>
+    /// The newly created change set -OR- null if it cannot be created.
+    /// </returns>
+    public ISQLiteChangeSet CreateChangeSet(
+        Stream stream
+        )
+    {
+        CheckDisposed();
+
+        return new SQLiteStreamChangeSet(
+            stream, GetNativeHandle(this), _flags, null);
+    }
+#endif
+
     /// <summary>
     /// Returns the data source file name without extension or path.
     /// </summary>
