@@ -327,6 +327,14 @@
   </PropertyGroup>
 
   <!--
+      NOTE: Enable including the "session" module as a statically available
+            extension?
+  -->
+  <PropertyGroup Condition="'$(InteropSessionExtension)' != 'false'">
+    <DefineConstants>$(DefineConstants);INTEROP_SESSION_EXTENSION</DefineConstants>
+  </PropertyGroup>
+
+  <!--
       NOTE: Enable various Trace.WriteLine statements included in the code,
             based on several criteria (see the "SQLite.NET.Settings.targets"
             file for more information)?

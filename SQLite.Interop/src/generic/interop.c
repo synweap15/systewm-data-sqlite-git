@@ -11,6 +11,15 @@
 #define WINAPI
 #endif
 
+#if /* SQLITE_VERSION_NUMBER >= 3013000 && */ defined(INTEROP_SESSION_EXTENSION)
+#ifndef SQLITE_ENABLE_SESSION
+#define SQLITE_ENABLE_SESSION (1)
+#endif
+#ifndef SQLITE_ENABLE_PREUPDATE_HOOK
+#define SQLITE_ENABLE_PREUPDATE_HOOK (1)
+#endif
+#endif
+
 #include "../core/sqlite3.c"
 
 #if !SQLITE_OS_WIN
