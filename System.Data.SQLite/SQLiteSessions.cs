@@ -56,9 +56,6 @@ namespace System.Data.SQLite
     {
         bool? IsPatchSet { get; }
 
-        void Apply(SQLiteConnection connection, ConflictDelegate conflictCallback);
-        void Apply(SQLiteConnection connection, ConflictDelegate conflictCallback, TableFilterDelegate tableFilterCallback);
-
         ISQLiteChangeSet Invert();
 
         ISQLiteChangeSet CombineWith(ISQLiteChangeSet changeSet);
@@ -115,7 +112,23 @@ namespace System.Data.SQLite
         void CreatePatchSet(ref byte[] rawData);
         void CreatePatchSet(Stream stream, SQLiteConnectionFlags flags);
 
-        void LoadDifferencesFromTable(string fromDatabaseName, string tableName);
+        void LoadDifferencesFromTable(
+            string fromDatabaseName,
+            string tableName
+        );
+
+        void ApplyChangeSet(
+            byte[] rawData,
+            ConflictDelegate conflictCallback,
+            object context
+        );
+
+        void ApplyChangeSet(
+            Stream stream,
+            ConflictDelegate conflictCallback,
+            TableFilterDelegate tableFilterCallback,
+            object context
+        );
     }
     #endregion
 
@@ -434,7 +447,7 @@ namespace System.Data.SQLite
                         ////////////////////////////////////
 
                         if (stream != null)
-                            stream = null; /* NOT OWNED: Do not dispose. */
+                            stream = null; /* NOT OWNED */
                     }
 
                     //////////////////////////////////////
@@ -469,6 +482,7 @@ namespace System.Data.SQLite
     public sealed class SQLiteSession : ISQLiteSession, IDisposable
     {
         #region Private Data
+        private SQLiteConnection connection;
         private IntPtr session;
 
         ///////////////////////////////////////////////////////////////////////
@@ -485,6 +499,8 @@ namespace System.Data.SQLite
             string databaseName
             )
         {
+            this.connection = connection;
+
             UnsafeNativeMethods.sqlite3session_create(
                 SQLiteConnection.GetNativeHandle(connection),
                 SQLiteString.GetUtf8BytesFromString(databaseName),
@@ -766,6 +782,69 @@ namespace System.Data.SQLite
                 }
             }
         }
+
+        ///////////////////////////////////////////////////////////////////////
+
+        public void ApplyChangeSet(
+            byte[] rawData,
+            ConflictDelegate conflictCallback,
+            object clientData
+            )
+        {
+            CheckDisposed();
+
+            int nData = 0;
+            IntPtr pData = IntPtr.Zero;
+            SQLiteConnectionFlags flags = connection.Flags;
+
+            UnsafeNativeMethods.xSessionConflict xConflict = new UnsafeNativeMethods.xSessionConflict(delegate(IntPtr context, SQLiteChangeSetConflictType type, IntPtr iterator)
+            {
+                ISQLiteChangeSetMetadataItem item = null;
+
+                try
+                {
+                    return conflictCallback(clientData, type, item);
+                }
+                catch (Exception e)
+                {
+                    try
+                    {
+                        if ((flags & SQLiteConnectionFlags.LogCallbackException) ==
+                                SQLiteConnectionFlags.LogCallbackException)
+                        {
+                            SQLiteLog.LogMessage(SQLiteBase.COR_E_EXCEPTION,
+                                HelperMethods.StringFormat(CultureInfo.CurrentCulture,
+                                "Caught exception in \"xConflict\" method: {0}",
+                                e)); /* throw */
+                        }
+                    }
+                    catch
+                    {
+                        // do nothing.
+                    }
+                }
+
+                return SQLiteChangeSetConflictResult.Abort;
+            });
+
+            SQLiteErrorCode rc = UnsafeNativeMethods.sqlite3changeset_apply(
+                SQLiteConnection.GetNativeHandle(connection), nData, pData,
+                null, xConflict, IntPtr.Zero);
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+
+        public void ApplyChangeSet(
+            Stream stream,
+            ConflictDelegate conflictCallback,
+            TableFilterDelegate tableFilterCallback,
+            object context
+            )
+        {
+            CheckDisposed();
+
+            throw new NotImplementedException();
+        }
         #endregion
 
         ///////////////////////////////////////////////////////////////////////
@@ -839,66 +918,41 @@ namespace System.Data.SQLite
 
     ///////////////////////////////////////////////////////////////////////////
 
-    public sealed class SQLiteChangeSet : ISQLiteChangeSet, IDisposable
+    #region SQLiteMemoryChangeSet Class
+    public sealed class SQLiteMemoryChangeSet : ISQLiteChangeSet, IDisposable
     {
         #region Private Data
         private SQLiteChangeSetIterator iterator;
+        private bool? isPatchSet;
         #endregion
 
         ///////////////////////////////////////////////////////////////////////
 
-        internal SQLiteChangeSet(
-            SQLiteChangeSetIterator iterator
+        #region Private Constructors
+        internal SQLiteMemoryChangeSet(
+            SQLiteChangeSetIterator iterator,
+            bool? isPatchSet
             )
         {
             this.iterator = iterator;
+            this.isPatchSet = isPatchSet;
         }
-
-        ///////////////////////////////////////////////////////////////////////
-
-
-
-
-
-
-        ///////////////////////////////////////////////////////////////////////
-
-
-
+        #endregion
 
         ///////////////////////////////////////////////////////////////////////
 
         #region ISQLiteChangeSet Members
         public bool? IsPatchSet
         {
-            get { throw new NotImplementedException(); }
-        }
-
-        ///////////////////////////////////////////////////////////////////////
-
-        public void Apply(
-            SQLiteConnection connection,
-            ConflictDelegate conflictCallback
-            )
-        {
-            throw new NotImplementedException();
-        }
-
-        ///////////////////////////////////////////////////////////////////////
-
-        public void Apply(
-            SQLiteConnection connection,
-            ConflictDelegate conflictCallback,
-            TableFilterDelegate tableFilterCallback
-            )
-        {
-            throw new NotImplementedException();
+            get { CheckDisposed(); return isPatchSet; }
         }
 
         ///////////////////////////////////////////////////////////////////////
 
         public ISQLiteChangeSet Invert()
         {
+            CheckDisposed();
+
             throw new NotImplementedException();
         }
 
@@ -908,6 +962,8 @@ namespace System.Data.SQLite
             ISQLiteChangeSet changeSet
             )
         {
+            CheckDisposed();
+
             throw new NotImplementedException();
         }
         #endregion
@@ -932,7 +988,7 @@ namespace System.Data.SQLite
             if (disposed)
             {
                 throw new ObjectDisposedException(
-                    typeof(SQLiteChangeSet).Name);
+                    typeof(SQLiteMemoryChangeSet).Name);
             }
 #endif
         }
@@ -976,119 +1032,438 @@ namespace System.Data.SQLite
         ///////////////////////////////////////////////////////////////////////
 
         #region Destructor
-        ~SQLiteChangeSet()
+        ~SQLiteMemoryChangeSet()
         {
             Dispose(false);
         }
         #endregion
     }
+    #endregion
 
     ///////////////////////////////////////////////////////////////////////////
 
-    public sealed class SQLiteChangeSetEnumerator : IEnumerator<ISQLiteChangeSetMetadataItem>
+    #region SQLiteChangeSetEnumerator Class
+    public sealed class SQLiteChangeSetEnumerator
+            : IEnumerator<ISQLiteChangeSetMetadataItem>
     {
-        public SQLiteChangeSetEnumerator(
+        #region Private Constructors
+        internal SQLiteChangeSetEnumerator(
             ISQLiteChangeSet changeSet
             )
         {
 
         }
+        #endregion
+
+        ///////////////////////////////////////////////////////////////////////
 
         #region IEnumerator<ISQLiteChangeSetMetadataItem> Members
-
         public ISQLiteChangeSetMetadataItem Current
         {
-            get { throw new NotImplementedException(); }
+            get { CheckDisposed(); throw new NotImplementedException(); }
         }
-
         #endregion
 
-        #region IDisposable Members
-
-        public void Dispose()
-        {
-            throw new NotImplementedException();
-        }
-
-        #endregion
+        ///////////////////////////////////////////////////////////////////////
 
         #region IEnumerator Members
-
         object Collections.IEnumerator.Current
         {
-            get { throw new NotImplementedException(); }
+            get { CheckDisposed(); throw new NotImplementedException(); }
         }
+
+        ///////////////////////////////////////////////////////////////////////
 
         public bool MoveNext()
         {
-            throw new NotImplementedException();
+            CheckDisposed(); throw new NotImplementedException();
         }
+
+        ///////////////////////////////////////////////////////////////////////
 
         public void Reset()
         {
-            throw new NotImplementedException();
+            CheckDisposed(); throw new NotImplementedException();
+        }
+        #endregion
+
+        ///////////////////////////////////////////////////////////////////////
+
+        #region IDisposable Members
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+        #endregion
+
+        ///////////////////////////////////////////////////////////////////////
+
+        #region IDisposable "Pattern" Members
+        private bool disposed;
+        private void CheckDisposed() /* throw */
+        {
+#if THROW_ON_DISPOSED
+            if (disposed)
+            {
+                throw new ObjectDisposedException(
+                    typeof(SQLiteChangeSetEnumerator).Name);
+            }
+#endif
         }
 
+        ///////////////////////////////////////////////////////////////////////
+
+        private /* protected virtual */ void Dispose(bool disposing)
+        {
+            try
+            {
+                if (!disposed)
+                {
+                    if (disposing)
+                    {
+                        ////////////////////////////////////
+                        // dispose managed resources here...
+                        ////////////////////////////////////
+                    }
+
+                    //////////////////////////////////////
+                    // release unmanaged resources here...
+                    //////////////////////////////////////
+                }
+            }
+            finally
+            {
+                //
+                // NOTE: Everything should be fully disposed at this point.
+                //
+                disposed = true;
+            }
+        }
+        #endregion
+
+        ///////////////////////////////////////////////////////////////////////
+
+        #region Destructor
+        ~SQLiteChangeSetEnumerator()
+        {
+            Dispose(false);
+        }
         #endregion
     }
+    #endregion
 
     ///////////////////////////////////////////////////////////////////////////
 
-    public sealed class SQLiteChangeSetMetadataItem : ISQLiteChangeSetMetadataItem
+    #region SQLiteChangeSetMetadataItem Class
+    public sealed class SQLiteChangeSetMetadataItem
+            : ISQLiteChangeSetMetadataItem, IDisposable
     {
-        internal SQLiteChangeSetMetadataItem(IntPtr iterator)
-        {
+        #region Private Data
+        private IntPtr iterator;
+        #endregion
 
+        ///////////////////////////////////////////////////////////////////////
+
+        #region Private Constructors
+        internal SQLiteChangeSetMetadataItem(
+            IntPtr iterator
+            )
+        {
+            this.iterator = iterator;
         }
+        #endregion
+
+        ///////////////////////////////////////////////////////////////////////
+
+        #region Private Methods
+        private void CheckHandle()
+        {
+            if (iterator == IntPtr.Zero)
+                throw new InvalidOperationException("iterator is not open");
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+
+        private void PopulateOperationMetadata()
+        {
+            if ((tableName == null) || (numberOfColumns == null) ||
+                (operationCode == null) || (indirect == null))
+            {
+                CheckHandle();
+
+                IntPtr pTblName = IntPtr.Zero;
+                SQLiteAuthorizerActionCode op = SQLiteAuthorizerActionCode.None;
+                int bIndirect = 0;
+                int nColumns = 0;
+
+                SQLiteErrorCode rc = UnsafeNativeMethods.sqlite3changeset_op(
+                    iterator, ref pTblName, ref nColumns, ref op,
+                    ref bIndirect);
+
+                if (rc != SQLiteErrorCode.Ok)
+                    throw new SQLiteException(rc, "sqlite3changeset_op");
+
+                tableName = SQLiteString.StringFromUtf8IntPtr(pTblName);
+                numberOfColumns = nColumns;
+                operationCode = op;
+                indirect = (bIndirect != 0);
+            }
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+
+        private void PopulatePrimaryKeyColumns()
+        {
+            if (primaryKeyColumns == null)
+            {
+                CheckHandle();
+
+                IntPtr pPrimaryKeys = IntPtr.Zero;
+                int nColumns = 0;
+
+                SQLiteErrorCode rc = UnsafeNativeMethods.sqlite3changeset_pk(
+                    iterator, ref pPrimaryKeys, ref nColumns);
+
+                if (rc != SQLiteErrorCode.Ok)
+                    throw new SQLiteException(rc, "sqlite3changeset_pk");
+
+                byte[] bytes = SQLiteBytes.FromIntPtr(pPrimaryKeys, nColumns);
+
+                if (bytes != null)
+                {
+                    primaryKeyColumns = new bool[nColumns];
+
+                    for (int index = 0; index < bytes.Length; index++)
+                        primaryKeyColumns[index] = (bytes[index] != 0);
+                }
+            }
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+
+        private void PopulateNumberOfForeignKeyConflicts()
+        {
+            if (numberOfForeignKeyConflicts == null)
+            {
+                CheckHandle();
+
+                int conflicts = 0;
+
+                SQLiteErrorCode rc =
+                    UnsafeNativeMethods.sqlite3changeset_fk_conflicts(
+                        iterator, ref conflicts);
+
+                if (rc != SQLiteErrorCode.Ok)
+                {
+                    throw new SQLiteException(rc,
+                        "sqlite3changeset_fk_conflicts");
+                }
+
+                numberOfForeignKeyConflicts = conflicts;
+            }
+        }
+        #endregion
+
+        ///////////////////////////////////////////////////////////////////////
 
         #region ISQLiteChangeSetMetadataItem Members
-
-        public SQLiteAuthorizerActionCode OperationCode
-        {
-            get { throw new NotImplementedException(); }
-        }
-
+        private string tableName;
         public string TableName
         {
-            get { throw new NotImplementedException(); }
+            get
+            {
+                CheckDisposed();
+                PopulateOperationMetadata();
+
+                return tableName;
+            }
         }
 
+        ///////////////////////////////////////////////////////////////////////
+
+        private int? numberOfColumns;
         public int NumberOfColumns
         {
-            get { throw new NotImplementedException(); }
+            get
+            {
+                CheckDisposed();
+                PopulateOperationMetadata();
+
+                return (int)numberOfColumns;
+            }
         }
 
+        ///////////////////////////////////////////////////////////////////////
+
+        private SQLiteAuthorizerActionCode? operationCode;
+        public SQLiteAuthorizerActionCode OperationCode
+        {
+            get
+            {
+                CheckDisposed();
+                PopulateOperationMetadata();
+
+                return (SQLiteAuthorizerActionCode)operationCode;
+            }
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+
+        private bool? indirect;
         public bool Indirect
         {
-            get { throw new NotImplementedException(); }
+            get
+            {
+                CheckDisposed();
+                PopulateOperationMetadata();
+
+                return (bool)indirect;
+            }
         }
 
+        ///////////////////////////////////////////////////////////////////////
+
+        private bool[] primaryKeyColumns;
         public bool[] PrimaryKeyColumns
         {
-            get { throw new NotImplementedException(); }
+            get
+            {
+                CheckDisposed();
+                PopulatePrimaryKeyColumns();
+
+                return primaryKeyColumns;
+            }
         }
 
-        public SQLiteValue GetOldValue(int columnIndex)
+        ///////////////////////////////////////////////////////////////////////
+
+        public SQLiteValue GetOldValue(
+            int columnIndex
+            )
         {
-            throw new NotImplementedException();
+            CheckDisposed();
+            CheckHandle();
+
+            IntPtr pValue = IntPtr.Zero;
+
+            SQLiteErrorCode rc = UnsafeNativeMethods.sqlite3changeset_old(
+                iterator, columnIndex, ref pValue);
+
+            return SQLiteValue.FromIntPtr(pValue);
         }
+
+        ///////////////////////////////////////////////////////////////////////
 
         public SQLiteValue GetNewValue(int columnIndex)
         {
-            throw new NotImplementedException();
+            CheckDisposed();
+            CheckHandle();
+
+            IntPtr pValue = IntPtr.Zero;
+
+            SQLiteErrorCode rc = UnsafeNativeMethods.sqlite3changeset_new(
+                iterator, columnIndex, ref pValue);
+
+            return SQLiteValue.FromIntPtr(pValue);
         }
+
+        ///////////////////////////////////////////////////////////////////////
 
         public SQLiteValue GetConflictValue(int columnIndex)
         {
-            throw new NotImplementedException();
+            CheckDisposed();
+            CheckHandle();
+
+            IntPtr pValue = IntPtr.Zero;
+
+            SQLiteErrorCode rc = UnsafeNativeMethods.sqlite3changeset_conflict(
+                iterator, columnIndex, ref pValue);
+
+            return SQLiteValue.FromIntPtr(pValue);
         }
 
+        ///////////////////////////////////////////////////////////////////////
+
+        private int? numberOfForeignKeyConflicts;
         public int NumberOfForeignKeyConflicts
         {
-            get { throw new NotImplementedException(); }
+            get
+            {
+                CheckDisposed();
+                PopulateNumberOfForeignKeyConflicts();
+
+                return (int)numberOfForeignKeyConflicts;
+            }
+        }
+        #endregion
+
+        ///////////////////////////////////////////////////////////////////////
+
+        #region IDisposable Members
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+        #endregion
+
+        ///////////////////////////////////////////////////////////////////////
+
+        #region IDisposable "Pattern" Members
+        private bool disposed;
+        private void CheckDisposed() /* throw */
+        {
+#if THROW_ON_DISPOSED
+            if (disposed)
+            {
+                throw new ObjectDisposedException(
+                    typeof(SQLiteChangeSetMetadataItem).Name);
+            }
+#endif
         }
 
+        ///////////////////////////////////////////////////////////////////////
+
+        private /* protected virtual */ void Dispose(bool disposing)
+        {
+            try
+            {
+                if (!disposed)
+                {
+                    if (disposing)
+                    {
+                        ////////////////////////////////////
+                        // dispose managed resources here...
+                        ////////////////////////////////////
+
+                        if (iterator != IntPtr.Zero)
+                            iterator = IntPtr.Zero; /* NOT OWNED */
+                    }
+
+                    //////////////////////////////////////
+                    // release unmanaged resources here...
+                    //////////////////////////////////////
+                }
+            }
+            finally
+            {
+                //
+                // NOTE: Everything should be fully disposed at this point.
+                //
+                disposed = true;
+            }
+        }
+        #endregion
+
+        ///////////////////////////////////////////////////////////////////////
+
+        #region Destructor
+        ~SQLiteChangeSetMetadataItem()
+        {
+            Dispose(false);
+        }
         #endregion
     }
-
+    #endregion
 }

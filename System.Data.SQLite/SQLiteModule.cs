@@ -338,6 +338,27 @@ namespace System.Data.SQLite
 
         #region Internal Marshal Helper Methods
         /// <summary>
+        /// Converts a native pointer to a native sqlite3_value structure into
+        /// a managed <see cref="SQLiteValue" /> object instance.
+        /// </summary>
+        /// <param name="pValue">
+        /// The native pointer to a native sqlite3_value structure to convert.
+        /// </param>
+        /// <returns>
+        /// The managed <see cref="SQLiteValue" /> object instance or null upon
+        /// failure.
+        /// </returns>
+        internal static SQLiteValue FromIntPtr(
+            IntPtr pValue
+            )
+        {
+            if (pValue == IntPtr.Zero) return null;
+            return new SQLiteValue(pValue);
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+
+        /// <summary>
         /// Converts a logical array of native pointers to native sqlite3_value
         /// structures into a managed array of <see cref="SQLiteValue" />
         /// object instances.
