@@ -3640,10 +3640,35 @@ namespace System.Data.SQLite
             byte[] value
             )
         {
+            int length = 0;
+
+            return ToIntPtr(value, ref length);
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+
+        /// <summary>
+        /// Converts a managed byte array into a native pointer to a logical
+        /// array of bytes.
+        /// </summary>
+        /// <param name="value">
+        /// The managed byte array to convert.
+        /// </param>
+        /// <param name="length">
+        /// The length, in bytes, of the converted logical array of bytes.
+        /// </param>
+        /// <returns>
+        /// The native pointer to a logical byte array or null upon failure.
+        /// </returns>
+        public static IntPtr ToIntPtr(
+            byte[] value,
+            ref int length
+            )
+        {
             if (value == null)
                 return IntPtr.Zero;
 
-            int length = value.Length;
+            length = value.Length;
 
             if (length == 0)
                 return IntPtr.Zero;

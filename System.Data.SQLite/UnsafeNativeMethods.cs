@@ -3566,10 +3566,10 @@ namespace System.Data.SQLite
 
     #region session extension
 #if INTEROP_SESSION_EXTENSION
-    internal delegate void xSessionFilter(IntPtr context, byte[] tblName);
-    internal delegate void xSessionConflict(IntPtr context, SQLiteChangeSetConflictType type, IntPtr iterator);
-    internal delegate void xSessionInput(IntPtr context, IntPtr pData, ref int nData);
-    internal delegate void xSessionOutput(IntPtr context, IntPtr pData, int nData);
+    internal delegate int xSessionFilter(IntPtr context, byte[] tblName);
+    internal delegate SQLiteChangeSetConflictResult xSessionConflict(IntPtr context, SQLiteChangeSetConflictType type, IntPtr iterator);
+    internal delegate SQLiteErrorCode xSessionInput(IntPtr context, IntPtr pData, ref int nData);
+    internal delegate SQLiteErrorCode xSessionOutput(IntPtr context, IntPtr pData, int nData);
 
     ///////////////////////////////////////////////////////////////////////////
 

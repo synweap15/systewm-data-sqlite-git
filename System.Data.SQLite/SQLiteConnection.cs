@@ -1761,6 +1761,39 @@ namespace System.Data.SQLite
     ///////////////////////////////////////////////////////////////////////////////////////////////
 
     /// <summary>
+    /// Attempts to lookup the native handle associated with the connection.  An exception will
+    /// be thrown if this cannot be accomplished.
+    /// </summary>
+    /// <param name="connection">
+    /// The connection associated with the desired native handle.
+    /// </param>
+    /// <returns>
+    /// The native handle associated with the connection or <see cref="IntPtr.Zero" /> if it
+    /// cannot be determined.
+    /// </returns>
+    internal static SQLiteConnectionHandle GetNativeHandle(
+        SQLiteConnection connection
+        )
+    {
+        if (connection == null)
+            throw new ArgumentNullException("connection");
+
+        SQLite3 sqlite3 = connection._sql as SQLite3;
+
+        if (sqlite3 == null)
+            throw new InvalidOperationException("Connection has no wrapper");
+
+        SQLiteConnectionHandle handle = sqlite3._sql;
+
+        if (handle == null)
+            throw new InvalidOperationException("Connection has an invalid handle.");
+
+        return handle;
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+
+    /// <summary>
     /// Raises the <see cref="Changed" /> event.
     /// </summary>
     /// <param name="connection">
