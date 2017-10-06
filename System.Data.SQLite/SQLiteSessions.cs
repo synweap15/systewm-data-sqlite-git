@@ -958,6 +958,16 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
+        #region Private Methods
+        private void CheckRawData()
+        {
+            if (rawData == null)
+                throw new InvalidOperationException("no change set data");
+        }
+        #endregion
+
+        ///////////////////////////////////////////////////////////////////////
+
         #region ISQLiteChangeSet Members
         public bool? IsPatchSet
         {
@@ -969,8 +979,44 @@ namespace System.Data.SQLite
         public ISQLiteChangeSet Invert()
         {
             CheckDisposed();
+            CheckRawData();
 
-            throw new NotImplementedException();
+            IntPtr pInData = IntPtr.Zero;
+            IntPtr pOutData = IntPtr.Zero;
+
+            try
+            {
+                int nInData = 0;
+
+                pInData = SQLiteBytes.ToIntPtr(rawData, ref nInData);
+
+                int nOutData = 0;
+
+                SQLiteErrorCode rc = UnsafeNativeMethods.sqlite3changeset_invert(
+                    nInData, pInData, ref nOutData, ref pOutData);
+
+                if (rc != SQLiteErrorCode.Ok)
+                    throw new SQLiteException(rc, "sqlite3changeset_invert");
+
+                byte[] newData = SQLiteBytes.FromIntPtr(pOutData, nOutData);
+
+                return new SQLiteMemoryChangeSet(
+                    newData, handle, flags, isPatchSet);
+            }
+            finally
+            {
+                if (pOutData != IntPtr.Zero)
+                {
+                    SQLiteMemory.Free(pOutData);
+                    pOutData = IntPtr.Zero;
+                }
+
+                if (pInData != IntPtr.Zero)
+                {
+                    SQLiteMemory.Free(pInData);
+                    pInData = IntPtr.Zero;
+                }
+            }
         }
 
         ///////////////////////////////////////////////////////////////////////
@@ -980,8 +1026,68 @@ namespace System.Data.SQLite
             )
         {
             CheckDisposed();
+            CheckRawData();
 
-            throw new NotImplementedException();
+            SQLiteMemoryChangeSet memoryChangeSet =
+                changeSet as SQLiteMemoryChangeSet;
+
+            if (memoryChangeSet == null)
+            {
+                throw new ArgumentException(
+                    "not a memory based change set", "changeSet");
+            }
+
+            memoryChangeSet.CheckRawData();
+
+            IntPtr pInData1 = IntPtr.Zero;
+            IntPtr pInData2 = IntPtr.Zero;
+            IntPtr pOutData = IntPtr.Zero;
+
+            try
+            {
+                int nInData1 = 0;
+
+                pInData1 = SQLiteBytes.ToIntPtr(rawData, ref nInData1);
+
+                int nInData2 = 0;
+
+                pInData2 = SQLiteBytes.ToIntPtr(
+                    memoryChangeSet.rawData, ref nInData2);
+
+                int nOutData = 0;
+
+                SQLiteErrorCode rc = UnsafeNativeMethods.sqlite3changeset_concat(
+                    nInData1, pInData1, nInData2, pInData2, ref nOutData,
+                    ref pOutData);
+
+                if (rc != SQLiteErrorCode.Ok)
+                    throw new SQLiteException(rc, "sqlite3changeset_concat");
+
+                byte[] newData = SQLiteBytes.FromIntPtr(pOutData, nOutData);
+
+                return new SQLiteMemoryChangeSet(
+                    newData, handle, flags, isPatchSet);
+            }
+            finally
+            {
+                if (pOutData != IntPtr.Zero)
+                {
+                    SQLiteMemory.Free(pOutData);
+                    pOutData = IntPtr.Zero;
+                }
+
+                if (pInData2 != IntPtr.Zero)
+                {
+                    SQLiteMemory.Free(pInData2);
+                    pInData2 = IntPtr.Zero;
+                }
+
+                if (pInData1 != IntPtr.Zero)
+                {
+                    SQLiteMemory.Free(pInData1);
+                    pInData1 = IntPtr.Zero;
+                }
+            }
         }
 
         ///////////////////////////////////////////////////////////////////////
@@ -1004,10 +1110,11 @@ namespace System.Data.SQLite
             object clientData
             )
         {
+            CheckDisposed();
+            CheckRawData();
+
             if (conflictCallback == null)
                 throw new ArgumentNullException("conflictCallback");
-
-            CheckDisposed();
 
             UnsafeNativeMethods.xSessionFilter xFilter = null;
 
@@ -1081,14 +1188,28 @@ namespace System.Data.SQLite
                 return SQLiteChangeSetConflictResult.Abort;
             });
 
-            int nData = 0;
             IntPtr pData = IntPtr.Zero;
 
-            SQLiteErrorCode rc = UnsafeNativeMethods.sqlite3changeset_apply(
-                handle, nData, pData, xFilter, xConflict, IntPtr.Zero);
+            try
+            {
+                int nData = 0;
 
-            if (rc != SQLiteErrorCode.Ok)
-                throw new SQLiteException(rc, "sqlite3changeset_apply");
+                pData = SQLiteBytes.ToIntPtr(rawData, ref nData);
+
+                SQLiteErrorCode rc = UnsafeNativeMethods.sqlite3changeset_apply(
+                    handle, nData, pData, xFilter, xConflict, IntPtr.Zero);
+
+                if (rc != SQLiteErrorCode.Ok)
+                    throw new SQLiteException(rc, "sqlite3changeset_apply");
+            }
+            finally
+            {
+                if (pData != IntPtr.Zero)
+                {
+                    SQLiteMemory.Free(pData);
+                    pData = IntPtr.Zero;
+                }
+            }
         }
         #endregion
 
