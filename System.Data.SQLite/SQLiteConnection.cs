@@ -1788,6 +1788,14 @@ namespace System.Data.SQLite
         if (handle == null)
             throw new InvalidOperationException("Connection has an invalid handle.");
 
+        IntPtr handlePtr = handle;
+
+        if (handlePtr == IntPtr.Zero)
+        {
+            throw new InvalidOperationException(
+                "Connection has an invalid handle pointer.");
+        }
+
         return handle;
     }
 

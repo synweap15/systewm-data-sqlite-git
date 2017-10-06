@@ -3505,6 +3505,33 @@ namespace System.Data.SQLite
             string value
             )
         {
+            int length = 0;
+
+            return Utf8IntPtrFromString(value, ref length);
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+
+        /// <summary>
+        /// Converts the specified managed string into a native NUL-terminated
+        /// UTF-8 string pointer using memory obtained from the SQLite core
+        /// library.
+        /// </summary>
+        /// <param name="value">
+        /// The managed string to convert.
+        /// </param>
+        /// <param name="length">
+        /// The length of the native string, in bytes.
+        /// </param>
+        /// <returns>
+        /// The native NUL-terminated UTF-8 string pointer or
+        /// <see cref="IntPtr.Zero" /> upon failure.
+        /// </returns>
+        public static IntPtr Utf8IntPtrFromString(
+            string value,
+            ref int length
+            )
+        {
             if (value == null)
                 return IntPtr.Zero;
 
@@ -3514,7 +3541,7 @@ namespace System.Data.SQLite
             if (bytes == null)
                 return IntPtr.Zero;
 
-            int length = bytes.Length;
+            length = bytes.Length;
 
             result = SQLiteMemory.Allocate(length + 1);
 

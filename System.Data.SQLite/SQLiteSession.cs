@@ -7,6 +7,11 @@
 
 using System.Collections;
 using System.Collections.Generic;
+
+#if DEBUG
+using System.Diagnostics;
+#endif
+
 using System.IO;
 using System.Globalization;
 using System.Runtime.InteropServices;
@@ -136,6 +141,216 @@ namespace System.Data.SQLite
             string fromDatabaseName,
             string tableName
         );
+    }
+    #endregion
+
+    ///////////////////////////////////////////////////////////////////////////
+
+    #region SQLiteConnectionLock Class
+    internal abstract class SQLiteConnectionLock : IDisposable
+    {
+        #region Private Constants
+        private const string LockNopSql = "SELECT 1;";
+        #endregion
+
+        ///////////////////////////////////////////////////////////////////////
+
+        #region Private Data
+        private SQLiteConnectionHandle handle;
+        private SQLiteConnectionFlags flags;
+
+        ///////////////////////////////////////////////////////////////////////
+
+        private IntPtr statement;
+        #endregion
+
+        ///////////////////////////////////////////////////////////////////////
+
+        #region Public Constructors
+        public SQLiteConnectionLock(
+            SQLiteConnectionHandle handle,
+            SQLiteConnectionFlags flags
+            )
+        {
+            this.handle = handle;
+            this.flags = flags;
+
+            Lock();
+        }
+        #endregion
+
+        ///////////////////////////////////////////////////////////////////////
+
+        #region Private Methods
+        private IntPtr GetHandle()
+        {
+            if (handle == null)
+            {
+                throw new InvalidOperationException(
+                    "Connection lock object has an invalid handle.");
+            }
+
+            IntPtr handlePtr = handle;
+
+            if (handlePtr == IntPtr.Zero)
+            {
+                throw new InvalidOperationException(
+                    "Connection lock object has an invalid handle pointer.");
+            }
+
+            return handlePtr;
+        }
+        #endregion
+
+        ///////////////////////////////////////////////////////////////////////
+
+        #region Public Methods
+        public void Lock()
+        {
+            CheckDisposed();
+
+            if (statement != IntPtr.Zero)
+                return;
+
+            IntPtr pSql = IntPtr.Zero;
+
+            try
+            {
+                int nSql = 0;
+
+                pSql = SQLiteString.Utf8IntPtrFromString(LockNopSql, ref nSql);
+
+                IntPtr pRemain = IntPtr.Zero;
+                int nRemain = 0;
+
+                SQLiteErrorCode rc = UnsafeNativeMethods.sqlite3_prepare_interop(
+                    GetHandle(), pSql, nSql, ref statement, ref pRemain,
+                    ref nRemain);
+
+                if (rc != SQLiteErrorCode.Ok)
+                    throw new SQLiteException(rc, "sqlite3_prepare_interop");
+            }
+            finally
+            {
+                if (pSql != IntPtr.Zero)
+                {
+                    SQLiteMemory.Free(pSql);
+                    pSql = IntPtr.Zero;
+                }
+            }
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+
+        public void Unlock()
+        {
+            CheckDisposed();
+
+            if (statement == IntPtr.Zero)
+                return;
+
+            SQLiteErrorCode rc = UnsafeNativeMethods.sqlite3_finalize_interop(
+                statement);
+
+            if (rc != SQLiteErrorCode.Ok)
+                throw new SQLiteException(rc, "sqlite3_finalize_interop");
+
+            statement = IntPtr.Zero;
+        }
+        #endregion
+
+        ///////////////////////////////////////////////////////////////////////
+
+        #region IDisposable Members
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+        #endregion
+
+        ///////////////////////////////////////////////////////////////////////
+
+        #region IDisposable "Pattern" Members
+        private bool disposed;
+        private void CheckDisposed() /* throw */
+        {
+#if THROW_ON_DISPOSED
+            if (disposed)
+            {
+                throw new ObjectDisposedException(
+                    typeof(SQLiteConnectionLock).Name);
+            }
+#endif
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+
+        protected virtual void Dispose(bool disposing)
+        {
+            try
+            {
+                if (!disposed)
+                {
+                    //if (disposing)
+                    //{
+                    //    ////////////////////////////////////
+                    //    // dispose managed resources here...
+                    //    ////////////////////////////////////
+                    //}
+
+                    //////////////////////////////////////
+                    // release unmanaged resources here...
+                    //////////////////////////////////////
+
+                    if (statement != IntPtr.Zero)
+                    {
+                        //
+                        // NOTE: This should never happen.  This object was
+                        //       disposed (or finalized) without the Unlock
+                        //       method being called first.
+                        //
+                        try
+                        {
+                            if ((flags & SQLiteConnectionFlags.LogPrepare) ==
+                                    SQLiteConnectionFlags.LogPrepare)
+                            {
+                                /* throw */
+                                SQLiteLog.LogMessage(SQLiteErrorCode.Misuse,
+                                    HelperMethods.StringFormat(CultureInfo.CurrentCulture,
+                                    "Connection lock object was {0} with statement {1}",
+                                    disposing ? "disposed" : "finalized", statement));
+                            }
+                        }
+                        catch
+                        {
+                            // do nothing.
+                        }
+
+#if DEBUG
+                        Debugger.Break();
+#endif
+                    }
+                }
+            }
+            finally
+            {
+                //
+                // NOTE: Everything should be fully disposed at this point.
+                //
+                disposed = true;
+            }
+        }
+        #endregion
+
+        ///////////////////////////////////////////////////////////////////////
+
+        #region Destructor
+        ~SQLiteConnectionLock()
+        {
+            Dispose(false);
+        }
+        #endregion
     }
     #endregion
 
@@ -945,7 +1160,7 @@ namespace System.Data.SQLite
     ///////////////////////////////////////////////////////////////////////////
 
     #region SQLiteSession Class
-    internal sealed class SQLiteSession : ISQLiteSession
+    internal sealed class SQLiteSession : SQLiteConnectionLock, ISQLiteSession
     {
         #region Private Data
         private SQLiteConnectionHandle handle;
@@ -970,6 +1185,7 @@ namespace System.Data.SQLite
             SQLiteConnectionFlags flags,
             string databaseName
             )
+            : base(handle, flags)
         {
             this.handle = handle;
             this.flags = flags;
@@ -1272,16 +1488,6 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
-        #region IDisposable Members
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-        #endregion
-
-        ///////////////////////////////////////////////////////////////////////
-
         #region IDisposable "Pattern" Members
         private bool disposed;
         private void CheckDisposed() /* throw */
@@ -1294,7 +1500,7 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
-        private /* protected virtual */ void Dispose(bool disposing)
+        protected override void Dispose(bool disposing)
         {
             try
             {
@@ -1316,24 +1522,19 @@ namespace System.Data.SQLite
                         UnsafeNativeMethods.sqlite3session_delete(session);
                         session = IntPtr.Zero;
                     }
+
+                    Unlock();
                 }
             }
             finally
             {
+                base.Dispose(disposing);
+
                 //
                 // NOTE: Everything should be fully disposed at this point.
                 //
                 disposed = true;
             }
-        }
-        #endregion
-
-        ///////////////////////////////////////////////////////////////////////
-
-        #region Destructor
-        ~SQLiteSession()
-        {
-            Dispose(false);
         }
         #endregion
     }
@@ -1343,7 +1544,8 @@ namespace System.Data.SQLite
 
     #region SQLiteMemoryChangeSet Class
     internal sealed class SQLiteMemoryChangeSet :
-        ISQLiteChangeSet, IEnumerable<ISQLiteChangeSetMetadataItem>
+        SQLiteConnectionLock, ISQLiteChangeSet,
+        IEnumerable<ISQLiteChangeSetMetadataItem>
     {
         #region Private Data
         private byte[] rawData;
@@ -1359,6 +1561,7 @@ namespace System.Data.SQLite
             SQLiteConnectionHandle handle,
             SQLiteConnectionFlags flags
             )
+            : base(handle, flags)
         {
             this.rawData = rawData;
             this.handle= handle;
@@ -1642,16 +1845,6 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
-        #region IDisposable Members
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-        #endregion
-
-        ///////////////////////////////////////////////////////////////////////
-
         #region IDisposable "Pattern" Members
         private bool disposed;
         private void CheckDisposed() /* throw */
@@ -1667,7 +1860,7 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
-        private /* protected virtual */ void Dispose(bool disposing)
+        protected override void Dispose(bool disposing)
         {
             try
             {
@@ -1686,24 +1879,19 @@ namespace System.Data.SQLite
                     //////////////////////////////////////
                     // release unmanaged resources here...
                     //////////////////////////////////////
+
+                    Unlock();
                 }
             }
             finally
             {
+                base.Dispose(disposing);
+
                 //
                 // NOTE: Everything should be fully disposed at this point.
                 //
                 disposed = true;
             }
-        }
-        #endregion
-
-        ///////////////////////////////////////////////////////////////////////
-
-        #region Destructor
-        ~SQLiteMemoryChangeSet()
-        {
-            Dispose(false);
         }
         #endregion
     }
@@ -1713,7 +1901,8 @@ namespace System.Data.SQLite
 
     #region SQLiteStreamChangeSet Class
     internal sealed class SQLiteStreamChangeSet :
-        ISQLiteChangeSet, IEnumerable<ISQLiteChangeSetMetadataItem>
+        SQLiteConnectionLock, ISQLiteChangeSet,
+        IEnumerable<ISQLiteChangeSetMetadataItem>
     {
         #region Private Data
         private Stream inputStream;
@@ -1731,6 +1920,7 @@ namespace System.Data.SQLite
             SQLiteConnectionHandle handle,
             SQLiteConnectionFlags flags
             )
+            : base(handle, flags)
         {
             this.inputStream = inputStream;
             this.outputStream = outputStream;
@@ -1944,16 +2134,6 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
-        #region IDisposable Members
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-        #endregion
-
-        ///////////////////////////////////////////////////////////////////////
-
         #region IDisposable "Pattern" Members
         private bool disposed;
         private void CheckDisposed() /* throw */
@@ -1969,7 +2149,7 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
-        private /* protected virtual */ void Dispose(bool disposing)
+        protected override void Dispose(bool disposing)
         {
             try
             {
@@ -1991,24 +2171,19 @@ namespace System.Data.SQLite
                     //////////////////////////////////////
                     // release unmanaged resources here...
                     //////////////////////////////////////
+
+                    Unlock();
                 }
             }
             finally
             {
+                base.Dispose(disposing);
+
                 //
                 // NOTE: Everything should be fully disposed at this point.
                 //
                 disposed = true;
             }
-        }
-        #endregion
-
-        ///////////////////////////////////////////////////////////////////////
-
-        #region Destructor
-        ~SQLiteStreamChangeSet()
-        {
-            Dispose(false);
         }
         #endregion
     }
