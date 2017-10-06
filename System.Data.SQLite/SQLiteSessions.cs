@@ -135,130 +135,30 @@ namespace System.Data.SQLite
 
     ///////////////////////////////////////////////////////////////////////////
 
-    #region SQLiteChangeSetIterator Class
-    internal sealed class SQLiteChangeSetIterator : IDisposable
+    internal abstract class SQLiteChangeSetIterator : IDisposable
     {
         #region Private Data
-        private IntPtr pData;
         private IntPtr iterator;
         #endregion
 
         ///////////////////////////////////////////////////////////////////////
 
-        #region Private Constructors
-        private SQLiteChangeSetIterator(
-            IntPtr pData,
+        #region Protected Constructors
+        protected SQLiteChangeSetIterator(
             IntPtr iterator
             )
         {
-            this.pData = pData;
             this.iterator = iterator;
         }
         #endregion
 
         ///////////////////////////////////////////////////////////////////////
 
-        #region Private Methods
-        private void CheckHandle()
+        #region Protected Methods
+        protected void CheckHandle()
         {
             if (iterator == IntPtr.Zero)
                 throw new InvalidOperationException("iterator is not open");
-        }
-        #endregion
-
-        ///////////////////////////////////////////////////////////////////////
-
-        #region Static "Factory" Methods
-        public static SQLiteChangeSetIterator Create(
-            byte[] rawData
-            )
-        {
-            if (rawData == null)
-                throw new ArgumentNullException("rawData");
-
-            SQLiteChangeSetIterator result = null;
-            IntPtr pData = IntPtr.Zero;
-            IntPtr iterator = IntPtr.Zero;
-
-            try
-            {
-                int nData = 0;
-
-                pData = SQLiteBytes.ToIntPtr(rawData, ref nData);
-
-                if (pData == IntPtr.Zero)
-                    throw new SQLiteException(SQLiteErrorCode.NoMem, null);
-
-                SQLiteErrorCode rc = UnsafeNativeMethods.sqlite3changeset_start(
-                    ref iterator, nData, pData);
-
-                if (rc != SQLiteErrorCode.Ok)
-                    throw new SQLiteException(rc, "sqlite3changeset_start");
-
-                result = new SQLiteChangeSetIterator(pData, iterator);
-            }
-            finally
-            {
-                if (result == null)
-                {
-                    if (iterator != IntPtr.Zero)
-                    {
-                        UnsafeNativeMethods.sqlite3changeset_finalize(
-                            iterator);
-
-                        iterator = IntPtr.Zero;
-                    }
-
-                    if (pData != IntPtr.Zero)
-                    {
-                        SQLiteMemory.Free(pData);
-                        pData = IntPtr.Zero;
-                    }
-                }
-            }
-
-            return result;
-        }
-
-        ///////////////////////////////////////////////////////////////////////
-
-        public static SQLiteChangeSetIterator Create(
-            Stream stream,
-            SQLiteConnectionFlags flags
-            )
-        {
-            if (stream == null)
-                throw new ArgumentNullException("stream");
-
-            SQLiteChangeSetIterator result = null;
-            IntPtr iterator = IntPtr.Zero;
-
-            try
-            {
-                SQLiteErrorCode rc = UnsafeNativeMethods.sqlite3changeset_start_strm(
-                    ref iterator, new SQLiteStreamAdapter(stream, flags).xInput,
-                    IntPtr.Zero);
-
-                if (rc != SQLiteErrorCode.Ok)
-                    throw new SQLiteException(rc, "sqlite3changeset_start_strm");
-
-                result = new SQLiteChangeSetIterator(IntPtr.Zero, iterator);
-            }
-            finally
-            {
-                if (result == null)
-                {
-                    if (iterator != IntPtr.Zero)
-                    {
-                        UnsafeNativeMethods.sqlite3changeset_finalize(
-                            iterator);
-
-                        iterator = IntPtr.Zero;
-                    }
-                }
-            }
-
-            return result;
         }
         #endregion
 
@@ -305,7 +205,7 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
-        private /* protected virtual */ void Dispose(bool disposing)
+        protected virtual void Dispose(bool disposing)
         {
             try
             {
@@ -329,12 +229,6 @@ namespace System.Data.SQLite
 
                         iterator = IntPtr.Zero;
                     }
-
-                    if (pData != IntPtr.Zero)
-                    {
-                        SQLiteMemory.Free(pData);
-                        pData = IntPtr.Zero;
-                    }
                 }
             }
             finally
@@ -353,6 +247,251 @@ namespace System.Data.SQLite
         ~SQLiteChangeSetIterator()
         {
             Dispose(false);
+        }
+        #endregion
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+
+    #region SQLiteMemoryChangeSetIterator Class
+    internal sealed class SQLiteMemoryChangeSetIterator :
+        SQLiteChangeSetIterator
+    {
+        #region Private Data
+        private IntPtr pData;
+        #endregion
+
+        ///////////////////////////////////////////////////////////////////////
+
+        #region Private Constructors
+        private SQLiteMemoryChangeSetIterator(
+            IntPtr pData,
+            IntPtr iterator
+            )
+            : base(iterator)
+        {
+            this.pData = pData;
+        }
+        #endregion
+
+        ///////////////////////////////////////////////////////////////////////
+
+        #region Static "Factory" Methods
+        public static SQLiteMemoryChangeSetIterator Create(
+            byte[] rawData
+            )
+        {
+            if (rawData == null)
+                throw new ArgumentNullException("rawData");
+
+            SQLiteMemoryChangeSetIterator result = null;
+            IntPtr pData = IntPtr.Zero;
+            IntPtr iterator = IntPtr.Zero;
+
+            try
+            {
+                int nData = 0;
+
+                pData = SQLiteBytes.ToIntPtr(rawData, ref nData);
+
+                if (pData == IntPtr.Zero)
+                    throw new SQLiteException(SQLiteErrorCode.NoMem, null);
+
+                SQLiteErrorCode rc = UnsafeNativeMethods.sqlite3changeset_start(
+                    ref iterator, nData, pData);
+
+                if (rc != SQLiteErrorCode.Ok)
+                    throw new SQLiteException(rc, "sqlite3changeset_start");
+
+                result = new SQLiteMemoryChangeSetIterator(pData, iterator);
+            }
+            finally
+            {
+                if (result == null)
+                {
+                    if (iterator != IntPtr.Zero)
+                    {
+                        UnsafeNativeMethods.sqlite3changeset_finalize(
+                            iterator);
+
+                        iterator = IntPtr.Zero;
+                    }
+
+                    if (pData != IntPtr.Zero)
+                    {
+                        SQLiteMemory.Free(pData);
+                        pData = IntPtr.Zero;
+                    }
+                }
+            }
+
+            return result;
+        }
+        #endregion
+
+        ///////////////////////////////////////////////////////////////////////
+
+        #region IDisposable "Pattern" Members
+        private bool disposed;
+        private void CheckDisposed() /* throw */
+        {
+#if THROW_ON_DISPOSED
+            if (disposed)
+            {
+                throw new ObjectDisposedException(
+                    typeof(SQLiteMemoryChangeSetIterator).Name);
+            }
+#endif
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+
+        protected override void Dispose(bool disposing)
+        {
+            //
+            // NOTE: Must dispose of the base class first (leaky abstraction)
+            //       because it contains the iterator handle, which must be
+            //       closed *prior* to freeing the underlying memory.
+            //
+            base.Dispose(disposing);
+
+            try
+            {
+                if (!disposed)
+                {
+                    //if (disposing)
+                    //{
+                    //    ////////////////////////////////////
+                    //    // dispose managed resources here...
+                    //    ////////////////////////////////////
+                    //}
+
+                    //////////////////////////////////////
+                    // release unmanaged resources here...
+                    //////////////////////////////////////
+
+                    if (pData != IntPtr.Zero)
+                    {
+                        SQLiteMemory.Free(pData);
+                        pData = IntPtr.Zero;
+                    }
+                }
+            }
+            finally
+            {
+                //
+                // NOTE: Everything should be fully disposed at this point.
+                //
+                disposed = true;
+            }
+        }
+        #endregion
+    }
+    #endregion
+
+    ///////////////////////////////////////////////////////////////////////////
+
+    #region SQLiteStreamChangeSetIterator Class
+    internal sealed class SQLiteStreamChangeSetIterator :
+        SQLiteChangeSetIterator
+    {
+        #region Private Constructors
+        private SQLiteStreamChangeSetIterator(
+            IntPtr iterator
+            )
+            : base(iterator)
+        {
+            // do nothing.
+        }
+        #endregion
+
+        ///////////////////////////////////////////////////////////////////////
+
+        #region Static "Factory" Methods
+        public static SQLiteStreamChangeSetIterator Create(
+            Stream stream,
+            SQLiteConnectionFlags flags
+            )
+        {
+            if (stream == null)
+                throw new ArgumentNullException("stream");
+
+            SQLiteStreamChangeSetIterator result = null;
+            IntPtr iterator = IntPtr.Zero;
+
+            try
+            {
+                SQLiteErrorCode rc = UnsafeNativeMethods.sqlite3changeset_start_strm(
+                    ref iterator, new SQLiteStreamAdapter(stream, flags).xInput,
+                    IntPtr.Zero);
+
+                if (rc != SQLiteErrorCode.Ok)
+                    throw new SQLiteException(rc, "sqlite3changeset_start_strm");
+
+                result = new SQLiteStreamChangeSetIterator(iterator);
+            }
+            finally
+            {
+                if (result == null)
+                {
+                    if (iterator != IntPtr.Zero)
+                    {
+                        UnsafeNativeMethods.sqlite3changeset_finalize(
+                            iterator);
+
+                        iterator = IntPtr.Zero;
+                    }
+                }
+            }
+
+            return result;
+        }
+        #endregion
+
+        ///////////////////////////////////////////////////////////////////////
+
+        #region IDisposable "Pattern" Members
+        private bool disposed;
+        private void CheckDisposed() /* throw */
+        {
+#if THROW_ON_DISPOSED
+            if (disposed)
+            {
+                throw new ObjectDisposedException(
+                    typeof(SQLiteStreamChangeSetIterator).Name);
+            }
+#endif
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+
+        protected override void Dispose(bool disposing)
+        {
+            try
+            {
+                if (!disposed)
+                {
+                    //if (disposing)
+                    //{
+                    //    ////////////////////////////////////
+                    //    // dispose managed resources here...
+                    //    ////////////////////////////////////
+                    //}
+
+                    //////////////////////////////////////
+                    // release unmanaged resources here...
+                    //////////////////////////////////////
+                }
+            }
+            finally
+            {
+                base.Dispose(disposing);
+
+                //
+                // NOTE: Everything should be fully disposed at this point.
+                //
+                disposed = true;
+            }
         }
         #endregion
     }
@@ -926,7 +1065,7 @@ namespace System.Data.SQLite
     ///////////////////////////////////////////////////////////////////////////
 
     #region SQLiteMemoryChangeSet Class
-    public sealed class SQLiteMemoryChangeSet :
+    internal sealed class SQLiteMemoryChangeSet :
         ISQLiteChangeSet, IEnumerable<ISQLiteChangeSetMetadataItem>,
         IDisposable
     {
@@ -1204,7 +1343,7 @@ namespace System.Data.SQLite
         #region IEnumerable<ISQLiteChangeSetMetadataItem> Members
         public IEnumerator<ISQLiteChangeSetMetadataItem> GetEnumerator()
         {
-            return new SQLiteChangeSetEnumerator(rawData);
+            return new SQLiteMemoryChangeSetEnumerator(rawData);
         }
         #endregion
 
@@ -1289,7 +1428,7 @@ namespace System.Data.SQLite
     ///////////////////////////////////////////////////////////////////////////
 
     #region SQLiteStreamChangeSet Class
-    public sealed class SQLiteStreamChangeSet :
+    internal sealed class SQLiteStreamChangeSet :
         ISQLiteChangeSet, IEnumerable<ISQLiteChangeSetMetadataItem>,
         IDisposable
     {
@@ -1499,7 +1638,7 @@ namespace System.Data.SQLite
         #region IEnumerable<ISQLiteChangeSetMetadataItem> Members
         public IEnumerator<ISQLiteChangeSetMetadataItem> GetEnumerator()
         {
-            return new SQLiteChangeSetEnumerator(inputStream, flags);
+            return new SQLiteStreamChangeSetEnumerator(inputStream, flags);
         }
         #endregion
 
@@ -1587,7 +1726,7 @@ namespace System.Data.SQLite
     ///////////////////////////////////////////////////////////////////////////
 
     #region SQLiteChangeSetEnumerator Class
-    internal sealed class SQLiteChangeSetEnumerator :
+    internal abstract class SQLiteChangeSetEnumerator :
         IEnumerator<ISQLiteChangeSetMetadataItem>
     {
         #region Private Data
@@ -1598,20 +1737,10 @@ namespace System.Data.SQLite
 
         #region Public Constructors
         public SQLiteChangeSetEnumerator(
-            byte[] rawData
+            SQLiteChangeSetIterator iterator
             )
         {
-            iterator = SQLiteChangeSetIterator.Create(rawData);
-        }
-
-        ///////////////////////////////////////////////////////////////////////
-
-        public SQLiteChangeSetEnumerator(
-            Stream stream,
-            SQLiteConnectionFlags flags
-            )
-        {
-            iterator = SQLiteChangeSetIterator.Create(stream, flags);
+            this.iterator = iterator;
         }
         #endregion
 
@@ -1674,7 +1803,7 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
-        private /* protected virtual */ void Dispose(bool disposing)
+        protected virtual void Dispose(bool disposing)
         {
             try
             {
@@ -1714,6 +1843,137 @@ namespace System.Data.SQLite
         ~SQLiteChangeSetEnumerator()
         {
             Dispose(false);
+        }
+        #endregion
+    }
+    #endregion
+
+    ///////////////////////////////////////////////////////////////////////////
+
+    #region SQLiteMemoryChangeSetEnumerator Class
+    internal sealed class SQLiteMemoryChangeSetEnumerator :
+        SQLiteChangeSetEnumerator
+    {
+        #region Public Constructors
+        public SQLiteMemoryChangeSetEnumerator(
+            byte[] rawData
+            )
+            : base(SQLiteMemoryChangeSetIterator.Create(rawData))
+        {
+            // do nothing.
+        }
+        #endregion
+
+        ///////////////////////////////////////////////////////////////////////
+
+        #region IDisposable "Pattern" Members
+        private bool disposed;
+        private void CheckDisposed() /* throw */
+        {
+#if THROW_ON_DISPOSED
+            if (disposed)
+            {
+                throw new ObjectDisposedException(
+                    typeof(SQLiteMemoryChangeSetEnumerator).Name);
+            }
+#endif
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+
+        protected override void Dispose(bool disposing)
+        {
+            try
+            {
+                if (!disposed)
+                {
+                    if (disposing)
+                    {
+                        ////////////////////////////////////
+                        // dispose managed resources here...
+                        ////////////////////////////////////
+                    }
+
+                    //////////////////////////////////////
+                    // release unmanaged resources here...
+                    //////////////////////////////////////
+                }
+            }
+            finally
+            {
+                base.Dispose(disposing);
+
+                //
+                // NOTE: Everything should be fully disposed at this point.
+                //
+                disposed = true;
+            }
+        }
+        #endregion
+    }
+    #endregion
+
+    ///////////////////////////////////////////////////////////////////////////
+
+    #region SQLiteStreamChangeSetEnumerator Class
+    internal sealed class SQLiteStreamChangeSetEnumerator :
+        SQLiteChangeSetEnumerator
+    {
+        #region Public Constructors
+        public SQLiteStreamChangeSetEnumerator(
+            Stream stream,
+            SQLiteConnectionFlags flags
+            )
+            : base(SQLiteStreamChangeSetIterator.Create(stream, flags))
+        {
+            // do nothing.
+        }
+        #endregion
+
+        ///////////////////////////////////////////////////////////////////////
+
+        #region IDisposable "Pattern" Members
+        private bool disposed;
+        private void CheckDisposed() /* throw */
+        {
+#if THROW_ON_DISPOSED
+            if (disposed)
+            {
+                throw new ObjectDisposedException(
+                    typeof(SQLiteStreamChangeSetEnumerator).Name);
+            }
+#endif
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+
+        protected override void Dispose(bool disposing)
+        {
+            try
+            {
+                //if (!disposed)
+                //{
+                //    if (disposing)
+                //    {
+                //        ////////////////////////////////////
+                //        // dispose managed resources here...
+                //        ////////////////////////////////////
+                //    }
+
+                //    //////////////////////////////////////
+                //    // release unmanaged resources here...
+                //    //////////////////////////////////////
+                //}
+            }
+            finally
+            {
+                base.Dispose(disposing);
+
+                //
+                // NOTE: Everything should be fully disposed at this point.
+                //
+                disposed = true;
+            }
         }
         #endregion
     }
