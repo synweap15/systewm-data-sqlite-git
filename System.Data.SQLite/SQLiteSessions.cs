@@ -55,8 +55,6 @@ namespace System.Data.SQLite
     #region Session Extension Interfaces
     public interface ISQLiteChangeSet
     {
-        bool? IsPatchSet { get; }
-
         ISQLiteChangeSet Invert();
         ISQLiteChangeSet CombineWith(ISQLiteChangeSet changeSet);
 
@@ -936,7 +934,6 @@ namespace System.Data.SQLite
         private byte[] rawData;
         private SQLiteConnectionHandle handle;
         private SQLiteConnectionFlags flags;
-        private bool? isPatchSet;
         #endregion
 
         ///////////////////////////////////////////////////////////////////////
@@ -945,14 +942,12 @@ namespace System.Data.SQLite
         internal SQLiteMemoryChangeSet(
             byte[] rawData,
             SQLiteConnectionHandle handle,
-            SQLiteConnectionFlags flags,
-            bool? isPatchSet
+            SQLiteConnectionFlags flags
             )
         {
             this.rawData = rawData;
             this.handle= handle;
             this.flags = flags;
-            this.isPatchSet = isPatchSet;
         }
         #endregion
 
@@ -969,13 +964,6 @@ namespace System.Data.SQLite
         ///////////////////////////////////////////////////////////////////////
 
         #region ISQLiteChangeSet Members
-        public bool? IsPatchSet
-        {
-            get { CheckDisposed(); return isPatchSet; }
-        }
-
-        ///////////////////////////////////////////////////////////////////////
-
         public ISQLiteChangeSet Invert()
         {
             CheckDisposed();
@@ -1000,8 +988,7 @@ namespace System.Data.SQLite
 
                 byte[] newData = SQLiteBytes.FromIntPtr(pOutData, nOutData);
 
-                return new SQLiteMemoryChangeSet(
-                    newData, handle, flags, isPatchSet);
+                return new SQLiteMemoryChangeSet(newData, handle, flags);
             }
             finally
             {
@@ -1065,8 +1052,7 @@ namespace System.Data.SQLite
 
                 byte[] newData = SQLiteBytes.FromIntPtr(pOutData, nOutData);
 
-                return new SQLiteMemoryChangeSet(
-                    newData, handle, flags, isPatchSet);
+                return new SQLiteMemoryChangeSet(newData, handle, flags);
             }
             finally
             {
@@ -1312,7 +1298,6 @@ namespace System.Data.SQLite
         private Stream outputStream;
         private SQLiteConnectionHandle handle;
         private SQLiteConnectionFlags flags;
-        private bool? isPatchSet;
         #endregion
 
         ///////////////////////////////////////////////////////////////////////
@@ -1322,15 +1307,13 @@ namespace System.Data.SQLite
             Stream inputStream,
             Stream outputStream,
             SQLiteConnectionHandle handle,
-            SQLiteConnectionFlags flags,
-            bool? isPatchSet
+            SQLiteConnectionFlags flags
             )
         {
             this.inputStream = inputStream;
             this.outputStream = outputStream;
             this.handle = handle;
             this.flags = flags;
-            this.isPatchSet = isPatchSet;
         }
         #endregion
 
@@ -1361,13 +1344,6 @@ namespace System.Data.SQLite
         ///////////////////////////////////////////////////////////////////////
 
         #region ISQLiteChangeSet Members
-        public bool? IsPatchSet
-        {
-            get { CheckDisposed(); return isPatchSet; }
-        }
-
-        ///////////////////////////////////////////////////////////////////////
-
         public ISQLiteChangeSet Invert()
         {
             CheckDisposed();

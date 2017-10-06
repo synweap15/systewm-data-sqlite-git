@@ -3043,8 +3043,7 @@ namespace System.Data.SQLite
     {
         CheckDisposed();
 
-        return new SQLiteMemoryChangeSet(
-            rawData, GetNativeHandle(this), _flags, null);
+        return new SQLiteMemoryChangeSet(rawData, GetNativeHandle(this), _flags);
     }
 
     /// <summary>
@@ -3070,7 +3069,7 @@ namespace System.Data.SQLite
         CheckDisposed();
 
         return new SQLiteStreamChangeSet(
-            inputStream, outputStream, GetNativeHandle(this), _flags, null);
+            inputStream, outputStream, GetNativeHandle(this), _flags);
     }
 #endif
 
