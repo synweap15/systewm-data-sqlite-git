@@ -53,7 +53,7 @@ namespace System.Data.SQLite
     ///////////////////////////////////////////////////////////////////////////
 
     #region ISQLiteChangeSet Interface
-    public interface ISQLiteChangeSet
+    public interface ISQLiteChangeSet : IDisposable
     {
         ISQLiteChangeSet Invert();
         ISQLiteChangeSet CombineWith(ISQLiteChangeSet changeSet);
@@ -74,7 +74,7 @@ namespace System.Data.SQLite
     ///////////////////////////////////////////////////////////////////////////
 
     #region ISQLiteChangeGroup Interface
-    public interface ISQLiteChangeGroup
+    public interface ISQLiteChangeGroup : IDisposable
     {
         void AddChangeSet(byte[] rawData);
         void AddChangeSet(Stream stream);
@@ -87,7 +87,7 @@ namespace System.Data.SQLite
     ///////////////////////////////////////////////////////////////////////////
 
     #region ISQLiteChangeSetMetadataItem Interface
-    public interface ISQLiteChangeSetMetadataItem
+    public interface ISQLiteChangeSetMetadataItem : IDisposable
     {
         string TableName { get; }
         int NumberOfColumns { get; }
@@ -107,7 +107,7 @@ namespace System.Data.SQLite
     ///////////////////////////////////////////////////////////////////////////
 
     #region ISQLiteSession Interface
-    public interface ISQLiteSession
+    public interface ISQLiteSession : IDisposable
     {
         bool IsEnabled();
         void SetToEnabled();
@@ -719,7 +719,7 @@ namespace System.Data.SQLite
     ///////////////////////////////////////////////////////////////////////////
 
     #region SQLiteChangeGroup Class
-    internal sealed class SQLiteChangeGroup : ISQLiteChangeGroup, IDisposable
+    internal sealed class SQLiteChangeGroup : ISQLiteChangeGroup
     {
         #region Private Data
         private SQLiteConnectionFlags flags;
@@ -945,7 +945,7 @@ namespace System.Data.SQLite
     ///////////////////////////////////////////////////////////////////////////
 
     #region SQLiteSession Class
-    internal sealed class SQLiteSession : ISQLiteSession, IDisposable
+    internal sealed class SQLiteSession : ISQLiteSession
     {
         #region Private Data
         private SQLiteConnectionHandle handle;
@@ -975,9 +975,7 @@ namespace System.Data.SQLite
             this.flags = flags;
             this.databaseName = databaseName;
 
-            UnsafeNativeMethods.sqlite3session_create(
-                handle, SQLiteString.GetUtf8BytesFromString(databaseName),
-                ref session);
+            Initialize();
         }
         #endregion
 
@@ -988,6 +986,21 @@ namespace System.Data.SQLite
         {
             if (session == IntPtr.Zero)
                 throw new InvalidOperationException("session is not open");
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+
+        private void Initialize()
+        {
+            if (session != IntPtr.Zero)
+                return;
+
+            SQLiteErrorCode rc = UnsafeNativeMethods.sqlite3session_create(
+                handle, SQLiteString.GetUtf8BytesFromString(databaseName),
+                ref session);
+
+            if (rc != SQLiteErrorCode.Ok)
+                throw new SQLiteException(rc, "sqlite3session_create");
         }
 
         ///////////////////////////////////////////////////////////////////////
@@ -1077,7 +1090,9 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
-        public void AttachTable(string name)
+        public void AttachTable(
+            string name
+            )
         {
             CheckDisposed();
             CheckHandle();
@@ -1328,8 +1343,7 @@ namespace System.Data.SQLite
 
     #region SQLiteMemoryChangeSet Class
     internal sealed class SQLiteMemoryChangeSet :
-        ISQLiteChangeSet, IEnumerable<ISQLiteChangeSetMetadataItem>,
-        IDisposable
+        ISQLiteChangeSet, IEnumerable<ISQLiteChangeSetMetadataItem>
     {
         #region Private Data
         private byte[] rawData;
@@ -1699,8 +1713,7 @@ namespace System.Data.SQLite
 
     #region SQLiteStreamChangeSet Class
     internal sealed class SQLiteStreamChangeSet :
-        ISQLiteChangeSet, IEnumerable<ISQLiteChangeSetMetadataItem>,
-        IDisposable
+        ISQLiteChangeSet, IEnumerable<ISQLiteChangeSetMetadataItem>
     {
         #region Private Data
         private Stream inputStream;
@@ -2333,7 +2346,7 @@ namespace System.Data.SQLite
 
     #region SQLiteChangeSetMetadataItem Class
     internal sealed class SQLiteChangeSetMetadataItem :
-        ISQLiteChangeSetMetadataItem, IDisposable
+        ISQLiteChangeSetMetadataItem
     {
         #region Private Data
         private SQLiteChangeSetIterator iterator;
