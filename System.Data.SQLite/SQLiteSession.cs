@@ -1503,6 +1503,9 @@ namespace System.Data.SQLite
             if (conflictCallback == null)
                 throw new ArgumentNullException("conflictCallback");
 
+            ///////////////////////////////////////////////////////////////////
+
+            #region Native Callback Methods
             UnsafeNativeMethods.xSessionFilter xFilter = null;
 
             if (tableFilterCallback != null)
@@ -1540,6 +1543,8 @@ namespace System.Data.SQLite
                 });
             }
 
+            ///////////////////////////////////////////////////////////////////
+
             UnsafeNativeMethods.xSessionConflict xConflict;
 
             xConflict = new UnsafeNativeMethods.xSessionConflict(
@@ -1574,6 +1579,9 @@ namespace System.Data.SQLite
 
                 return SQLiteChangeSetConflictResult.Abort;
             });
+            #endregion
+
+            ///////////////////////////////////////////////////////////////////
 
             IntPtr pData = IntPtr.Zero;
 
@@ -1817,6 +1825,9 @@ namespace System.Data.SQLite
             CheckDisposed();
             CheckInputStream();
 
+            ///////////////////////////////////////////////////////////////////
+
+            #region Native Callback Methods
             UnsafeNativeMethods.xSessionFilter xFilter;
 
             xFilter = new UnsafeNativeMethods.xSessionFilter(
@@ -1850,6 +1861,8 @@ namespace System.Data.SQLite
 
                 return 0;
             });
+
+            ///////////////////////////////////////////////////////////////////
 
             UnsafeNativeMethods.xSessionConflict xConflict;
 
@@ -1885,6 +1898,9 @@ namespace System.Data.SQLite
 
                 return SQLiteChangeSetConflictResult.Abort;
             });
+            #endregion
+
+            ///////////////////////////////////////////////////////////////////
 
             SQLiteErrorCode rc = UnsafeNativeMethods.sqlite3changeset_apply_strm(
                 handle, new SQLiteStreamAdapter(inputStream, flags).xInput,
