@@ -597,6 +597,52 @@ namespace System.Data.SQLite
         ///////////////////////////////////////////////////////////////////////
 
         /// <summary>
+        /// Gets and returns an <see cref="Object" /> instance associated with
+        /// this value.
+        /// </summary>
+        /// <returns>
+        /// The <see cref="Object" /> associated with this value.  If the type
+        /// affinity of the object is unknown or cannot be determined, a null
+        /// value will be returned.
+        /// </returns>
+        public object GetObject()
+        {
+            switch (GetTypeAffinity())
+            {
+                case TypeAffinity.Uninitialized:
+                    {
+                        return null;
+                    }
+                case TypeAffinity.Int64:
+                    {
+                        return GetInt64();
+                    }
+                case TypeAffinity.Double:
+                    {
+                        return GetDouble();
+                    }
+                case TypeAffinity.Text:
+                    {
+                        return GetString();
+                    }
+                case TypeAffinity.Blob:
+                    {
+                        return GetBytes();
+                    }
+                case TypeAffinity.Null:
+                    {
+                        return DBNull.Value;
+                    }
+                default:
+                    {
+                        return null;
+                    }
+            }
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+
+        /// <summary>
         /// Uses the native value handle to obtain and store the managed value
         /// for this object instance, thus saving it for later use.  The type
         /// of the managed value is determined by the type affinity of the
