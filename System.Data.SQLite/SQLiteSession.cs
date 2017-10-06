@@ -939,7 +939,7 @@ namespace System.Data.SQLite
     ///////////////////////////////////////////////////////////////////////////
 
     #region SQLiteSession Class
-    public sealed class SQLiteSession : ISQLiteSession, IDisposable
+    internal sealed class SQLiteSession : ISQLiteSession, IDisposable
     {
         #region Private Data
         private SQLiteConnectionHandle handle;
@@ -958,8 +958,8 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
-        #region Private Constructors
-        internal SQLiteSession(
+        #region Public Constructors
+        public SQLiteSession(
             SQLiteConnectionHandle handle,
             SQLiteConnectionFlags flags,
             string databaseName
@@ -2310,7 +2310,7 @@ namespace System.Data.SQLite
     ///////////////////////////////////////////////////////////////////////////
 
     #region SQLiteChangeSetMetadataItem Class
-    public sealed class SQLiteChangeSetMetadataItem :
+    internal sealed class SQLiteChangeSetMetadataItem :
         ISQLiteChangeSetMetadataItem, IDisposable
     {
         #region Private Data
@@ -2319,8 +2319,8 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
-        #region Private Constructors
-        internal SQLiteChangeSetMetadataItem(
+        #region Public Constructors
+        public SQLiteChangeSetMetadataItem(
             SQLiteChangeSetIterator iterator
             )
         {
