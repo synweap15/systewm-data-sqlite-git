@@ -135,6 +135,7 @@ namespace System.Data.SQLite
 
     ///////////////////////////////////////////////////////////////////////////
 
+    #region SQLiteChangeSetIterator Class
     internal abstract class SQLiteChangeSetIterator : IDisposable
     {
         #region Private Data
@@ -154,18 +155,25 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
-        #region Protected Methods
-        protected void CheckHandle()
+        #region Private Methods
+        internal void CheckHandle()
         {
             if (iterator == IntPtr.Zero)
                 throw new InvalidOperationException("iterator is not open");
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+
+        internal IntPtr GetHandle()
+        {
+            return iterator;
         }
         #endregion
 
         ///////////////////////////////////////////////////////////////////////
 
         #region Public Methods
-        public void Next()
+        public bool Next()
         {
             CheckDisposed();
             CheckHandle();
@@ -173,8 +181,26 @@ namespace System.Data.SQLite
             SQLiteErrorCode rc = UnsafeNativeMethods.sqlite3changeset_next(
                 iterator);
 
-            if (rc != SQLiteErrorCode.Ok)
-                throw new SQLiteException(rc, "sqlite3changeset_next");
+            switch (rc)
+            {
+                case SQLiteErrorCode.Ok:
+                    {
+                        throw new SQLiteException(SQLiteErrorCode.Ok,
+                            "sqlite3changeset_next: unexpected result Ok");
+                    }
+                case SQLiteErrorCode.Row:
+                    {
+                        return true;
+                    }
+                case SQLiteErrorCode.Done:
+                    {
+                        return false;
+                    }
+                default:
+                    {
+                        throw new SQLiteException(rc, "sqlite3changeset_next");
+                    }
+            }
         }
         #endregion
 
@@ -250,6 +276,7 @@ namespace System.Data.SQLite
         }
         #endregion
     }
+    #endregion
 
     ///////////////////////////////////////////////////////////////////////////
 
@@ -1740,7 +1767,51 @@ namespace System.Data.SQLite
             SQLiteChangeSetIterator iterator
             )
         {
+            SetIterator(iterator);
+        }
+        #endregion
+
+        ///////////////////////////////////////////////////////////////////////
+
+        #region Private Methods
+        private void CheckIterator()
+        {
+            if (iterator == null)
+                throw new InvalidOperationException("iterator unavailable");
+
+            iterator.CheckHandle();
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+
+        private void SetIterator(
+            SQLiteChangeSetIterator iterator
+            )
+        {
             this.iterator = iterator;
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+
+        private void CloseIterator()
+        {
+            if (iterator != null)
+            {
+                iterator.Dispose();
+                iterator = null;
+            }
+        }
+        #endregion
+
+        ///////////////////////////////////////////////////////////////////////
+
+        #region Protected Methods
+        protected void ResetIterator(
+            SQLiteChangeSetIterator iterator
+            )
+        {
+            CloseIterator();
+            SetIterator(iterator);
         }
         #endregion
 
@@ -1749,7 +1820,12 @@ namespace System.Data.SQLite
         #region IEnumerator<ISQLiteChangeSetMetadataItem> Members
         public ISQLiteChangeSetMetadataItem Current
         {
-            get { CheckDisposed(); throw new NotImplementedException(); }
+            get
+            {
+                CheckDisposed();
+
+                return new SQLiteChangeSetMetadataItem(iterator);
+            }
         }
         #endregion
 
@@ -1758,21 +1834,31 @@ namespace System.Data.SQLite
         #region IEnumerator Members
         object Collections.IEnumerator.Current
         {
-            get { CheckDisposed(); throw new NotImplementedException(); }
+            get
+            {
+                CheckDisposed();
+
+                return Current;
+            }
         }
 
         ///////////////////////////////////////////////////////////////////////
 
         public bool MoveNext()
         {
-            CheckDisposed(); throw new NotImplementedException();
+            CheckDisposed();
+            CheckIterator();
+
+            return iterator.Next();
         }
 
         ///////////////////////////////////////////////////////////////////////
 
-        public void Reset()
+        public virtual void Reset()
         {
-            CheckDisposed(); throw new NotImplementedException();
+            CheckDisposed();
+
+            throw new NotImplementedException();
         }
         #endregion
 
@@ -1815,11 +1901,7 @@ namespace System.Data.SQLite
                         // dispose managed resources here...
                         ////////////////////////////////////
 
-                        if (iterator != null)
-                        {
-                            iterator.Dispose();
-                            iterator = null;
-                        }
+                        CloseIterator();
                     }
 
                     //////////////////////////////////////
@@ -1854,13 +1936,30 @@ namespace System.Data.SQLite
     internal sealed class SQLiteMemoryChangeSetEnumerator :
         SQLiteChangeSetEnumerator
     {
+        #region Private Data
+        private byte[] rawData;
+        #endregion
+
+        ///////////////////////////////////////////////////////////////////////
+
         #region Public Constructors
         public SQLiteMemoryChangeSetEnumerator(
             byte[] rawData
             )
             : base(SQLiteMemoryChangeSetIterator.Create(rawData))
         {
-            // do nothing.
+            this.rawData = rawData;
+        }
+        #endregion
+
+        ///////////////////////////////////////////////////////////////////////
+
+        #region IEnumerator Overrides
+        public override void Reset()
+        {
+            CheckDisposed();
+
+            ResetIterator(SQLiteMemoryChangeSetIterator.Create(rawData));
         }
         #endregion
 
@@ -1986,14 +2085,14 @@ namespace System.Data.SQLite
         ISQLiteChangeSetMetadataItem, IDisposable
     {
         #region Private Data
-        private IntPtr iterator;
+        private SQLiteChangeSetIterator iterator;
         #endregion
 
         ///////////////////////////////////////////////////////////////////////
 
         #region Private Constructors
         internal SQLiteChangeSetMetadataItem(
-            IntPtr iterator
+            SQLiteChangeSetIterator iterator
             )
         {
             this.iterator = iterator;
@@ -2003,10 +2102,12 @@ namespace System.Data.SQLite
         ///////////////////////////////////////////////////////////////////////
 
         #region Private Methods
-        private void CheckHandle()
+        private void CheckIterator()
         {
-            if (iterator == IntPtr.Zero)
-                throw new InvalidOperationException("iterator is not open");
+            if (iterator == null)
+                throw new InvalidOperationException("iterator unavailable");
+
+            iterator.CheckHandle();
         }
 
         ///////////////////////////////////////////////////////////////////////
@@ -2016,7 +2117,7 @@ namespace System.Data.SQLite
             if ((tableName == null) || (numberOfColumns == null) ||
                 (operationCode == null) || (indirect == null))
             {
-                CheckHandle();
+                CheckIterator();
 
                 IntPtr pTblName = IntPtr.Zero;
                 SQLiteAuthorizerActionCode op = SQLiteAuthorizerActionCode.None;
@@ -2024,7 +2125,7 @@ namespace System.Data.SQLite
                 int nColumns = 0;
 
                 SQLiteErrorCode rc = UnsafeNativeMethods.sqlite3changeset_op(
-                    iterator, ref pTblName, ref nColumns, ref op,
+                    iterator.GetHandle(), ref pTblName, ref nColumns, ref op,
                     ref bIndirect);
 
                 if (rc != SQLiteErrorCode.Ok)
@@ -2043,13 +2144,13 @@ namespace System.Data.SQLite
         {
             if (primaryKeyColumns == null)
             {
-                CheckHandle();
+                CheckIterator();
 
                 IntPtr pPrimaryKeys = IntPtr.Zero;
                 int nColumns = 0;
 
                 SQLiteErrorCode rc = UnsafeNativeMethods.sqlite3changeset_pk(
-                    iterator, ref pPrimaryKeys, ref nColumns);
+                    iterator.GetHandle(), ref pPrimaryKeys, ref nColumns);
 
                 if (rc != SQLiteErrorCode.Ok)
                     throw new SQLiteException(rc, "sqlite3changeset_pk");
@@ -2072,13 +2173,13 @@ namespace System.Data.SQLite
         {
             if (numberOfForeignKeyConflicts == null)
             {
-                CheckHandle();
+                CheckIterator();
 
                 int conflicts = 0;
 
                 SQLiteErrorCode rc =
                     UnsafeNativeMethods.sqlite3changeset_fk_conflicts(
-                        iterator, ref conflicts);
+                        iterator.GetHandle(), ref conflicts);
 
                 if (rc != SQLiteErrorCode.Ok)
                 {
@@ -2183,12 +2284,12 @@ namespace System.Data.SQLite
             )
         {
             CheckDisposed();
-            CheckHandle();
+            CheckIterator();
 
             IntPtr pValue = IntPtr.Zero;
 
             SQLiteErrorCode rc = UnsafeNativeMethods.sqlite3changeset_old(
-                iterator, columnIndex, ref pValue);
+                iterator.GetHandle(), columnIndex, ref pValue);
 
             return SQLiteValue.FromIntPtr(pValue);
         }
@@ -2198,12 +2299,12 @@ namespace System.Data.SQLite
         public SQLiteValue GetNewValue(int columnIndex)
         {
             CheckDisposed();
-            CheckHandle();
+            CheckIterator();
 
             IntPtr pValue = IntPtr.Zero;
 
             SQLiteErrorCode rc = UnsafeNativeMethods.sqlite3changeset_new(
-                iterator, columnIndex, ref pValue);
+                iterator.GetHandle(), columnIndex, ref pValue);
 
             return SQLiteValue.FromIntPtr(pValue);
         }
@@ -2213,12 +2314,12 @@ namespace System.Data.SQLite
         public SQLiteValue GetConflictValue(int columnIndex)
         {
             CheckDisposed();
-            CheckHandle();
+            CheckIterator();
 
             IntPtr pValue = IntPtr.Zero;
 
             SQLiteErrorCode rc = UnsafeNativeMethods.sqlite3changeset_conflict(
-                iterator, columnIndex, ref pValue);
+                iterator.GetHandle(), columnIndex, ref pValue);
 
             return SQLiteValue.FromIntPtr(pValue);
         }
@@ -2263,8 +2364,8 @@ namespace System.Data.SQLite
                         // dispose managed resources here...
                         ////////////////////////////////////
 
-                        if (iterator != IntPtr.Zero)
-                            iterator = IntPtr.Zero; /* NOT OWNED */
+                        if (iterator != null)
+                            iterator = null; /* NOT OWNED */
                     }
 
                     //////////////////////////////////////
