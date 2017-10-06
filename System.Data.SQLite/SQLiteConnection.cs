@@ -1771,7 +1771,7 @@ namespace System.Data.SQLite
     /// The native handle associated with the connection or <see cref="IntPtr.Zero" /> if it
     /// cannot be determined.
     /// </returns>
-    internal static SQLiteConnectionHandle GetNativeHandle(
+    private static SQLiteConnectionHandle GetNativeHandle(
         SQLiteConnection connection
         )
     {
