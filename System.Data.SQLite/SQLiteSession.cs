@@ -52,7 +52,7 @@ namespace System.Data.SQLite
 
     ///////////////////////////////////////////////////////////////////////////
 
-    #region Session Extension Interfaces
+    #region ISQLiteChangeSet Interface
     public interface ISQLiteChangeSet
     {
         ISQLiteChangeSet Invert();
@@ -69,9 +69,11 @@ namespace System.Data.SQLite
             object clientData
         );
     }
+    #endregion
 
     ///////////////////////////////////////////////////////////////////////////
 
+    #region ISQLiteChangeGroup Interface
     public interface ISQLiteChangeGroup
     {
         void AddChangeSet(byte[] rawData);
@@ -80,9 +82,11 @@ namespace System.Data.SQLite
         void CreateChangeSet(ref byte[] rawData);
         void CreateChangeSet(Stream stream);
     }
+    #endregion
 
     ///////////////////////////////////////////////////////////////////////////
 
+    #region ISQLiteChangeSetMetadataItem Interface
     public interface ISQLiteChangeSetMetadataItem
     {
         string TableName { get; }
@@ -98,9 +102,11 @@ namespace System.Data.SQLite
         SQLiteValue GetNewValue(int columnIndex);
         SQLiteValue GetConflictValue(int columnIndex);
     }
+    #endregion
 
     ///////////////////////////////////////////////////////////////////////////
 
+    #region ISQLiteSession Interface
     public interface ISQLiteSession
     {
         bool IsEnabled();
