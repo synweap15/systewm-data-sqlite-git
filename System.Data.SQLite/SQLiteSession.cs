@@ -58,7 +58,8 @@ namespace System.Data.SQLite
     ///////////////////////////////////////////////////////////////////////////
 
     #region ISQLiteChangeSet Interface
-    public interface ISQLiteChangeSet : IDisposable
+    public interface ISQLiteChangeSet :
+        IEnumerable<ISQLiteChangeSetMetadataItem>, IDisposable
     {
         ISQLiteChangeSet Invert();
         ISQLiteChangeSet CombineWith(ISQLiteChangeSet changeSet);
@@ -991,6 +992,9 @@ namespace System.Data.SQLite
             CheckDisposed();
             CheckHandle();
 
+            if (rawData == null)
+                throw new ArgumentNullException("rawData");
+
             IntPtr pData = IntPtr.Zero;
 
             try
@@ -1024,6 +1028,9 @@ namespace System.Data.SQLite
             CheckDisposed();
             CheckHandle();
 
+            if (stream == null)
+                throw new ArgumentNullException("stream");
+
             SQLiteErrorCode rc = UnsafeNativeMethods.sqlite3changegroup_add_strm(
                 changeGroup, new SQLiteStreamAdapter(stream, flags).xInput,
                 IntPtr.Zero);
@@ -1040,6 +1047,9 @@ namespace System.Data.SQLite
         {
             CheckDisposed();
             CheckHandle();
+
+            if (rawData == null)
+                throw new ArgumentNullException("rawData");
 
             IntPtr pData = IntPtr.Zero;
 
@@ -1073,6 +1083,9 @@ namespace System.Data.SQLite
         {
             CheckDisposed();
             CheckHandle();
+
+            if (stream == null)
+                throw new ArgumentNullException("stream");
 
             SQLiteErrorCode rc = UnsafeNativeMethods.sqlite3changegroup_output_strm(
                 changeGroup, new SQLiteStreamAdapter(stream, flags).xOutput,
@@ -1307,7 +1320,7 @@ namespace System.Data.SQLite
         ///////////////////////////////////////////////////////////////////////
 
         public void AttachTable(
-            string name
+            string name /* in: NULL OK */
             )
         {
             CheckDisposed();
@@ -1323,8 +1336,8 @@ namespace System.Data.SQLite
         ///////////////////////////////////////////////////////////////////////
 
         public void SetTableFilter(
-            SessionTableFilterCallback callback,
-            object clientData
+            SessionTableFilterCallback callback, /* in: NULL OK */
+            object clientData                    /* in: NULL OK */
             )
         {
             CheckDisposed();
@@ -1379,6 +1392,9 @@ namespace System.Data.SQLite
             CheckDisposed();
             CheckHandle();
 
+            if (stream == null)
+                throw new ArgumentNullException("stream");
+
             SQLiteErrorCode rc = UnsafeNativeMethods.sqlite3session_changeset_strm(
                 session, new SQLiteStreamAdapter(stream, flags).xOutput,
                 IntPtr.Zero);
@@ -1429,6 +1445,9 @@ namespace System.Data.SQLite
             CheckDisposed();
             CheckHandle();
 
+            if (stream == null)
+                throw new ArgumentNullException("stream");
+
             SQLiteErrorCode rc = UnsafeNativeMethods.sqlite3session_patchset_strm(
                 session, new SQLiteStreamAdapter(stream, flags).xOutput,
                 IntPtr.Zero);
@@ -1446,6 +1465,12 @@ namespace System.Data.SQLite
         {
             CheckDisposed();
             CheckHandle();
+
+            if (fromDatabaseName == null)
+                throw new ArgumentNullException("fromDatabaseName");
+
+            if (tableName == null)
+                throw new ArgumentNullException("tableName");
 
             IntPtr pError = IntPtr.Zero;
 
@@ -1544,8 +1569,7 @@ namespace System.Data.SQLite
 
     #region SQLiteMemoryChangeSet Class
     internal sealed class SQLiteMemoryChangeSet :
-        SQLiteConnectionLock, ISQLiteChangeSet,
-        IEnumerable<ISQLiteChangeSetMetadataItem>
+        SQLiteConnectionLock, ISQLiteChangeSet
     {
         #region Private Data
         private byte[] rawData;
@@ -1901,8 +1925,7 @@ namespace System.Data.SQLite
 
     #region SQLiteStreamChangeSet Class
     internal sealed class SQLiteStreamChangeSet :
-        SQLiteConnectionLock, ISQLiteChangeSet,
-        IEnumerable<ISQLiteChangeSetMetadataItem>
+        SQLiteConnectionLock, ISQLiteChangeSet
     {
         #region Private Data
         private Stream inputStream;
@@ -2027,6 +2050,9 @@ namespace System.Data.SQLite
         {
             CheckDisposed();
             CheckInputStream();
+
+            if (conflictCallback == null)
+                throw new ArgumentNullException("conflictCallback");
 
             ///////////////////////////////////////////////////////////////////
 
@@ -2735,7 +2761,9 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
-        public SQLiteValue GetNewValue(int columnIndex)
+        public SQLiteValue GetNewValue(
+            int columnIndex
+            )
         {
             CheckDisposed();
             CheckIterator();
@@ -2750,7 +2778,9 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
-        public SQLiteValue GetConflictValue(int columnIndex)
+        public SQLiteValue GetConflictValue(
+            int columnIndex
+            )
         {
             CheckDisposed();
             CheckIterator();
