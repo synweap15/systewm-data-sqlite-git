@@ -124,6 +124,6 @@
   -->
 
   <ItemGroup Condition="'$(InteropSessionExtension)' != 'false'">
-    <Compile Include="SQLiteSessions.cs" />
+    <Compile Include="SQLiteSession.cs" />
   </ItemGroup>
 </Project>

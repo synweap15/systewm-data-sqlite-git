@@ -3071,6 +3071,20 @@ namespace System.Data.SQLite
         return new SQLiteStreamChangeSet(
             inputStream, outputStream, GetNativeHandle(this), _flags);
     }
+
+    /// <summary>
+    /// Attempts to create a new <see cref="ISQLiteChangeGroup" /> object
+    /// instance using this connection.
+    /// </summary>
+    /// <returns>
+    /// The newly created change group -OR- null if it cannot be created.
+    /// </returns>
+    public ISQLiteChangeGroup CreateChangeGroup()
+    {
+        CheckDisposed();
+
+        return new SQLiteChangeGroup(_flags);
+    }
 #endif
 
     /// <summary>

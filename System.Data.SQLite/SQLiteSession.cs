@@ -712,6 +712,232 @@ namespace System.Data.SQLite
 
     ///////////////////////////////////////////////////////////////////////////
 
+    #region SQLiteChangeGroup Class
+    internal sealed class SQLiteChangeGroup : ISQLiteChangeGroup, IDisposable
+    {
+        #region Private Data
+        private SQLiteConnectionFlags flags;
+
+        ///////////////////////////////////////////////////////////////////////
+
+        private IntPtr changeGroup;
+        #endregion
+
+        ///////////////////////////////////////////////////////////////////////
+
+        #region Public Constructors
+        public SQLiteChangeGroup(
+            SQLiteConnectionFlags flags
+            )
+        {
+            this.flags = flags;
+
+            Initialize();
+        }
+        #endregion
+
+        ///////////////////////////////////////////////////////////////////////
+
+        #region Private Methods
+        private void CheckHandle()
+        {
+            if (changeGroup == null)
+                throw new InvalidOperationException("change group not open");
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+
+        private void Initialize()
+        {
+            if (changeGroup != IntPtr.Zero)
+                return;
+
+            SQLiteErrorCode rc = UnsafeNativeMethods.sqlite3changegroup_new(
+                ref changeGroup);
+
+            if (rc != SQLiteErrorCode.Ok)
+                throw new SQLiteException(rc, "sqlite3changegroup_new");
+        }
+        #endregion
+
+        ///////////////////////////////////////////////////////////////////////
+
+        #region ISQLiteChangeGroup Members
+        public void AddChangeSet(
+            byte[] rawData
+            )
+        {
+            CheckDisposed();
+            CheckHandle();
+
+            IntPtr pData = IntPtr.Zero;
+
+            try
+            {
+                int nData = 0;
+
+                pData = SQLiteBytes.ToIntPtr(rawData, ref nData);
+
+                SQLiteErrorCode rc = UnsafeNativeMethods.sqlite3changegroup_add(
+                    changeGroup, nData, pData);
+
+                if (rc != SQLiteErrorCode.Ok)
+                    throw new SQLiteException(rc, "sqlite3changegroup_add");
+            }
+            finally
+            {
+                if (pData != IntPtr.Zero)
+                {
+                    SQLiteMemory.Free(pData);
+                    pData = IntPtr.Zero;
+                }
+            }
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+
+        public void AddChangeSet(
+            Stream stream
+            )
+        {
+            CheckDisposed();
+            CheckHandle();
+
+            SQLiteErrorCode rc = UnsafeNativeMethods.sqlite3changegroup_add_strm(
+                changeGroup, new SQLiteStreamAdapter(stream, flags).xInput,
+                IntPtr.Zero);
+
+            if (rc != SQLiteErrorCode.Ok)
+                throw new SQLiteException(rc, "sqlite3changegroup_add_strm");
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+
+        public void CreateChangeSet(
+            ref byte[] rawData
+            )
+        {
+            CheckDisposed();
+            CheckHandle();
+
+            IntPtr pData = IntPtr.Zero;
+
+            try
+            {
+                int nData = 0;
+
+                SQLiteErrorCode rc = UnsafeNativeMethods.sqlite3changegroup_output(
+                    changeGroup, ref nData, ref pData);
+
+                if (rc != SQLiteErrorCode.Ok)
+                    throw new SQLiteException(rc, "sqlite3changegroup_output");
+
+                rawData = SQLiteBytes.FromIntPtr(pData, nData);
+            }
+            finally
+            {
+                if (pData != IntPtr.Zero)
+                {
+                    SQLiteMemory.Free(pData);
+                    pData = IntPtr.Zero;
+                }
+            }
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+
+        public void CreateChangeSet(
+            Stream stream
+            )
+        {
+            CheckDisposed();
+            CheckHandle();
+
+            SQLiteErrorCode rc = UnsafeNativeMethods.sqlite3changegroup_output_strm(
+                changeGroup, new SQLiteStreamAdapter(stream, flags).xOutput,
+                IntPtr.Zero);
+
+            if (rc != SQLiteErrorCode.Ok)
+                throw new SQLiteException(rc, "sqlite3changegroup_output_strm");
+        }
+        #endregion
+
+        ///////////////////////////////////////////////////////////////////////
+
+        #region IDisposable Members
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+        #endregion
+
+        ///////////////////////////////////////////////////////////////////////
+
+        #region IDisposable "Pattern" Members
+        private bool disposed;
+        private void CheckDisposed() /* throw */
+        {
+#if THROW_ON_DISPOSED
+            if (disposed)
+            {
+                throw new ObjectDisposedException(
+                    typeof(SQLiteChangeGroup).Name);
+            }
+#endif
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+
+        private /* protected virtual */ void Dispose(bool disposing)
+        {
+            try
+            {
+                if (!disposed)
+                {
+                    if (disposing)
+                    {
+                        ////////////////////////////////////
+                        // dispose managed resources here...
+                        ////////////////////////////////////
+
+                        if (changeGroup != IntPtr.Zero)
+                        {
+                            UnsafeNativeMethods.sqlite3changegroup_delete(
+                                changeGroup);
+
+                            changeGroup = IntPtr.Zero;
+                        }
+                    }
+
+                    //////////////////////////////////////
+                    // release unmanaged resources here...
+                    //////////////////////////////////////
+                }
+            }
+            finally
+            {
+                //
+                // NOTE: Everything should be fully disposed at this point.
+                //
+                disposed = true;
+            }
+        }
+        #endregion
+
+        ///////////////////////////////////////////////////////////////////////
+
+        #region Destructor
+        ~SQLiteChangeGroup()
+        {
+            Dispose(false);
+        }
+        #endregion
+    }
+    #endregion
+
+    ///////////////////////////////////////////////////////////////////////////
+
     #region SQLiteSession Class
     public sealed class SQLiteSession : ISQLiteSession, IDisposable
     {
@@ -719,6 +945,9 @@ namespace System.Data.SQLite
         private SQLiteConnectionHandle handle;
         private SQLiteConnectionFlags flags;
         private string databaseName;
+
+        ///////////////////////////////////////////////////////////////////////
+
         private IntPtr session;
 
         ///////////////////////////////////////////////////////////////////////
