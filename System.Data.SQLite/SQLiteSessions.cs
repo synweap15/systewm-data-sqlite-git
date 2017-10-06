@@ -1308,7 +1308,8 @@ namespace System.Data.SQLite
         IDisposable
     {
         #region Private Data
-        private Stream stream;
+        private Stream inputStream;
+        private Stream outputStream;
         private SQLiteConnectionHandle handle;
         private SQLiteConnectionFlags flags;
         private bool? isPatchSet;
@@ -1318,16 +1319,42 @@ namespace System.Data.SQLite
 
         #region Private Constructors
         internal SQLiteStreamChangeSet(
-            Stream stream,
+            Stream inputStream,
+            Stream outputStream,
             SQLiteConnectionHandle handle,
             SQLiteConnectionFlags flags,
             bool? isPatchSet
             )
         {
-            this.stream = stream;
+            this.inputStream = inputStream;
+            this.outputStream = outputStream;
             this.handle = handle;
             this.flags = flags;
             this.isPatchSet = isPatchSet;
+        }
+        #endregion
+
+        ///////////////////////////////////////////////////////////////////////
+
+        #region Private Methods
+        private void CheckInputStream()
+        {
+            if (inputStream == null)
+            {
+                throw new InvalidOperationException(
+                    "input stream unavailable");
+            }
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+
+        private void CheckOutputStream()
+        {
+            if (outputStream == null)
+            {
+                throw new InvalidOperationException(
+                    "output stream unavailable");
+            }
         }
         #endregion
 
@@ -1344,8 +1371,17 @@ namespace System.Data.SQLite
         public ISQLiteChangeSet Invert()
         {
             CheckDisposed();
+            CheckInputStream();
+            CheckOutputStream();
 
-            throw new NotImplementedException();
+            SQLiteErrorCode rc = UnsafeNativeMethods.sqlite3changeset_invert_strm(
+                new SQLiteStreamAdapter(inputStream, flags).xInput, IntPtr.Zero,
+                new SQLiteStreamAdapter(outputStream, flags).xOutput, IntPtr.Zero);
+
+            if (rc != SQLiteErrorCode.Ok)
+                throw new SQLiteException(rc, "sqlite3changeset_invert_strm");
+
+            return null;
         }
 
         ///////////////////////////////////////////////////////////////////////
@@ -1355,8 +1391,30 @@ namespace System.Data.SQLite
             )
         {
             CheckDisposed();
+            CheckInputStream();
+            CheckOutputStream();
 
-            throw new NotImplementedException();
+            SQLiteStreamChangeSet streamChangeSet =
+                changeSet as SQLiteStreamChangeSet;
+
+            if (streamChangeSet == null)
+            {
+                throw new ArgumentException(
+                    "not a stream based change set", "changeSet");
+            }
+
+            streamChangeSet.CheckInputStream();
+
+            SQLiteErrorCode rc = UnsafeNativeMethods.sqlite3changeset_concat_strm(
+                new SQLiteStreamAdapter(inputStream, flags).xInput, IntPtr.Zero,
+                new SQLiteStreamAdapter(streamChangeSet.inputStream,
+                streamChangeSet.flags).xInput, IntPtr.Zero,
+                new SQLiteStreamAdapter(outputStream, flags).xOutput, IntPtr.Zero);
+
+            if (rc != SQLiteErrorCode.Ok)
+                throw new SQLiteException(rc, "sqlite3changeset_concat_strm");
+
+            return null;
         }
 
         ///////////////////////////////////////////////////////////////////////
@@ -1368,7 +1426,7 @@ namespace System.Data.SQLite
         {
             CheckDisposed();
 
-            throw new NotImplementedException();
+            Apply(conflictCallback, null, clientData);
         }
 
         ///////////////////////////////////////////////////////////////////////
@@ -1380,6 +1438,7 @@ namespace System.Data.SQLite
             )
         {
             CheckDisposed();
+            CheckInputStream();
 
             UnsafeNativeMethods.xSessionFilter xFilter;
 
@@ -1451,7 +1510,7 @@ namespace System.Data.SQLite
             });
 
             SQLiteErrorCode rc = UnsafeNativeMethods.sqlite3changeset_apply_strm(
-                handle, new SQLiteStreamAdapter(stream, flags).xInput,
+                handle, new SQLiteStreamAdapter(inputStream, flags).xInput,
                 IntPtr.Zero, xFilter, xConflict, IntPtr.Zero);
 
             if (rc != SQLiteErrorCode.Ok)
@@ -1464,7 +1523,7 @@ namespace System.Data.SQLite
         #region IEnumerable<ISQLiteChangeSetMetadataItem> Members
         public IEnumerator<ISQLiteChangeSetMetadataItem> GetEnumerator()
         {
-            return new SQLiteChangeSetEnumerator(stream, flags);
+            return new SQLiteChangeSetEnumerator(inputStream, flags);
         }
         #endregion
 
@@ -1516,8 +1575,11 @@ namespace System.Data.SQLite
                         // dispose managed resources here...
                         ////////////////////////////////////
 
-                        if (stream != null)
-                            stream = null; /* NOT OWNED */
+                        if (outputStream != null)
+                            outputStream = null; /* NOT OWNED */
+
+                        if (inputStream != null)
+                            inputStream = null; /* NOT OWNED */
                     }
 
                     //////////////////////////////////////

@@ -3051,21 +3051,26 @@ namespace System.Data.SQLite
     /// Attempts to create a new <see cref="ISQLiteChangeSet" /> object instance
     /// using this connection and the specified stream.
     /// </summary>
-    /// <param name="stream">
+    /// <param name="inputStream">
     /// The stream where the raw data that contains a change set (or patch set)
     /// may be read.
+    /// </param>
+    /// <param name="outputStream">
+    /// The stream where the raw data that contains a change set (or patch set)
+    /// may be written.
     /// </param>
     /// <returns>
     /// The newly created change set -OR- null if it cannot be created.
     /// </returns>
     public ISQLiteChangeSet CreateChangeSet(
-        Stream stream
+        Stream inputStream,
+        Stream outputStream
         )
     {
         CheckDisposed();
 
         return new SQLiteStreamChangeSet(
-            stream, GetNativeHandle(this), _flags, null);
+            inputStream, outputStream, GetNativeHandle(this), _flags, null);
     }
 #endif
 
