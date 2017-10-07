@@ -788,7 +788,9 @@ namespace System.Data.SQLite
                     byte[] bytes = new byte[nData];
 
                     nData = stream.Read(bytes, 0, nData);
-                    Marshal.Copy(bytes, 0, pData, nData);
+
+                    if (nData > 0)
+                        Marshal.Copy(bytes, 0, pData, nData);
                 }
 
                 return SQLiteErrorCode.Ok;
