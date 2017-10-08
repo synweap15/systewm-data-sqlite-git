@@ -220,6 +220,15 @@ if {$argc >= 2 && $argc <= 3} then {
         [list CLRv2 CLRvTWO CLRv4 CLRvFOUR] $manifest]
 
     #
+    # HACK: Special hack to allow "EF6", "x64", and "x86" to
+    #       appear in the manifest file names, part 1, the
+    #       vanishing.
+    #
+    set manifest [string map \
+        [list EF6 EF-SIX x64 x-SIXTYFOUR x86 x-EIGHTYSIX] \
+        $manifest]
+
+    #
     # HACK: Attempt to match and remove sub-strings from the
     #       manifest file name that look like a version number
     #       in the format "<major>.<minor>.<build>.<revision>"
@@ -236,6 +245,15 @@ if {$argc >= 2 && $argc <= 3} then {
     #
     set manifest [string map \
         [list CLRvTWO CLRv2 CLRvFOUR CLRv4] $manifest]
+
+    #
+    # HACK: Special hack to allow "EF6", "x64", and "x86" to
+    #       appear in the manifest file names, part 2, the
+    #       return.
+    #
+    set manifest [string map \
+        [list EF-SIX EF6 x-SIXTYFOUR x64 x-EIGHTYSIX x86] \
+        $manifest]
 
     #
     # HACK: Fixup manifest file names that correspond to the
