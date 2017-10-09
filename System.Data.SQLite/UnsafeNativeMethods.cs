@@ -3566,9 +3566,24 @@ namespace System.Data.SQLite
 
     #region session extension
 #if INTEROP_SESSION_EXTENSION
+#if !PLATFORM_COMPACTFRAMEWORK
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+#endif
     internal delegate int xSessionFilter(IntPtr context, byte[] tblName);
+
+#if !PLATFORM_COMPACTFRAMEWORK
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+#endif
     internal delegate SQLiteChangeSetConflictResult xSessionConflict(IntPtr context, SQLiteChangeSetConflictType type, IntPtr iterator);
+
+#if !PLATFORM_COMPACTFRAMEWORK
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+#endif
     internal delegate SQLiteErrorCode xSessionInput(IntPtr context, IntPtr pData, ref int nData);
+
+#if !PLATFORM_COMPACTFRAMEWORK
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+#endif
     internal delegate SQLiteErrorCode xSessionOutput(IntPtr context, IntPtr pData, int nData);
 
     ///////////////////////////////////////////////////////////////////////////
@@ -3814,7 +3829,7 @@ namespace System.Data.SQLite
     #endregion
     #endregion
 
-    ///////////////////////////////////////////////////////////////////////////
+      ///////////////////////////////////////////////////////////////////////////
 
     #region sqlite interop api calls (.NET Compact Framework only)
 #if PLATFORM_COMPACTFRAMEWORK && !SQLITE_STANDARD
