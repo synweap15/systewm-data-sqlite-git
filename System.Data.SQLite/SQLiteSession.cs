@@ -147,6 +147,29 @@ namespace System.Data.SQLite
 
     ///////////////////////////////////////////////////////////////////////////
 
+    #region SQLiteSessionHelpers Class
+    internal static class SQLiteSessionHelpers
+    {
+        #region Public Methods
+        public static void CheckRawData(
+            byte[] rawData
+            )
+        {
+            if (rawData == null)
+                throw new ArgumentNullException("rawData");
+
+            if (rawData.Length == 0)
+            {
+                throw new ArgumentException(
+                    "empty change set data", "rawData");
+            }
+        }
+        #endregion
+    }
+    #endregion
+
+    ///////////////////////////////////////////////////////////////////////////
+
     #region SQLiteConnectionLock Class
     internal abstract class SQLiteConnectionLock : IDisposable
     {
@@ -551,11 +574,7 @@ namespace System.Data.SQLite
             byte[] rawData
             )
         {
-            if (rawData == null)
-                throw new ArgumentNullException("rawData");
-
-            if (rawData.Length == 0)
-                throw new ArgumentException("empty change set data", "rawData");
+            SQLiteSessionHelpers.CheckRawData(rawData);
 
             SQLiteMemoryChangeSetIterator result = null;
             IntPtr pData = IntPtr.Zero;
@@ -1029,11 +1048,7 @@ namespace System.Data.SQLite
             CheckDisposed();
             CheckHandle();
 
-            if (rawData == null)
-                throw new ArgumentNullException("rawData");
-
-            if (rawData.Length == 0)
-                throw new ArgumentException("empty change set data", "rawData");
+            SQLiteSessionHelpers.CheckRawData(rawData);
 
             IntPtr pData = IntPtr.Zero;
 
@@ -1088,11 +1103,7 @@ namespace System.Data.SQLite
             CheckDisposed();
             CheckHandle();
 
-            if (rawData == null)
-                throw new ArgumentNullException("rawData");
-
-            if (rawData.Length == 0)
-                throw new ArgumentException("empty change set data", "rawData");
+            SQLiteSessionHelpers.CheckRawData(rawData);
 
             IntPtr pData = IntPtr.Zero;
 
@@ -1800,24 +1811,12 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
-        #region Private Methods
-        private void CheckRawData()
-        {
-            if (rawData == null)
-                throw new InvalidOperationException("no change set data");
-
-            if (rawData.Length == 0)
-                throw new InvalidOperationException("empty change set data");
-        }
-        #endregion
-
-        ///////////////////////////////////////////////////////////////////////
-
         #region ISQLiteChangeSet Members
         public ISQLiteChangeSet Invert()
         {
             CheckDisposed();
-            CheckRawData();
+
+            SQLiteSessionHelpers.CheckRawData(rawData);
 
             IntPtr pInData = IntPtr.Zero;
             IntPtr pOutData = IntPtr.Zero;
@@ -1864,7 +1863,8 @@ namespace System.Data.SQLite
             )
         {
             CheckDisposed();
-            CheckRawData();
+
+            SQLiteSessionHelpers.CheckRawData(rawData);
 
             SQLiteMemoryChangeSet memoryChangeSet =
                 changeSet as SQLiteMemoryChangeSet;
@@ -1875,7 +1875,7 @@ namespace System.Data.SQLite
                     "not a memory based change set", "changeSet");
             }
 
-            memoryChangeSet.CheckRawData();
+            SQLiteSessionHelpers.CheckRawData(memoryChangeSet.rawData);
 
             IntPtr pInData1 = IntPtr.Zero;
             IntPtr pInData2 = IntPtr.Zero;
@@ -1949,7 +1949,8 @@ namespace System.Data.SQLite
             )
         {
             CheckDisposed();
-            CheckRawData();
+
+            SQLiteSessionHelpers.CheckRawData(rawData);
 
             if (conflictCallback == null)
                 throw new ArgumentNullException("conflictCallback");
