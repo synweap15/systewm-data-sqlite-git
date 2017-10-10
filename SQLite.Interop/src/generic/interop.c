@@ -141,6 +141,9 @@ static const char * const azInteropCompileOpt[] = {
 #ifdef INTEROP_REGEXP_EXTENSION
   "REGEXP_EXTENSION",
 #endif
+#ifdef INTEROP_SESSION_EXTENSION
+  "SESSION_EXTENSION",
+#endif
 #ifdef INTEROP_SHA1_EXTENSION
   "SHA1_EXTENSION",
 #endif

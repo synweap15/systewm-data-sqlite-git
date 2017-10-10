@@ -3829,7 +3829,7 @@ namespace System.Data.SQLite
     #endregion
     #endregion
 
-      ///////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////
 
     #region sqlite interop api calls (.NET Compact Framework only)
 #if PLATFORM_COMPACTFRAMEWORK && !SQLITE_STANDARD
