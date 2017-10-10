@@ -1,0 +1,179 @@
+###############################################################################
+#
+# session.eagle --
+#
+# Written by Joe Mistachkin.
+# Released to the public domain, use at your own risk!
+#
+###############################################################################
+
+package require Eagle
+package require Eagle.Library
+package require Eagle.Test
+
+runTestPrologue
+
+###############################################################################
+
+package require System.Data.SQLite.Test
+runSQLiteTestPrologue
+
+###############################################################################
+
+proc getRandomText { {count 5} } {
+  set items [list \
+      Alpha Bravo Charlie Delta Echo Foxtrot Golf Hotel \
+      India Juliet Kilo Lima Mike November Oscar Papa \
+      Quebec Romeo Sierra Tango Uniform Victor Whiskey X-ray \
+      Yankee Zulu]
+
+  set result [list]
+
+  for {set i 0} {$i < $count} {incr i} {
+    lappend result [lindex $items \
+        [expr {int(rand() * [llength $items])}]]
+  }
+
+  return $result
+}
+
+###############################################################################
+
+proc createSchema { db } {
+  sql execute $db {
+    CREATE TABLE t1(x INTEGER PRIMARY KEY, y TEXT);
+  }
+}
+
+###############################################################################
+
+proc makeChanges { db types } {
+  foreach type $types {
+    switch -nocase -- $type {
+      insert {
+        sql execute $db {
+          INSERT INTO t1(y) VALUES(?);
+        } [list param1 String [getRandomText]]
+      }
+      update {
+        sql execute $db {
+          UPDATE t1 SET y = ? WHERE x = (SELECT MAX(x) FROM t1);
+        } [list param1 String [appendArgs \
+            "updated: " [getRandomText]]]
+      }
+      delete {
+        sql execute $db {
+          DELETE FROM t1 WHERE x = (SELECT MIN(x) FROM t1);
+        }
+      }
+    }
+  }
+}
+
+###############################################################################
+
+proc getChangeSetFileName { {suffix ""} } {
+  return [file join \
+      [getTemporaryDirectory] [appendArgs changes $suffix .bin]]
+}
+
+###############################################################################
+
+proc arrayToList { varName } {
+  upvar 1 $varName array
+
+  if {![array exists array]} {
+    error [appendArgs \" $a "\" isn't an array"]
+  }
+
+  set result [list]
+
+  foreach name [lsort -integer [array names array]] {
+    lappend result $array($name)
+  }
+
+  return $result
+}
+
+###############################################################################
+
+proc createByteArray { list } {
+  set length [llength $list]
+  set result [object create -alias System.Byte\[\] $length]
+
+  for {set index 0} {$index < $length} {incr index} {
+    set element [lindex $list $index]
+    set value [object invoke -create Byte Parse $element]
+    $result SetValue $value $index
+  }
+
+  return $result
+}
+
+###############################################################################
+
+runTest {test session-1.1 {basic session extension usage} -setup {
+  setupDb [set fileName(0) session-1.1.db]
+
+  set fileName(1) [getChangeSetFileName 1]
+  set fileName(2) [getChangeSetFileName 2]
+} -body {
+  createSchema $db; makeChanges $db [list insert]
+
+  set connection [getDbConnection]
+
+  set session [$connection -alias CreateSession main]
+  $session AttachTable null
+
+  makeChanges $db [list insert update delete]
+
+  set byteArray null
+  set changeSet(1) [$session -alias CreateChangeSet byteArray]
+  set rawData [createByteArray [arrayToList byteArray]]
+  object removeref $rawData
+
+  set stream(1) [object create -alias \
+      System.IO.FileStream $fileName(1) Create Write]
+
+  $stream(1) Write $rawData 0 [$rawData Length]
+  $stream(1) Flush; $stream(1) Close
+
+  set stream(2) [object create -alias \
+      System.IO.FileStream $fileName(2) Create Write]
+
+  set changeSet(2) [$session -alias CreateChangeSet $stream(2)]
+  $stream(2) Flush; $stream(2) Close
+
+  list [expr {[file size $fileName(1)] > 0}] \
+      [string equal [readFile $fileName(1)] [readFile $fileName(2)]]
+} -cleanup {
+  unset -nocomplain changeSet stream rawData byteArray session
+
+  freeDbConnection
+
+  unset -nocomplain connection
+
+  cleanupFile $fileName(2)
+  cleanupFile $fileName(1)
+
+  cleanupDb $fileName(0)
+
+  unset -nocomplain db fileName
+} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
+System.Data.SQLite SQLiteInterop\
+defineConstant.System.Data.SQLite.INTEROP_SESSION_EXTENSION} -result \
+{True True}}
+
+###############################################################################
+
+rename createByteArray ""
+rename arrayToList ""
+rename getChangeSetFileName ""
+rename makeChanges ""
+rename createSchema ""
+rename getRandomText ""
+
+###############################################################################
+
+runSQLiteTestEpilogue
+runTestEpilogue
