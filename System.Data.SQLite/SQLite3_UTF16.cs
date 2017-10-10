@@ -260,7 +260,7 @@ namespace System.Data.SQLite
             default:
                 {
 #if !PLATFORM_COMPACTFRAMEWORK
-                    if ((flags & SQLiteConnectionFlags.LogBind) == SQLiteConnectionFlags.LogBind)
+                    if (HelperMethods.LogBind(flags))
                     {
                         SQLiteStatementHandle handle =
                             (stmt != null) ? stmt._sqlite_stmt : null;
@@ -280,7 +280,7 @@ namespace System.Data.SQLite
         SQLiteStatementHandle handle = stmt._sqlite_stmt;
 
 #if !PLATFORM_COMPACTFRAMEWORK
-        if ((flags & SQLiteConnectionFlags.LogBind) == SQLiteConnectionFlags.LogBind)
+        if (HelperMethods.LogBind(flags))
         {
             LogBind(handle, index, value);
         }

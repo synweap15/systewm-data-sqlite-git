@@ -285,6 +285,158 @@ namespace System.Data.SQLite
 
       #region Internal Methods
       /// <summary>
+      /// Determines if preparing a query should be logged.
+      /// </summary>
+      /// <param name="flags">
+      /// The flags associated with the parent connection object.
+      /// </param>
+      /// <returns>
+      /// Non-zero if the query preparation should be logged; otherwise, zero.
+      /// </returns>
+      internal static bool LogPrepare(
+          SQLiteConnectionFlags flags
+          )
+      {
+          flags &= SQLiteConnectionFlags.LogPrepare;
+          return (flags == SQLiteConnectionFlags.LogPrepare);
+      }
+
+      /////////////////////////////////////////////////////////////////////////
+      /// <summary>
+      /// Determines if pre-parameter binding should be logged.
+      /// </summary>
+      /// <param name="flags">
+      /// The flags associated with the parent connection object.
+      /// </param>
+      /// <returns>
+      /// Non-zero if the pre-parameter binding should be logged; otherwise,
+      /// zero.
+      /// </returns>
+      internal static bool LogPreBind(
+          SQLiteConnectionFlags flags
+          )
+      {
+          flags &= SQLiteConnectionFlags.LogPreBind;
+          return (flags == SQLiteConnectionFlags.LogPreBind);
+      }
+
+      /////////////////////////////////////////////////////////////////////////
+      /// <summary>
+      /// Determines if parameter binding should be logged.
+      /// </summary>
+      /// <param name="flags">
+      /// The flags associated with the parent connection object.
+      /// </param>
+      /// <returns>
+      /// Non-zero if the parameter binding should be logged; otherwise, zero.
+      /// </returns>
+      internal static bool LogBind(
+          SQLiteConnectionFlags flags
+          )
+      {
+          flags &= SQLiteConnectionFlags.LogBind;
+          return (flags == SQLiteConnectionFlags.LogBind);
+      }
+
+      /////////////////////////////////////////////////////////////////////////
+      /// <summary>
+      /// Determines if an exception in a native callback should be logged.
+      /// </summary>
+      /// <param name="flags">
+      /// The flags associated with the parent connection object.
+      /// </param>
+      /// <returns>
+      /// Non-zero if the exception should be logged; otherwise, zero.
+      /// </returns>
+      internal static bool LogCallbackExceptions(
+          SQLiteConnectionFlags flags
+          )
+      {
+          flags &= SQLiteConnectionFlags.LogCallbackException;
+          return (flags == SQLiteConnectionFlags.LogCallbackException);
+      }
+
+      /////////////////////////////////////////////////////////////////////////
+      /// <summary>
+      /// Determines if backup API errors should be logged.
+      /// </summary>
+      /// <param name="flags">
+      /// The flags associated with the parent connection object.
+      /// </param>
+      /// <returns>
+      /// Non-zero if the backup API error should be logged; otherwise, zero.
+      /// </returns>
+      internal static bool LogBackup(
+          SQLiteConnectionFlags flags
+          )
+      {
+          flags &= SQLiteConnectionFlags.LogBackup;
+          return (flags == SQLiteConnectionFlags.LogBackup);
+      }
+
+#if INTEROP_VIRTUAL_TABLE
+      /////////////////////////////////////////////////////////////////////////
+      /// <summary>
+      /// Determines if logging for the <see cref="SQLiteModule" /> class is
+      /// disabled.
+      /// </summary>
+      /// <param name="flags">
+      /// The flags associated with the parent connection object.
+      /// </param>
+      /// <returns>
+      /// Non-zero if logging for the <see cref="SQLiteModule" /> class is
+      /// disabled; otherwise, zero.
+      /// </returns>
+      internal static bool NoLogModule(
+          SQLiteConnectionFlags flags
+          )
+      {
+          flags &= SQLiteConnectionFlags.NoLogModule;
+          return (flags == SQLiteConnectionFlags.NoLogModule);
+      }
+
+      /////////////////////////////////////////////////////////////////////////
+      /// <summary>
+      /// Determines if <see cref="SQLiteModule" /> errors should be logged.
+      /// </summary>
+      /// <param name="flags">
+      /// The flags associated with the parent connection object.
+      /// </param>
+      /// <returns>
+      /// Non-zero if the <see cref="SQLiteModule" /> error should be logged;
+      /// otherwise, zero.
+      /// </returns>
+      internal static bool LogModuleError(
+          SQLiteConnectionFlags flags
+          )
+      {
+          flags &= SQLiteConnectionFlags.LogModuleError;
+          return (flags == SQLiteConnectionFlags.LogModuleError);
+      }
+
+      /////////////////////////////////////////////////////////////////////////
+      /// <summary>
+      /// Determines if <see cref="SQLiteModule" /> exceptions should be
+      /// logged.
+      /// </summary>
+      /// <param name="flags">
+      /// The flags associated with the parent connection object.
+      /// </param>
+      /// <returns>
+      /// Non-zero if the <see cref="SQLiteModule" /> exception should be
+      /// logged; otherwise, zero.
+      /// </returns>
+      internal static bool LogModuleException(
+          SQLiteConnectionFlags flags
+          )
+      {
+          flags &= SQLiteConnectionFlags.LogModuleException;
+          return (flags == SQLiteConnectionFlags.LogModuleException);
+      }
+#endif
+
+      /////////////////////////////////////////////////////////////////////////
+      /// <summary>
       /// Determines if the current process is running on one of the Windows
       /// [sub-]platforms.
       /// </summary>
@@ -608,6 +760,11 @@ namespace System.Data.SQLite
 #endif
   internal static class UnsafeNativeMethods
   {
+      public const string ExceptionMessageFormat =
+          "Caught exception in \"{0}\" method: {1}";
+
+      /////////////////////////////////////////////////////////////////////////
+
       #region Shared Native SQLite Library Pre-Loading Code
       #region Private Constants
       /// <summary>
