@@ -230,6 +230,31 @@ namespace System.Data.SQLite
   /// </summary>
   internal static class HelperMethods
   {
+      #region Private Constants
+      private const string DisplayNullObject = "<nullObject>";
+      private const string DisplayEmptyString = "<emptyString>";
+      private const string DisplayStringFormat = "\"{0}\"";
+
+      /////////////////////////////////////////////////////////////////////////
+
+      private const string DisplayNullArray = "<nullArray>";
+      private const string DisplayEmptyArray = "<emptyArray>";
+
+      /////////////////////////////////////////////////////////////////////////
+
+      private const char ArrayOpen = '[';
+      private const string ElementSeparator = ", ";
+      private const char ArrayClose = ']';
+
+      /////////////////////////////////////////////////////////////////////////
+
+      private static readonly char[] SpaceChars = {
+          '\t', '\n', '\r', '\v', '\f', ' '
+      };
+      #endregion
+
+      /////////////////////////////////////////////////////////////////////////
+
       #region Private Data
       /// <summary>
       /// This lock is used to protect the static <see cref="isMono" /> field.
@@ -335,6 +360,61 @@ namespace System.Data.SQLite
               return String.Format(format, args);
           else
               return String.Format(provider, format, args);
+      }
+      #endregion
+
+      /////////////////////////////////////////////////////////////////////////
+
+      #region Public Methods
+      public static string ToDisplayString(
+          object value
+          )
+      {
+          if (value == null)
+              return DisplayNullObject;
+
+          string stringValue = value.ToString();
+
+          if (stringValue.Length == 0)
+              return DisplayEmptyString;
+
+          if (stringValue.IndexOfAny(SpaceChars) < 0)
+              return stringValue;
+
+          return HelperMethods.StringFormat(
+              CultureInfo.InvariantCulture, DisplayStringFormat,
+              stringValue);
+      }
+
+      /////////////////////////////////////////////////////////////////////////
+
+      public static string ToDisplayString(
+          Array array
+          )
+      {
+          if (array == null)
+              return DisplayNullArray;
+
+          if (array.Length == 0)
+              return DisplayEmptyArray;
+
+          StringBuilder result = new StringBuilder();
+
+          foreach (object value in array)
+          {
+              if (result.Length > 0)
+                  result.Append(ElementSeparator);
+
+              result.Append(ToDisplayString(value));
+          }
+
+          if (result.Length > 0)
+          {
+              result.Insert(0, ArrayOpen);
+              result.Append(ArrayClose);
+          }
+
+          return result.ToString();
       }
       #endregion
   }

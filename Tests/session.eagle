@@ -20,18 +20,37 @@ runSQLiteTestPrologue
 
 ###############################################################################
 
-proc getRandomText { {count 5} } {
+proc getSomeText { random count } {
   set items [list \
       Alpha Bravo Charlie Delta Echo Foxtrot Golf Hotel \
       India Juliet Kilo Lima Mike November Oscar Papa \
       Quebec Romeo Sierra Tango Uniform Victor Whiskey X-ray \
       Yankee Zulu]
 
+  if {!$random} then {
+    variable some_text_index
+
+    if {![info exists some_text_index]} then {
+      set some_text_index 0
+    }
+  }
+
+  set length [llength $items]
   set result [list]
 
   for {set i 0} {$i < $count} {incr i} {
-    lappend result [lindex $items \
-        [expr {int(rand() * [llength $items])}]]
+    if {$random} then {
+      set item [lindex $items [expr {int(rand() * $length)}]]
+    } else {
+      set item [lindex $items $some_text_index]
+      incr some_text_index
+
+      if {$some_text_index >= $length} then {
+        set some_text_index 0
+      }
+    }
+
+    lappend result $item
   }
 
   return $result
@@ -39,7 +58,78 @@ proc getRandomText { {count 5} } {
 
 ###############################################################################
 
-proc createSchema { db } {
+proc cleanupSomeText {} {
+  variable some_text_index
+  unset -nocomplain some_text_index
+}
+
+###############################################################################
+
+proc forDisplay { object member } {
+  set isArray false
+
+  if {[isObjectHandle $object] && $object ne "null"} then {
+    set value [object invoke -create -- $object $member]
+
+    if {[isObjectHandle $value] && $value ne "null"} then {
+      set isArray [object invoke -- $value GetType.IsArray]
+    }
+  } else {
+    set value null
+  }
+
+  if {$isArray} then {
+    return [object invoke -flags +NonPublic \
+        -parametertypes Array System.Data.SQLite.HelperMethods \
+        ToDisplayString $value]
+  } else {
+    return [object invoke -flags +NonPublic \
+        System.Data.SQLite.HelperMethods ToDisplayString $value]
+  }
+}
+
+###############################################################################
+
+proc changeSetToString { changeSet includeValues } {
+  set result [list]
+
+  object foreach -alias item $changeSet {
+    lappend result TableName [$item TableName]
+    lappend result NumberOfColumns [$item NumberOfColumns]
+    lappend result OperationCode [$item OperationCode]
+    lappend result Indirect [$item Indirect]
+
+    lappend result PrimaryKeyColumns \
+        [forDisplay $item PrimaryKeyColumns]
+
+    if {$includeValues} then {
+      set numberOfColumns [$item NumberOfColumns]
+
+      for {set index 0} {$index < $numberOfColumns} {incr index} {
+        set oldValue [$item GetOldValue $index]
+
+        lappend result OldValue $index \
+            [forDisplay $oldValue GetObject]
+
+        set newValue [$item GetNewValue $index]
+
+        lappend result NewValue $index \
+            [forDisplay $newValue GetObject]
+
+        set conflictValue [$item GetConflictValue $index]
+
+        lappend result ConflictValue $index \
+            [forDisplay $conflictValue GetObject]
+      }
+    }
+  }
+
+  return $result
+}
+
+###############################################################################
+
+proc createTheSchema { db } {
   sql execute $db {
     CREATE TABLE t1(x INTEGER PRIMARY KEY, y TEXT);
   }
@@ -47,19 +137,24 @@ proc createSchema { db } {
 
 ###############################################################################
 
-proc makeChanges { db types } {
+proc makeSomeChanges { db types random {count 5} } {
   foreach type $types {
     switch -nocase -- $type {
       insert {
+        set text [appendArgs "inserted: " [getSomeText $random $count]]
+
         sql execute $db {
           INSERT INTO t1(y) VALUES(?);
-        } [list param1 String [getRandomText]]
+        } [list param1 String $text]
       }
       update {
+        set text [appendArgs "updated: " [getSomeText $random $count]]
+
         sql execute $db {
-          UPDATE t1 SET y = ? WHERE x = (SELECT MAX(x) FROM t1);
-        } [list param1 String [appendArgs \
-            "updated: " [getRandomText]]]
+          UPDATE t1 SET y = ? WHERE x NOT IN (
+            (SELECT MIN(x) FROM t1), (SELECT MAX(x) FROM t1)
+          );
+        } [list param1 String $text]
       }
       delete {
         sql execute $db {
@@ -117,15 +212,18 @@ runTest {test session-1.1 {basic session extension usage} -setup {
 
   set fileName(1) [getChangeSetFileName 1]
   set fileName(2) [getChangeSetFileName 2]
+
+  cleanupSomeText
 } -body {
-  createSchema $db; makeChanges $db [list insert]
+  createTheSchema $db
+  makeSomeChanges $db [list insert] true
 
   set connection [getDbConnection]
 
   set session [$connection -alias CreateSession main]
   $session AttachTable null
 
-  makeChanges $db [list insert update delete]
+  makeSomeChanges $db [list insert update delete] true
 
   set byteArray null
   set changeSet(1) [$session -alias CreateChangeSet byteArray]
@@ -147,6 +245,8 @@ runTest {test session-1.1 {basic session extension usage} -setup {
   list [expr {[file size $fileName(1)] > 0}] \
       [string equal [readFile $fileName(1)] [readFile $fileName(2)]]
 } -cleanup {
+  cleanupSomeText
+
   unset -nocomplain changeSet stream rawData byteArray session
 
   freeDbConnection
@@ -166,12 +266,73 @@ defineConstant.System.Data.SQLite.INTEROP_SESSION_EXTENSION} -result \
 
 ###############################################################################
 
+runTest {test session-1.2 {session change set enumeration} -setup {
+  setupDb [set fileName session-1.2.db]
+
+  cleanupSomeText
+} -body {
+  createTheSchema $db
+  makeSomeChanges $db [list insert insert insert] false
+
+  set connection [getDbConnection]
+
+  set session [$connection -alias CreateSession main]
+  $session AttachTable null
+
+  makeSomeChanges $db [list insert update delete] false
+
+  set byteArray null
+  set changeSet(1) [$session -alias CreateChangeSet byteArray]
+  set rawData [createByteArray [arrayToList byteArray]]
+  object removeref $rawData
+
+  set changeSet(2) [$connection -alias CreateChangeSet $rawData]
+
+  changeSetToString $changeSet(2) true
+} -cleanup {
+  cleanupSomeText
+
+  unset -nocomplain oldValue newValue conflictValue
+  unset -nocomplain changeSet rawData byteArray session
+
+  freeDbConnection
+
+  unset -nocomplain connection
+
+  cleanupDb $fileName
+
+  unset -nocomplain db fileName
+} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
+System.Data.SQLite SQLiteInterop\
+defineConstant.System.Data.SQLite.INTEROP_SESSION_EXTENSION} -result {TableName\
+t1 NumberOfColumns 2 OperationCode Delete Indirect False PrimaryKeyColumns\
+{[True, False]} OldValue 0 1 NewValue 0 <nullObject> ConflictValue 0\
+<nullObject> OldValue 1 {"inserted: Alpha Bravo Charlie Delta Echo"} NewValue 1\
+<nullObject> ConflictValue 1 <nullObject> TableName t1 NumberOfColumns 2\
+OperationCode Update Indirect False PrimaryKeyColumns {[True, False]} OldValue\
+0 2 NewValue 0 <nullObject> ConflictValue 0 <nullObject> OldValue 1 {"inserted:\
+Foxtrot Golf Hotel India Juliet"} NewValue 1 {"updated: Uniform Victor Whiskey\
+X-ray Yankee"} ConflictValue 1 <nullObject> TableName t1 NumberOfColumns 2\
+OperationCode Update Indirect False PrimaryKeyColumns {[True, False]} OldValue\
+0 3 NewValue 0 <nullObject> ConflictValue 0 <nullObject> OldValue 1 {"inserted:\
+Kilo Lima Mike November Oscar"} NewValue 1 {"updated: Uniform Victor Whiskey\
+X-ray Yankee"} ConflictValue 1 <nullObject> TableName t1 NumberOfColumns 2\
+OperationCode Insert Indirect False PrimaryKeyColumns {[True, False]} OldValue\
+0 <nullObject> NewValue 0 4 ConflictValue 0 <nullObject> OldValue 1\
+<nullObject> NewValue 1 {"inserted: Papa Quebec Romeo Sierra Tango"}\
+ConflictValue 1 <nullObject>}}
+
+###############################################################################
+
 rename createByteArray ""
 rename arrayToList ""
 rename getChangeSetFileName ""
-rename makeChanges ""
-rename createSchema ""
-rename getRandomText ""
+rename makeSomeChanges ""
+rename createTheSchema ""
+rename changeSetToString ""
+rename forDisplay ""
+rename cleanupSomeText ""
+rename getSomeText ""
 
 ###############################################################################
 
