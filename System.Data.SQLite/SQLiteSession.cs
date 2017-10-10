@@ -1604,13 +1604,6 @@ namespace System.Data.SQLite
     #region SQLiteChangeSetBase Class
     internal class SQLiteChangeSetBase : SQLiteConnectionLock
     {
-        #region Private Constants
-        private const string ExceptionMessageFormat =
-            "Caught exception in \"{0}\" method: {1}";
-        #endregion
-
-        ///////////////////////////////////////////////////////////////////////
-
         #region Private Constructors
         internal SQLiteChangeSetBase(
             SQLiteConnectionHandle handle,
