@@ -5708,7 +5708,7 @@ namespace System.Data.SQLite
                         SQLiteLog.LogMessage(SQLiteBase.COR_E_EXCEPTION,
                             HelperMethods.StringFormat(
                             CultureInfo.CurrentCulture,
-                            "Caught exception in \"{0}\" method: {1}",
+                            UnsafeNativeMethods.ExceptionMessageFormat,
                             destroy ? "xDestroy" : "xDisconnect", e));
                     }
                 }
@@ -5816,8 +5816,8 @@ namespace System.Data.SQLite
                         SQLiteLog.LogMessage(SQLiteBase.COR_E_EXCEPTION,
                             HelperMethods.StringFormat(
                             CultureInfo.CurrentCulture,
-                            "Caught exception in \"SetTableError\" method: {0}",
-                            e)); /* throw */
+                            UnsafeNativeMethods.ExceptionMessageFormat,
+                            "SetTableError", e)); /* throw */
                     }
                 }
                 catch
@@ -8272,8 +8272,8 @@ namespace System.Data.SQLite
                             SQLiteLog.LogMessage(SQLiteBase.COR_E_EXCEPTION,
                                 HelperMethods.StringFormat(
                                 CultureInfo.CurrentCulture,
-                                "Caught exception in \"Dispose\" method: {0}",
-                                e)); /* throw */
+                                UnsafeNativeMethods.ExceptionMessageFormat,
+                                "Dispose", e)); /* throw */
                         }
                     }
                     catch

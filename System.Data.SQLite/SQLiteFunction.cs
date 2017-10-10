@@ -416,13 +416,12 @@ namespace System.Data.SQLite
         {
             try
             {
-                if ((_flags & SQLiteConnectionFlags.LogCallbackException) ==
-                        SQLiteConnectionFlags.LogCallbackException)
+                if (HelperMethods.LogCallbackExceptions(_flags))
                 {
                     SQLiteLog.LogMessage(SQLiteBase.COR_E_EXCEPTION,
                         HelperMethods.StringFormat(CultureInfo.CurrentCulture,
-                        "Caught exception in \"Invoke\" method: {0}",
-                        e)); /* throw */
+                        UnsafeNativeMethods.ExceptionMessageFormat,
+                        "Invoke", e)); /* throw */
                 }
             }
             catch
@@ -454,13 +453,12 @@ namespace System.Data.SQLite
         {
             try
             {
-                if ((_flags & SQLiteConnectionFlags.LogCallbackException) ==
-                        SQLiteConnectionFlags.LogCallbackException)
+                if (HelperMethods.LogCallbackExceptions(_flags))
                 {
                     SQLiteLog.LogMessage(SQLiteBase.COR_E_EXCEPTION,
                         HelperMethods.StringFormat(CultureInfo.CurrentCulture,
-                        "Caught exception in \"Compare\" (UTF8) method: {0}",
-                        e)); /* throw */
+                        UnsafeNativeMethods.ExceptionMessageFormat,
+                        "Compare", e)); /* throw */
                 }
             }
             catch
@@ -501,13 +499,12 @@ namespace System.Data.SQLite
         {
             try
             {
-                if ((_flags & SQLiteConnectionFlags.LogCallbackException) ==
-                        SQLiteConnectionFlags.LogCallbackException)
+                if (HelperMethods.LogCallbackExceptions(_flags))
                 {
                     SQLiteLog.LogMessage(SQLiteBase.COR_E_EXCEPTION,
                         HelperMethods.StringFormat(CultureInfo.CurrentCulture,
-                        "Caught exception in \"Compare\" (UTF16) method: {0}",
-                        e)); /* throw */
+                        UnsafeNativeMethods.ExceptionMessageFormat,
+                        "Compare (UTF16)", e)); /* throw */
                 }
             }
             catch
@@ -574,13 +571,12 @@ namespace System.Data.SQLite
         {
             try
             {
-                if ((_flags & SQLiteConnectionFlags.LogCallbackException) ==
-                        SQLiteConnectionFlags.LogCallbackException)
+                if (HelperMethods.LogCallbackExceptions(_flags))
                 {
                     SQLiteLog.LogMessage(SQLiteBase.COR_E_EXCEPTION,
                         HelperMethods.StringFormat(CultureInfo.CurrentCulture,
-                        "Caught exception in \"Step\" method: {1}",
-                        e)); /* throw */
+                        UnsafeNativeMethods.ExceptionMessageFormat,
+                        "Step", e)); /* throw */
                 }
             }
             catch
@@ -629,13 +625,12 @@ namespace System.Data.SQLite
         {
             try
             {
-                if ((_flags & SQLiteConnectionFlags.LogCallbackException) ==
-                        SQLiteConnectionFlags.LogCallbackException)
+                if (HelperMethods.LogCallbackExceptions(_flags))
                 {
                     SQLiteLog.LogMessage(SQLiteBase.COR_E_EXCEPTION,
                         HelperMethods.StringFormat(CultureInfo.CurrentCulture,
-                        "Caught exception in \"Final\" method: {1}",
-                        e)); /* throw */
+                        UnsafeNativeMethods.ExceptionMessageFormat,
+                        "Final", e)); /* throw */
                 }
             }
             catch

@@ -399,7 +399,7 @@ namespace System.Data.SQLite
       if ((obj != null) && (objType == DbType.Object))
           objType = SQLiteConvert.TypeToDbType(obj.GetType());
 
-      if ((_flags & SQLiteConnectionFlags.LogPreBind) == SQLiteConnectionFlags.LogPreBind)
+      if (HelperMethods.LogPreBind(_flags))
       {
           IntPtr handle = _sqlite_stmt;
 

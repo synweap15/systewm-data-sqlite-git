@@ -2021,7 +2021,7 @@ namespace System.Data.SQLite
         }
         catch (Exception e)
         {
-            if ((_flags & SQLiteConnectionFlags.LogBackup) == SQLiteConnectionFlags.LogBackup)
+            if (HelperMethods.LogBackup(_flags))
             {
                 SQLiteLog.LogMessage(HelperMethods.StringFormat(
                     CultureInfo.CurrentCulture,
@@ -6432,13 +6432,12 @@ namespace System.Data.SQLite
         {
             try
             {
-                if ((_flags & SQLiteConnectionFlags.LogCallbackException) ==
-                        SQLiteConnectionFlags.LogCallbackException)
+                if (HelperMethods.LogCallbackExceptions(_flags))
                 {
                     SQLiteLog.LogMessage(SQLiteBase.COR_E_EXCEPTION,
                         HelperMethods.StringFormat(CultureInfo.CurrentCulture,
-                        "Caught exception in \"Progress\" method: {1}",
-                        e)); /* throw */
+                        UnsafeNativeMethods.ExceptionMessageFormat,
+                        "Progress", e)); /* throw */
                 }
             }
             catch
@@ -6485,13 +6484,12 @@ namespace System.Data.SQLite
         {
             try
             {
-                if ((_flags & SQLiteConnectionFlags.LogCallbackException) ==
-                        SQLiteConnectionFlags.LogCallbackException)
+                if (HelperMethods.LogCallbackExceptions(_flags))
                 {
                     SQLiteLog.LogMessage(SQLiteBase.COR_E_EXCEPTION,
                         HelperMethods.StringFormat(CultureInfo.CurrentCulture,
-                        "Caught exception in \"Authorize\" method: {1}",
-                        e)); /* throw */
+                        UnsafeNativeMethods.ExceptionMessageFormat,
+                        "Authorize", e)); /* throw */
                 }
             }
             catch
@@ -6534,13 +6532,12 @@ namespace System.Data.SQLite
         {
             try
             {
-                if ((_flags & SQLiteConnectionFlags.LogCallbackException) ==
-                        SQLiteConnectionFlags.LogCallbackException)
+                if (HelperMethods.LogCallbackExceptions(_flags))
                 {
                     SQLiteLog.LogMessage(SQLiteBase.COR_E_EXCEPTION,
                         HelperMethods.StringFormat(CultureInfo.CurrentCulture,
-                        "Caught exception in \"Update\" method: {1}",
-                        e)); /* throw */
+                        UnsafeNativeMethods.ExceptionMessageFormat,
+                        "Update", e)); /* throw */
                 }
             }
             catch
@@ -6625,13 +6622,12 @@ namespace System.Data.SQLite
         {
             try
             {
-                if ((_flags & SQLiteConnectionFlags.LogCallbackException) ==
-                        SQLiteConnectionFlags.LogCallbackException)
+                if (HelperMethods.LogCallbackExceptions(_flags))
                 {
                     SQLiteLog.LogMessage(SQLiteBase.COR_E_EXCEPTION,
                         HelperMethods.StringFormat(CultureInfo.CurrentCulture,
-                        "Caught exception in \"Trace\" method: {1}",
-                        e)); /* throw */
+                        UnsafeNativeMethods.ExceptionMessageFormat,
+                        "Trace", e)); /* throw */
                 }
             }
             catch
@@ -6687,13 +6683,12 @@ namespace System.Data.SQLite
         {
             try
             {
-                if ((_flags & SQLiteConnectionFlags.LogCallbackException) ==
-                        SQLiteConnectionFlags.LogCallbackException)
+                if (HelperMethods.LogCallbackExceptions(_flags))
                 {
                     SQLiteLog.LogMessage(SQLiteBase.COR_E_EXCEPTION,
                         HelperMethods.StringFormat(CultureInfo.CurrentCulture,
-                        "Caught exception in \"Commit\" method: {1}",
-                        e)); /* throw */
+                        UnsafeNativeMethods.ExceptionMessageFormat,
+                        "Commit", e)); /* throw */
                 }
             }
             catch
@@ -6729,13 +6724,12 @@ namespace System.Data.SQLite
         {
             try
             {
-                if ((_flags & SQLiteConnectionFlags.LogCallbackException) ==
-                        SQLiteConnectionFlags.LogCallbackException)
+                if (HelperMethods.LogCallbackExceptions(_flags))
                 {
                     SQLiteLog.LogMessage(SQLiteBase.COR_E_EXCEPTION,
                         HelperMethods.StringFormat(CultureInfo.CurrentCulture,
-                        "Caught exception in \"Rollback\" method: {1}",
-                        e)); /* throw */
+                        UnsafeNativeMethods.ExceptionMessageFormat,
+                        "Rollback", e)); /* throw */
                 }
             }
             catch
