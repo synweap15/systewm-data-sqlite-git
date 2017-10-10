@@ -1210,8 +1210,6 @@ namespace System.Data.SQLite
     internal sealed class SQLiteSession : SQLiteConnectionLock, ISQLiteSession
     {
         #region Private Data
-        private SQLiteConnectionHandle handle;
-        private SQLiteConnectionFlags flags;
         private string databaseName;
 
         ///////////////////////////////////////////////////////////////////////
@@ -1234,8 +1232,6 @@ namespace System.Data.SQLite
             )
             : base(handle, flags)
         {
-            this.handle = handle;
-            this.flags = flags;
             this.databaseName = databaseName;
 
             Initialize();
@@ -1259,7 +1255,7 @@ namespace System.Data.SQLite
                 return;
 
             SQLiteErrorCode rc = UnsafeNativeMethods.sqlite3session_create(
-                handle, SQLiteString.GetUtf8BytesFromString(databaseName),
+                GetIntPtr(), SQLiteString.GetUtf8BytesFromString(databaseName),
                 ref session);
 
             if (rc != SQLiteErrorCode.Ok)
@@ -1429,6 +1425,8 @@ namespace System.Data.SQLite
             if (stream == null)
                 throw new ArgumentNullException("stream");
 
+            SQLiteConnectionFlags flags = GetFlags();
+
             SQLiteErrorCode rc = UnsafeNativeMethods.sqlite3session_changeset_strm(
                 session, new SQLiteStreamAdapter(stream, flags).xOutput,
                 IntPtr.Zero);
@@ -1481,6 +1479,8 @@ namespace System.Data.SQLite
 
             if (stream == null)
                 throw new ArgumentNullException("stream");
+
+            SQLiteConnectionFlags flags = GetFlags();
 
             SQLiteErrorCode rc = UnsafeNativeMethods.sqlite3session_patchset_strm(
                 session, new SQLiteStreamAdapter(stream, flags).xOutput,
