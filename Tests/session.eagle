@@ -93,33 +93,35 @@ proc forDisplay { object member } {
 proc changeSetToString { changeSet includeValues } {
   set result [list]
 
-  object foreach -alias item $changeSet {
-    lappend result TableName [$item TableName]
-    lappend result NumberOfColumns [$item NumberOfColumns]
-    lappend result OperationCode [$item OperationCode]
-    lappend result Indirect [$item Indirect]
+  if {[isObjectHandle $changeSet] && $changeSet ne "null"} then {
+    object foreach -alias item $changeSet {
+      lappend result TableName [$item TableName]
+      lappend result NumberOfColumns [$item NumberOfColumns]
+      lappend result OperationCode [$item OperationCode]
+      lappend result Indirect [$item Indirect]
 
-    lappend result PrimaryKeyColumns \
-        [forDisplay $item PrimaryKeyColumns]
+      lappend result PrimaryKeyColumns \
+          [forDisplay $item PrimaryKeyColumns]
 
-    if {$includeValues} then {
-      set numberOfColumns [$item NumberOfColumns]
+      if {$includeValues} then {
+        set numberOfColumns [$item NumberOfColumns]
 
-      for {set index 0} {$index < $numberOfColumns} {incr index} {
-        set oldValue [$item GetOldValue $index]
+        for {set index 0} {$index < $numberOfColumns} {incr index} {
+          set oldValue [$item GetOldValue $index]
 
-        lappend result OldValue $index \
-            [forDisplay $oldValue GetObject]
+          lappend result OldValue $index \
+              [forDisplay $oldValue GetObject]
 
-        set newValue [$item GetNewValue $index]
+          set newValue [$item GetNewValue $index]
 
-        lappend result NewValue $index \
-            [forDisplay $newValue GetObject]
+          lappend result NewValue $index \
+              [forDisplay $newValue GetObject]
 
-        set conflictValue [$item GetConflictValue $index]
+          set conflictValue [$item GetConflictValue $index]
 
-        lappend result ConflictValue $index \
-            [forDisplay $conflictValue GetObject]
+          lappend result ConflictValue $index \
+              [forDisplay $conflictValue GetObject]
+        }
       }
     }
   }
@@ -175,16 +177,14 @@ proc getChangeSetFileName { {suffix ""} } {
 ###############################################################################
 
 proc arrayToList { varName } {
-  upvar 1 $varName array
-
-  if {![array exists array]} {
-    error [appendArgs \" $a "\" isn't an array"]
-  }
-
   set result [list]
 
-  foreach name [lsort -integer [array names array]] {
-    lappend result $array($name)
+  upvar 1 $varName array
+
+  if {[array exists array]} then {
+    foreach name [lsort -integer [array names array]] {
+      lappend result $array($name)
+    }
   }
 
   return $result
@@ -226,7 +226,7 @@ runTest {test session-1.1 {basic session extension usage} -setup {
   makeSomeChanges $db [list insert update delete] true
 
   set byteArray null
-  set changeSet(1) [$session -alias CreateChangeSet byteArray]
+  $session -alias CreateChangeSet byteArray
   set rawData [createByteArray [arrayToList byteArray]]
   object removeref $rawData
 
@@ -239,7 +239,7 @@ runTest {test session-1.1 {basic session extension usage} -setup {
   set stream(2) [object create -alias \
       System.IO.FileStream $fileName(2) Create Write]
 
-  set changeSet(2) [$session -alias CreateChangeSet $stream(2)]
+  $session -alias CreateChangeSet $stream(2)
   $stream(2) Flush; $stream(2) Close
 
   list [expr {[file size $fileName(1)] > 0}] \
@@ -247,7 +247,7 @@ runTest {test session-1.1 {basic session extension usage} -setup {
 } -cleanup {
   cleanupSomeText
 
-  unset -nocomplain changeSet stream rawData byteArray session
+  unset -nocomplain stream rawData byteArray session
 
   freeDbConnection
 
@@ -282,13 +282,13 @@ runTest {test session-1.2 {session change set enumeration} -setup {
   makeSomeChanges $db [list insert update delete] false
 
   set byteArray null
-  set changeSet(1) [$session -alias CreateChangeSet byteArray]
+  $session -alias CreateChangeSet byteArray
   set rawData [createByteArray [arrayToList byteArray]]
   object removeref $rawData
 
-  set changeSet(2) [$connection -alias CreateChangeSet $rawData]
+  set changeSet(1) [$connection -alias CreateChangeSet $rawData]
 
-  changeSetToString $changeSet(2) true
+  changeSetToString $changeSet(1) true
 } -cleanup {
   cleanupSomeText
 
@@ -321,6 +321,71 @@ OperationCode Insert Indirect False PrimaryKeyColumns {[True, False]} OldValue\
 0 <nullObject> NewValue 0 4 ConflictValue 0 <nullObject> OldValue 1\
 <nullObject> NewValue 1 {"inserted: Papa Quebec Romeo Sierra Tango"}\
 ConflictValue 1 <nullObject>}}
+
+###############################################################################
+
+runTest {test session-1.3 {session enabled/disabled state} -setup {
+  setupDb [set fileName session-1.3.db]
+
+  cleanupSomeText
+} -body {
+  createTheSchema $db
+  makeSomeChanges $db [list insert insert insert] false
+
+  set connection [getDbConnection]
+
+  set session [$connection -alias CreateSession main]
+  lappend result [$session IsEnabled]
+
+  $session AttachTable null
+  lappend result [$session IsEnabled]
+
+  $session SetToDisabled
+  lappend result [$session IsEnabled]
+
+  makeSomeChanges $db [list insert update delete] false
+
+  set byteArray null
+  $session -alias CreateChangeSet byteArray
+  set rawData [createByteArray [arrayToList byteArray]]
+  object removeref $rawData
+
+  lappend result [$rawData Length]
+
+  $session SetToEnabled
+  lappend result [$session IsEnabled]
+
+  makeSomeChanges $db [list insert update delete] false
+
+  set byteArray null
+  $session -alias CreateChangeSet byteArray
+  set rawData [createByteArray [arrayToList byteArray]]
+  object removeref $rawData
+
+  set changeSet(1) [$connection -alias CreateChangeSet $rawData]
+  lappend result [changeSetToString $changeSet(1) false]
+} -cleanup {
+  cleanupSomeText
+
+  unset -nocomplain oldValue newValue conflictValue
+  unset -nocomplain result changeSet rawData byteArray session
+
+  freeDbConnection
+
+  unset -nocomplain connection
+
+  cleanupDb $fileName
+
+  unset -nocomplain db fileName
+} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
+System.Data.SQLite SQLiteInterop\
+defineConstant.System.Data.SQLite.INTEROP_SESSION_EXTENSION} -result {True True\
+False 0 True {TableName t1 NumberOfColumns 2 OperationCode Delete Indirect\
+False PrimaryKeyColumns {[True, False]} TableName t1 NumberOfColumns 2\
+OperationCode Update Indirect False PrimaryKeyColumns {[True, False]} TableName\
+t1 NumberOfColumns 2 OperationCode Update Indirect False PrimaryKeyColumns\
+{[True, False]} TableName t1 NumberOfColumns 2 OperationCode Insert Indirect\
+False PrimaryKeyColumns {[True, False]}}}}
 
 ###############################################################################
 

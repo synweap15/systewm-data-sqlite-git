@@ -554,6 +554,9 @@ namespace System.Data.SQLite
             if (rawData == null)
                 throw new ArgumentNullException("rawData");
 
+            if (rawData.Length == 0)
+                throw new ArgumentException("empty change set data", "rawData");
+
             SQLiteMemoryChangeSetIterator result = null;
             IntPtr pData = IntPtr.Zero;
             IntPtr iterator = IntPtr.Zero;
@@ -1029,6 +1032,9 @@ namespace System.Data.SQLite
             if (rawData == null)
                 throw new ArgumentNullException("rawData");
 
+            if (rawData.Length == 0)
+                throw new ArgumentException("empty change set data", "rawData");
+
             IntPtr pData = IntPtr.Zero;
 
             try
@@ -1084,6 +1090,9 @@ namespace System.Data.SQLite
 
             if (rawData == null)
                 throw new ArgumentNullException("rawData");
+
+            if (rawData.Length == 0)
+                throw new ArgumentException("empty change set data", "rawData");
 
             IntPtr pData = IntPtr.Zero;
 
@@ -1796,6 +1805,9 @@ namespace System.Data.SQLite
         {
             if (rawData == null)
                 throw new InvalidOperationException("no change set data");
+
+            if (rawData.Length == 0)
+                throw new InvalidOperationException("empty change set data");
         }
         #endregion
 
