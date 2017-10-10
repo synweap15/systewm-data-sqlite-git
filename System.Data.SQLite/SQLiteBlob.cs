@@ -106,7 +106,7 @@ namespace System.Data.SQLite
                 IntPtr ptrBlob = IntPtr.Zero;
 
                 SQLiteErrorCode rc = UnsafeNativeMethods.sqlite3_blob_open(
-                    sqlite3._sql, SQLiteConvert.ToUTF8(
+                    handle, SQLiteConvert.ToUTF8(
                         dataReader.GetDatabaseName(i)), SQLiteConvert.ToUTF8(
                     dataReader.GetTableName(i)), SQLiteConvert.ToUTF8(
                         dataReader.GetName(i)), (long)rowId, readOnly ? 0 : 1,
