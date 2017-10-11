@@ -225,7 +225,7 @@ runTest {test session-1.1 {basic session extension usage} -setup {
 
   makeSomeChanges $db [list insert update delete] true
 
-  set byteArray null
+  unset -nocomplain byteArray; set byteArray null
   $session -alias CreateChangeSet byteArray
   set rawData [createByteArray [arrayToList byteArray]]
   object removeref $rawData
@@ -281,7 +281,7 @@ runTest {test session-1.2 {session change set enumeration} -setup {
 
   makeSomeChanges $db [list insert update delete] false
 
-  set byteArray null
+  unset -nocomplain byteArray; set byteArray null
   $session -alias CreateChangeSet byteArray
   set rawData [createByteArray [arrayToList byteArray]]
   object removeref $rawData
@@ -330,34 +330,36 @@ runTest {test session-1.3 {session enabled/disabled state} -setup {
   cleanupSomeText
 } -body {
   createTheSchema $db
-  makeSomeChanges $db [list insert insert insert] false
+  makeSomeChanges $db [list insert] false
 
   set connection [getDbConnection]
 
   set session [$connection -alias CreateSession main]
-  lappend result [$session IsEnabled]
+  lappend result IsEnabled [$session IsEnabled]
 
   $session AttachTable null
-  lappend result [$session IsEnabled]
+  lappend result IsEnabled [$session IsEnabled]
 
   $session SetToDisabled
-  lappend result [$session IsEnabled]
+  lappend result IsEnabled [$session IsEnabled]
 
-  makeSomeChanges $db [list insert update delete] false
+  makeSomeChanges $db [list insert] false
+  lappend result IsEmpty [$session IsEmpty]
 
-  set byteArray null
+  unset -nocomplain byteArray; set byteArray null
   $session -alias CreateChangeSet byteArray
   set rawData [createByteArray [arrayToList byteArray]]
   object removeref $rawData
 
-  lappend result [$rawData Length]
+  lappend result Length [$rawData Length]
 
   $session SetToEnabled
-  lappend result [$session IsEnabled]
+  lappend result IsEnabled [$session IsEnabled]
 
-  makeSomeChanges $db [list insert update delete] false
+  makeSomeChanges $db [list insert] false
+  lappend result IsEmpty [$session IsEmpty]
 
-  set byteArray null
+  unset -nocomplain byteArray; set byteArray null
   $session -alias CreateChangeSet byteArray
   set rawData [createByteArray [arrayToList byteArray]]
   object removeref $rawData
@@ -379,13 +381,73 @@ runTest {test session-1.3 {session enabled/disabled state} -setup {
   unset -nocomplain db fileName
 } -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
 System.Data.SQLite SQLiteInterop\
-defineConstant.System.Data.SQLite.INTEROP_SESSION_EXTENSION} -result {True True\
-False 0 True {TableName t1 NumberOfColumns 2 OperationCode Delete Indirect\
-False PrimaryKeyColumns {[True, False]} TableName t1 NumberOfColumns 2\
-OperationCode Update Indirect False PrimaryKeyColumns {[True, False]} TableName\
-t1 NumberOfColumns 2 OperationCode Update Indirect False PrimaryKeyColumns\
-{[True, False]} TableName t1 NumberOfColumns 2 OperationCode Insert Indirect\
+defineConstant.System.Data.SQLite.INTEROP_SESSION_EXTENSION} -result {IsEnabled\
+True IsEnabled True IsEnabled False IsEmpty True Length 0 IsEnabled True\
+IsEmpty False {TableName t1 NumberOfColumns 2 OperationCode Insert Indirect\
 False PrimaryKeyColumns {[True, False]}}}}
+
+###############################################################################
+
+runTest {test session-1.4 {session direct/indirect state} -setup {
+  setupDb [set fileName session-1.4.db]
+
+  cleanupSomeText
+} -body {
+  createTheSchema $db
+  makeSomeChanges $db [list insert] false
+
+  set connection [getDbConnection]
+
+  set session [$connection -alias CreateSession main]
+  lappend result IsIndirect [$session IsIndirect]
+
+  $session AttachTable null
+  lappend result IsIndirect [$session IsIndirect]
+
+  $session SetToIndirect
+  lappend result IsIndirect [$session IsIndirect]
+
+  makeSomeChanges $db [list insert] false
+  lappend result IsEmpty [$session IsEmpty]
+
+  unset -nocomplain byteArray; set byteArray null
+  $session -alias CreateChangeSet byteArray
+  set rawData [createByteArray [arrayToList byteArray]]
+  object removeref $rawData
+
+  $session SetToDirect
+  lappend result IsIndirect [$session IsIndirect]
+
+  makeSomeChanges $db [list insert] false
+  lappend result IsEmpty [$session IsEmpty]
+
+  unset -nocomplain byteArray; set byteArray null
+  $session -alias CreateChangeSet byteArray
+  set rawData [createByteArray [arrayToList byteArray]]
+  object removeref $rawData
+
+  set changeSet(1) [$connection -alias CreateChangeSet $rawData]
+  lappend result [changeSetToString $changeSet(1) false]
+} -cleanup {
+  cleanupSomeText
+
+  unset -nocomplain oldValue newValue conflictValue
+  unset -nocomplain result changeSet rawData byteArray session
+
+  freeDbConnection
+
+  unset -nocomplain connection
+
+  cleanupDb $fileName
+
+  unset -nocomplain db fileName
+} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
+System.Data.SQLite SQLiteInterop\
+defineConstant.System.Data.SQLite.INTEROP_SESSION_EXTENSION} -result \
+{IsIndirect False IsIndirect False IsIndirect True IsEmpty False IsIndirect\
+False IsEmpty False {TableName t1 NumberOfColumns 2 OperationCode Insert\
+Indirect True PrimaryKeyColumns {[True, False]} TableName t1 NumberOfColumns 2\
+OperationCode Insert Indirect False PrimaryKeyColumns {[True, False]}}}}
 
 ###############################################################################
 
