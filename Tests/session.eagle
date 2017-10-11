@@ -90,6 +90,22 @@ proc forDisplay { object member } {
 
 ###############################################################################
 
+proc createChangeSetForSession { session } {
+  if {[isObjectHandle $session] && $session ne "null"} then {
+    set byteArray null
+    $session -alias CreateChangeSet byteArray
+
+    set rawData [createByteArray [arrayToList byteArray]]
+    object removeref $rawData
+
+    return $rawData
+  }
+
+  return null
+}
+
+###############################################################################
+
 proc changeSetToString { changeSet includeValues } {
   set result [list]
 
@@ -134,13 +150,13 @@ proc changeSetToString { changeSet includeValues } {
 proc matchSession { connection session expr } {
   if {[isObjectHandle $session] && $session ne "null"} then {
     if {![$session IsEmpty]} then {
-      unset -nocomplain byteArray; set byteArray null
-      $session -alias CreateChangeSet byteArray
-      set rawData [createByteArray [arrayToList byteArray]]
+      set rawData [createChangeSetForSession $session]
       object removeref $rawData
 
-      return [matchChangeSet [set changeSet \
-          [$connection -alias CreateChangeSet $rawData]] $expr]
+      if {[isObjectHandle $rawData] && $rawData ne "null"} then {
+        return [matchChangeSet [set changeSet \
+            [$connection -alias CreateChangeSet $rawData]] $expr]
+      }
     }
   }
 
@@ -265,9 +281,7 @@ runTest {test session-1.1 {basic session extension usage} -setup {
 
   makeSomeChanges $db t1 [list insert update delete] true
 
-  unset -nocomplain byteArray; set byteArray null
-  $session -alias CreateChangeSet byteArray
-  set rawData [createByteArray [arrayToList byteArray]]
+  set rawData [createChangeSetForSession $session]
   object removeref $rawData
 
   set stream(1) [object create -alias \
@@ -321,9 +335,7 @@ runTest {test session-1.2 {session change set enumeration} -setup {
 
   makeSomeChanges $db t1 [list insert update delete] false
 
-  unset -nocomplain byteArray; set byteArray null
-  $session -alias CreateChangeSet byteArray
-  set rawData [createByteArray [arrayToList byteArray]]
+  set rawData [createChangeSetForSession $session]
   object removeref $rawData
 
   set changeSet(1) [$connection -alias CreateChangeSet $rawData]
@@ -402,9 +414,7 @@ runTest {test session-1.3 {session enabled/disabled state} -setup {
   makeSomeChanges $db t1 [list insert] false
   lappend result IsEmpty [$session IsEmpty]
 
-  unset -nocomplain byteArray; set byteArray null
-  $session -alias CreateChangeSet byteArray
-  set rawData [createByteArray [arrayToList byteArray]]
+  set rawData [createChangeSetForSession $session]
   object removeref $rawData
 
   lappend result Length [$rawData Length]
@@ -415,9 +425,7 @@ runTest {test session-1.3 {session enabled/disabled state} -setup {
   makeSomeChanges $db t1 [list insert] false
   lappend result IsEmpty [$session IsEmpty]
 
-  unset -nocomplain byteArray; set byteArray null
-  $session -alias CreateChangeSet byteArray
-  set rawData [createByteArray [arrayToList byteArray]]
+  set rawData [createChangeSetForSession $session]
   object removeref $rawData
 
   set changeSet(1) [$connection -alias CreateChangeSet $rawData]
@@ -465,9 +473,7 @@ runTest {test session-1.4 {session direct/indirect state} -setup {
   makeSomeChanges $db t1 [list insert] false
   lappend result IsEmpty [$session IsEmpty]
 
-  unset -nocomplain byteArray; set byteArray null
-  $session -alias CreateChangeSet byteArray
-  set rawData [createByteArray [arrayToList byteArray]]
+  set rawData [createChangeSetForSession $session]
   object removeref $rawData
 
   $session SetToDirect
@@ -476,9 +482,7 @@ runTest {test session-1.4 {session direct/indirect state} -setup {
   makeSomeChanges $db t1 [list insert] false
   lappend result IsEmpty [$session IsEmpty]
 
-  unset -nocomplain byteArray; set byteArray null
-  $session -alias CreateChangeSet byteArray
-  set rawData [createByteArray [arrayToList byteArray]]
+  set rawData [createChangeSetForSession $session]
   object removeref $rawData
 
   set changeSet(1) [$connection -alias CreateChangeSet $rawData]
@@ -588,6 +592,7 @@ rename createTheSchema ""
 rename matchChangeSet ""
 rename matchSession ""
 rename changeSetToString ""
+rename createChangeSetForSession ""
 rename forDisplay ""
 rename cleanupSomeText ""
 rename getSomeText ""
