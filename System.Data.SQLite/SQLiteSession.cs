@@ -402,20 +402,26 @@ namespace System.Data.SQLite
     ///////////////////////////////////////////////////////////////////////////
 
     #region SQLiteChangeSetIterator Class
-    internal abstract class SQLiteChangeSetIterator : IDisposable
+    internal class SQLiteChangeSetIterator : IDisposable
     {
         #region Private Data
         private IntPtr iterator;
+
+        ///////////////////////////////////////////////////////////////////////
+
+        private bool ownHandle;
         #endregion
 
         ///////////////////////////////////////////////////////////////////////
 
         #region Protected Constructors
         protected SQLiteChangeSetIterator(
-            IntPtr iterator
+            IntPtr iterator,
+            bool ownHandle
             )
         {
             this.iterator = iterator;
+            this.ownHandle = ownHandle;
         }
         #endregion
 
@@ -472,6 +478,17 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
+        #region Static "Factory" Methods
+        public static SQLiteChangeSetIterator Attach(
+            IntPtr iterator
+            )
+        {
+            return new SQLiteChangeSetIterator(iterator, false);
+        }
+        #endregion
+
+        ///////////////////////////////////////////////////////////////////////
+
         #region IDisposable Members
         public void Dispose()
         {
@@ -516,8 +533,11 @@ namespace System.Data.SQLite
 
                     if (iterator != IntPtr.Zero)
                     {
-                        UnsafeNativeMethods.sqlite3changeset_finalize(
-                            iterator);
+                        if (ownHandle)
+                        {
+                            UnsafeNativeMethods.sqlite3changeset_finalize(
+                                iterator);
+                        }
 
                         iterator = IntPtr.Zero;
                     }
@@ -559,9 +579,10 @@ namespace System.Data.SQLite
         #region Private Constructors
         private SQLiteMemoryChangeSetIterator(
             IntPtr pData,
-            IntPtr iterator
+            IntPtr iterator,
+            bool ownHandle
             )
-            : base(iterator)
+            : base(iterator, ownHandle)
         {
             this.pData = pData;
         }
@@ -595,7 +616,8 @@ namespace System.Data.SQLite
                 if (rc != SQLiteErrorCode.Ok)
                     throw new SQLiteException(rc, "sqlite3changeset_start");
 
-                result = new SQLiteMemoryChangeSetIterator(pData, iterator);
+                result = new SQLiteMemoryChangeSetIterator(
+                    pData, iterator, true);
             }
             finally
             {
@@ -689,9 +711,10 @@ namespace System.Data.SQLite
     {
         #region Private Constructors
         private SQLiteStreamChangeSetIterator(
-            IntPtr iterator
+            IntPtr iterator,
+            bool ownHandle
             )
-            : base(iterator)
+            : base(iterator, ownHandle)
         {
             // do nothing.
         }
@@ -720,7 +743,7 @@ namespace System.Data.SQLite
                 if (rc != SQLiteErrorCode.Ok)
                     throw new SQLiteException(rc, "sqlite3changeset_start_strm");
 
-                result = new SQLiteStreamChangeSetIterator(iterator);
+                result = new SQLiteStreamChangeSetIterator(iterator, true);
             }
             finally
             {
@@ -1672,6 +1695,18 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
+        #region Private Methods
+        private ISQLiteChangeSetMetadataItem CreateMetadataItem(
+            IntPtr iterator
+            )
+        {
+            return new SQLiteChangeSetMetadataItem(
+                SQLiteChangeSetIterator.Attach(iterator));
+        }
+        #endregion
+
+        ///////////////////////////////////////////////////////////////////////
+
         #region Protected Methods
         protected UnsafeNativeMethods.xSessionFilter GetDelegate(
             SessionTableFilterCallback tableFilterCallback,
@@ -1736,10 +1771,17 @@ namespace System.Data.SQLite
                          SQLiteChangeSetConflictType type,
                          IntPtr iterator)
             {
-                ISQLiteChangeSetMetadataItem item = null;
-
                 try
                 {
+                    ISQLiteChangeSetMetadataItem item = CreateMetadataItem(
+                        iterator);
+
+                    if (item == null)
+                    {
+                        throw new SQLiteException(
+                            "could not create metadata item");
+                    }
+
                     return conflictCallback(clientData, type, item);
                 }
                 catch (Exception e)
