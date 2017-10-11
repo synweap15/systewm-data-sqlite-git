@@ -3806,7 +3806,7 @@ namespace System.Data.SQLite
 #if !PLATFORM_COMPACTFRAMEWORK
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 #endif
-    internal delegate int xSessionFilter(IntPtr context, byte[] tblName);
+    internal delegate int xSessionFilter(IntPtr context, IntPtr pTblName);
 
 #if !PLATFORM_COMPACTFRAMEWORK
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]

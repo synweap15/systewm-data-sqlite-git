@@ -1284,14 +1284,28 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
+        private UnsafeNativeMethods.xSessionFilter ApplyTableFilter(
+            SessionTableFilterCallback callback, /* in: NULL OK */
+            object clientData                    /* in: NULL OK */
+            )
+        {
+            this.tableFilterCallback = callback;
+            this.tableFilterClientData = clientData;
+
+            return (callback != null) ?
+                xFilter : (UnsafeNativeMethods.xSessionFilter)null;
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+
         #region Native Callback Methods
         private int xFilter(
             IntPtr context, /* NOT USED */
-            byte[] tblName
+            IntPtr pTblName
             )
         {
             return tableFilterCallback(tableFilterClientData,
-                SQLiteString.GetStringFromUtf8Bytes(tblName)) ? 1 : 0;
+                SQLiteString.StringFromUtf8IntPtr(pTblName)) ? 1 : 0;
         }
         #endregion
         #endregion
@@ -1393,11 +1407,8 @@ namespace System.Data.SQLite
             CheckDisposed();
             CheckHandle();
 
-            this.tableFilterCallback = callback;
-            this.tableFilterClientData = clientData;
-
             UnsafeNativeMethods.sqlite3session_table_filter(
-                session, xFilter, IntPtr.Zero);
+                session, ApplyTableFilter(callback, clientData), IntPtr.Zero);
         }
 
         ///////////////////////////////////////////////////////////////////////
@@ -1649,12 +1660,12 @@ namespace System.Data.SQLite
             UnsafeNativeMethods.xSessionFilter xFilter;
 
             xFilter = new UnsafeNativeMethods.xSessionFilter(
-                delegate(IntPtr context, byte[] tblName)
+                delegate(IntPtr context, IntPtr pTblName)
             {
                 try
                 {
-                    string name = SQLiteString.GetStringFromUtf8Bytes(
-                        tblName);
+                    string name = SQLiteString.StringFromUtf8IntPtr(
+                        pTblName);
 
                     return tableFilterCallback(clientData, name) ? 1 : 0;
                 }
