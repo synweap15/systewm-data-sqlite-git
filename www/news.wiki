@@ -50,6 +50,7 @@
 <ul>
     <li>Updated to [https://www.sqlite.org/releaselog/3_20_1.html|SQLite 3.20.1].</li>
     <li>Add BindDecimalAsText and GetDecimalAsText connection flags to force binding and returning of decimal values as text. Pursuant to [b167206ad3].</li>
+    <li>Add support for the native [https://www.sqlite.org/sessionintro.html|session] extension.</li>
 </ul>
 <p>
     <b>1.0.105.2 - June 12, 2017</b>
