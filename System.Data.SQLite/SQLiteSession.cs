@@ -15,6 +15,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Globalization;
 using System.Runtime.InteropServices;
+using System.Threading;
 
 namespace System.Data.SQLite
 {
@@ -818,7 +819,7 @@ namespace System.Data.SQLite
     internal sealed class SQLiteStreamAdapter : IDisposable
     {
         #region Private Data
-        private Stream stream;
+        private Stream stream; /* EXEMPT: NOT OWNED */
         private SQLiteConnectionFlags flags;
         #endregion
 
@@ -847,7 +848,7 @@ namespace System.Data.SQLite
         ///////////////////////////////////////////////////////////////////////
 
         #region Native Callback Methods
-        public SQLiteErrorCode xInput(
+        internal SQLiteErrorCode xInput(
             IntPtr context,
             IntPtr pData,
             ref int nData
@@ -855,14 +856,17 @@ namespace System.Data.SQLite
         {
             try
             {
-                if (stream == null)
+                Stream localStream = Interlocked.CompareExchange(
+                    ref stream, null, null);
+
+                if (localStream == null)
                     return SQLiteErrorCode.Misuse;
 
                 if (nData > 0)
                 {
                     byte[] bytes = new byte[nData];
 
-                    nData = stream.Read(bytes, 0, nData);
+                    nData = localStream.Read(bytes, 0, nData);
 
                     if (nData > 0)
                         Marshal.Copy(bytes, 0, pData, nData);
@@ -895,7 +899,7 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
-        public SQLiteErrorCode xOutput(
+        internal SQLiteErrorCode xOutput(
             IntPtr context,
             IntPtr pData,
             int nData
@@ -903,7 +907,10 @@ namespace System.Data.SQLite
         {
             try
             {
-                if (stream == null)
+                Stream localStream = Interlocked.CompareExchange(
+                    ref stream, null, null);
+
+                if (localStream == null)
                     return SQLiteErrorCode.Misuse;
 
                 if (nData > 0)
@@ -911,10 +918,10 @@ namespace System.Data.SQLite
                     byte[] bytes = new byte[nData];
 
                     Marshal.Copy(pData, bytes, 0, nData);
-                    stream.Write(bytes, 0, nData);
+                    localStream.Write(bytes, 0, nData);
                 }
 
-                stream.Flush();
+                localStream.Flush();
 
                 return SQLiteErrorCode.Ok;
             }
@@ -973,22 +980,19 @@ namespace System.Data.SQLite
         {
             try
             {
-                if (!disposed)
-                {
-                    if (disposing)
-                    {
-                        ////////////////////////////////////
-                        // dispose managed resources here...
-                        ////////////////////////////////////
+                //if (!disposed)
+                //{
+                //    if (disposing)
+                //    {
+                //        ////////////////////////////////////
+                //        // dispose managed resources here...
+                //        ////////////////////////////////////
+                //    }
 
-                        if (stream != null)
-                            stream = null; /* NOT OWNED */
-                    }
-
-                    //////////////////////////////////////
-                    // release unmanaged resources here...
-                    //////////////////////////////////////
-                }
+                //    //////////////////////////////////////
+                //    // release unmanaged resources here...
+                //    //////////////////////////////////////
+                //}
             }
             finally
             {
@@ -1042,7 +1046,7 @@ namespace System.Data.SQLite
         #region Private Methods
         private void CheckHandle()
         {
-            if (changeGroup == null)
+            if (changeGroup == IntPtr.Zero)
                 throw new InvalidOperationException("change group not open");
         }
 

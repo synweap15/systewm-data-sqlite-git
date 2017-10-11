@@ -28,9 +28,7 @@ namespace System.Data.SQLite
   using System.Runtime.Versioning;
 #endif
 
-#if !PLATFORM_COMPACTFRAMEWORK
   using System.Text;
-#endif
 
 #if !PLATFORM_COMPACTFRAMEWORK || COUNT_HANDLE
   using System.Threading;
@@ -562,7 +560,12 @@ namespace System.Data.SQLite
 
           if (result.Length > 0)
           {
+#if PLATFORM_COMPACTFRAMEWORK
+              result.Insert(0, ArrayOpen.ToString());
+#else
               result.Insert(0, ArrayOpen);
+#endif
+
               result.Append(ArrayClose);
           }
 
