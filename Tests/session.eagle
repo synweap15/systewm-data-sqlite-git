@@ -327,8 +327,10 @@ runTest {test session-1.2 {session change set enumeration} -setup {
   object removeref $rawData
 
   set changeSet(1) [$connection -alias CreateChangeSet $rawData]
+  set changeSet(2) [$changeSet(1) -alias Invert]
 
-  changeSetToString $changeSet(1) true
+  list [changeSetToString $changeSet(1) true] \
+      [changeSetToString $changeSet(2) true]
 } -cleanup {
   cleanupSomeText
 
@@ -343,23 +345,38 @@ runTest {test session-1.2 {session change set enumeration} -setup {
   unset -nocomplain db fileName
 } -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
 System.Data.SQLite SQLiteInterop\
-defineConstant.System.Data.SQLite.INTEROP_SESSION_EXTENSION} -result {TableName\
-t1 NumberOfColumns 2 OperationCode Delete Indirect False PrimaryKeyColumns\
-{[True, False]} OldValue 0 1 NewValue 0 <nullObject> ConflictValue 0\
-<nullObject> OldValue 1 {"inserted: Alpha Bravo Charlie Delta Echo"} NewValue 1\
-<nullObject> ConflictValue 1 <nullObject> TableName t1 NumberOfColumns 2\
-OperationCode Update Indirect False PrimaryKeyColumns {[True, False]} OldValue\
-0 2 NewValue 0 <nullObject> ConflictValue 0 <nullObject> OldValue 1 {"inserted:\
-Foxtrot Golf Hotel India Juliet"} NewValue 1 {"updated: Uniform Victor Whiskey\
-X-ray Yankee"} ConflictValue 1 <nullObject> TableName t1 NumberOfColumns 2\
-OperationCode Update Indirect False PrimaryKeyColumns {[True, False]} OldValue\
-0 3 NewValue 0 <nullObject> ConflictValue 0 <nullObject> OldValue 1 {"inserted:\
-Kilo Lima Mike November Oscar"} NewValue 1 {"updated: Uniform Victor Whiskey\
-X-ray Yankee"} ConflictValue 1 <nullObject> TableName t1 NumberOfColumns 2\
-OperationCode Insert Indirect False PrimaryKeyColumns {[True, False]} OldValue\
-0 <nullObject> NewValue 0 4 ConflictValue 0 <nullObject> OldValue 1\
-<nullObject> NewValue 1 {"inserted: Papa Quebec Romeo Sierra Tango"}\
-ConflictValue 1 <nullObject>}}
+defineConstant.System.Data.SQLite.INTEROP_SESSION_EXTENSION} -result \
+{{TableName t1 NumberOfColumns 2 OperationCode Delete Indirect False\
+PrimaryKeyColumns {[True, False]} OldValue 0 1 NewValue 0 <nullObject>\
+ConflictValue 0 <nullObject> OldValue 1 {"inserted: Alpha Bravo Charlie Delta\
+Echo"} NewValue 1 <nullObject> ConflictValue 1 <nullObject> TableName t1\
+NumberOfColumns 2 OperationCode Update Indirect False PrimaryKeyColumns {[True,\
+False]} OldValue 0 2 NewValue 0 <nullObject> ConflictValue 0 <nullObject>\
+OldValue 1 {"inserted: Foxtrot Golf Hotel India Juliet"} NewValue 1 {"updated:\
+Uniform Victor Whiskey X-ray Yankee"} ConflictValue 1 <nullObject> TableName t1\
+NumberOfColumns 2 OperationCode Update Indirect False PrimaryKeyColumns {[True,\
+False]} OldValue 0 3 NewValue 0 <nullObject> ConflictValue 0 <nullObject>\
+OldValue 1 {"inserted: Kilo Lima Mike November Oscar"} NewValue 1 {"updated:\
+Uniform Victor Whiskey X-ray Yankee"} ConflictValue 1 <nullObject> TableName t1\
+NumberOfColumns 2 OperationCode Insert Indirect False PrimaryKeyColumns {[True,\
+False]} OldValue 0 <nullObject> NewValue 0 4 ConflictValue 0 <nullObject>\
+OldValue 1 <nullObject> NewValue 1 {"inserted: Papa Quebec Romeo Sierra Tango"}\
+ConflictValue 1 <nullObject>} {TableName t1 NumberOfColumns 2 OperationCode\
+Insert Indirect False PrimaryKeyColumns {[True, False]} OldValue 0 <nullObject>\
+NewValue 0 1 ConflictValue 0 <nullObject> OldValue 1 <nullObject> NewValue 1\
+{"inserted: Alpha Bravo Charlie Delta Echo"} ConflictValue 1 <nullObject>\
+TableName t1 NumberOfColumns 2 OperationCode Update Indirect False\
+PrimaryKeyColumns {[True, False]} OldValue 0 2 NewValue 0 <nullObject>\
+ConflictValue 0 <nullObject> OldValue 1 {"updated: Uniform Victor Whiskey X-ray\
+Yankee"} NewValue 1 {"inserted: Foxtrot Golf Hotel India Juliet"} ConflictValue\
+1 <nullObject> TableName t1 NumberOfColumns 2 OperationCode Update Indirect\
+False PrimaryKeyColumns {[True, False]} OldValue 0 3 NewValue 0 <nullObject>\
+ConflictValue 0 <nullObject> OldValue 1 {"updated: Uniform Victor Whiskey X-ray\
+Yankee"} NewValue 1 {"inserted: Kilo Lima Mike November Oscar"} ConflictValue 1\
+<nullObject> TableName t1 NumberOfColumns 2 OperationCode Delete Indirect False\
+PrimaryKeyColumns {[True, False]} OldValue 0 4 NewValue 0 <nullObject>\
+ConflictValue 0 <nullObject> OldValue 1 {"inserted: Papa Quebec Romeo Sierra\
+Tango"} NewValue 1 <nullObject> ConflictValue 1 <nullObject>}}}
 
 ###############################################################################
 
