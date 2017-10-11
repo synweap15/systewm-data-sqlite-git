@@ -131,37 +131,68 @@ proc changeSetToString { changeSet includeValues } {
 
 ###############################################################################
 
+proc matchSession { connection session expr } {
+  if {[isObjectHandle $session] && $session ne "null"} then {
+    if {![$session IsEmpty]} then {
+      unset -nocomplain byteArray; set byteArray null
+      $session -alias CreateChangeSet byteArray
+      set rawData [createByteArray [arrayToList byteArray]]
+      object removeref $rawData
+
+      return [matchChangeSet [set changeSet \
+          [$connection -alias CreateChangeSet $rawData]] $expr]
+    }
+  }
+
+  return false
+}
+
+###############################################################################
+
+proc matchChangeSet { changeSet expr } {
+  if {[isObjectHandle $changeSet] && $changeSet ne "null"} then {
+    object foreach -alias item $changeSet {
+      if {[expr $expr]} then {return true}
+    }
+  }
+
+  return false
+}
+
+###############################################################################
+
 proc createTheSchema { db } {
   sql execute $db {
     CREATE TABLE t1(x INTEGER PRIMARY KEY, y TEXT);
+    CREATE TABLE t2(x INTEGER PRIMARY KEY, y TEXT);
   }
 }
 
 ###############################################################################
 
-proc makeSomeChanges { db types random {count 5} } {
+proc makeSomeChanges { db table types random {count 5} } {
   foreach type $types {
     switch -nocase -- $type {
       insert {
         set text [appendArgs "inserted: " [getSomeText $random $count]]
 
-        sql execute $db {
-          INSERT INTO t1(y) VALUES(?);
-        } [list param1 String $text]
+        sql execute $db [subst {
+          INSERT INTO ${table}(y) VALUES(?);
+        }] [list param1 String $text]
       }
       update {
         set text [appendArgs "updated: " [getSomeText $random $count]]
 
-        sql execute $db {
-          UPDATE t1 SET y = ? WHERE x NOT IN (
-            (SELECT MIN(x) FROM t1), (SELECT MAX(x) FROM t1)
+        sql execute $db [subst {
+          UPDATE ${table} SET y = ? WHERE x NOT IN (
+            (SELECT MIN(x) FROM ${table}), (SELECT MAX(x) FROM ${table})
           );
-        } [list param1 String $text]
+        }] [list param1 String $text]
       }
       delete {
-        sql execute $db {
-          DELETE FROM t1 WHERE x = (SELECT MIN(x) FROM t1);
-        }
+        sql execute $db [subst {
+          DELETE FROM ${table} WHERE x = (SELECT MIN(x) FROM ${table});
+        }]
       }
     }
   }
@@ -207,6 +238,15 @@ proc createByteArray { list } {
 
 ###############################################################################
 
+proc tableFilterCallbackT1 { clientData name } {
+  lappend ::callbackResults [object invoke -create \
+      System.Boolean Parse [expr {[$name ToString] in [list t1]}]]
+
+  return [lindex $::callbackResults end]
+}
+
+###############################################################################
+
 runTest {test session-1.1 {basic session extension usage} -setup {
   setupDb [set fileName(0) session-1.1.db]
 
@@ -216,14 +256,14 @@ runTest {test session-1.1 {basic session extension usage} -setup {
   cleanupSomeText
 } -body {
   createTheSchema $db
-  makeSomeChanges $db [list insert] true
+  makeSomeChanges $db t1 [list insert] true
 
   set connection [getDbConnection]
 
   set session [$connection -alias CreateSession main]
   $session AttachTable null
 
-  makeSomeChanges $db [list insert update delete] true
+  makeSomeChanges $db t1 [list insert update delete] true
 
   unset -nocomplain byteArray; set byteArray null
   $session -alias CreateChangeSet byteArray
@@ -272,14 +312,14 @@ runTest {test session-1.2 {session change set enumeration} -setup {
   cleanupSomeText
 } -body {
   createTheSchema $db
-  makeSomeChanges $db [list insert insert insert] false
+  makeSomeChanges $db t1 [list insert insert insert] false
 
   set connection [getDbConnection]
 
   set session [$connection -alias CreateSession main]
   $session AttachTable null
 
-  makeSomeChanges $db [list insert update delete] false
+  makeSomeChanges $db t1 [list insert update delete] false
 
   unset -nocomplain byteArray; set byteArray null
   $session -alias CreateChangeSet byteArray
@@ -292,7 +332,6 @@ runTest {test session-1.2 {session change set enumeration} -setup {
 } -cleanup {
   cleanupSomeText
 
-  unset -nocomplain oldValue newValue conflictValue
   unset -nocomplain changeSet rawData byteArray session
 
   freeDbConnection
@@ -330,7 +369,7 @@ runTest {test session-1.3 {session enabled/disabled state} -setup {
   cleanupSomeText
 } -body {
   createTheSchema $db
-  makeSomeChanges $db [list insert] false
+  makeSomeChanges $db t1 [list insert] false
 
   set connection [getDbConnection]
 
@@ -343,7 +382,7 @@ runTest {test session-1.3 {session enabled/disabled state} -setup {
   $session SetToDisabled
   lappend result IsEnabled [$session IsEnabled]
 
-  makeSomeChanges $db [list insert] false
+  makeSomeChanges $db t1 [list insert] false
   lappend result IsEmpty [$session IsEmpty]
 
   unset -nocomplain byteArray; set byteArray null
@@ -356,7 +395,7 @@ runTest {test session-1.3 {session enabled/disabled state} -setup {
   $session SetToEnabled
   lappend result IsEnabled [$session IsEnabled]
 
-  makeSomeChanges $db [list insert] false
+  makeSomeChanges $db t1 [list insert] false
   lappend result IsEmpty [$session IsEmpty]
 
   unset -nocomplain byteArray; set byteArray null
@@ -369,7 +408,6 @@ runTest {test session-1.3 {session enabled/disabled state} -setup {
 } -cleanup {
   cleanupSomeText
 
-  unset -nocomplain oldValue newValue conflictValue
   unset -nocomplain result changeSet rawData byteArray session
 
   freeDbConnection
@@ -394,7 +432,7 @@ runTest {test session-1.4 {session direct/indirect state} -setup {
   cleanupSomeText
 } -body {
   createTheSchema $db
-  makeSomeChanges $db [list insert] false
+  makeSomeChanges $db t1 [list insert] false
 
   set connection [getDbConnection]
 
@@ -407,7 +445,7 @@ runTest {test session-1.4 {session direct/indirect state} -setup {
   $session SetToIndirect
   lappend result IsIndirect [$session IsIndirect]
 
-  makeSomeChanges $db [list insert] false
+  makeSomeChanges $db t1 [list insert] false
   lappend result IsEmpty [$session IsEmpty]
 
   unset -nocomplain byteArray; set byteArray null
@@ -418,7 +456,7 @@ runTest {test session-1.4 {session direct/indirect state} -setup {
   $session SetToDirect
   lappend result IsIndirect [$session IsIndirect]
 
-  makeSomeChanges $db [list insert] false
+  makeSomeChanges $db t1 [list insert] false
   lappend result IsEmpty [$session IsEmpty]
 
   unset -nocomplain byteArray; set byteArray null
@@ -431,7 +469,6 @@ runTest {test session-1.4 {session direct/indirect state} -setup {
 } -cleanup {
   cleanupSomeText
 
-  unset -nocomplain oldValue newValue conflictValue
   unset -nocomplain result changeSet rawData byteArray session
 
   freeDbConnection
@@ -451,11 +488,88 @@ OperationCode Insert Indirect False PrimaryKeyColumns {[True, False]}}}}
 
 ###############################################################################
 
+runTest {test session-1.5 {session table filter} -setup {
+  setupDb [set fileName session-1.5.db]
+
+  cleanupSomeText
+} -body {
+  createTheSchema $db
+  makeSomeChanges $db t1 [list insert] false
+
+  set connection [getDbConnection]
+
+  set session [$connection -alias CreateSession main]
+
+  $session -marshalflags +DynamicCallback \
+      SetTableFilter tableFilterCallbackT1 null
+
+  makeSomeChanges $db t2 [list insert] false
+  lappend result IsEmpty [$session IsEmpty]
+
+  lappend result MatchT2 [matchSession $connection $session {
+    [$item TableName] eq "t2"
+  }]
+
+  makeSomeChanges $db t1 [list insert] false
+  lappend result IsEmpty [$session IsEmpty]
+
+  lappend result MatchT1 [matchSession $connection $session {
+    [$item TableName] eq "t1"
+  }]
+
+  $session SetTableFilter null null
+
+  makeSomeChanges $db t2 [list insert] false
+  lappend result IsEmpty [$session IsEmpty]
+
+  lappend result MatchT2 [matchSession $connection $session {
+    [$item TableName] eq "t2"
+  }]
+
+  makeSomeChanges $db t1 [list insert] false
+  lappend result IsEmpty [$session IsEmpty]
+
+  lappend result MatchT1 [matchSession $connection $session {
+    [$item TableName] eq "t1"
+  }]
+
+  set result
+} -cleanup {
+  cleanupSomeText
+
+  unset -nocomplain result session
+
+  freeDbConnection
+
+  unset -nocomplain connection
+
+  cleanupDb $fileName
+
+  catch {object removecallback tableFilterCallbackT1}
+
+  catch {
+    foreach callbackResult $callbackResults {
+      catch {object dispose $callbackResult}
+    }
+  }
+
+  unset -nocomplain callbackResult callbackResults db fileName
+} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
+System.Data.SQLite SQLiteInterop\
+defineConstant.System.Data.SQLite.INTEROP_SESSION_EXTENSION} -result {IsEmpty\
+True MatchT2 false IsEmpty False MatchT1 true IsEmpty False MatchT2 true\
+IsEmpty False MatchT1 true}}
+
+###############################################################################
+
+rename tableFilterCallbackT1 ""
 rename createByteArray ""
 rename arrayToList ""
 rename getChangeSetFileName ""
 rename makeSomeChanges ""
 rename createTheSchema ""
+rename matchChangeSet ""
+rename matchSession ""
 rename changeSetToString ""
 rename forDisplay ""
 rename cleanupSomeText ""
