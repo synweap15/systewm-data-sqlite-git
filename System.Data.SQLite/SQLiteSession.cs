@@ -1304,8 +1304,32 @@ namespace System.Data.SQLite
             IntPtr pTblName
             )
         {
-            return tableFilterCallback(tableFilterClientData,
-                SQLiteString.StringFromUtf8IntPtr(pTblName)) ? 1 : 0;
+            try
+            {
+                return tableFilterCallback(tableFilterClientData,
+                    SQLiteString.StringFromUtf8IntPtr(pTblName)) ? 1 : 0;
+            }
+            catch (Exception e)
+            {
+                try
+                {
+                    if (HelperMethods.LogCallbackExceptions(GetFlags()))
+                    {
+                        SQLiteLog.LogMessage( /* throw */
+                            SQLiteBase.COR_E_EXCEPTION,
+                            HelperMethods.StringFormat(
+                            CultureInfo.CurrentCulture,
+                            UnsafeNativeMethods.ExceptionMessageFormat,
+                            "xFilter", e));
+                    }
+                }
+                catch
+                {
+                    // do nothing.
+                }
+            }
+
+            return 0;
         }
         #endregion
         #endregion
