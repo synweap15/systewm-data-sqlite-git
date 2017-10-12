@@ -126,25 +126,25 @@ proc openStreamChangeSetForConnection {
         connection inputFileName outputFileName {varName ""} } {
   if {[isObjectHandle $connection] && $connection ne "null"} then {
     if {[string length $varName] > 0} then {
-      upvar 1 $varName array
+      upvar 1 $varName state
     }
 
     if {[string length $inputFileName] > 0} then {
-      set array(inputStream) [object create -alias \
+      set state(inputStream) [object create -alias \
           System.IO.FileStream $inputFileName Open Read]
     } else {
-      set array(inputStream) null
+      set state(inputStream) null
     }
 
     if {[string length $outputFileName] > 0} then {
-      set array(outputStream) [object create -alias \
+      set state(outputStream) [object create -alias \
           System.IO.FileStream $outputFileName Create Write]
     } else {
-      set array(outputStream) null
+      set state(outputStream) null
     }
 
-    set array(changeSet) [$connection -alias \
-        CreateChangeSet $array(inputStream) $array(outputStream)]
+    set state(changeSet) [$connection -alias \
+        CreateChangeSet $state(inputStream) $state(outputStream)]
 
     return true
   }
@@ -346,6 +346,25 @@ proc captureChangeSetRawData { connection databaseName tableName script } {
 
 ###############################################################################
 
+proc captureChangeSetFile {
+        connection databaseName tableName script fileName } {
+  if {![isObjectHandle $connection] || $connection eq "null"} then {
+    error "connection is invalid"
+  }
+
+  set session [$connection -alias CreateSession $databaseName]
+  $session AttachTable $tableName
+
+  if {![isObjectHandle $session] || $session eq "null"} then {
+    error "cannot create session"
+  }
+
+  catch {uplevel 1 $script}
+  writeStreamChangeSetForSession $session $fileName
+}
+
+###############################################################################
+
 proc getChangeSetFileName { {suffix ""} } {
   return [file join \
       [getTemporaryDirectory] [appendArgs changes $suffix .bin]]
@@ -438,15 +457,15 @@ runTest {test session-1.1 {basic extension usage} -setup {
 
   writeRawDataToFile $fileName(1) $rawData
   writeStreamChangeSetForSession $session $fileName(2)
-  openStreamChangeSetForConnection $connection $fileName(2) "" changeSet
+  openStreamChangeSetForConnection $connection $fileName(2) "" state
 
   list [expr {[file size $fileName(1)] > 0}] \
       [string equal [readFile $fileName(1)] [readFile $fileName(2)]] \
-      [changeSetToString $changeSet(changeSet) true]
+      [changeSetToString $state(changeSet) true]
 } -cleanup {
   cleanupSomeText
 
-  unset -nocomplain changeSet rawData byteArray session
+  unset -nocomplain state rawData byteArray session
 
   freeDbConnection
 
@@ -476,7 +495,7 @@ ConflictValue 1 <nullObject>}}}}
 
 ###############################################################################
 
-runTest {test session-1.2.1 {change set read/write/enum (memory)} -setup {
+runTest {test session-1.2.1 {change set read/write/invert (memory)} -setup {
   setupDb [set fileName session-1.2.1.db]
 
   cleanupSomeText
@@ -532,7 +551,7 @@ Tango"} NewValue 1 <nullObject> ConflictValue 1 <nullObject>}}}}
 
 ###############################################################################
 
-runTest {test session-1.2.2 {change set read/write/enum (stream)} -setup {
+runTest {test session-1.2.2 {change set read/write/invert (stream)} -setup {
   setupDb [set fileName(0) session-1.2.2.db]
 
   set fileName(1) [getChangeSetFileName 1]
@@ -553,14 +572,14 @@ runTest {test session-1.2.2 {change set read/write/enum (stream)} -setup {
   writeStreamChangeSetForSession $session $fileName(1)
 
   openStreamChangeSetForConnection \
-      $connection $fileName(1) $fileName(2) changeSet
+      $connection $fileName(1) $fileName(2) state
 
-  $changeSet(changeSet) -alias Invert; unset changeSet
+  $state(changeSet) -alias Invert; unset state
   list [changeSetFileToString $connection $fileName(2) true]
 } -cleanup {
   cleanupSomeText
 
-  unset -nocomplain changeSet byteArray session
+  unset -nocomplain state byteArray session
 
   freeDbConnection
 
@@ -782,8 +801,8 @@ IsEmpty False MatchT1 true}}
 
 ###############################################################################
 
-runTest {test session-1.6 {combine and apply change sets} -setup {
-  setupDb [set fileName session-1.6.db]
+runTest {test session-1.6.1 {combine/apply change sets (memory)} -setup {
+  setupDb [set fileName session-1.6.1.db]
 
   cleanupSomeText
 } -body {
@@ -806,10 +825,12 @@ runTest {test session-1.6 {combine and apply change sets} -setup {
   set changeSet(2) [$connection -alias CreateChangeSet $rawData(2)]
   set changeSet(3) [$changeSet(1) -alias CombineWith $changeSet(2)]
 
-  $changeSet(3) -marshalflags +DynamicCallback Apply conflictCallback null
+  $changeSet(3) -marshalflags +DynamicCallback \
+      Apply conflictCallback null
 
-  list [changeSetToString $changeSet(3) true] Data [sql execute -execute \
-      reader -format list $db {SELECT x, y FROM t1 ORDER BY x;}]
+  list [changeSetToString $changeSet(3) true] Data \
+      [sql execute -execute reader -format list $db \
+      {SELECT x, y FROM t1 ORDER BY x;}]
 } -cleanup {
   cleanupSomeText
 
@@ -820,6 +841,86 @@ runTest {test session-1.6 {combine and apply change sets} -setup {
   unset -nocomplain connection
 
   cleanupDb $fileName
+
+  catch {object removecallback conflictCallback}
+
+  catch {
+    foreach callbackResult $callbackResults {
+      catch {object dispose $callbackResult}
+    }
+  }
+
+  unset -nocomplain callbackResult callbackResults db fileName
+} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
+System.Data.SQLite SQLiteInterop\
+defineConstant.System.Data.SQLite.INTEROP_SESSION_EXTENSION} -result \
+{{{TableName t1 NumberOfColumns 2 OperationCode Delete Indirect False\
+PrimaryKeyColumns {[True, False]} OldValue 0 1 NewValue 0 <nullObject>\
+ConflictValue 0 <nullObject> OldValue 1 {"inserted: Alpha Bravo Charlie Delta\
+Echo"} NewValue 1 <nullObject> ConflictValue 1 <nullObject>} {TableName t1\
+NumberOfColumns 2 OperationCode Insert Indirect False PrimaryKeyColumns {[True,\
+False]} OldValue 0 <nullObject> NewValue 0 3 ConflictValue 0 <nullObject>\
+OldValue 1 <nullObject> NewValue 1 {"inserted: Papa Quebec Romeo Sierra Tango"}\
+ConflictValue 1 <nullObject>}} Data {1 {inserted: Kilo Lima Mike November\
+Oscar} 2 {inserted: Foxtrot Golf Hotel India Juliet} 3 {inserted: Papa Quebec\
+Romeo Sierra Tango}}}}
+
+###############################################################################
+
+runTest {test session-1.6.2 {combine/apply change sets (stream)} -setup {
+  setupDb [set fileName(0) session-1.6.2.db]
+
+  set fileName(1) [getChangeSetFileName 1]
+  set fileName(2) [getChangeSetFileName 2]
+  set fileName(3) [getChangeSetFileName 3]
+
+  cleanupSomeText
+} -body {
+  createTheSchema $db main
+  makeSomeChanges $db t1 [list insert insert]
+
+  set connection [getDbConnection]
+
+  captureChangeSetFile $connection main null {
+    makeSomeChanges $db t1 [list delete] 1
+  } $fileName(1)
+
+  makeSomeChanges $db t1 [list insert] 1
+
+  captureChangeSetFile $connection main null {
+    makeSomeChanges $db t1 [list insert]
+  } $fileName(2)
+
+  openStreamChangeSetForConnection \
+      $connection $fileName(1) $fileName(3) state1
+
+  openStreamChangeSetForConnection \
+      $connection $fileName(2) "" state2
+
+  $state1(changeSet) CombineWith $state2(changeSet); unset state1
+
+  openStreamChangeSetForConnection \
+      $connection $fileName(3) "" state3
+
+  $state3(changeSet) -marshalflags +DynamicCallback \
+      Apply conflictCallback null; unset state3
+
+  openStreamChangeSetForConnection \
+      $connection $fileName(3) "" state4
+
+  list [changeSetToString $state4(changeSet) true] Data \
+      [sql execute -execute reader -format list $db \
+      {SELECT x, y FROM t1 ORDER BY x;}]
+} -cleanup {
+  cleanupSomeText
+
+  unset -nocomplain state4 state3 state2 state1
+
+  freeDbConnection
+
+  unset -nocomplain connection
+
+  cleanupDb $fileName(0)
 
   catch {object removecallback conflictCallback}
 
@@ -898,6 +999,7 @@ rename tableFilterCallbackT1 ""
 rename createByteArray ""
 rename arrayToList ""
 rename getChangeSetFileName ""
+rename captureChangeSetFile ""
 rename captureChangeSetRawData ""
 rename makeSomeChanges ""
 rename createTheSchema ""
