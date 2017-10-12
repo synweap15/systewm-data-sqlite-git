@@ -198,11 +198,11 @@ proc createTheSchema { db databaseName } {
 
 ###############################################################################
 
-proc makeSomeChanges { db table types random {rowId ""} {count 5} } {
+proc makeSomeChanges { db table types {rowId ""} {count 5} } {
   foreach type $types {
     switch -nocase -- $type {
       insert {
-        set text [appendArgs "inserted: " [getSomeText $random $count]]
+        set text [appendArgs "inserted: " [getSomeText false $count]]
 
         if {[string is integer -strict $rowId]} then {
           sql execute $db [subst {
@@ -215,7 +215,7 @@ proc makeSomeChanges { db table types random {rowId ""} {count 5} } {
         }
       }
       update {
-        set text [appendArgs "updated: " [getSomeText $random $count]]
+        set text [appendArgs "updated: " [getSomeText false $count]]
 
         if {[string is integer -strict $rowId]} then {
           sql execute $db [subst {
@@ -345,14 +345,14 @@ runTest {test session-1.1 {basic session extension usage} -setup {
   cleanupSomeText
 } -body {
   createTheSchema $db main
-  makeSomeChanges $db t1 [list insert insert] false
+  makeSomeChanges $db t1 [list insert insert]
 
   set connection [getDbConnection]
 
   set session [$connection -alias CreateSession main]
   $session AttachTable null
 
-  makeSomeChanges $db t1 [list insert update delete] false
+  makeSomeChanges $db t1 [list insert update delete]
 
   set rawData [createChangeSetForSession $session]
   object removeref $rawData
@@ -416,14 +416,14 @@ runTest {test session-1.2 {session change set enumeration} -setup {
   cleanupSomeText
 } -body {
   createTheSchema $db main
-  makeSomeChanges $db t1 [list insert insert insert] false
+  makeSomeChanges $db t1 [list insert insert insert]
 
   set connection [getDbConnection]
 
   set session [$connection -alias CreateSession main]
   $session AttachTable null
 
-  makeSomeChanges $db t1 [list insert update delete] false
+  makeSomeChanges $db t1 [list insert update delete]
 
   set rawData [createChangeSetForSession $session]
   object removeref $rawData
@@ -488,7 +488,7 @@ runTest {test session-1.3 {session enabled/disabled state} -setup {
   cleanupSomeText
 } -body {
   createTheSchema $db main
-  makeSomeChanges $db t1 [list insert] false
+  makeSomeChanges $db t1 [list insert]
 
   set connection [getDbConnection]
 
@@ -501,7 +501,7 @@ runTest {test session-1.3 {session enabled/disabled state} -setup {
   $session SetToDisabled
   lappend result IsEnabled [$session IsEnabled]
 
-  makeSomeChanges $db t1 [list insert] false
+  makeSomeChanges $db t1 [list insert]
   lappend result IsEmpty [$session IsEmpty]
 
   set rawData [createChangeSetForSession $session]
@@ -512,7 +512,7 @@ runTest {test session-1.3 {session enabled/disabled state} -setup {
   $session SetToEnabled
   lappend result IsEnabled [$session IsEnabled]
 
-  makeSomeChanges $db t1 [list insert] false
+  makeSomeChanges $db t1 [list insert]
   lappend result IsEmpty [$session IsEmpty]
 
   set rawData [createChangeSetForSession $session]
@@ -547,7 +547,7 @@ runTest {test session-1.4 {session direct/indirect state} -setup {
   cleanupSomeText
 } -body {
   createTheSchema $db main
-  makeSomeChanges $db t1 [list insert] false
+  makeSomeChanges $db t1 [list insert]
 
   set connection [getDbConnection]
 
@@ -560,7 +560,7 @@ runTest {test session-1.4 {session direct/indirect state} -setup {
   $session SetToIndirect
   lappend result IsIndirect [$session IsIndirect]
 
-  makeSomeChanges $db t1 [list insert] false
+  makeSomeChanges $db t1 [list insert]
   lappend result IsEmpty [$session IsEmpty]
 
   set rawData [createChangeSetForSession $session]
@@ -569,7 +569,7 @@ runTest {test session-1.4 {session direct/indirect state} -setup {
   $session SetToDirect
   lappend result IsIndirect [$session IsIndirect]
 
-  makeSomeChanges $db t1 [list insert] false
+  makeSomeChanges $db t1 [list insert]
   lappend result IsEmpty [$session IsEmpty]
 
   set rawData [createChangeSetForSession $session]
@@ -605,7 +605,7 @@ runTest {test session-1.5 {session table filter} -setup {
   cleanupSomeText
 } -body {
   createTheSchema $db main
-  makeSomeChanges $db t1 [list insert] false
+  makeSomeChanges $db t1 [list insert]
 
   set connection [getDbConnection]
 
@@ -614,14 +614,14 @@ runTest {test session-1.5 {session table filter} -setup {
   $session -marshalflags +DynamicCallback \
       SetTableFilter tableFilterCallbackT1 null
 
-  makeSomeChanges $db t2 [list insert] false
+  makeSomeChanges $db t2 [list insert]
   lappend result IsEmpty [$session IsEmpty]
 
   lappend result MatchT2 [matchSession $connection $session {
     [$item TableName] eq "t2"
   }]
 
-  makeSomeChanges $db t1 [list insert] false
+  makeSomeChanges $db t1 [list insert]
   lappend result IsEmpty [$session IsEmpty]
 
   lappend result MatchT1 [matchSession $connection $session {
@@ -630,14 +630,14 @@ runTest {test session-1.5 {session table filter} -setup {
 
   $session SetTableFilter null null
 
-  makeSomeChanges $db t2 [list insert] false
+  makeSomeChanges $db t2 [list insert]
   lappend result IsEmpty [$session IsEmpty]
 
   lappend result MatchT2 [matchSession $connection $session {
     [$item TableName] eq "t2"
   }]
 
-  makeSomeChanges $db t1 [list insert] false
+  makeSomeChanges $db t1 [list insert]
   lappend result IsEmpty [$session IsEmpty]
 
   lappend result MatchT1 [matchSession $connection $session {
@@ -679,18 +679,18 @@ runTest {test session-1.6 {combine and apply change sets} -setup {
   cleanupSomeText
 } -body {
   createTheSchema $db main
-  makeSomeChanges $db t1 [list insert insert] false
+  makeSomeChanges $db t1 [list insert insert]
 
   set connection [getDbConnection]
 
   set rawData(1) [captureChangeSetRawData $connection main null {
-    makeSomeChanges $db t1 [list delete] false 1
+    makeSomeChanges $db t1 [list delete] 1
   }]; object removeref $rawData(1)
 
-  makeSomeChanges $db t1 [list insert] false 1
+  makeSomeChanges $db t1 [list insert] 1
 
   set rawData(2) [captureChangeSetRawData $connection main null {
-    makeSomeChanges $db t1 [list insert] false
+    makeSomeChanges $db t1 [list insert]
   }]; object removeref $rawData(2)
 
   set changeSet(1) [$connection -alias CreateChangeSet $rawData(1)]
@@ -743,7 +743,7 @@ runTest {test session-1.7 {differences between tables} -setup {
   cleanupSomeText
 } -body {
   createTheSchema $db main
-  makeSomeChanges $db t1 [list insert insert] false
+  makeSomeChanges $db t1 [list insert insert]
 
   set result [list]
 
@@ -752,7 +752,7 @@ runTest {test session-1.7 {differences between tables} -setup {
 
   createTheSchema $db temp
   sql execute $db {INSERT INTO temp.t1 SELECT * FROM main.t1;}
-  makeSomeChanges $db temp.t1 [list insert insert] false
+  makeSomeChanges $db temp.t1 [list insert insert]
 
   set connection [getDbConnection]
 
@@ -781,12 +781,6 @@ defineConstant.System.Data.SQLite.INTEROP_SESSION_EXTENSION} -result {{1\
 India Juliet}} {1 {inserted: Alpha Bravo Charlie Delta Echo} 2 {inserted:\
 Foxtrot Golf Hotel India Juliet} 3 {inserted: Kilo Lima Mike November Oscar} 4\
 {inserted: Papa Quebec Romeo Sierra Tango}}}}
-
-###############################################################################
-
-
-
-
 
 ###############################################################################
 
