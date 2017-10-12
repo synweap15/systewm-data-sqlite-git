@@ -189,11 +189,11 @@ proc matchChangeSet { changeSet expr } {
 
 ###############################################################################
 
-proc createTheSchema { db } {
-  sql execute $db {
-    CREATE TABLE t1(x INTEGER PRIMARY KEY, y TEXT);
-    CREATE TABLE t2(x INTEGER PRIMARY KEY, y TEXT);
-  }
+proc createTheSchema { db databaseName } {
+  sql execute $db [subst {
+    CREATE TABLE ${databaseName}.t1(x INTEGER PRIMARY KEY, y TEXT);
+    CREATE TABLE ${databaseName}.t2(x INTEGER PRIMARY KEY, y TEXT);
+  }]
 }
 
 ###############################################################################
@@ -344,15 +344,15 @@ runTest {test session-1.1 {basic session extension usage} -setup {
 
   cleanupSomeText
 } -body {
-  createTheSchema $db
-  makeSomeChanges $db t1 [list insert] true
+  createTheSchema $db main
+  makeSomeChanges $db t1 [list insert insert] false
 
   set connection [getDbConnection]
 
   set session [$connection -alias CreateSession main]
   $session AttachTable null
 
-  makeSomeChanges $db t1 [list insert update delete] true
+  makeSomeChanges $db t1 [list insert update delete] false
 
   set rawData [createChangeSetForSession $session]
   object removeref $rawData
@@ -369,12 +369,18 @@ runTest {test session-1.1 {basic session extension usage} -setup {
   $session -alias CreateChangeSet $stream(2)
   $stream(2) Flush; $stream(2) Close
 
+  set stream(3) [object create -alias \
+      System.IO.FileStream $fileName(2) Open Read]
+
+  set changeSet [$connection -alias CreateChangeSet $stream(3) null]
+
   list [expr {[file size $fileName(1)] > 0}] \
-      [string equal [readFile $fileName(1)] [readFile $fileName(2)]]
+      [string equal [readFile $fileName(1)] [readFile $fileName(2)]] \
+      [changeSetToString $changeSet true] [$stream(3) Close]
 } -cleanup {
   cleanupSomeText
 
-  unset -nocomplain stream rawData byteArray session
+  unset -nocomplain changeSet stream rawData byteArray session
 
   freeDbConnection
 
@@ -388,8 +394,19 @@ runTest {test session-1.1 {basic session extension usage} -setup {
   unset -nocomplain db fileName
 } -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
 System.Data.SQLite SQLiteInterop\
-defineConstant.System.Data.SQLite.INTEROP_SESSION_EXTENSION} -result \
-{True True}}
+defineConstant.System.Data.SQLite.INTEROP_SESSION_EXTENSION} -result {True True\
+{{TableName t1 NumberOfColumns 2 OperationCode Delete Indirect False\
+PrimaryKeyColumns {[True, False]} OldValue 0 1 NewValue 0 <nullObject>\
+ConflictValue 0 <nullObject> OldValue 1 {"inserted: Alpha Bravo Charlie Delta\
+Echo"} NewValue 1 <nullObject> ConflictValue 1 <nullObject>} {TableName t1\
+NumberOfColumns 2 OperationCode Update Indirect False PrimaryKeyColumns {[True,\
+False]} OldValue 0 2 NewValue 0 <nullObject> ConflictValue 0 <nullObject>\
+OldValue 1 {"inserted: Foxtrot Golf Hotel India Juliet"} NewValue 1 {"updated:\
+Papa Quebec Romeo Sierra Tango"} ConflictValue 1 <nullObject>} {TableName t1\
+NumberOfColumns 2 OperationCode Insert Indirect False PrimaryKeyColumns {[True,\
+False]} OldValue 0 <nullObject> NewValue 0 3 ConflictValue 0 <nullObject>\
+OldValue 1 <nullObject> NewValue 1 {"inserted: Kilo Lima Mike November Oscar"}\
+ConflictValue 1 <nullObject>}} {}}}
 
 ###############################################################################
 
@@ -398,7 +415,7 @@ runTest {test session-1.2 {session change set enumeration} -setup {
 
   cleanupSomeText
 } -body {
-  createTheSchema $db
+  createTheSchema $db main
   makeSomeChanges $db t1 [list insert insert insert] false
 
   set connection [getDbConnection]
@@ -470,7 +487,7 @@ runTest {test session-1.3 {session enabled/disabled state} -setup {
 
   cleanupSomeText
 } -body {
-  createTheSchema $db
+  createTheSchema $db main
   makeSomeChanges $db t1 [list insert] false
 
   set connection [getDbConnection]
@@ -529,7 +546,7 @@ runTest {test session-1.4 {session direct/indirect state} -setup {
 
   cleanupSomeText
 } -body {
-  createTheSchema $db
+  createTheSchema $db main
   makeSomeChanges $db t1 [list insert] false
 
   set connection [getDbConnection]
@@ -587,7 +604,7 @@ runTest {test session-1.5 {session table filter} -setup {
 
   cleanupSomeText
 } -body {
-  createTheSchema $db
+  createTheSchema $db main
   makeSomeChanges $db t1 [list insert] false
 
   set connection [getDbConnection]
@@ -661,7 +678,7 @@ runTest {test session-1.6 {combine and apply change sets} -setup {
 
   cleanupSomeText
 } -body {
-  createTheSchema $db
+  createTheSchema $db main
   makeSomeChanges $db t1 [list insert insert] false
 
   set connection [getDbConnection]
@@ -717,6 +734,59 @@ OldValue 1 <nullObject> NewValue 1 {"inserted: Papa Quebec Romeo Sierra Tango"}\
 ConflictValue 1 <nullObject>}} Data {1 {inserted: Kilo Lima Mike November\
 Oscar} 2 {inserted: Foxtrot Golf Hotel India Juliet} 3 {inserted: Papa Quebec\
 Romeo Sierra Tango}}}}
+
+###############################################################################
+
+runTest {test session-1.7 {differences between tables} -setup {
+  setupDb [set fileName session-1.7.db]
+
+  cleanupSomeText
+} -body {
+  createTheSchema $db main
+  makeSomeChanges $db t1 [list insert insert] false
+
+  set result [list]
+
+  lappend result [sql execute -execute reader -format list $db \
+      {SELECT x, y FROM t1 ORDER BY x;}]
+
+  createTheSchema $db temp
+  sql execute $db {INSERT INTO temp.t1 SELECT * FROM main.t1;}
+  makeSomeChanges $db temp.t1 [list insert insert] false
+
+  set connection [getDbConnection]
+
+  set session [$connection -alias CreateSession main]
+  $session AttachTable null
+  $session LoadDifferencesFromTable temp t1
+
+  lappend result [sql execute -execute reader -format list $db \
+      {SELECT x, y FROM t1 ORDER BY x;}]
+} -cleanup {
+  cleanupSomeText
+
+  unset -nocomplain result session
+
+  freeDbConnection
+
+  unset -nocomplain connection
+
+  cleanupDb $fileName
+
+  unset -nocomplain db fileName
+} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
+System.Data.SQLite SQLiteInterop\
+defineConstant.System.Data.SQLite.INTEROP_SESSION_EXTENSION} -result {{1\
+{inserted: Alpha Bravo Charlie Delta Echo} 2 {inserted: Foxtrot Golf Hotel\
+India Juliet}} {1 {inserted: Alpha Bravo Charlie Delta Echo} 2 {inserted:\
+Foxtrot Golf Hotel India Juliet} 3 {inserted: Kilo Lima Mike November Oscar} 4\
+{inserted: Papa Quebec Romeo Sierra Tango}}}}
+
+###############################################################################
+
+
+
+
 
 ###############################################################################
 
