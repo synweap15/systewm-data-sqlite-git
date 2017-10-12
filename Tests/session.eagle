@@ -90,7 +90,7 @@ proc forDisplay { object member } {
 
 ###############################################################################
 
-proc createChangeSetForSession { session } {
+proc createMemoryChangeSetForSession { session } {
   if {[isObjectHandle $session] && $session ne "null"} then {
     set byteArray null
     $session -alias CreateChangeSet byteArray
@@ -102,6 +102,85 @@ proc createChangeSetForSession { session } {
   }
 
   return null
+}
+
+###############################################################################
+
+proc writeRawDataToFile { fileName rawData } {
+  if {[isObjectHandle $rawData] && $rawData ne "null"} then {
+    set stream [object create -alias \
+        System.IO.FileStream $fileName Create Write]
+
+    $stream Write $rawData 0 [$rawData Length]
+    $stream Flush; $stream Close
+
+    return true
+  }
+
+  return false
+}
+
+###############################################################################
+
+proc openStreamChangeSetForConnection {
+        connection inputFileName outputFileName {varName ""} } {
+  if {[isObjectHandle $connection] && $connection ne "null"} then {
+    if {[string length $varName] > 0} then {
+      upvar 1 $varName array
+    }
+
+    if {[string length $inputFileName] > 0} then {
+      set array(inputStream) [object create -alias \
+          System.IO.FileStream $inputFileName Open Read]
+    } else {
+      set array(inputStream) null
+    }
+
+    if {[string length $outputFileName] > 0} then {
+      set array(outputStream) [object create -alias \
+          System.IO.FileStream $outputFileName Create Write]
+    } else {
+      set array(outputStream) null
+    }
+
+    set array(changeSet) [$connection -alias \
+        CreateChangeSet $array(inputStream) $array(outputStream)]
+
+    return true
+  }
+
+  return false
+}
+
+###############################################################################
+
+proc writeStreamChangeSetForSession { session fileName } {
+  if {[isObjectHandle $session] && $session ne "null"} then {
+    set stream [object create -alias \
+        System.IO.FileStream $fileName Create Write]
+
+    $session -alias CreateChangeSet $stream
+    $stream Flush; $stream Close
+
+    return true
+  }
+
+  return false
+}
+
+###############################################################################
+
+proc changeSetFileToString { connection fileName includeValues } {
+  set result [list]
+
+  if {[isObjectHandle $connection] && $connection ne "null"} then {
+    if {[openStreamChangeSetForConnection \
+        $connection $fileName "" changeSet]} then {
+      return [changeSetToString $changeSet(changeSet) $includeValues]
+    }
+  }
+
+  return $result
 }
 
 ###############################################################################
@@ -162,7 +241,7 @@ proc changeSetToString { changeSet includeValues } {
 proc matchSession { connection session expr } {
   if {[isObjectHandle $session] && $session ne "null"} then {
     if {![$session IsEmpty]} then {
-      set rawData [createChangeSetForSession $session]
+      set rawData [createMemoryChangeSetForSession $session]
       object removeref $rawData
 
       if {[isObjectHandle $rawData] && $rawData ne "null"} then {
@@ -259,7 +338,7 @@ proc captureChangeSetRawData { connection databaseName tableName script } {
   }
 
   catch {uplevel 1 $script}
-  set rawData [createChangeSetForSession $session]
+  set rawData [createMemoryChangeSetForSession $session]
   object removeref $rawData
 
   return $rawData
@@ -336,7 +415,7 @@ proc conflictCallback { clientData type item } {
 
 ###############################################################################
 
-runTest {test session-1.1 {basic session extension usage} -setup {
+runTest {test session-1.1 {basic extension usage} -setup {
   setupDb [set fileName(0) session-1.1.db]
 
   set fileName(1) [getChangeSetFileName 1]
@@ -354,33 +433,20 @@ runTest {test session-1.1 {basic session extension usage} -setup {
 
   makeSomeChanges $db t1 [list insert update delete]
 
-  set rawData [createChangeSetForSession $session]
+  set rawData [createMemoryChangeSetForSession $session]
   object removeref $rawData
 
-  set stream(1) [object create -alias \
-      System.IO.FileStream $fileName(1) Create Write]
-
-  $stream(1) Write $rawData 0 [$rawData Length]
-  $stream(1) Flush; $stream(1) Close
-
-  set stream(2) [object create -alias \
-      System.IO.FileStream $fileName(2) Create Write]
-
-  $session -alias CreateChangeSet $stream(2)
-  $stream(2) Flush; $stream(2) Close
-
-  set stream(3) [object create -alias \
-      System.IO.FileStream $fileName(2) Open Read]
-
-  set changeSet [$connection -alias CreateChangeSet $stream(3) null]
+  writeRawDataToFile $fileName(1) $rawData
+  writeStreamChangeSetForSession $session $fileName(2)
+  openStreamChangeSetForConnection $connection $fileName(2) "" changeSet
 
   list [expr {[file size $fileName(1)] > 0}] \
       [string equal [readFile $fileName(1)] [readFile $fileName(2)]] \
-      [changeSetToString $changeSet true] [$stream(3) Close]
+      [changeSetToString $changeSet(changeSet) true]
 } -cleanup {
   cleanupSomeText
 
-  unset -nocomplain changeSet stream rawData byteArray session
+  unset -nocomplain changeSet rawData byteArray session
 
   freeDbConnection
 
@@ -406,12 +472,12 @@ Papa Quebec Romeo Sierra Tango"} ConflictValue 1 <nullObject>} {TableName t1\
 NumberOfColumns 2 OperationCode Insert Indirect False PrimaryKeyColumns {[True,\
 False]} OldValue 0 <nullObject> NewValue 0 3 ConflictValue 0 <nullObject>\
 OldValue 1 <nullObject> NewValue 1 {"inserted: Kilo Lima Mike November Oscar"}\
-ConflictValue 1 <nullObject>}} {}}}
+ConflictValue 1 <nullObject>}}}}
 
 ###############################################################################
 
-runTest {test session-1.2 {session change set enumeration} -setup {
-  setupDb [set fileName session-1.2.db]
+runTest {test session-1.2.1 {change set read/write/enum (memory)} -setup {
+  setupDb [set fileName session-1.2.1.db]
 
   cleanupSomeText
 } -body {
@@ -425,14 +491,13 @@ runTest {test session-1.2 {session change set enumeration} -setup {
 
   makeSomeChanges $db t1 [list insert update delete]
 
-  set rawData [createChangeSetForSession $session]
+  set rawData [createMemoryChangeSetForSession $session]
   object removeref $rawData
 
   set changeSet(1) [$connection -alias CreateChangeSet $rawData]
   set changeSet(2) [$changeSet(1) -alias Invert]
 
-  list [changeSetToString $changeSet(1) true] \
-      [changeSetToString $changeSet(2) true]
+  list [changeSetToString $changeSet(2) true]
 } -cleanup {
   cleanupSomeText
 
@@ -448,41 +513,85 @@ runTest {test session-1.2 {session change set enumeration} -setup {
 } -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
 System.Data.SQLite SQLiteInterop\
 defineConstant.System.Data.SQLite.INTEROP_SESSION_EXTENSION} -result \
-{{{TableName t1 NumberOfColumns 2 OperationCode Delete Indirect False\
-PrimaryKeyColumns {[True, False]} OldValue 0 1 NewValue 0 <nullObject>\
-ConflictValue 0 <nullObject> OldValue 1 {"inserted: Alpha Bravo Charlie Delta\
-Echo"} NewValue 1 <nullObject> ConflictValue 1 <nullObject>} {TableName t1\
+{{{TableName t1 NumberOfColumns 2 OperationCode Insert Indirect False\
+PrimaryKeyColumns {[True, False]} OldValue 0 <nullObject> NewValue 0 1\
+ConflictValue 0 <nullObject> OldValue 1 <nullObject> NewValue 1 {"inserted:\
+Alpha Bravo Charlie Delta Echo"} ConflictValue 1 <nullObject>} {TableName t1\
 NumberOfColumns 2 OperationCode Update Indirect False PrimaryKeyColumns {[True,\
 False]} OldValue 0 2 NewValue 0 <nullObject> ConflictValue 0 <nullObject>\
-OldValue 1 {"inserted: Foxtrot Golf Hotel India Juliet"} NewValue 1 {"updated:\
-Uniform Victor Whiskey X-ray Yankee"} ConflictValue 1 <nullObject>} {TableName\
-t1 NumberOfColumns 2 OperationCode Update Indirect False PrimaryKeyColumns\
-{[True, False]} OldValue 0 3 NewValue 0 <nullObject> ConflictValue 0\
-<nullObject> OldValue 1 {"inserted: Kilo Lima Mike November Oscar"} NewValue 1\
-{"updated: Uniform Victor Whiskey X-ray Yankee"} ConflictValue 1 <nullObject>}\
-{TableName t1 NumberOfColumns 2 OperationCode Insert Indirect False\
-PrimaryKeyColumns {[True, False]} OldValue 0 <nullObject> NewValue 0 4\
-ConflictValue 0 <nullObject> OldValue 1 <nullObject> NewValue 1 {"inserted:\
-Papa Quebec Romeo Sierra Tango"} ConflictValue 1 <nullObject>}} {{TableName t1\
-NumberOfColumns 2 OperationCode Insert Indirect False PrimaryKeyColumns {[True,\
-False]} OldValue 0 <nullObject> NewValue 0 1 ConflictValue 0 <nullObject>\
-OldValue 1 <nullObject> NewValue 1 {"inserted: Alpha Bravo Charlie Delta Echo"}\
-ConflictValue 1 <nullObject>} {TableName t1 NumberOfColumns 2 OperationCode\
-Update Indirect False PrimaryKeyColumns {[True, False]} OldValue 0 2 NewValue 0\
-<nullObject> ConflictValue 0 <nullObject> OldValue 1 {"updated: Uniform Victor\
-Whiskey X-ray Yankee"} NewValue 1 {"inserted: Foxtrot Golf Hotel India Juliet"}\
-ConflictValue 1 <nullObject>} {TableName t1 NumberOfColumns 2 OperationCode\
-Update Indirect False PrimaryKeyColumns {[True, False]} OldValue 0 3 NewValue 0\
-<nullObject> ConflictValue 0 <nullObject> OldValue 1 {"updated: Uniform Victor\
-Whiskey X-ray Yankee"} NewValue 1 {"inserted: Kilo Lima Mike November Oscar"}\
-ConflictValue 1 <nullObject>} {TableName t1 NumberOfColumns 2 OperationCode\
-Delete Indirect False PrimaryKeyColumns {[True, False]} OldValue 0 4 NewValue 0\
-<nullObject> ConflictValue 0 <nullObject> OldValue 1 {"inserted: Papa Quebec\
-Romeo Sierra Tango"} NewValue 1 <nullObject> ConflictValue 1 <nullObject>}}}}
+OldValue 1 {"updated: Uniform Victor Whiskey X-ray Yankee"} NewValue 1\
+{"inserted: Foxtrot Golf Hotel India Juliet"} ConflictValue 1 <nullObject>}\
+{TableName t1 NumberOfColumns 2 OperationCode Update Indirect False\
+PrimaryKeyColumns {[True, False]} OldValue 0 3 NewValue 0 <nullObject>\
+ConflictValue 0 <nullObject> OldValue 1 {"updated: Uniform Victor Whiskey X-ray\
+Yankee"} NewValue 1 {"inserted: Kilo Lima Mike November Oscar"} ConflictValue 1\
+<nullObject>} {TableName t1 NumberOfColumns 2 OperationCode Delete Indirect\
+False PrimaryKeyColumns {[True, False]} OldValue 0 4 NewValue 0 <nullObject>\
+ConflictValue 0 <nullObject> OldValue 1 {"inserted: Papa Quebec Romeo Sierra\
+Tango"} NewValue 1 <nullObject> ConflictValue 1 <nullObject>}}}}
 
 ###############################################################################
 
-runTest {test session-1.3 {session enabled/disabled state} -setup {
+runTest {test session-1.2.2 {change set read/write/enum (stream)} -setup {
+  setupDb [set fileName(0) session-1.2.2.db]
+
+  set fileName(1) [getChangeSetFileName 1]
+  set fileName(2) [getChangeSetFileName 2]
+
+  cleanupSomeText
+} -body {
+  createTheSchema $db main
+  makeSomeChanges $db t1 [list insert insert insert]
+
+  set connection [getDbConnection]
+
+  set session [$connection -alias CreateSession main]
+  $session AttachTable null
+
+  makeSomeChanges $db t1 [list insert update delete]
+
+  writeStreamChangeSetForSession $session $fileName(1)
+
+  openStreamChangeSetForConnection \
+      $connection $fileName(1) $fileName(2) changeSet
+
+  $changeSet(changeSet) -alias Invert; unset changeSet
+  list [changeSetFileToString $connection $fileName(2) true]
+} -cleanup {
+  cleanupSomeText
+
+  unset -nocomplain changeSet byteArray session
+
+  freeDbConnection
+
+  unset -nocomplain connection
+
+  cleanupDb $fileName(0)
+
+  unset -nocomplain db fileName
+} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
+System.Data.SQLite SQLiteInterop\
+defineConstant.System.Data.SQLite.INTEROP_SESSION_EXTENSION} -result \
+{{{TableName t1 NumberOfColumns 2 OperationCode Insert Indirect False\
+PrimaryKeyColumns {[True, False]} OldValue 0 <nullObject> NewValue 0 1\
+ConflictValue 0 <nullObject> OldValue 1 <nullObject> NewValue 1 {"inserted:\
+Alpha Bravo Charlie Delta Echo"} ConflictValue 1 <nullObject>} {TableName t1\
+NumberOfColumns 2 OperationCode Update Indirect False PrimaryKeyColumns {[True,\
+False]} OldValue 0 2 NewValue 0 <nullObject> ConflictValue 0 <nullObject>\
+OldValue 1 {"updated: Uniform Victor Whiskey X-ray Yankee"} NewValue 1\
+{"inserted: Foxtrot Golf Hotel India Juliet"} ConflictValue 1 <nullObject>}\
+{TableName t1 NumberOfColumns 2 OperationCode Update Indirect False\
+PrimaryKeyColumns {[True, False]} OldValue 0 3 NewValue 0 <nullObject>\
+ConflictValue 0 <nullObject> OldValue 1 {"updated: Uniform Victor Whiskey X-ray\
+Yankee"} NewValue 1 {"inserted: Kilo Lima Mike November Oscar"} ConflictValue 1\
+<nullObject>} {TableName t1 NumberOfColumns 2 OperationCode Delete Indirect\
+False PrimaryKeyColumns {[True, False]} OldValue 0 4 NewValue 0 <nullObject>\
+ConflictValue 0 <nullObject> OldValue 1 {"inserted: Papa Quebec Romeo Sierra\
+Tango"} NewValue 1 <nullObject> ConflictValue 1 <nullObject>}}}}
+
+###############################################################################
+
+runTest {test session-1.3 {enabled/disabled state} -setup {
   setupDb [set fileName session-1.3.db]
 
   cleanupSomeText
@@ -504,7 +613,7 @@ runTest {test session-1.3 {session enabled/disabled state} -setup {
   makeSomeChanges $db t1 [list insert]
   lappend result IsEmpty [$session IsEmpty]
 
-  set rawData [createChangeSetForSession $session]
+  set rawData [createMemoryChangeSetForSession $session]
   object removeref $rawData
 
   lappend result Length [$rawData Length]
@@ -515,7 +624,7 @@ runTest {test session-1.3 {session enabled/disabled state} -setup {
   makeSomeChanges $db t1 [list insert]
   lappend result IsEmpty [$session IsEmpty]
 
-  set rawData [createChangeSetForSession $session]
+  set rawData [createMemoryChangeSetForSession $session]
   object removeref $rawData
 
   set changeSet(1) [$connection -alias CreateChangeSet $rawData]
@@ -541,7 +650,7 @@ False PrimaryKeyColumns {[True, False]}}}}}
 
 ###############################################################################
 
-runTest {test session-1.4 {session direct/indirect state} -setup {
+runTest {test session-1.4 {direct/indirect state} -setup {
   setupDb [set fileName session-1.4.db]
 
   cleanupSomeText
@@ -563,7 +672,7 @@ runTest {test session-1.4 {session direct/indirect state} -setup {
   makeSomeChanges $db t1 [list insert]
   lappend result IsEmpty [$session IsEmpty]
 
-  set rawData [createChangeSetForSession $session]
+  set rawData [createMemoryChangeSetForSession $session]
   object removeref $rawData
 
   $session SetToDirect
@@ -572,7 +681,7 @@ runTest {test session-1.4 {session direct/indirect state} -setup {
   makeSomeChanges $db t1 [list insert]
   lappend result IsEmpty [$session IsEmpty]
 
-  set rawData [createChangeSetForSession $session]
+  set rawData [createMemoryChangeSetForSession $session]
   object removeref $rawData
 
   set changeSet(1) [$connection -alias CreateChangeSet $rawData]
@@ -599,7 +708,7 @@ Indirect True PrimaryKeyColumns {[True, False]}} {TableName t1 NumberOfColumns\
 
 ###############################################################################
 
-runTest {test session-1.5 {session table filter} -setup {
+runTest {test session-1.5 {table filter} -setup {
   setupDb [set fileName session-1.5.db]
 
   cleanupSomeText
@@ -796,7 +905,11 @@ rename matchChangeSet ""
 rename matchSession ""
 rename changeSetToString ""
 rename metadataItemToString ""
-rename createChangeSetForSession ""
+rename changeSetFileToString ""
+rename writeStreamChangeSetForSession ""
+rename openStreamChangeSetForConnection ""
+rename writeRawDataToFile ""
+rename createMemoryChangeSetForSession ""
 rename forDisplay ""
 rename cleanupSomeText ""
 rename getSomeText ""
