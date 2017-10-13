@@ -286,9 +286,23 @@ namespace System.Data.SQLite
     ///////////////////////////////////////////////////////////////////////////
 
     #region SQLiteSessionHelpers Class
+    /// <summary>
+    /// This class contains some static helper methods for use within this
+    /// subsystem.
+    /// </summary>
     internal static class SQLiteSessionHelpers
     {
         #region Public Methods
+        /// <summary>
+        /// This method checks the byte array specified by the caller to make
+        /// sure it will be usable.
+        /// </summary>
+        /// <param name="rawData">
+        /// A byte array provided by the caller into one of the public methods
+        /// for the classes that belong to this subsystem.  This value cannot
+        /// be null or represent an empty array; otherwise, an appropriate
+        /// exception will be thrown.
+        /// </param>
         public static void CheckRawData(
             byte[] rawData
             )
@@ -309,13 +323,28 @@ namespace System.Data.SQLite
     ///////////////////////////////////////////////////////////////////////////
 
     #region SQLiteConnectionLock Class
+    /// <summary>
+    /// This class is used to hold the native connection handle associated with
+    /// a <see cref="SQLiteConnection" /> open until this subsystem is totally
+    /// done with it.  This class is for internal use by this subsystem only.
+    /// </summary>
     internal abstract class SQLiteConnectionLock : IDisposable
     {
         #region Private Constants
+        /// <summary>
+        /// The SQL statement used when creating the native statement handle.
+        /// There are no special requirements for this other than counting as
+        /// an "open statement handle".
+        /// </summary>
         private const string LockNopSql = "SELECT 1;";
 
         ///////////////////////////////////////////////////////////////////////
 
+        /// <summary>
+        /// The format of the error message used when reporting, during object
+        /// disposal, that the statement handle is still open (i.e. because
+        /// this situation is considered a fairly serious programming error).
+        /// </summary>
         private const string StatementMessageFormat =
             "Connection lock object was {0} with statement {1}";
         #endregion
@@ -323,32 +352,72 @@ namespace System.Data.SQLite
         ///////////////////////////////////////////////////////////////////////
 
         #region Private Data
+        /// <summary>
+        /// The wrapped native connection handle associated with this lock.
+        /// </summary>
         private SQLiteConnectionHandle handle;
+
+        /// <summary>
+        /// The flags associated with the connection represented by the
+        /// <see cref="handle" /> value.
+        /// </summary>
         private SQLiteConnectionFlags flags;
 
         ///////////////////////////////////////////////////////////////////////
 
+        /// <summary>
+        /// The native statement handle for this lock.  The garbage collector
+        /// cannot cause this statement to be finalized; therefore, it will
+        /// serve to hold the associated native connection open until it is
+        /// freed manually using the <see cref="Unlock" /> method.
+        /// </summary>
         private IntPtr statement;
         #endregion
 
         ///////////////////////////////////////////////////////////////////////
 
         #region Public Constructors
+        /// <summary>
+        /// Constructs a new instance of this class using the specified native
+        /// connection handle and associated flags.
+        /// </summary>
+        /// <param name="handle">
+        /// The wrapped native connection handle to be associated with this
+        /// lock.
+        /// </param>
+        /// <param name="flags">
+        /// The flags associated with the connection represented by the
+        /// <paramref name="handle" /> value.
+        /// </param>
+        /// <param name="autoLock">
+        /// Non-zero if the <see cref="Lock" /> method should be called prior
+        /// to returning from this constructor.
+        /// </param>
         public SQLiteConnectionLock(
             SQLiteConnectionHandle handle,
-            SQLiteConnectionFlags flags
+            SQLiteConnectionFlags flags,
+            bool autoLock
             )
         {
             this.handle = handle;
             this.flags = flags;
 
-            Lock();
+            if (autoLock)
+                Lock();
         }
         #endregion
 
         ///////////////////////////////////////////////////////////////////////
 
         #region Protected Methods
+        /// <summary>
+        /// Queries and returns the wrapped native connection handle for this
+        /// instance.
+        /// </summary>
+        /// <returns>
+        /// The wrapped native connection handle for this instance -OR- null
+        /// if it is unavailable.
+        /// </returns>
         protected SQLiteConnectionHandle GetHandle()
         {
             return handle;
@@ -356,6 +425,14 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
+        /// <summary>
+        /// Queries and returns the flags associated with the connection for
+        /// this instance.
+        /// </summary>
+        /// <returns>
+        /// The <see cref="SQLiteConnectionFlags" /> value.  There is no return
+        /// value reserved to indicate an error.
+        /// </returns>
         protected SQLiteConnectionFlags GetFlags()
         {
             return flags;
@@ -363,6 +440,13 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
+        /// <summary>
+        /// Queries and returns the native connection handle for this instance.
+        /// </summary>
+        /// <returns>
+        /// The native connection handle for this instance.  If this value is
+        /// unavailable or invalid an exception will be thrown.
+        /// </returns>
         protected IntPtr GetIntPtr()
         {
             if (handle == null)
@@ -386,6 +470,14 @@ namespace System.Data.SQLite
         ///////////////////////////////////////////////////////////////////////
 
         #region Public Methods
+        /// <summary>
+        /// This method attempts to "lock" the associated native connection
+        /// handle by preparing a SQL statement that will not be finalized
+        /// until the <see cref="Unlock" /> method is called (i.e. and which
+        /// cannot be done by the garbage collector).  If the statement is
+        /// already prepared, nothing is done.  If the statement cannot be
+        /// prepared for any reason, an exception will be thrown.
+        /// </summary>
         public void Lock()
         {
             CheckDisposed();
@@ -423,6 +515,12 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
+        /// <summary>
+        /// This method attempts to "unlock" the associated native connection
+        /// handle by finalizing the previously prepared statement.  If the
+        /// statement is already finalized, nothing is done.  If the statement
+        /// cannot be finalized for any reason, an exception will be thrown.
+        /// </summary>
         public void Unlock()
         {
             CheckDisposed();
@@ -443,6 +541,9 @@ namespace System.Data.SQLite
         ///////////////////////////////////////////////////////////////////////
 
         #region IDisposable Members
+        /// <summary>
+        /// Disposes of this object instance.
+        /// </summary>
         public void Dispose()
         {
             Dispose(true);
@@ -453,7 +554,14 @@ namespace System.Data.SQLite
         ///////////////////////////////////////////////////////////////////////
 
         #region IDisposable "Pattern" Members
+        /// <summary>
+        /// Non-zero if this object instance has been disposed.
+        /// </summary>
         private bool disposed;
+
+        /// <summary>
+        /// Throws an exception if this object instance has been disposed.
+        /// </summary>
         private void CheckDisposed() /* throw */
         {
 #if THROW_ON_DISPOSED
@@ -467,6 +575,13 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
+        /// <summary>
+        /// Disposes or finalizes this object instance.
+        /// </summary>
+        /// <param name="disposing">
+        /// Non-zero if this object is being disposed; otherwise, this object
+        /// is being finalized.
+        /// </param>
         protected virtual void Dispose(bool disposing)
         {
             try
@@ -529,6 +644,9 @@ namespace System.Data.SQLite
         ///////////////////////////////////////////////////////////////////////
 
         #region Destructor
+        /// <summary>
+        /// Finalizes this object instance.
+        /// </summary>
         ~SQLiteConnectionLock()
         {
             Dispose(false);
@@ -1667,7 +1785,7 @@ namespace System.Data.SQLite
             SQLiteConnectionFlags flags,
             string databaseName
             )
-            : base(handle, flags)
+            : base(handle, flags, true)
         {
             this.databaseName = databaseName;
 
@@ -2131,7 +2249,7 @@ namespace System.Data.SQLite
             SQLiteConnectionHandle handle,
             SQLiteConnectionFlags flags
             )
-            : base(handle, flags)
+            : base(handle, flags, true)
         {
             // do nothing.
         }
