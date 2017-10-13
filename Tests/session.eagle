@@ -345,7 +345,8 @@ proc makeSomeChanges { db table types {rowId ""} {count 5} } {
 
 ###############################################################################
 
-proc captureChangeSetRawData { connection databaseName tableName script } {
+proc captureChangeSetRawData {
+        connection databaseName tableName script {patch false} } {
   if {![isObjectHandle $connection] || $connection eq "null"} then {
     error "connection is invalid"
   }
@@ -358,7 +359,7 @@ proc captureChangeSetRawData { connection databaseName tableName script } {
   }
 
   catch {uplevel 1 $script}
-  set rawData [createMemoryChangeSetForSession $session]
+  set rawData [createMemoryChangeSetForSession $session $patch]
   object removeref $rawData
 
   return $rawData
@@ -367,7 +368,7 @@ proc captureChangeSetRawData { connection databaseName tableName script } {
 ###############################################################################
 
 proc captureChangeSetFile {
-        connection databaseName tableName script fileName } {
+        connection databaseName tableName script fileName {patch false} } {
   if {![isObjectHandle $connection] || $connection eq "null"} then {
     error "connection is invalid"
   }
@@ -380,7 +381,7 @@ proc captureChangeSetFile {
   }
 
   catch {uplevel 1 $script}
-  writeStreamChangeSetForSession $session $fileName
+  writeStreamChangeSetForSession $session $fileName $patch
 }
 
 ###############################################################################
@@ -987,8 +988,160 @@ Romeo Sierra Tango}}}}
 
 ###############################################################################
 
-runTest {test session-1.7 {differences between tables} -setup {
-  setupDb [set fileName session-1.7.db]
+runTest {test session-1.7.1 {combine/apply patch sets (memory)} -setup {
+  setupDb [set fileName session-1.7.1.db]
+
+  cleanupSomeText
+} -body {
+  createTheSchema $db main
+  makeSomeChanges $db t1 [list insert insert]
+
+  set connection [getDbConnection]
+
+  set rawData(1) [captureChangeSetRawData $connection main null {
+    makeSomeChanges $db t1 [list delete] 1
+  } true]; object removeref $rawData(1)
+
+  makeSomeChanges $db t1 [list insert] 1
+
+  set rawData(2) [captureChangeSetRawData $connection main null {
+    makeSomeChanges $db t1 [list insert]
+  } true]; object removeref $rawData(2)
+
+  set changeSet(1) \
+      [createMemoryChangeSetForConnection $connection $rawData(1)]
+
+  object removeref $changeSet(1)
+
+  set changeSet(2) \
+      [createMemoryChangeSetForConnection $connection $rawData(2)]
+
+  object removeref $changeSet(2)
+
+  set changeSet(3) [$changeSet(1) -alias CombineWith $changeSet(2)]
+
+  $changeSet(3) -marshalflags +DynamicCallback \
+      Apply conflictCallback null
+
+  list [changeSetToString $changeSet(3) true] Data \
+      [sql execute -execute reader -format list $db \
+      {SELECT x, y FROM t1 ORDER BY x;}]
+} -cleanup {
+  cleanupSomeText
+
+  unset -nocomplain changeSet rawData
+
+  freeDbConnection
+
+  unset -nocomplain connection
+
+  cleanupDb $fileName
+
+  catch {object removecallback conflictCallback}
+
+  catch {
+    foreach callbackResult $callbackResults {
+      catch {object dispose $callbackResult}
+    }
+  }
+
+  unset -nocomplain callbackResult callbackResults db fileName
+} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
+System.Data.SQLite SQLiteInterop\
+defineConstant.System.Data.SQLite.INTEROP_SESSION_EXTENSION} -result \
+{{{TableName t1 NumberOfColumns 2 OperationCode Delete Indirect False\
+PrimaryKeyColumns {[True, False]} OldValue 0 1 NewValue 0 <nullObject>\
+ConflictValue 0 <nullObject> OldValue 1 <nullObject> NewValue 1 <nullObject>\
+ConflictValue 1 <nullObject>} {TableName t1 NumberOfColumns 2 OperationCode\
+Insert Indirect False PrimaryKeyColumns {[True, False]} OldValue 0 <nullObject>\
+NewValue 0 3 ConflictValue 0 <nullObject> OldValue 1 <nullObject> NewValue 1\
+{"inserted: Papa Quebec Romeo Sierra Tango"} ConflictValue 1 <nullObject>}}\
+Data {2 {inserted: Foxtrot Golf Hotel India Juliet} 3 {inserted: Papa Quebec\
+Romeo Sierra Tango}}}}
+
+###############################################################################
+
+runTest {test session-1.7.2 {combine/apply patch sets (stream)} -setup {
+  setupDb [set fileName(0) session-1.7.2.db]
+
+  set fileName(1) [getChangeSetFileName 1]
+  set fileName(2) [getChangeSetFileName 2]
+  set fileName(3) [getChangeSetFileName 3]
+
+  cleanupSomeText
+} -body {
+  createTheSchema $db main
+  makeSomeChanges $db t1 [list insert insert]
+
+  set connection [getDbConnection]
+
+  captureChangeSetFile $connection main null {
+    makeSomeChanges $db t1 [list delete] 1
+  } $fileName(1) true
+
+  makeSomeChanges $db t1 [list insert] 1
+
+  captureChangeSetFile $connection main null {
+    makeSomeChanges $db t1 [list insert]
+  } $fileName(2) true
+
+  openStreamChangeSetForConnection \
+      $connection $fileName(1) $fileName(3) state1
+
+  openStreamChangeSetForConnection \
+      $connection $fileName(2) "" state2
+
+  $state1(changeSet) CombineWith $state2(changeSet); unset state1
+
+  openStreamChangeSetForConnection \
+      $connection $fileName(3) "" state3
+
+  $state3(changeSet) -marshalflags +DynamicCallback \
+      Apply conflictCallback null; unset state3
+
+  openStreamChangeSetForConnection \
+      $connection $fileName(3) "" state4
+
+  list [changeSetToString $state4(changeSet) true] Data \
+      [sql execute -execute reader -format list $db \
+      {SELECT x, y FROM t1 ORDER BY x;}]
+} -cleanup {
+  cleanupSomeText
+
+  unset -nocomplain state4 state3 state2 state1
+
+  freeDbConnection
+
+  unset -nocomplain connection
+
+  cleanupDb $fileName(0)
+
+  catch {object removecallback conflictCallback}
+
+  catch {
+    foreach callbackResult $callbackResults {
+      catch {object dispose $callbackResult}
+    }
+  }
+
+  unset -nocomplain callbackResult callbackResults db fileName
+} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
+System.Data.SQLite SQLiteInterop\
+defineConstant.System.Data.SQLite.INTEROP_SESSION_EXTENSION} -result \
+{{{TableName t1 NumberOfColumns 2 OperationCode Delete Indirect False\
+PrimaryKeyColumns {[True, False]} OldValue 0 1 NewValue 0 <nullObject>\
+ConflictValue 0 <nullObject> OldValue 1 <nullObject> NewValue 1 <nullObject>\
+ConflictValue 1 <nullObject>} {TableName t1 NumberOfColumns 2 OperationCode\
+Insert Indirect False PrimaryKeyColumns {[True, False]} OldValue 0 <nullObject>\
+NewValue 0 3 ConflictValue 0 <nullObject> OldValue 1 <nullObject> NewValue 1\
+{"inserted: Papa Quebec Romeo Sierra Tango"} ConflictValue 1 <nullObject>}}\
+Data {2 {inserted: Foxtrot Golf Hotel India Juliet} 3 {inserted: Papa Quebec\
+Romeo Sierra Tango}}}}
+
+###############################################################################
+
+runTest {test session-1.8 {differences between tables} -setup {
+  setupDb [set fileName session-1.8.db]
 
   cleanupSomeText
 } -body {
