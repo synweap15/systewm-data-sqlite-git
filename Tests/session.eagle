@@ -90,10 +90,25 @@ proc forDisplay { object member } {
 
 ###############################################################################
 
-proc createMemoryChangeSetForSession { session } {
+proc createMemoryChangeSetForConnection { connection rawData } {
+  if {[isObjectHandle $connection] && $connection ne "null"} then {
+    return [$connection -alias CreateChangeSet $rawData]
+  }
+
+  return null
+}
+
+###############################################################################
+
+proc createMemoryChangeSetForSession { session {patch false} } {
   if {[isObjectHandle $session] && $session ne "null"} then {
     set byteArray null
-    $session -alias CreateChangeSet byteArray
+
+    if {$patch} then {
+      $session -alias CreatePatchSet byteArray
+    } else {
+      $session -alias CreateChangeSet byteArray
+    }
 
     set rawData [createByteArray [arrayToList byteArray]]
     object removeref $rawData
@@ -154,12 +169,17 @@ proc openStreamChangeSetForConnection {
 
 ###############################################################################
 
-proc writeStreamChangeSetForSession { session fileName } {
+proc writeStreamChangeSetForSession { session fileName {patch false} } {
   if {[isObjectHandle $session] && $session ne "null"} then {
     set stream [object create -alias \
         System.IO.FileStream $fileName Create Write]
 
-    $session -alias CreateChangeSet $stream
+    if {$patch} then {
+      $session -alias CreatePatchSet $stream
+    } else {
+      $session -alias CreateChangeSet $stream
+    }
+
     $stream Flush; $stream Close
 
     return true
@@ -175,8 +195,8 @@ proc changeSetFileToString { connection fileName includeValues } {
 
   if {[isObjectHandle $connection] && $connection ne "null"} then {
     if {[openStreamChangeSetForConnection \
-        $connection $fileName "" changeSet]} then {
-      return [changeSetToString $changeSet(changeSet) $includeValues]
+        $connection $fileName "" state]} then {
+      return [changeSetToString $state(changeSet) $includeValues]
     }
   }
 
@@ -513,7 +533,11 @@ runTest {test session-1.2.1 {change set read/write/invert (memory)} -setup {
   set rawData [createMemoryChangeSetForSession $session]
   object removeref $rawData
 
-  set changeSet(1) [$connection -alias CreateChangeSet $rawData]
+  set changeSet(1) \
+      [createMemoryChangeSetForConnection $connection $rawData]
+
+  object removeref $changeSet(1)
+
   set changeSet(2) [$changeSet(1) -alias Invert]
 
   list [changeSetToString $changeSet(2) true]
@@ -646,7 +670,11 @@ runTest {test session-1.3 {enabled/disabled state} -setup {
   set rawData [createMemoryChangeSetForSession $session]
   object removeref $rawData
 
-  set changeSet(1) [$connection -alias CreateChangeSet $rawData]
+  set changeSet(1) \
+      [createMemoryChangeSetForConnection $connection $rawData]
+
+  object removeref $changeSet(1)
+
   lappend result [changeSetToString $changeSet(1) false]
 } -cleanup {
   cleanupSomeText
@@ -703,7 +731,11 @@ runTest {test session-1.4 {direct/indirect state} -setup {
   set rawData [createMemoryChangeSetForSession $session]
   object removeref $rawData
 
-  set changeSet(1) [$connection -alias CreateChangeSet $rawData]
+  set changeSet(1) \
+      [createMemoryChangeSetForConnection $connection $rawData]
+
+  object removeref $changeSet(1)
+
   lappend result [changeSetToString $changeSet(1) false]
 } -cleanup {
   cleanupSomeText
@@ -821,8 +853,16 @@ runTest {test session-1.6.1 {combine/apply change sets (memory)} -setup {
     makeSomeChanges $db t1 [list insert]
   }]; object removeref $rawData(2)
 
-  set changeSet(1) [$connection -alias CreateChangeSet $rawData(1)]
-  set changeSet(2) [$connection -alias CreateChangeSet $rawData(2)]
+  set changeSet(1) \
+      [createMemoryChangeSetForConnection $connection $rawData(1)]
+
+  object removeref $changeSet(1)
+
+  set changeSet(2) \
+      [createMemoryChangeSetForConnection $connection $rawData(2)]
+
+  object removeref $changeSet(2)
+
   set changeSet(3) [$changeSet(1) -alias CombineWith $changeSet(2)]
 
   $changeSet(3) -marshalflags +DynamicCallback \
@@ -1012,6 +1052,7 @@ rename writeStreamChangeSetForSession ""
 rename openStreamChangeSetForConnection ""
 rename writeRawDataToFile ""
 rename createMemoryChangeSetForSession ""
+rename createMemoryChangeSetForConnection ""
 rename forDisplay ""
 rename cleanupSomeText ""
 rename getSomeText ""
