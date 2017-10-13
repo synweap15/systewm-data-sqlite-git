@@ -15,7 +15,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Globalization;
 using System.Runtime.InteropServices;
-using System.Threading;
 
 namespace System.Data.SQLite
 {
@@ -748,7 +747,7 @@ namespace System.Data.SQLite
                 streamAdapter = new SQLiteStreamAdapter(stream, flags);
 
                 SQLiteErrorCode rc = UnsafeNativeMethods.sqlite3changeset_start_strm(
-                    ref iterator, streamAdapter.xInput, IntPtr.Zero);
+                    ref iterator, streamAdapter.GetInputDelegate(), IntPtr.Zero);
 
                 if (rc != SQLiteErrorCode.Ok)
                 {
@@ -840,6 +839,11 @@ namespace System.Data.SQLite
         #region Private Data
         private Stream stream; /* EXEMPT: NOT OWNED */
         private SQLiteConnectionFlags flags;
+
+        ///////////////////////////////////////////////////////////////////////
+
+        private UnsafeNativeMethods.xSessionInput xInput;
+        private UnsafeNativeMethods.xSessionOutput xOutput;
         #endregion
 
         ///////////////////////////////////////////////////////////////////////
@@ -866,19 +870,42 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
+        #region Public Methods
+        public UnsafeNativeMethods.xSessionInput GetInputDelegate()
+        {
+            CheckDisposed();
+
+            if (xInput == null)
+                xInput = new UnsafeNativeMethods.xSessionInput(Input);
+
+            return xInput;
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+
+        public UnsafeNativeMethods.xSessionOutput GetOutputDelegate()
+        {
+            CheckDisposed();
+
+            if (xOutput == null)
+                xOutput = new UnsafeNativeMethods.xSessionOutput(Output);
+
+            return xOutput;
+        }
+        #endregion
+
+        ///////////////////////////////////////////////////////////////////////
+
         #region Native Callback Methods
-        public SQLiteErrorCode xInput(
+        private SQLiteErrorCode Input(
             IntPtr context,
             IntPtr pData,
             ref int nData
             )
         {
-            CheckDisposed();
-
             try
             {
-                Stream localStream = Interlocked.CompareExchange(
-                    ref stream, null, null);
+                Stream localStream = stream;
 
                 if (localStream == null)
                     return SQLiteErrorCode.Misuse;
@@ -907,7 +934,7 @@ namespace System.Data.SQLite
                             HelperMethods.StringFormat(
                             CultureInfo.CurrentCulture,
                             UnsafeNativeMethods.ExceptionMessageFormat,
-                            "xInput", e)); /* throw */
+                            "xSessionInput", e)); /* throw */
                     }
                 }
                 catch
@@ -921,18 +948,15 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
-        public SQLiteErrorCode xOutput(
+        private SQLiteErrorCode Output(
             IntPtr context,
             IntPtr pData,
             int nData
             )
         {
-            CheckDisposed();
-
             try
             {
-                Stream localStream = Interlocked.CompareExchange(
-                    ref stream, null, null);
+                Stream localStream = stream;
 
                 if (localStream == null)
                     return SQLiteErrorCode.Misuse;
@@ -962,7 +986,7 @@ namespace System.Data.SQLite
                             HelperMethods.StringFormat(
                             CultureInfo.CurrentCulture,
                             UnsafeNativeMethods.ExceptionMessageFormat,
-                            "xOutput", e)); /* throw */
+                            "xSessionOutput", e)); /* throw */
                     }
                 }
                 catch
@@ -1013,13 +1037,20 @@ namespace System.Data.SQLite
                         ////////////////////////////////////
                         // dispose managed resources here...
                         ////////////////////////////////////
+
+                        if (xInput != null)
+                            xInput = null;
+
+                        if (xOutput != null)
+                            xOutput = null;
+
+                        if (stream != null)
+                            stream = null; /* NOT OWNED */
                     }
 
                     //////////////////////////////////////
                     // release unmanaged resources here...
                     //////////////////////////////////////
-
-                    Interlocked.Exchange(ref stream, null); /* NOT OWNED */
                 }
             }
             finally
@@ -1321,7 +1352,7 @@ namespace System.Data.SQLite
             }
 
             SQLiteErrorCode rc = UnsafeNativeMethods.sqlite3changegroup_add_strm(
-                changeGroup, streamAdapter.xInput, IntPtr.Zero);
+                changeGroup, streamAdapter.GetInputDelegate(), IntPtr.Zero);
 
             if (rc != SQLiteErrorCode.Ok)
                 throw new SQLiteException(rc, "sqlite3changegroup_add_strm");
@@ -1383,7 +1414,7 @@ namespace System.Data.SQLite
             }
 
             SQLiteErrorCode rc = UnsafeNativeMethods.sqlite3changegroup_output_strm(
-                changeGroup, streamAdapter.xOutput, IntPtr.Zero);
+                changeGroup, streamAdapter.GetOutputDelegate(), IntPtr.Zero);
 
             if (rc != SQLiteErrorCode.Ok)
                 throw new SQLiteException(rc, "sqlite3changegroup_output_strm");
@@ -1485,6 +1516,7 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
+        private UnsafeNativeMethods.xSessionFilter xFilter;
         private SessionTableFilterCallback tableFilterCallback;
         private object tableFilterClientData;
         #endregion
@@ -1536,11 +1568,21 @@ namespace System.Data.SQLite
             object clientData                    /* in: NULL OK */
             )
         {
-            this.tableFilterCallback = callback;
-            this.tableFilterClientData = clientData;
+            tableFilterCallback = callback;
+            tableFilterClientData = clientData;
 
-            return (callback != null) ?
-                xFilter : (UnsafeNativeMethods.xSessionFilter)null;
+            if (callback == null)
+            {
+                if (xFilter != null)
+                    xFilter = null;
+
+                return null;
+            }
+
+            if (xFilter == null)
+                xFilter = new UnsafeNativeMethods.xSessionFilter(Filter);
+
+            return xFilter;
         }
 
         ///////////////////////////////////////////////////////////////////////
@@ -1563,11 +1605,12 @@ namespace System.Data.SQLite
 
             return streamManager.GetAdapter(stream);
         }
+        #endregion
 
         ///////////////////////////////////////////////////////////////////////
 
         #region Native Callback Methods
-        private int xFilter(
+        private int Filter(
             IntPtr context, /* NOT USED */
             IntPtr pTblName
             )
@@ -1588,7 +1631,7 @@ namespace System.Data.SQLite
                             HelperMethods.StringFormat(
                             CultureInfo.CurrentCulture,
                             UnsafeNativeMethods.ExceptionMessageFormat,
-                            "xFilter", e));
+                            "xSessionFilter", e));
                     }
                 }
                 catch
@@ -1599,7 +1642,6 @@ namespace System.Data.SQLite
 
             return 0;
         }
-        #endregion
         #endregion
 
         ///////////////////////////////////////////////////////////////////////
@@ -1757,7 +1799,7 @@ namespace System.Data.SQLite
             }
 
             SQLiteErrorCode rc = UnsafeNativeMethods.sqlite3session_changeset_strm(
-                session, streamAdapter.xOutput, IntPtr.Zero);
+                session, streamAdapter.GetOutputDelegate(), IntPtr.Zero);
 
             if (rc != SQLiteErrorCode.Ok)
                 throw new SQLiteException(rc, "sqlite3session_changeset_strm");
@@ -1817,7 +1859,7 @@ namespace System.Data.SQLite
             }
 
             SQLiteErrorCode rc = UnsafeNativeMethods.sqlite3session_patchset_strm(
-                session, streamAdapter.xOutput, IntPtr.Zero);
+                session, streamAdapter.GetOutputDelegate(), IntPtr.Zero);
 
             if (rc != SQLiteErrorCode.Ok)
                 throw new SQLiteException(rc, "sqlite3session_patchset_strm");
@@ -1903,6 +1945,9 @@ namespace System.Data.SQLite
                         ////////////////////////////////////
                         // dispose managed resources here...
                         ////////////////////////////////////
+
+                        if (xFilter != null)
+                            xFilter = null;
 
                         if (streamManager != null)
                         {
@@ -2000,7 +2045,7 @@ namespace System.Data.SQLite
                                 HelperMethods.StringFormat(
                                 CultureInfo.CurrentCulture,
                                 UnsafeNativeMethods.ExceptionMessageFormat,
-                                "xFilter", e));
+                                "xSessionFilter", e));
                         }
                     }
                     catch
@@ -2056,7 +2101,7 @@ namespace System.Data.SQLite
                                 HelperMethods.StringFormat(
                                 CultureInfo.CurrentCulture,
                                 UnsafeNativeMethods.ExceptionMessageFormat,
-                                "xConflict", e));
+                                "xSessionConflict", e));
                         }
                     }
                     catch
@@ -2471,8 +2516,8 @@ namespace System.Data.SQLite
             CheckOutputStream();
 
             SQLiteErrorCode rc = UnsafeNativeMethods.sqlite3changeset_invert_strm(
-                inputStreamAdapter.xInput, IntPtr.Zero,
-                outputStreamAdapter.xOutput, IntPtr.Zero);
+                inputStreamAdapter.GetInputDelegate(), IntPtr.Zero,
+                outputStreamAdapter.GetOutputDelegate(), IntPtr.Zero);
 
             if (rc != SQLiteErrorCode.Ok)
                 throw new SQLiteException(rc, "sqlite3changeset_invert_strm");
@@ -2502,9 +2547,10 @@ namespace System.Data.SQLite
             streamChangeSet.CheckInputStream();
 
             SQLiteErrorCode rc = UnsafeNativeMethods.sqlite3changeset_concat_strm(
-                inputStreamAdapter.xInput, IntPtr.Zero,
-                streamChangeSet.inputStreamAdapter.xInput, IntPtr.Zero,
-                outputStreamAdapter.xOutput, IntPtr.Zero);
+                inputStreamAdapter.GetInputDelegate(), IntPtr.Zero,
+                streamChangeSet.inputStreamAdapter.GetInputDelegate(),
+                IntPtr.Zero, outputStreamAdapter.GetOutputDelegate(),
+                IntPtr.Zero);
 
             if (rc != SQLiteErrorCode.Ok)
                 throw new SQLiteException(rc, "sqlite3changeset_concat_strm");
@@ -2545,8 +2591,8 @@ namespace System.Data.SQLite
                 conflictCallback, clientData);
 
             SQLiteErrorCode rc = UnsafeNativeMethods.sqlite3changeset_apply_strm(
-                GetIntPtr(), inputStreamAdapter.xInput, IntPtr.Zero, xFilter,
-                xConflict, IntPtr.Zero);
+                GetIntPtr(), inputStreamAdapter.GetInputDelegate(), IntPtr.Zero,
+                xFilter, xConflict, IntPtr.Zero);
 
             if (rc != SQLiteErrorCode.Ok)
                 throw new SQLiteException(rc, "sqlite3changeset_apply_strm");

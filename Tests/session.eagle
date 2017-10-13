@@ -474,8 +474,6 @@ runTest {test session-1.1 {basic extension usage} -setup {
 
   set rawData [createMemoryChangeSetForSession $session]
 
-debug break
-
   writeRawDataToFile $fileName(1) $rawData
   writeStreamChangeSetForSession $session $fileName(2)
   openStreamChangeSetForConnection $connection $fileName(2) "" state
