@@ -193,8 +193,8 @@ proc changeSetFileToString { connection fileName includeValues } {
 
   if {[isObjectHandle $connection] && $connection ne "null"} then {
     if {[openStreamChangeSetForConnection \
-        $connection $fileName "" changeSet]} then {
-      return [changeSetToString $changeSet(changeSet) $includeValues]
+        $connection $fileName "" state]} then {
+      return [changeSetToString $state(changeSet) $includeValues]
     }
   }
 

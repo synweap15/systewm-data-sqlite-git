@@ -888,13 +888,10 @@ namespace System.Data.SQLite
                     byte[] bytes = new byte[nData];
                     int nRead = localStream.Read(bytes, 0, nData);
 
-                    if (nRead > 0)
-                    {
-                        if (pData != IntPtr.Zero)
-                            Marshal.Copy(bytes, 0, pData, nRead);
+                    if ((nRead > 0) && (pData != IntPtr.Zero))
+                        Marshal.Copy(bytes, 0, pData, nRead);
 
-                        nData = nRead;
-                    }
+                    nData = nRead;
                 }
 
                 return SQLiteErrorCode.Ok;
@@ -2561,8 +2558,8 @@ namespace System.Data.SQLite
         #region IEnumerable<ISQLiteChangeSetMetadataItem> Members
         public IEnumerator<ISQLiteChangeSetMetadataItem> GetEnumerator()
         {
-            SQLiteConnectionFlags flags = GetFlags();
-            return new SQLiteStreamChangeSetEnumerator(inputStream, flags);
+            return new SQLiteStreamChangeSetEnumerator(
+                inputStream, GetFlags());
         }
         #endregion
 
