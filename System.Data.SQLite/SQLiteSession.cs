@@ -19,21 +19,114 @@ using System.Runtime.InteropServices;
 namespace System.Data.SQLite
 {
     #region Session Extension Enumerations
+    /// <summary>
+    /// This enumerated type represents a type of conflict seen when apply
+    /// changes from a change set or patch set.
+    /// </summary>
     public enum SQLiteChangeSetConflictType
     {
+        /// <summary>
+        /// This value is seen when processing a DELETE or UPDATE change if a
+        /// row with the required PRIMARY KEY fields is present in the
+        /// database, but one or more other (non primary-key) fields modified
+        /// by the update do not contain the expected "before" values.
+        /// </summary>
         Data = 1,
+
+        /// <summary>
+        /// This value is seen when processing a DELETE or UPDATE change if a
+        /// row with the required PRIMARY KEY fields is not present in the
+        /// database.  There is no conflicting row in this case.
+        ///
+        /// The results of invoking the
+        /// <see cref="ISQLiteChangeSetMetadataItem.GetConflictValue" />
+        /// method are undefined.
+        /// </summary>
         NotFound = 2,
+
+        /// <summary>
+        /// This value is seen when processing an INSERT change if the
+        /// operation would result in duplicate primary key values.
+        /// The conflicting row in this case is the database row with the
+        /// matching primary key.
+        /// </summary>
         Conflict = 3,
+
+        /// <summary>
+        /// If a non-foreign key constraint violation occurs while applying a
+        /// change (i.e. a UNIQUE, CHECK or NOT NULL constraint), the conflict
+        /// callback will see this value.
+        ///
+        /// There is no conflicting row in this case. The results of invoking
+        /// the <see cref="ISQLiteChangeSetMetadataItem.GetConflictValue" />
+        /// method are undefined.
+        /// </summary>
         Constraint = 4,
+
+        /// <summary>
+        /// If foreign key handling is enabled, and applying a changes leaves
+        /// the database in a state containing foreign key violations, this
+        /// value will be seen exactly once before the changes are committed.
+        /// If the conflict handler
+        /// <see cref="SQLiteChangeSetConflictResult.Omit" />, the changes,
+        /// including those that caused the foreign key constraint violation,
+        /// are committed. Or, if it returns
+        /// <see cref="SQLiteChangeSetConflictResult.Abort" />, the changes are
+        /// rolled back.
+        ///
+        /// No current or conflicting row information is provided. The only
+        /// method it is possible to call on the supplied
+        /// <see cref="ISQLiteChangeSetMetadataItem" /> object is
+        /// <see cref="ISQLiteChangeSetMetadataItem.NumberOfForeignKeyConflicts" />.
+        /// </summary>
         ForeignKey = 5
     }
 
     ///////////////////////////////////////////////////////////////////////////
 
+    /// <summary>
+    /// This enumerated type represents the result of a user-defined conflict
+    /// resolution callback.
+    /// </summary>
     public enum SQLiteChangeSetConflictResult
     {
+        /// <summary>
+        /// If a conflict callback returns this value no special action is
+        /// taken. The change that caused the conflict is not applied. The
+        /// application of changes continues with the next change.
+        /// </summary>
         Omit = 0,
+
+        /// <summary>
+        /// This value may only be returned from a conflict callback if the
+        /// type of conflict was <see cref="SQLiteChangeSetConflictType.Data" />
+        /// or <see cref="SQLiteChangeSetConflictType.Conflict" />. If this is
+        /// not the case, any changes applied so far are rolled back and the
+        /// call to
+        /// <see cref="ISQLiteChangeSet.Apply(SessionConflictCallback,SessionTableFilterCallback,object)" />
+        /// will raise a <see cref="SQLiteException" /> with an error code of
+        /// <see cref="SQLiteErrorCode.Misuse" />.
+        ///
+        /// If this value is returned for a
+        /// <see cref="SQLiteChangeSetConflictType.Data" /> conflict, then the
+        /// conflicting row is either updated or deleted, depending on the type
+        /// of change.
+        ///
+        /// If this value is returned for a
+        /// <see cref="SQLiteChangeSetConflictType.Conflict" /> conflict, then
+        /// the conflicting row is removed from the database and a second
+        /// attempt to apply the change is made. If this second attempt fails,
+        /// the original row is restored to the database before continuing.
+        /// </summary>
         Replace = 1,
+
+        /// <summary>
+        /// If this value is returned, any changes applied so far are rolled
+        /// back and the call to
+        /// <see cref="ISQLiteChangeSet.Apply(SessionConflictCallback,SessionTableFilterCallback,object)" />
+        /// will raise a <see cref="SQLiteException" /> with an error code of
+        /// <see cref="SQLiteErrorCode.Abort" />.
+        /// </summary>
         Abort = 2
     }
     #endregion
@@ -41,6 +134,26 @@ namespace System.Data.SQLite
     ///////////////////////////////////////////////////////////////////////////
 
     #region Session Extension Delegates
+    /// <summary>
+    /// This callback is invoked when a determination must be made about
+    /// whether changes to a specific table should be tracked -OR- applied.
+    /// It will not be called for tables that are already attached to a
+    /// <see cref="ISQLiteSession" />.
+    /// </summary>
+    /// <param name="clientData">
+    /// The optional application-defined context data that was originally
+    /// passed to the <see cref="ISQLiteSession.SetTableFilter" /> or
+    /// <see cref="ISQLiteChangeSet.Apply(SessionConflictCallback,SessionTableFilterCallback,object)" />
+    /// methods.  This value may be null.
+    /// </param>
+    /// <param name="name">
+    /// The name of the table.
+    /// </param>
+    /// <returns>
+    /// Non-zero if changes to the table should be considered; otherwise,
+    /// zero.  Throwing an exception from this callback will result in
+    /// undefined behavior.
+    /// </returns>
     public delegate bool SessionTableFilterCallback(
         object clientData,
         string name
@@ -48,6 +161,31 @@ namespace System.Data.SQLite
 
     ///////////////////////////////////////////////////////////////////////////
 
+    /// <summary>
+    /// This callback is invoked when there is a conflict while apply changes
+    /// to a database.
+    /// </summary>
+    /// <param name="clientData">
+    /// The optional application-defined context data that was originally
+    /// passed to the
+    /// <see cref="ISQLiteChangeSet.Apply(SessionConflictCallback,SessionTableFilterCallback,object)" />
+    /// method.  This value may be null.
+    /// </param>
+    /// <param name="type">
+    /// The type of this conflict.
+    /// </param>
+    /// <param name="item">
+    /// The <see cref="ISQLiteChangeSetMetadataItem" /> object associated with
+    /// this conflict.  This value may not be null; however, only properties
+    /// that are applicable to the conflict type will be available.  Further
+    /// information on this is available within the descriptions of the
+    /// available <see cref="SQLiteChangeSetConflictType" /> values.
+    /// </param>
+    /// <returns>
+    /// A <see cref="SQLiteChangeSetConflictResult" /> value that indicates the
+    /// action to be taken in order to resolve the conflict.  Throwing an
+    /// exception from this callback will result in undefined behavior.
+    /// </returns>
     public delegate SQLiteChangeSetConflictResult SessionConflictCallback(
         object clientData,
         SQLiteChangeSetConflictType type,
