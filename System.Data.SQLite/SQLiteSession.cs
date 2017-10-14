@@ -2358,8 +2358,6 @@ namespace System.Data.SQLite
             CheckDisposed();
             CheckHandle();
 
-            SQLiteSessionHelpers.CheckRawData(rawData);
-
             IntPtr pData = IntPtr.Zero;
 
             try

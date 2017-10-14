@@ -100,14 +100,14 @@ proc createMemoryChangeSetForConnection { connection rawData } {
 
 ###############################################################################
 
-proc createMemoryChangeSetForSession { session {patch false} } {
-  if {[isObjectHandle $session] && $session ne "null"} then {
+proc createMemoryChangeSetForObject { object {patch false} } {
+  if {[isObjectHandle $object] && $object ne "null"} then {
     set byteArray null
 
     if {$patch} then {
-      $session -alias CreatePatchSet byteArray
+      $object CreatePatchSet byteArray
     } else {
-      $session -alias CreateChangeSet byteArray
+      $object CreateChangeSet byteArray
     }
 
     set rawData [createByteArray [arrayToList byteArray]]
@@ -169,15 +169,30 @@ proc openStreamChangeSetForConnection {
 
 ###############################################################################
 
-proc writeStreamChangeSetForSession { session fileName {patch false} } {
-  if {[isObjectHandle $session] && $session ne "null"} then {
+proc addStreamChangeSetForObject { object fileName } {
+  if {[isObjectHandle $object] && $object ne "null"} then {
+    set stream [object create -alias \
+        System.IO.FileStream $fileName Open Read]
+
+    $object AddChangeSet $stream
+
+    return true
+  }
+
+  return false
+}
+
+###############################################################################
+
+proc writeStreamChangeSetForObject { object fileName {patch false} } {
+  if {[isObjectHandle $object] && $object ne "null"} then {
     set stream [object create -alias \
         System.IO.FileStream $fileName Create Write]
 
     if {$patch} then {
-      $session -alias CreatePatchSet $stream
+      $object CreatePatchSet $stream
     } else {
-      $session -alias CreateChangeSet $stream
+      $object CreateChangeSet $stream
     }
 
     $stream Flush; $stream Close
@@ -261,7 +276,7 @@ proc changeSetToString { changeSet includeValues } {
 proc matchSession { connection session expr } {
   if {[isObjectHandle $session] && $session ne "null"} then {
     if {![$session IsEmpty]} then {
-      set rawData [createMemoryChangeSetForSession $session]
+      set rawData [createMemoryChangeSetForObject $session]
       object removeref $rawData
 
       if {[isObjectHandle $rawData] && $rawData ne "null"} then {
@@ -359,7 +374,7 @@ proc captureChangeSetRawData {
   }
 
   catch {uplevel 1 $script}
-  set rawData [createMemoryChangeSetForSession $session $patch]
+  set rawData [createMemoryChangeSetForObject $session $patch]
   object removeref $rawData
 
   return $rawData
@@ -381,7 +396,7 @@ proc captureChangeSetFile {
   }
 
   catch {uplevel 1 $script}
-  writeStreamChangeSetForSession $session $fileName $patch
+  writeStreamChangeSetForObject $session $fileName $patch
 }
 
 ###############################################################################
@@ -473,11 +488,11 @@ runTest {test session-1.1 {basic extension usage} -setup {
 
   makeSomeChanges $db t1 [list insert update delete]
 
-  set rawData [createMemoryChangeSetForSession $session]
+  set rawData [createMemoryChangeSetForObject $session]
   object removeref $rawData
 
   writeRawDataToFile $fileName(1) $rawData
-  writeStreamChangeSetForSession $session $fileName(2)
+  writeStreamChangeSetForObject $session $fileName(2)
   openStreamChangeSetForConnection $connection $fileName(2) "" state
 
   list [expr {[file size $fileName(1)] > 0}] \
@@ -531,7 +546,7 @@ runTest {test session-1.2.1 {change set read/write/invert (memory)} -setup {
 
   makeSomeChanges $db t1 [list insert update delete]
 
-  set rawData [createMemoryChangeSetForSession $session]
+  set rawData [createMemoryChangeSetForObject $session]
   object removeref $rawData
 
   set changeSet(1) \
@@ -594,7 +609,7 @@ runTest {test session-1.2.2 {change set read/write/invert (stream)} -setup {
 
   makeSomeChanges $db t1 [list insert update delete]
 
-  writeStreamChangeSetForSession $session $fileName(1)
+  writeStreamChangeSetForObject $session $fileName(1)
 
   openStreamChangeSetForConnection \
       $connection $fileName(1) $fileName(2) state
@@ -660,7 +675,7 @@ runTest {test session-1.3 {enabled/disabled state} -setup {
   makeSomeChanges $db t1 [list insert]
   lappend result IsEmpty [$session IsEmpty]
 
-  set rawData [createMemoryChangeSetForSession $session]
+  set rawData [createMemoryChangeSetForObject $session]
   object removeref $rawData
 
   lappend result Length [$rawData Length]
@@ -671,7 +686,7 @@ runTest {test session-1.3 {enabled/disabled state} -setup {
   makeSomeChanges $db t1 [list insert]
   lappend result IsEmpty [$session IsEmpty]
 
-  set rawData [createMemoryChangeSetForSession $session]
+  set rawData [createMemoryChangeSetForObject $session]
   object removeref $rawData
 
   set changeSet(1) \
@@ -723,7 +738,7 @@ runTest {test session-1.4 {direct/indirect state} -setup {
   makeSomeChanges $db t1 [list insert]
   lappend result IsEmpty [$session IsEmpty]
 
-  set rawData [createMemoryChangeSetForSession $session]
+  set rawData [createMemoryChangeSetForObject $session]
   object removeref $rawData
 
   $session SetToDirect
@@ -732,7 +747,7 @@ runTest {test session-1.4 {direct/indirect state} -setup {
   makeSomeChanges $db t1 [list insert]
   lappend result IsEmpty [$session IsEmpty]
 
-  set rawData [createMemoryChangeSetForSession $session]
+  set rawData [createMemoryChangeSetForObject $session]
   object removeref $rawData
 
   set changeSet(1) \
@@ -1245,6 +1260,122 @@ defineConstant.System.Data.SQLite.INTEROP_SESSION_EXTENSION} -result \
 
 ###############################################################################
 
+runTest {test session-1.10.1 {change group (memory)} -setup {
+  setupDb [set fileName session-1.10.1.db]
+
+  cleanupSomeText
+} -body {
+  createTheSchema $db main
+  makeSomeChanges $db t1 [list insert insert]
+
+  set connection [getDbConnection]
+
+  set rawData(1) [captureChangeSetRawData $connection main null {
+    makeSomeChanges $db t1 [list delete] 1
+  }]; object removeref $rawData(1)
+
+  set rawData(2) [captureChangeSetRawData $connection main null {
+    makeSomeChanges $db t1 [list insert]
+  }]; object removeref $rawData(2)
+
+  set changeGroup [$connection -alias CreateChangeGroup]
+
+  $changeGroup AddChangeSet $rawData(1)
+  $changeGroup AddChangeSet $rawData(2)
+
+  set rawData(3) [createMemoryChangeSetForObject $changeGroup]
+  object removeref $rawData(3)
+
+  set changeSet [$connection CreateChangeSet $rawData(3)]
+  changeSetToString $changeSet true
+} -cleanup {
+  cleanupSomeText
+
+  unset -nocomplain changeSet changeGroup rawData
+
+  freeDbConnection
+
+  unset -nocomplain connection
+
+  cleanupDb $fileName
+
+  unset -nocomplain db fileName
+} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
+System.Data.SQLite SQLiteInterop\
+defineConstant.System.Data.SQLite.INTEROP_SESSION_EXTENSION} -result \
+{{TableName t1 NumberOfColumns 2 OperationCode Delete Indirect False\
+PrimaryKeyColumns {[True, False]} OldValue 0 1 NewValue 0 <nullObject>\
+ConflictValue 0 <nullObject> OldValue 1 {"inserted: Alpha Bravo Charlie Delta\
+Echo"} NewValue 1 <nullObject> ConflictValue 1 <nullObject>} {TableName t1\
+NumberOfColumns 2 OperationCode Insert Indirect False PrimaryKeyColumns {[True,\
+False]} OldValue 0 <nullObject> NewValue 0 3 ConflictValue 0 <nullObject>\
+OldValue 1 <nullObject> NewValue 1 {"inserted: Kilo Lima Mike November Oscar"}\
+ConflictValue 1 <nullObject>}}}
+
+###############################################################################
+
+runTest {test session-1.10.2 {change group (stream)} -setup {
+  setupDb [set fileName(0) session-1.10.2.db]
+
+  set fileName(1) [getChangeSetFileName 1]
+  set fileName(2) [getChangeSetFileName 2]
+  set fileName(3) [getChangeSetFileName 3]
+
+  cleanupSomeText
+} -body {
+  createTheSchema $db main
+  makeSomeChanges $db t1 [list insert insert]
+
+  set connection [getDbConnection]
+
+  captureChangeSetFile $connection main null {
+    makeSomeChanges $db t1 [list delete] 1
+  } $fileName(1)
+
+  captureChangeSetFile $connection main null {
+    makeSomeChanges $db t1 [list insert]
+  } $fileName(2)
+
+  set changeGroup [$connection -alias CreateChangeGroup]
+
+  addStreamChangeSetForObject $changeGroup $fileName(1)
+  addStreamChangeSetForObject $changeGroup $fileName(2)
+  writeStreamChangeSetForObject $changeGroup $fileName(3)
+
+  openStreamChangeSetForConnection \
+      $connection $fileName(3) "" state
+
+  changeSetToString $state(changeSet) true
+} -cleanup {
+  cleanupSomeText
+
+  unset -nocomplain state changeGroup
+
+  freeDbConnection
+
+  unset -nocomplain connection
+
+  cleanupFile $fileName(3)
+  cleanupFile $fileName(2)
+  cleanupFile $fileName(1)
+
+  cleanupDb $fileName(0)
+
+  unset -nocomplain db fileName
+} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
+System.Data.SQLite SQLiteInterop\
+defineConstant.System.Data.SQLite.INTEROP_SESSION_EXTENSION} -result \
+{{TableName t1 NumberOfColumns 2 OperationCode Delete Indirect False\
+PrimaryKeyColumns {[True, False]} OldValue 0 1 NewValue 0 <nullObject>\
+ConflictValue 0 <nullObject> OldValue 1 {"inserted: Alpha Bravo Charlie Delta\
+Echo"} NewValue 1 <nullObject> ConflictValue 1 <nullObject>} {TableName t1\
+NumberOfColumns 2 OperationCode Insert Indirect False PrimaryKeyColumns {[True,\
+False]} OldValue 0 <nullObject> NewValue 0 3 ConflictValue 0 <nullObject>\
+OldValue 1 <nullObject> NewValue 1 {"inserted: Kilo Lima Mike November Oscar"}\
+ConflictValue 1 <nullObject>}}}
+
+###############################################################################
+
 rename conflictCallback ""
 rename tableFilterCallbackT1 ""
 rename createByteArray ""
@@ -1259,10 +1390,11 @@ rename matchSession ""
 rename changeSetToString ""
 rename metadataItemToString ""
 rename changeSetFileToString ""
-rename writeStreamChangeSetForSession ""
+rename writeStreamChangeSetForObject ""
+rename addStreamChangeSetForObject ""
 rename openStreamChangeSetForConnection ""
 rename writeRawDataToFile ""
-rename createMemoryChangeSetForSession ""
+rename createMemoryChangeSetForObject ""
 rename createMemoryChangeSetForConnection ""
 rename forDisplay ""
 rename cleanupSomeText ""
