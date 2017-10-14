@@ -196,6 +196,10 @@ namespace System.Data.SQLite
     ///////////////////////////////////////////////////////////////////////////
 
     #region ISQLiteChangeSet Interface
+    /// <summary>
+    /// This interface contains methods used to manipulate a set of changes for
+    /// a database.
+    /// </summary>
     public interface ISQLiteChangeSet :
         IEnumerable<ISQLiteChangeSetMetadataItem>, IDisposable
     {
@@ -218,12 +222,51 @@ namespace System.Data.SQLite
     ///////////////////////////////////////////////////////////////////////////
 
     #region ISQLiteChangeGroup Interface
+    /// <summary>
+    /// This interface contains methods used to manipulate multiple sets of
+    /// changes for a database.
+    /// </summary>
     public interface ISQLiteChangeGroup : IDisposable
     {
+        /// <summary>
+        /// Attempts to add a change set (or patch set) to this change group
+        /// instance.  The underlying data must be contained entirely within
+        /// the <paramref name="rawData" /> byte array.
+        /// </summary>
+        /// <param name="rawData">
+        /// The raw byte data for the specified change set (or patch set).
+        /// </param>
         void AddChangeSet(byte[] rawData);
+
+        /// <summary>
+        /// Attempts to add a change set (or patch set) to this change group
+        /// instance.  The underlying data will be read from the specified
+        /// <see cref="Stream" />.
+        /// </summary>
+        /// <param name="stream">
+        /// The <see cref="Stream" /> instance containing the raw change set
+        /// (or patch set) data to read.
+        /// </param>
         void AddChangeSet(Stream stream);
 
+        /// <summary>
+        /// Attempts to create and return, via <paramref name="rawData" />, the
+        /// combined set of changes represented by this change group instance.
+        /// </summary>
+        /// <param name="rawData">
+        /// Upon success, this will contain the raw byte data for all the
+        /// changes in this change group instance.
+        /// </param>
         void CreateChangeSet(ref byte[] rawData);
+
+        /// <summary>
+        /// Attempts to create and write, via <paramref name="stream" />, the
+        /// combined set of changes represented by this change group instance.
+        /// </summary>
+        /// <param name="stream">
+        /// Upon success, the raw byte data for all the changes in this change
+        /// group instance will be written to this <see cref="Stream" />.
+        /// </param>
         void CreateChangeSet(Stream stream);
     }
     #endregion
@@ -231,19 +274,104 @@ namespace System.Data.SQLite
     ///////////////////////////////////////////////////////////////////////////
 
     #region ISQLiteChangeSetMetadataItem Interface
+    /// <summary>
+    /// This interface contains properties and methods used to fetch metadata
+    /// about one change within a set of changes for a database.
+    /// </summary>
     public interface ISQLiteChangeSetMetadataItem : IDisposable
     {
+        /// <summary>
+        /// The name of the table the change was made to.
+        /// </summary>
         string TableName { get; }
+
+        /// <summary>
+        /// The number of columns impacted by this change.  This value can be
+        /// used to determine the highest valid column index that may be used
+        /// with the <see cref="GetOldValue" />, <see cref="GetNewValue" />,
+        /// and <see cref="GetConflictValue" /> methods of this interface.  It
+        /// will be this value minus one.
+        /// </summary>
         int NumberOfColumns { get; }
+
+        /// <summary>
+        /// This will contain the value
+        /// <see cref="SQLiteAuthorizerActionCode.Insert" />,
+        /// <see cref="SQLiteAuthorizerActionCode.Update" />, or
+        /// <see cref="SQLiteAuthorizerActionCode.Delete" />, corresponding to
+        /// the overall type of change this item represents.
+        /// </summary>
         SQLiteAuthorizerActionCode OperationCode { get; }
+
+        /// <summary>
+        /// Non-zero if this change is considered to be indirect (i.e. as
+        /// though they were made via a trigger or foreign key action).
+        /// </summary>
         bool Indirect { get; }
 
+        /// <summary>
+        /// This array contains a <see cref="Boolean" /> for each column in
+        /// the table associated with this change.  The element will be zero
+        /// if the column is not part of the primary key; otherwise, it will
+        /// be non-zero.
+        /// </summary>
         bool[] PrimaryKeyColumns { get; }
 
+        /// <summary>
+        /// This method may only be called from within a
+        /// <see cref="SessionConflictCallback" /> delegate when the conflict
+        /// type is <see cref="SQLiteChangeSetConflictType.ForeignKey" />.  It
+        /// returns the total number of known foreign key violations in the
+        /// destination database.
+        /// </summary>
         int NumberOfForeignKeyConflicts { get; }
 
+        /// <summary>
+        /// Queries and returns the original value of a given column for this
+        /// change.  This method may only be called when the
+        /// <see cref="OperationCode" /> has a value of
+        /// <see cref="SQLiteAuthorizerActionCode.Update" /> or
+        /// <see cref="SQLiteAuthorizerActionCode.Delete" />.
+        /// </summary>
+        /// <param name="columnIndex">
+        /// The index for the column.  This value must be between zero and one
+        /// less than the total number of columns for this table.
+        /// </param>
+        /// <returns>
+        /// The original value of a given column for this change.
+        /// </returns>
         SQLiteValue GetOldValue(int columnIndex);
+
+        /// <summary>
+        /// Queries and returns the updated value of a given column for this
+        /// change.  This method may only be called when the
+        /// <see cref="OperationCode" /> has a value of
+        /// <see cref="SQLiteAuthorizerActionCode.Insert" /> or
+        /// <see cref="SQLiteAuthorizerActionCode.Update" />.
+        /// </summary>
+        /// <param name="columnIndex">
+        /// The index for the column.  This value must be between zero and one
+        /// less than the total number of columns for this table.
+        /// </param>
+        /// <returns>
+        /// The updated value of a given column for this change.
+        /// </returns>
         SQLiteValue GetNewValue(int columnIndex);
+
+        /// <summary>
+        /// Queries and returns the conflicting value of a given column for
+        /// this change.  This method may only be called from within a
+        /// <see cref="SessionConflictCallback" /> delegate when the conflict
+        /// type is <see cref="SQLiteChangeSetConflictType.Data" /> or
+        /// <see cref="SQLiteChangeSetConflictType.Conflict" />.
+        /// </summary>
+        /// <param name="columnIndex">
+        /// The index for the column.  This value must be between zero and one
+        /// less than the total number of columns for this table.
+        /// </param>
+        /// <returns>
+        /// The conflicting value of a given column for this change.
+        /// </returns>
         SQLiteValue GetConflictValue(int columnIndex);
     }
     #endregion
@@ -251,31 +379,148 @@ namespace System.Data.SQLite
     ///////////////////////////////////////////////////////////////////////////
 
     #region ISQLiteSession Interface
+    /// <summary>
+    /// This interface contains methods to query and manipulate the state of a
+    /// change tracking session for a database.
+    /// </summary>
     public interface ISQLiteSession : IDisposable
     {
+        /// <summary>
+        /// Determines if this session is currently tracking changes to its
+        /// associated database.
+        /// </summary>
+        /// <returns>
+        /// Non-zero if changes to the associated database are being trakced;
+        /// otherwise, zero.
+        /// </returns>
         bool IsEnabled();
+
+        /// <summary>
+        /// Enables tracking of changes to the associated database.
+        /// </summary>
         void SetToEnabled();
+
+        /// <summary>
+        /// Disables tracking of changes to the associated database.
+        /// </summary>
         void SetToDisabled();
 
+        /// <summary>
+        /// Determines if this session is currently set to mark changes as
+        /// indirect (i.e. as though they were made via a trigger or foreign
+        /// key action).
+        /// </summary>
+        /// <returns>
+        /// Non-zero if changes to the associated database are being marked as
+        /// indirect; otherwise, zero.
+        /// </returns>
         bool IsIndirect();
+
+        /// <summary>
+        /// Sets the indirect flag for this session.  Subsequent changes will
+        /// be marked as indirect until this flag is changed again.
+        /// </summary>
         void SetToIndirect();
+
+        /// <summary>
+        /// Clears the indirect flag for this session.  Subsequent changes will
+        /// be marked as direct until this flag is changed again.
+        /// </summary>
         void SetToDirect();
 
+        /// <summary>
+        /// Determines if there are any tracked changes currently within the
+        /// data for this session.
+        /// </summary>
+        /// <returns>
+        /// Non-zero if there are no changes within the data for this session;
+        /// otherwise, zero.
+        /// </returns>
         bool IsEmpty();
 
+        /// <summary>
+        /// Upon success, causes changes to the specified table(s) to start
+        /// being tracked.  Any tables impacted by calls to this method will
+        /// not cause the <see cref="SessionTableFilterCallback" /> callback
+        /// to be invoked.
+        /// </summary>
+        /// <param name="name">
+        /// The name of the table to be tracked -OR- null to track all
+        /// applicable tables within this database.
+        /// </param>
         void AttachTable(string name);
 
+        /// <summary>
+        /// This method is used to set the table filter for this instance.
+        /// </summary>
+        /// <param name="callback">
+        /// The table filter callback -OR- null to clear any existing table
+        /// filter callback.
+        /// </param>
+        /// <param name="clientData">
+        /// The optional application-defined context data.  This value may be
+        /// null.
+        /// </param>
         void SetTableFilter(
             SessionTableFilterCallback callback,
             object clientData
         );
 
+        /// <summary>
+        /// Attempts to create and return, via <paramref name="rawData" />, the
+        /// combined set of changes represented by this session instance.
+        /// </summary>
+        /// <param name="rawData">
+        /// Upon success, this will contain the raw byte data for all the
+        /// changes in this session instance.
+        /// </param>
         void CreateChangeSet(ref byte[] rawData);
+
+        /// <summary>
+        /// Attempts to create and write, via <paramref name="stream" />, the
+        /// combined set of changes represented by this session instance.
+        /// </summary>
+        /// <param name="stream">
+        /// Upon success, the raw byte data for all the changes in this session
+        /// instance will be written to this <see cref="Stream" />.
+        /// </param>
         void CreateChangeSet(Stream stream);
 
+        /// <summary>
+        /// Attempts to create and return, via <paramref name="rawData" />, the
+        /// combined set of changes represented by this session instance as a
+        /// patch set.
+        /// </summary>
+        /// <param name="rawData">
+        /// Upon success, this will contain the raw byte data for all the
+        /// changes in this session instance.
+        /// </param>
         void CreatePatchSet(ref byte[] rawData);
+
+        /// <summary>
+        /// Attempts to create and write, via <paramref name="stream" />, the
+        /// combined set of changes represented by this session instance as a
+        /// patch set.
+        /// </summary>
+        /// <param name="stream">
+        /// Upon success, the raw byte data for all the changes in this session
+        /// instance will be written to this <see cref="Stream" />.
+        /// </param>
         void CreatePatchSet(Stream stream);
 
+        /// <summary>
+        /// This method loads the differences between two tables [with the same
+        /// name, set of columns, and primary key definition] into this session
+        /// instance.
+        /// </summary>
+        /// <param name="fromDatabaseName">
+        /// The name of the database containing the table with the original
+        /// data (i.e. it will need updating in order to be identical to the
+        /// one within the database associated with this session instance).
+        /// </param>
+        /// <param name="tableName">
+        /// The name of the table.
+        /// </param>
         void LoadDifferencesFromTable(
             string fromDatabaseName,
             string tableName
@@ -1266,7 +1511,7 @@ namespace System.Data.SQLite
         /// </param>
         /// <param name="pData">
         /// A preallocated native buffer to receive the requested input bytes.
-        /// It must be at least <see cref="nData" /> bytes in size.
+        /// It must be at least <paramref name="nData" /> bytes in size.
         /// </param>
         /// <param name="nData">
         /// Upon entry, the number of bytes to read.  Upon exit, the number of
@@ -1338,7 +1583,8 @@ namespace System.Data.SQLite
         /// </param>
         /// <param name="pData">
         /// A preallocated native buffer containing the requested output
-        /// bytes.  It must be at least <see cref="nData" /> bytes in size.
+        /// bytes.  It must be at least <paramref name="nData" /> bytes in
+        /// size.
         /// </param>
         /// <param name="nData">
         /// The number of bytes to write.
