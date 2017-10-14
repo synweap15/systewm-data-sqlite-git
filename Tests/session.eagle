@@ -610,6 +610,9 @@ runTest {test session-1.2.2 {change set read/write/invert (stream)} -setup {
 
   unset -nocomplain connection
 
+  cleanupFile $fileName(2)
+  cleanupFile $fileName(1)
+
   cleanupDb $fileName(0)
 
   unset -nocomplain db fileName
@@ -938,7 +941,7 @@ runTest {test session-1.6.2 {combine/apply change sets (stream)} -setup {
   openStreamChangeSetForConnection \
       $connection $fileName(2) "" state2
 
-  $state1(changeSet) CombineWith $state2(changeSet); unset state1
+  $state1(changeSet) CombineWith $state2(changeSet); unset state2 state1
 
   openStreamChangeSetForConnection \
       $connection $fileName(3) "" state3
@@ -960,6 +963,9 @@ runTest {test session-1.6.2 {combine/apply change sets (stream)} -setup {
   freeDbConnection
 
   unset -nocomplain connection
+
+  cleanupFile $fileName(2)
+  cleanupFile $fileName(1)
 
   cleanupDb $fileName(0)
 
@@ -1114,6 +1120,10 @@ runTest {test session-1.7.2 {combine/apply patch sets (stream)} -setup {
 
   unset -nocomplain connection
 
+  cleanupFile $fileName(3)
+  cleanupFile $fileName(2)
+  cleanupFile $fileName(1)
+
   cleanupDb $fileName(0)
 
   catch {object removecallback conflictCallback}
@@ -1184,6 +1194,54 @@ defineConstant.System.Data.SQLite.INTEROP_SESSION_EXTENSION} -result {{1\
 India Juliet}} {1 {inserted: Alpha Bravo Charlie Delta Echo} 2 {inserted:\
 Foxtrot Golf Hotel India Juliet} 3 {inserted: Kilo Lima Mike November Oscar} 4\
 {inserted: Papa Quebec Romeo Sierra Tango}}}}
+
+###############################################################################
+
+runTest {test session-1.9 {apply change set (remote stream)} -setup {
+  setupDb [set fileName session-1.9.db]
+
+  cleanupSomeText
+} -body {
+  createTheSchema $db main
+
+  set connection [getDbConnection]
+
+  set webClient [object create -alias System.Net.WebClient]
+
+  set stream [$webClient -alias OpenRead \
+      https://system.data.sqlite.org/tests/session-1.9.bin]
+
+  set changeSet [$connection -alias CreateChangeSet $stream null]
+
+  $changeSet -marshalflags +DynamicCallback \
+      Apply conflictCallback null; unset changeSet
+
+  string tolower [hash normal sha1 [sql execute -execute reader \
+      -format list $db {SELECT x, y FROM t1 ORDER BY x;}]]
+} -cleanup {
+  cleanupSomeText
+
+  unset -nocomplain changeSet stream webClient
+
+  freeDbConnection
+
+  unset -nocomplain connection
+
+  cleanupDb $fileName
+
+  catch {object removecallback conflictCallback}
+
+  catch {
+    foreach callbackResult $callbackResults {
+      catch {object dispose $callbackResult}
+    }
+  }
+
+  unset -nocomplain callbackResult callbackResults db fileName
+} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
+System.Data.SQLite SQLiteInterop\
+defineConstant.System.Data.SQLite.INTEROP_SESSION_EXTENSION} -result \
+{06631bf3545dba83b25db5142afc4d229544ed55}}
 
 ###############################################################################
 
