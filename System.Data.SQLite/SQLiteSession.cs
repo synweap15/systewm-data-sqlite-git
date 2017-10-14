@@ -203,14 +203,74 @@ namespace System.Data.SQLite
     public interface ISQLiteChangeSet :
         IEnumerable<ISQLiteChangeSetMetadataItem>, IDisposable
     {
+        /// <summary>
+        /// This method "inverts" the set of changes within this instance.
+        /// Applying an inverted set of changes to a database reverses the
+        /// effects of applying the uninverted changes.  Specifically:
+        /// <![CDATA[<ul>]]><![CDATA[<li>]]>
+        /// Each DELETE change is changed to an INSERT, and
+        /// <![CDATA[</li>]]><![CDATA[<li>]]>
+        /// Each INSERT change is changed to a DELETE, and
+        /// <![CDATA[</li>]]><![CDATA[<li>]]>
+        /// For each UPDATE change, the old.* and new.* values are exchanged.
+        /// <![CDATA[</li>]]><![CDATA[</ul>]]>
+        /// This method does not change the order in which changes appear
+        /// within the set of changes. It merely reverses the sense of each
+        /// individual change.
+        /// </summary>
+        /// <returns>
+        /// The new <see cref="ISQLiteChangeSet" /> instance that represents
+        /// the resulting set of changes -OR- null if it is not available.
+        /// </returns>
         ISQLiteChangeSet Invert();
+
+        /// <summary>
+        /// This method combines the specified set of changes with the ones
+        /// contained in this instance.
+        /// </summary>
+        /// <param name="changeSet">
+        /// The changes to be combined with those in this instance.
+        /// </param>
+        /// <returns>
+        /// The new <see cref="ISQLiteChangeSet" /> instance that represents
+        /// the resulting set of changes -OR- null if it is not available.
+        /// </returns>
         ISQLiteChangeSet CombineWith(ISQLiteChangeSet changeSet);
 
+        /// <summary>
+        /// Attempts to apply the set of changes in this instance to the
+        /// associated database.
+        /// </summary>
+        /// <param name="conflictCallback">
+        /// The <see cref="SessionConflictCallback" /> delegate that will need
+        /// to handle any conflicting changes that may arise.
+        /// </param>
+        /// <param name="clientData">
+        /// The optional application-defined context data.  This value may be
+        /// null.
+        /// </param>
         void Apply(
             SessionConflictCallback conflictCallback,
             object clientData
         );
 
+        /// <summary>
+        /// Attempts to apply the set of changes in this instance to the
+        /// associated database.
+        /// </summary>
+        /// <param name="conflictCallback">
+        /// The <see cref="SessionConflictCallback" /> delegate that will need
+        /// to handle any conflicting changes that may arise.
+        /// </param>
+        /// <param name="tableFilterCallback">
+        /// The optional <see cref="SessionTableFilterCallback" /> delegate
+        /// that can be used to filter the list of tables impacted by the set
+        /// of changes.
+        /// </param>
+        /// <param name="clientData">
+        /// The optional application-defined context data.  This value may be
+        /// null.
+        /// </param>
         void Apply(
             SessionConflictCallback conflictCallback,
             SessionTableFilterCallback tableFilterCallback,
@@ -3167,9 +3227,32 @@ namespace System.Data.SQLite
     ///////////////////////////////////////////////////////////////////////////
 
     #region SQLiteChangeSetBase Class
+    /// <summary>
+    /// This class represents the abstract concept of a set of changes.  It
+    /// acts as the base class for the <see cref="SQLiteMemoryChangeSet" />
+    /// and <see cref="SQLiteStreamChangeSet" /> classes.  It derives from
+    /// the <see cref="SQLiteConnectionLock" /> class, which is used to hold
+    /// the underlying native connection handle open until the instances of
+    /// this class are disposed or finalized.  It also provides the ability
+    /// to construct wrapped native delegates of the
+    /// <see cref="UnsafeNativeMethods.xSessionFilter" /> and
+    /// <see cref="UnsafeNativeMethods.xSessionConflict" /> types.
+    /// </summary>
     internal class SQLiteChangeSetBase : SQLiteConnectionLock
     {
         #region Private Constructors
+        /// <summary>
+        /// Constructs an instance of this class using the specified wrapped
+        /// native connection handle.
+        /// </summary>
+        /// <param name="handle">
+        /// The wrapped native connection handle to be associated with this
+        /// change set.
+        /// </param>
+        /// <param name="flags">
+        /// The flags associated with the connection represented by the
+        /// <paramref name="handle" /> value.
+        /// </param>
         internal SQLiteChangeSetBase(
             SQLiteConnectionHandle handle,
             SQLiteConnectionFlags flags
@@ -3183,6 +3266,18 @@ namespace System.Data.SQLite
         ///////////////////////////////////////////////////////////////////////
 
         #region Private Methods
+        /// <summary>
+        /// Creates and returns a concrete implementation of the
+        /// <see cref="ISQLiteChangeSetMetadataItem" /> interface.
+        /// </summary>
+        /// <param name="iterator">
+        /// The native iterator handle to use.
+        /// </param>
+        /// <returns>
+        /// An instance of the <see cref="ISQLiteChangeSetMetadataItem"/>
+        /// interface, which can be used to fetch metadata associated with
+        /// the current item in this set of changes.
+        /// </returns>
         private ISQLiteChangeSetMetadataItem CreateMetadataItem(
             IntPtr iterator
             )
@@ -3195,6 +3290,25 @@ namespace System.Data.SQLite
         ///////////////////////////////////////////////////////////////////////
 
         #region Protected Methods
+        /// <summary>
+        /// Attempts to create a
+        /// <see cref="UnsafeNativeMethods.xSessionFilter" /> native delegate
+        /// that invokes the specified
+        /// <see cref="SessionTableFilterCallback" /> delegate.
+        /// </summary>
+        /// <param name="tableFilterCallback">
+        /// The <see cref="SessionTableFilterCallback" /> to invoke when the
+        /// <see cref="UnsafeNativeMethods.xSessionFilter" /> native delegate
+        /// is called.  If this value is null then null is returned.
+        /// </param>
+        /// <param name="clientData">
+        /// The optional application-defined context data.  This value may be
+        /// null.
+        /// </param>
+        /// <returns>
+        /// The created <see cref="UnsafeNativeMethods.xSessionFilter" />
+        /// native delegate -OR- null if it cannot be created.
+        /// </returns>
         protected UnsafeNativeMethods.xSessionFilter GetDelegate(
             SessionTableFilterCallback tableFilterCallback,
             object clientData
@@ -3243,6 +3357,25 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
+        /// <summary>
+        /// Attempts to create a
+        /// <see cref="UnsafeNativeMethods.xSessionConflict" /> native delegate
+        /// that invokes the specified
+        /// <see cref="SessionConflictCallback" /> delegate.
+        /// </summary>
+        /// <param name="conflictCallback">
+        /// The <see cref="SessionConflictCallback" /> to invoke when the
+        /// <see cref="UnsafeNativeMethods.xSessionConflict" /> native delegate
+        /// is called.  If this value is null then null is returned.
+        /// </param>
+        /// <param name="clientData">
+        /// The optional application-defined context data.  This value may be
+        /// null.
+        /// </param>
+        /// <returns>
+        /// The created <see cref="UnsafeNativeMethods.xSessionConflict" />
+        /// native delegate -OR- null if it cannot be created.
+        /// </returns>
         protected UnsafeNativeMethods.xSessionConflict GetDelegate(
             SessionConflictCallback conflictCallback,
             object clientData
@@ -3366,16 +3499,40 @@ namespace System.Data.SQLite
     ///////////////////////////////////////////////////////////////////////////
 
     #region SQLiteMemoryChangeSet Class
+    /// <summary>
+    /// This class represents a set of changes contained entirely in memory.
+    /// </summary>
     internal sealed class SQLiteMemoryChangeSet :
         SQLiteChangeSetBase, ISQLiteChangeSet
     {
         #region Private Data
+        /// <summary>
+        /// The raw byte data for this set of changes.  Since this data must
+        /// be marshalled to a native memory buffer before being used, there
+        /// must be enough memory available to store at least two times the
+        /// amount of data contained within it.
+        /// </summary>
         private byte[] rawData;
         #endregion
 
         ///////////////////////////////////////////////////////////////////////
 
         #region Private Constructors
+        /// <summary>
+        /// Constructs an instance of this class using the specified raw byte
+        /// data and wrapped native connection handle.
+        /// </summary>
+        /// <param name="rawData">
+        /// The raw byte data for the specified change set (or patch set).
+        /// </param>
+        /// <param name="handle">
+        /// The wrapped native connection handle to be associated with this
+        /// set of changes.
+        /// </param>
+        /// <param name="flags">
+        /// The flags associated with the connection represented by the
+        /// <paramref name="handle" /> value.
+        /// </param>
         internal SQLiteMemoryChangeSet(
             byte[] rawData,
             SQLiteConnectionHandle handle,
@@ -3390,6 +3547,25 @@ namespace System.Data.SQLite
         ///////////////////////////////////////////////////////////////////////
 
         #region ISQLiteChangeSet Members
+        /// <summary>
+        /// This method "inverts" the set of changes within this instance.
+        /// Applying an inverted set of changes to a database reverses the
+        /// effects of applying the uninverted changes.  Specifically:
+        /// <![CDATA[<ul>]]><![CDATA[<li>]]>
+        /// Each DELETE change is changed to an INSERT, and
+        /// <![CDATA[</li>]]><![CDATA[<li>]]>
+        /// Each INSERT change is changed to a DELETE, and
+        /// <![CDATA[</li>]]><![CDATA[<li>]]>
+        /// For each UPDATE change, the old.* and new.* values are exchanged.
+        /// <![CDATA[</li>]]><![CDATA[</ul>]]>
+        /// This method does not change the order in which changes appear
+        /// within the set of changes. It merely reverses the sense of each
+        /// individual change.
+        /// </summary>
+        /// <returns>
+        /// The new <see cref="ISQLiteChangeSet" /> instance that represents
+        /// the resulting set of changes.
+        /// </returns>
         public ISQLiteChangeSet Invert()
         {
             CheckDisposed();
@@ -3436,6 +3612,17 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
+        /// <summary>
+        /// This method combines the specified set of changes with the ones
+        /// contained in this instance.
+        /// </summary>
+        /// <param name="changeSet">
+        /// The changes to be combined with those in this instance.
+        /// </param>
+        /// <returns>
+        /// The new <see cref="ISQLiteChangeSet" /> instance that represents
+        /// the resulting set of changes.
+        /// </returns>
         public ISQLiteChangeSet CombineWith(
             ISQLiteChangeSet changeSet
             )
@@ -3508,6 +3695,18 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
+        /// <summary>
+        /// Attempts to apply the set of changes in this instance to the
+        /// associated database.
+        /// </summary>
+        /// <param name="conflictCallback">
+        /// The <see cref="SessionConflictCallback" /> delegate that will need
+        /// to handle any conflicting changes that may arise.
+        /// </param>
+        /// <param name="clientData">
+        /// The optional application-defined context data.  This value may be
+        /// null.
+        /// </param>
         public void Apply(
             SessionConflictCallback conflictCallback,
             object clientData
@@ -3520,6 +3719,23 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
+        /// <summary>
+        /// Attempts to apply the set of changes in this instance to the
+        /// associated database.
+        /// </summary>
+        /// <param name="conflictCallback">
+        /// The <see cref="SessionConflictCallback" /> delegate that will need
+        /// to handle any conflicting changes that may arise.
+        /// </param>
+        /// <param name="tableFilterCallback">
+        /// The optional <see cref="SessionTableFilterCallback" /> delegate
+        /// that can be used to filter the list of tables impacted by the set
+        /// of changes.
+        /// </param>
+        /// <param name="clientData">
+        /// The optional application-defined context data.  This value may be
+        /// null.
+        /// </param>
         public void Apply(
             SessionConflictCallback conflictCallback,
             SessionTableFilterCallback tableFilterCallback,
@@ -3567,6 +3783,14 @@ namespace System.Data.SQLite
         ///////////////////////////////////////////////////////////////////////
 
         #region IEnumerable<ISQLiteChangeSetMetadataItem> Members
+        /// <summary>
+        /// Creates an <see cref="IEnumerator" /> capable of iterating over the
+        /// items within this set of changes.
+        /// </summary>
+        /// <returns>
+        /// The new <see cref="IEnumerator{ISQLiteChangeSetMetadataItem}" />
+        /// instance.
+        /// </returns>
         public IEnumerator<ISQLiteChangeSetMetadataItem> GetEnumerator()
         {
             return new SQLiteMemoryChangeSetEnumerator(rawData);
@@ -3576,6 +3800,13 @@ namespace System.Data.SQLite
         ///////////////////////////////////////////////////////////////////////
 
         #region IEnumerable Members
+        /// <summary>
+        /// Creates an <see cref="IEnumerator" /> capable of iterating over the
+        /// items within this set of changes.
+        /// </summary>
+        /// <returns>
+        /// The new <see cref="IEnumerator" /> instance.
+        /// </returns>
         IEnumerator System.Collections.IEnumerable.GetEnumerator()
         {
             return GetEnumerator();
@@ -3632,8 +3863,6 @@ namespace System.Data.SQLite
                     //////////////////////////////////////
                     // release unmanaged resources here...
                     //////////////////////////////////////
-
-                    Unlock();
                 }
             }
             finally
@@ -3653,19 +3882,66 @@ namespace System.Data.SQLite
     ///////////////////////////////////////////////////////////////////////////
 
     #region SQLiteStreamChangeSet Class
+    /// <summary>
+    /// This class represents a set of changes that are backed by a
+    /// <see cref="Stream" /> instance.
+    /// </summary>
     internal sealed class SQLiteStreamChangeSet :
         SQLiteChangeSetBase, ISQLiteChangeSet
     {
         #region Private Data
+        /// <summary>
+        /// The <see cref="SQLiteStreamAdapter" /> instance that is managing
+        /// the underlying input <see cref="Stream" /> used as the backing
+        /// store for the set of changes associated with this instance.
+        /// </summary>
         private SQLiteStreamAdapter inputStreamAdapter;
+
+        /// <summary>
+        /// The <see cref="SQLiteStreamAdapter" /> instance that is managing
+        /// the underlying output <see cref="Stream" /> used as the backing
+        /// store for the set of changes generated by the <see cref="Invert" />
+        /// or <see cref="CombineWith" /> methods.
+        /// </summary>
         private SQLiteStreamAdapter outputStreamAdapter;
+
+        /// <summary>
+        /// The <see cref="Stream" /> instance used as the backing store for
+        /// the set of changes associated with this instance.
+        /// </summary>
         private Stream inputStream;
+
+        /// <summary>
+        /// The <see cref="Stream" /> instance used as the backing store for
+        /// the set of changes generated by the <see cref="Invert" /> or
+        /// <see cref="CombineWith" /> methods.
+        /// </summary>
         private Stream outputStream;
         #endregion
 
         ///////////////////////////////////////////////////////////////////////
 
         #region Private Constructors
+        /// <summary>
+        /// Constructs an instance of this class using the specified streams
+        /// and wrapped native connection handle.
+        /// </summary>
+        /// <param name="inputStream">
+        /// The <see cref="Stream" /> where the raw byte data for the set of
+        /// changes may be read.
+        /// </param>
+        /// <param name="outputStream">
+        /// The <see cref="Stream" /> where the raw byte data for resulting
+        /// sets of changes may be written.
+        /// </param>
+        /// <param name="handle">
+        /// The wrapped native connection handle to be associated with this
+        /// set of changes.
+        /// </param>
+        /// <param name="flags">
+        /// The flags associated with the connection represented by the
+        /// <paramref name="handle" /> value.
+        /// </param>
         internal SQLiteStreamChangeSet(
             Stream inputStream,
             Stream outputStream,
@@ -3682,6 +3958,10 @@ namespace System.Data.SQLite
         ///////////////////////////////////////////////////////////////////////
 
         #region Private Methods
+        /// <summary>
+        /// Throws an exception if the input stream or its associated stream
+        /// adapter are invalid.
+        /// </summary>
         private void CheckInputStream()
         {
             if (inputStream == null)
@@ -3699,6 +3979,10 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
+        /// <summary>
+        /// Throws an exception if the output stream or its associated stream
+        /// adapter are invalid.
+        /// </summary>
         private void CheckOutputStream()
         {
             if (outputStream == null)
@@ -3718,6 +4002,25 @@ namespace System.Data.SQLite
         ///////////////////////////////////////////////////////////////////////
 
         #region ISQLiteChangeSet Members
+        /// <summary>
+        /// This method "inverts" the set of changes within this instance.
+        /// Applying an inverted set of changes to a database reverses the
+        /// effects of applying the uninverted changes.  Specifically:
+        /// <![CDATA[<ul>]]><![CDATA[<li>]]>
+        /// Each DELETE change is changed to an INSERT, and
+        /// <![CDATA[</li>]]><![CDATA[<li>]]>
+        /// Each INSERT change is changed to a DELETE, and
+        /// <![CDATA[</li>]]><![CDATA[<li>]]>
+        /// For each UPDATE change, the old.* and new.* values are exchanged.
+        /// <![CDATA[</li>]]><![CDATA[</ul>]]>
+        /// This method does not change the order in which changes appear
+        /// within the set of changes. It merely reverses the sense of each
+        /// individual change.
+        /// </summary>
+        /// <returns>
+        /// Since the resulting set of changes is written to the output stream,
+        /// this method always returns null.
+        /// </returns>
         public ISQLiteChangeSet Invert()
         {
             CheckDisposed();
@@ -3736,6 +4039,17 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
+        /// <summary>
+        /// This method combines the specified set of changes with the ones
+        /// contained in this instance.
+        /// </summary>
+        /// <param name="changeSet">
+        /// The changes to be combined with those in this instance.
+        /// </param>
+        /// <returns>
+        /// Since the resulting set of changes is written to the output stream,
+        /// this method always returns null.
+        /// </returns>
         public ISQLiteChangeSet CombineWith(
             ISQLiteChangeSet changeSet
             )
@@ -3769,6 +4083,18 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
+        /// <summary>
+        /// Attempts to apply the set of changes in this instance to the
+        /// associated database.
+        /// </summary>
+        /// <param name="conflictCallback">
+        /// The <see cref="SessionConflictCallback" /> delegate that will need
+        /// to handle any conflicting changes that may arise.
+        /// </param>
+        /// <param name="clientData">
+        /// The optional application-defined context data.  This value may be
+        /// null.
+        /// </param>
         public void Apply(
             SessionConflictCallback conflictCallback,
             object clientData
@@ -3781,6 +4107,23 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
+        /// <summary>
+        /// Attempts to apply the set of changes in this instance to the
+        /// associated database.
+        /// </summary>
+        /// <param name="conflictCallback">
+        /// The <see cref="SessionConflictCallback" /> delegate that will need
+        /// to handle any conflicting changes that may arise.
+        /// </param>
+        /// <param name="tableFilterCallback">
+        /// The optional <see cref="SessionTableFilterCallback" /> delegate
+        /// that can be used to filter the list of tables impacted by the set
+        /// of changes.
+        /// </param>
+        /// <param name="clientData">
+        /// The optional application-defined context data.  This value may be
+        /// null.
+        /// </param>
         public void Apply(
             SessionConflictCallback conflictCallback,
             SessionTableFilterCallback tableFilterCallback,
@@ -3811,6 +4154,14 @@ namespace System.Data.SQLite
         ///////////////////////////////////////////////////////////////////////
 
         #region IEnumerable<ISQLiteChangeSetMetadataItem> Members
+        /// <summary>
+        /// Creates an <see cref="IEnumerator" /> capable of iterating over the
+        /// items within this set of changes.
+        /// </summary>
+        /// <returns>
+        /// The new <see cref="IEnumerator{ISQLiteChangeSetMetadataItem}" />
+        /// instance.
+        /// </returns>
         public IEnumerator<ISQLiteChangeSetMetadataItem> GetEnumerator()
         {
             return new SQLiteStreamChangeSetEnumerator(
@@ -3821,6 +4172,13 @@ namespace System.Data.SQLite
         ///////////////////////////////////////////////////////////////////////
 
         #region IEnumerable Members
+        /// <summary>
+        /// Creates an <see cref="IEnumerator" /> capable of iterating over the
+        /// items within this set of changes.
+        /// </summary>
+        /// <returns>
+        /// The new <see cref="IEnumerator" /> instance.
+        /// </returns>
         IEnumerator System.Collections.IEnumerable.GetEnumerator()
         {
             return GetEnumerator();
@@ -3870,6 +4228,18 @@ namespace System.Data.SQLite
                         // dispose managed resources here...
                         ////////////////////////////////////
 
+                        if (outputStreamAdapter != null)
+                        {
+                            outputStreamAdapter.Dispose();
+                            outputStreamAdapter = null;
+                        }
+
+                        if (inputStreamAdapter != null)
+                        {
+                            inputStreamAdapter.Dispose();
+                            inputStreamAdapter = null;
+                        }
+
                         if (outputStream != null)
                             outputStream = null; /* NOT OWNED */
 
@@ -3880,8 +4250,6 @@ namespace System.Data.SQLite
                     //////////////////////////////////////
                     // release unmanaged resources here...
                     //////////////////////////////////////
-
-                    Unlock();
                 }
             }
             finally
@@ -3901,16 +4269,34 @@ namespace System.Data.SQLite
     ///////////////////////////////////////////////////////////////////////////
 
     #region SQLiteChangeSetEnumerator Class
+    /// <summary>
+    /// This class represents an <see cref="IEnumerator" /> that is capable of
+    /// enumerating over a set of changes.  It serves as the base class for the
+    /// <see cref="SQLiteMemoryChangeSetEnumerator" /> and
+    /// <see cref="SQLiteStreamChangeSetEnumerator" /> classes.  It manages and
+    /// owns an instance of the <see cref="SQLiteChangeSetIterator" /> class.
+    /// </summary>
     internal abstract class SQLiteChangeSetEnumerator :
         IEnumerator<ISQLiteChangeSetMetadataItem>
     {
         #region Private Data
+        /// <summary>
+        /// This managed change set iterator is managed and owned by this
+        /// class.  It will be disposed when this class is disposed.
+        /// </summary>
         private SQLiteChangeSetIterator iterator;
         #endregion
 
         ///////////////////////////////////////////////////////////////////////
 
         #region Public Constructors
+        /// <summary>
+        /// Constructs an instance of this class using the specified managed
+        /// change set iterator.
+        /// </summary>
+        /// <param name="iterator">
+        /// The managed iterator instance to use.
+        /// </param>
         public SQLiteChangeSetEnumerator(
             SQLiteChangeSetIterator iterator
             )
@@ -3922,6 +4308,9 @@ namespace System.Data.SQLite
         ///////////////////////////////////////////////////////////////////////
 
         #region Private Methods
+        /// <summary>
+        /// Throws an exception if the managed iterator instance is invalid.
+        /// </summary>
         private void CheckIterator()
         {
             if (iterator == null)
@@ -3932,6 +4321,12 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
+        /// <summary>
+        /// Sets the managed iterator instance to a new value.
+        /// </summary>
+        /// <param name="iterator">
+        /// The new managed iterator instance to use.
+        /// </param>
         private void SetIterator(
             SQLiteChangeSetIterator iterator
             )
@@ -3941,6 +4336,10 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
+        /// <summary>
+        /// Disposes of the managed iterator instance and sets its value to
+        /// null.
+        /// </summary>
         private void CloseIterator()
         {
             if (iterator != null)
@@ -3954,6 +4353,13 @@ namespace System.Data.SQLite
         ///////////////////////////////////////////////////////////////////////
 
         #region Protected Methods
+        /// <summary>
+        /// Disposes of the existing managed iterator instance and then sets it
+        /// to a new value.
+        /// </summary>
+        /// <param name="iterator">
+        /// The new managed iterator instance to use.
+        /// </param>
         protected void ResetIterator(
             SQLiteChangeSetIterator iterator
             )
@@ -3966,6 +4372,10 @@ namespace System.Data.SQLite
         ///////////////////////////////////////////////////////////////////////
 
         #region IEnumerator<ISQLiteChangeSetMetadataItem> Members
+        /// <summary>
+        /// Returns the current change within the set of changes, represented
+        /// by a <see cref="ISQLiteChangeSetMetadataItem" /> instance.
+        /// </summary>
         public ISQLiteChangeSetMetadataItem Current
         {
             get
@@ -3980,6 +4390,10 @@ namespace System.Data.SQLite
         ///////////////////////////////////////////////////////////////////////
 
         #region IEnumerator Members
+        /// <summary>
+        /// Returns the current change within the set of changes, represented
+        /// by a <see cref="ISQLiteChangeSetMetadataItem" /> instance.
+        /// </summary>
         object Collections.IEnumerator.Current
         {
             get
@@ -3992,6 +4406,12 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
+        /// <summary>
+        /// Attempts to advance to the next item in the set of changes.
+        /// </summary>
+        /// <returns>
+        /// Non-zero if more items are available; otherwise, zero.
+        /// </returns>
         public bool MoveNext()
         {
             CheckDisposed();
@@ -4002,6 +4422,10 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
+        /// <summary>
+        /// Throws <see cref="NotImplementedException" /> because not all the
+        /// derived classes are able to support reset functionality.
+        /// </summary>
         public virtual void Reset()
         {
             CheckDisposed();
@@ -4101,16 +4525,34 @@ namespace System.Data.SQLite
     ///////////////////////////////////////////////////////////////////////////
 
     #region SQLiteMemoryChangeSetEnumerator Class
+    /// <summary>
+    /// This class represents an <see cref="IEnumerator" /> that is capable of
+    /// enumerating over a set of changes contained entirely in memory.
+    /// </summary>
     internal sealed class SQLiteMemoryChangeSetEnumerator :
         SQLiteChangeSetEnumerator
     {
         #region Private Data
+        /// <summary>
+        /// The raw byte data for this set of changes.  Since this data must
+        /// be marshalled to a native memory buffer before being used, there
+        /// must be enough memory available to store at least two times the
+        /// amount of data contained within it.
+        /// </summary>
         private byte[] rawData;
         #endregion
 
         ///////////////////////////////////////////////////////////////////////
 
         #region Public Constructors
+        /// <summary>
+        /// Constructs an instance of this class using the specified raw byte
+        /// data.
+        /// </summary>
+        /// <param name="rawData">
+        /// The raw byte data containing the set of changes for this
+        /// enumerator.
+        /// </param>
         public SQLiteMemoryChangeSetEnumerator(
             byte[] rawData
             )
@@ -4123,6 +4565,9 @@ namespace System.Data.SQLite
         ///////////////////////////////////////////////////////////////////////
 
         #region IEnumerator Overrides
+        /// <summary>
+        /// Resets the enumerator to its initial position.
+        /// </summary>
         public override void Reset()
         {
             CheckDisposed();
@@ -4197,10 +4642,25 @@ namespace System.Data.SQLite
     ///////////////////////////////////////////////////////////////////////////
 
     #region SQLiteStreamChangeSetEnumerator Class
+    /// <summary>
+    /// This class represents an <see cref="IEnumerator" /> that is capable of
+    /// enumerating over a set of changes backed by a <see cref="Stream" />
+    /// instance.
+    /// </summary>
     internal sealed class SQLiteStreamChangeSetEnumerator :
         SQLiteChangeSetEnumerator
     {
         #region Public Constructors
+        /// <summary>
+        /// Constructs an instance of this class using the specified stream.
+        /// </summary>
+        /// <param name="stream">
+        /// The <see cref="Stream" /> where the raw byte data for the set of
+        /// changes may be read.
+        /// </param>
+        /// <param name="flags">
+        /// The flags associated with the parent connection.
+        /// </param>
         public SQLiteStreamChangeSetEnumerator(
             Stream stream,
             SQLiteConnectionFlags flags
@@ -4301,7 +4761,7 @@ namespace System.Data.SQLite
         /// instance.
         /// </summary>
         /// <param name="iterator">
-        /// The native iterator handle to use.
+        /// The managed iterator instance to use.
         /// </param>
         public SQLiteChangeSetMetadataItem(
             SQLiteChangeSetIterator iterator
