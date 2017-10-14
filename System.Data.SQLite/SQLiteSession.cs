@@ -378,8 +378,8 @@ namespace System.Data.SQLite
 
         #region Public Constructors
         /// <summary>
-        /// Constructs a new instance of this class using the specified native
-        /// connection handle and associated flags.
+        /// Constructs a new instance of this class using the specified wrapped
+        /// native connection handle and associated flags.
         /// </summary>
         /// <param name="handle">
         /// The wrapped native connection handle to be associated with this
@@ -1161,7 +1161,6 @@ namespace System.Data.SQLite
         /// <summary>
         /// The delegate used to provide input to the native streaming API.
         /// It will be null -OR- point to the <see cref="Input" /> method.
-        /// method.
         /// </summary>
         private UnsafeNativeMethods.xSessionInput xInput;
 
@@ -2087,26 +2086,71 @@ namespace System.Data.SQLite
     ///////////////////////////////////////////////////////////////////////////
 
     #region SQLiteSession Class
+    /// <summary>
+    /// This class represents the change tracking session associated with a
+    /// database.
+    /// </summary>
     internal sealed class SQLiteSession : SQLiteConnectionLock, ISQLiteSession
     {
         #region Private Data
+        /// <summary>
+        /// The <see cref="SQLiteSessionStreamManager" /> instance associated
+        /// with this session.
+        /// </summary>
         private SQLiteSessionStreamManager streamManager;
+
+        /// <summary>
+        /// The name of the database (e.g. "main") for this session.
+        /// </summary>
         private string databaseName;
 
         ///////////////////////////////////////////////////////////////////////
 
+        /// <summary>
+        /// The native handle for this session.  This will be deleted when
+        /// this instance is disposed or finalized.
+        /// </summary>
         private IntPtr session;
 
         ///////////////////////////////////////////////////////////////////////
 
+        /// <summary>
+        /// The delegate used to provide table filtering to the native API.
+        /// It will be null -OR- point to the <see cref="Filter" /> method.
+        /// </summary>
         private UnsafeNativeMethods.xSessionFilter xFilter;
+
+        /// <summary>
+        /// The managed callback used to filter tables for this session.  Set
+        /// via the <see cref="SetTableFilter" /> method.
+        /// </summary>
         private SessionTableFilterCallback tableFilterCallback;
+
+        /// <summary>
+        /// The optional application-defined context data that was passed to
+        /// the <see cref="SetTableFilter" /> method.  This value may be null.
+        /// </summary>
         private object tableFilterClientData;
         #endregion
 
         ///////////////////////////////////////////////////////////////////////
 
         #region Public Constructors
+        /// <summary>
+        /// Constructs a new instance of this class using the specified wrapped
+        /// native connection handle and associated flags.
+        /// </summary>
+        /// <param name="handle">
+        /// The wrapped native connection handle to be associated with this
+        /// session.
+        /// </param>
+        /// <param name="flags">
+        /// The flags associated with the connection represented by the
+        /// <paramref name="handle" /> value.
+        /// </param>
+        /// <param name="databaseName">
+        /// The name of the database (e.g. "main") for this session.
+        /// </param>
         public SQLiteSession(
             SQLiteConnectionHandle handle,
             SQLiteConnectionFlags flags,
@@ -2123,6 +2167,9 @@ namespace System.Data.SQLite
         ///////////////////////////////////////////////////////////////////////
 
         #region Private Methods
+        /// <summary>
+        /// Throws an exception if the native session handle is invalid.
+        /// </summary>
         private void CheckHandle()
         {
             if (session == IntPtr.Zero)
@@ -2131,6 +2178,10 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
+        /// <summary>
+        /// Makes sure the native session handle is valid, creating it if
+        /// necessary.
+        /// </summary>
         private void InitializeHandle()
         {
             if (session != IntPtr.Zero)
@@ -2146,6 +2197,22 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
+        /// <summary>
+        /// This method sets up the internal table filtering associated state
+        /// of this instance.
+        /// </summary>
+        /// <param name="callback">
+        /// The table filter callback -OR- null to clear any existing table
+        /// filter callback.
+        /// </param>
+        /// <param name="clientData">
+        /// The optional application-defined context data.  This value may be
+        /// null.
+        /// </param>
+        /// <returns>
+        /// The <see cref="UnsafeNativeMethods.xSessionFilter" /> native
+        /// delegate -OR- null to clear any existing table filter.
+        /// </returns>
         private UnsafeNativeMethods.xSessionFilter ApplyTableFilter(
             SessionTableFilterCallback callback, /* in: NULL OK */
             object clientData                    /* in: NULL OK */
@@ -2170,6 +2237,10 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
+        /// <summary>
+        /// Makes sure the <see cref="SQLiteSessionStreamManager" /> instance
+        /// is available, creating it if necessary.
+        /// </summary>
         private void InitializeStreamManager()
         {
             if (streamManager != null)
@@ -2180,6 +2251,20 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
+        /// <summary>
+        /// Attempts to return a <see cref="SQLiteStreamAdapter" /> instance
+        /// suitable for the specified <see cref="Stream" />.
+        /// </summary>
+        /// <param name="stream">
+        /// The <see cref="Stream" /> instance.  If this value is null, a null
+        /// value will be returned.
+        /// </param>
+        /// <returns>
+        /// A <see cref="SQLiteStreamAdapter" /> instance.  Typically, these
+        /// are always freshly created; however, this method is designed to
+        /// return the existing <see cref="SQLiteStreamAdapter" /> instance
+        /// associated with the specified stream, should one exist.
+        /// </returns>
         private SQLiteStreamAdapter GetStreamAdapter(
             Stream stream
             )
@@ -2193,6 +2278,21 @@ namespace System.Data.SQLite
         ///////////////////////////////////////////////////////////////////////
 
         #region Native Callback Methods
+        /// <summary>
+        /// This method is called when determining if a table needs to be
+        /// included in the tracked changes for the associated database.
+        /// </summary>
+        /// <param name="context">
+        /// Optional extra context information.  Currently, this will always
+        /// have a value of <see cref="IntPtr.Zero" />.
+        /// </param>
+        /// <param name="pTblName">
+        /// The native pointer to the name of the table.
+        /// </param>
+        /// <returns>
+        /// Non-zero if changes to the specified table should be considered;
+        /// otherwise, zero.
+        /// </returns>
         private int Filter(
             IntPtr context, /* NOT USED */
             IntPtr pTblName
@@ -2230,6 +2330,14 @@ namespace System.Data.SQLite
         ///////////////////////////////////////////////////////////////////////
 
         #region ISQLiteSession Members
+        /// <summary>
+        /// Determines if this session is currently tracking changes to its
+        /// associated database.
+        /// </summary>
+        /// <returns>
+        /// Non-zero if changes to the associated database are being trakced;
+        /// otherwise, zero.
+        /// </returns>
         public bool IsEnabled()
         {
             CheckDisposed();
@@ -2240,6 +2348,9 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
+        /// <summary>
+        /// Enables tracking of changes to the associated database.
+        /// </summary>
         public void SetToEnabled()
         {
             CheckDisposed();
@@ -2250,6 +2361,9 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
+        /// <summary>
+        /// Disables tracking of changes to the associated database.
+        /// </summary>
         public void SetToDisabled()
         {
             CheckDisposed();
@@ -2260,6 +2374,15 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
+        /// <summary>
+        /// Determines if this session is currently set to mark changes as
+        /// indirect (i.e. as though they were made via a trigger or foreign
+        /// key action).
+        /// </summary>
+        /// <returns>
+        /// Non-zero if changes to the associated database are being marked as
+        /// indirect; otherwise, zero.
+        /// </returns>
         public bool IsIndirect()
         {
             CheckDisposed();
@@ -2270,6 +2393,10 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
+        /// <summary>
+        /// Sets the indirect flag for this session.  Subsequent changes will
+        /// be marked as indirect until this flag is changed again.
+        /// </summary>
         public void SetToIndirect()
         {
             CheckDisposed();
@@ -2280,6 +2407,10 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
+        /// <summary>
+        /// Clears the indirect flag for this session.  Subsequent changes will
+        /// be marked as direct until this flag is changed again.
+        /// </summary>
         public void SetToDirect()
         {
             CheckDisposed();
@@ -2290,6 +2421,14 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
+        /// <summary>
+        /// Determines if there are any tracked changes currently within the
+        /// data for this session.
+        /// </summary>
+        /// <returns>
+        /// Non-zero if there are no changes within the data for this session;
+        /// otherwise, zero.
+        /// </returns>
         public bool IsEmpty()
         {
             CheckDisposed();
@@ -2300,6 +2439,16 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
+        /// <summary>
+        /// Upon success, causes changes to the specified table(s) to start
+        /// being tracked.  Any tables impacted by calls to this method will
+        /// not cause the <see cref="SessionTableFilterCallback" /> callback
+        /// to be invoked.
+        /// </summary>
+        /// <param name="name">
+        /// The name of the table to be tracked -OR- null to track all
+        /// applicable tables within this database.
+        /// </param>
         public void AttachTable(
             string name /* in: NULL OK */
             )
@@ -2316,6 +2465,17 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
+        /// <summary>
+        /// This method is used to set the table filter for this instance.
+        /// </summary>
+        /// <param name="callback">
+        /// The table filter callback -OR- null to clear any existing table
+        /// filter callback.
+        /// </param>
+        /// <param name="clientData">
+        /// The optional application-defined context data.  This value may be
+        /// null.
+        /// </param>
         public void SetTableFilter(
             SessionTableFilterCallback callback, /* in: NULL OK */
             object clientData                    /* in: NULL OK */
@@ -2330,6 +2490,14 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
+        /// <summary>
+        /// Attempts to create and return, via <paramref name="rawData" />, the
+        /// combined set of changes represented by this session instance.
+        /// </summary>
+        /// <param name="rawData">
+        /// Upon success, this will contain the raw byte data for all the
+        /// changes in this session instance.
+        /// </param>
         public void CreateChangeSet(
             ref byte[] rawData
             )
@@ -2363,6 +2531,14 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
+        /// <summary>
+        /// Attempts to create and write, via <paramref name="stream" />, the
+        /// combined set of changes represented by this session instance.
+        /// </summary>
+        /// <param name="stream">
+        /// Upon success, the raw byte data for all the changes in this session
+        /// instance will be written to this <see cref="Stream" />.
+        /// </param>
         public void CreateChangeSet(
             Stream stream
             )
@@ -2390,6 +2566,15 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
+        /// <summary>
+        /// Attempts to create and return, via <paramref name="rawData" />, the
+        /// combined set of changes represented by this session instance as a
+        /// patch set.
+        /// </summary>
+        /// <param name="rawData">
+        /// Upon success, this will contain the raw byte data for all the
+        /// changes in this session instance.
+        /// </param>
         public void CreatePatchSet(
             ref byte[] rawData
             )
@@ -2423,6 +2608,15 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
+        /// <summary>
+        /// Attempts to create and write, via <paramref name="stream" />, the
+        /// combined set of changes represented by this session instance as a
+        /// patch set.
+        /// </summary>
+        /// <param name="stream">
+        /// Upon success, the raw byte data for all the changes in this session
+        /// instance will be written to this <see cref="Stream" />.
+        /// </param>
         public void CreatePatchSet(
             Stream stream
             )
@@ -2450,6 +2644,19 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
+        /// <summary>
+        /// This method loads the differences between two tables [with the same
+        /// name, set of columns, and primary key definition] into this session
+        /// instance.
+        /// </summary>
+        /// <param name="fromDatabaseName">
+        /// The name of the database containing the table with the original
+        /// data (i.e. it will need updating in order to be identical to the
+        /// one within the database associated with this session instance).
+        /// </param>
+        /// <param name="tableName">
+        /// The name of the table.
+        /// </param>
         public void LoadDifferencesFromTable(
             string fromDatabaseName,
             string tableName
