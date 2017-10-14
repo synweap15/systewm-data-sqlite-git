@@ -903,19 +903,45 @@ namespace System.Data.SQLite
     ///////////////////////////////////////////////////////////////////////////
 
     #region SQLiteChangeSetIterator Class
+    /// <summary>
+    /// This class manages the native change set iterator.  It is used as the
+    /// base class for the <see cref="SQLiteMemoryChangeSetIterator" /> and
+    /// <see cref="SQLiteStreamChangeSetIterator" /> classes.  It knows how to
+    /// advance the native iterator handle as well as finalize it.
+    /// </summary>
     internal class SQLiteChangeSetIterator : IDisposable
     {
         #region Private Data
+        /// <summary>
+        /// The native change set (a.k.a. iterator) handle.
+        /// </summary>
         private IntPtr iterator;
 
         ///////////////////////////////////////////////////////////////////////
 
+        /// <summary>
+        /// Non-zero if this instance owns the native iterator handle in the
+        /// <see cref="iterator" /> field.  In that case, this instance will
+        /// finalize the native iterator handle upon being disposed or
+        /// finalized.
+        /// </summary>
         private bool ownHandle;
         #endregion
 
         ///////////////////////////////////////////////////////////////////////
 
         #region Protected Constructors
+        /// <summary>
+        /// Constructs a new instance of this class using the specified native
+        /// iterator handle.
+        /// </summary>
+        /// <param name="iterator">
+        /// The native iterator handle to use.
+        /// </param>
+        /// <param name="ownHandle">
+        /// Non-zero if this instance is to take ownership of the native
+        /// iterator handle specified by <paramref name="iterator" />.
+        /// </param>
         protected SQLiteChangeSetIterator(
             IntPtr iterator,
             bool ownHandle
@@ -929,6 +955,9 @@ namespace System.Data.SQLite
         ///////////////////////////////////////////////////////////////////////
 
         #region Private Methods
+        /// <summary>
+        /// Throws an exception if the native iterator handle is invalid.
+        /// </summary>
         internal void CheckHandle()
         {
             if (iterator == IntPtr.Zero)
@@ -937,6 +966,14 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
+        /// <summary>
+        /// Used to query the native iterator handle.  This method is only used
+        /// by the <see cref="SQLiteChangeSetMetadataItem" /> class.
+        /// </summary>
+        /// <returns>
+        /// The native iterator handle -OR- <see cref="IntPtr.Zero" /> if it
+        /// is not available.
+        /// </returns>
         internal IntPtr GetIntPtr()
         {
             return iterator;
@@ -946,6 +983,14 @@ namespace System.Data.SQLite
         ///////////////////////////////////////////////////////////////////////
 
         #region Public Methods
+        /// <summary>
+        /// Attempts to advance the native iterator handle to its next item.
+        /// </summary>
+        /// <returns>
+        /// Non-zero if the native iterator handle was advanced and contains
+        /// more data; otherwise, zero.  If the underlying native API returns
+        /// an unexpected value then an exception will be thrown.
+        /// </returns>
         public bool Next()
         {
             CheckDisposed();
@@ -980,6 +1025,21 @@ namespace System.Data.SQLite
         ///////////////////////////////////////////////////////////////////////
 
         #region Static "Factory" Methods
+        /// <summary>
+        /// Attempts to create an instance of this class that is associated
+        /// with the specified native iterator handle.  Ownership of the
+        /// native iterator handle is NOT transferred to the new instance of
+        /// this class.
+        /// </summary>
+        /// <param name="iterator">
+        /// The native iterator handle to use.
+        /// </param>
+        /// <returns>
+        /// The new instance of this class.  No return value is reserved to
+        /// indicate an error; however, if the native iterator handle is not
+        /// valid, any subsequent attempt to make use of it via the returned
+        /// instance of this class may throw exceptions.
+        /// </returns>
         public static SQLiteChangeSetIterator Attach(
             IntPtr iterator
             )
@@ -1088,16 +1148,39 @@ namespace System.Data.SQLite
     ///////////////////////////////////////////////////////////////////////////
 
     #region SQLiteMemoryChangeSetIterator Class
+    /// <summary>
+    /// This class manages the native change set iterator for a set of changes
+    /// contained entirely in memory.
+    /// </summary>
     internal sealed class SQLiteMemoryChangeSetIterator :
         SQLiteChangeSetIterator
     {
         #region Private Data
+        /// <summary>
+        /// The native memory buffer allocated to contain the set of changes
+        /// associated with this instance.  This will always be freed when this
+        /// instance is disposed or finalized.
+        /// </summary>
         private IntPtr pData;
         #endregion
 
         ///////////////////////////////////////////////////////////////////////
 
         #region Private Constructors
+        /// <summary>
+        /// Constructs an instance of this class using the specified native
+        /// memory buffer and native iterator handle.
+        /// </summary>
+        /// <param name="pData">
+        /// The native memory buffer to use.
+        /// </param>
+        /// <param name="iterator">
+        /// The native iterator handle to use.
+        /// </param>
+        /// <param name="ownHandle">
+        /// Non-zero if this instance is to take ownership of the native
+        /// iterator handle specified by <paramref name="iterator" />.
+        /// </param>
         private SQLiteMemoryChangeSetIterator(
             IntPtr pData,
             IntPtr iterator,
@@ -1112,6 +1195,17 @@ namespace System.Data.SQLite
         ///////////////////////////////////////////////////////////////////////
 
         #region Static "Factory" Methods
+        /// <summary>
+        /// Attempts to create an instance of this class using the specified
+        /// raw byte data.
+        /// </summary>
+        /// <param name="rawData">
+        /// The raw byte data containing the set of changes for this native
+        /// iterator.
+        /// </param>
+        /// <returns>
+        /// The new instance of this class -OR- null if it cannot be created.
+        /// </returns>
         public static SQLiteMemoryChangeSetIterator Create(
             byte[] rawData
             )
@@ -1241,16 +1335,39 @@ namespace System.Data.SQLite
     ///////////////////////////////////////////////////////////////////////////
 
     #region SQLiteStreamChangeSetIterator Class
+    /// <summary>
+    /// This class manages the native change set iterator for a set of changes
+    /// backed by a <see cref="Stream" /> instance.
+    /// </summary>
     internal sealed class SQLiteStreamChangeSetIterator :
         SQLiteChangeSetIterator
     {
         #region Private Data
+        /// <summary>
+        /// The <see cref="SQLiteStreamAdapter" /> instance that is managing
+        /// the underlying <see cref="Stream" /> used as the backing store for
+        /// the set of changes associated with this native change set iterator.
+        /// </summary>
         private SQLiteStreamAdapter streamAdapter;
         #endregion
 
         ///////////////////////////////////////////////////////////////////////
 
         #region Private Constructors
+        /// <summary>
+        /// Constructs an instance of this class using the specified native
+        /// iterator handle and <see cref="SQLiteStreamAdapter" />.
+        /// </summary>
+        /// <param name="streamAdapter">
+        /// The <see cref="SQLiteStreamAdapter" /> instance to use.
+        /// </param>
+        /// <param name="iterator">
+        /// The native iterator handle to use.
+        /// </param>
+        /// <param name="ownHandle">
+        /// Non-zero if this instance is to take ownership of the native
+        /// iterator handle specified by <paramref name="iterator" />.
+        /// </param>
         private SQLiteStreamChangeSetIterator(
             SQLiteStreamAdapter streamAdapter,
             IntPtr iterator,
@@ -1265,6 +1382,20 @@ namespace System.Data.SQLite
         ///////////////////////////////////////////////////////////////////////
 
         #region Static "Factory" Methods
+        /// <summary>
+        /// Attempts to create an instance of this class using the specified
+        /// <see cref="Stream" />.
+        /// </summary>
+        /// <param name="stream">
+        /// The <see cref="Stream" /> where the raw byte data for the set of
+        /// changes may be read.
+        /// </param>
+        /// <param name="flags">
+        /// The flags associated with the parent connection.
+        /// </param>
+        /// <returns>
+        /// The new instance of this class -OR- null if it cannot be created.
+        /// </returns>
         public static SQLiteStreamChangeSetIterator Create(
             Stream stream,
             SQLiteConnectionFlags flags
@@ -4146,16 +4277,32 @@ namespace System.Data.SQLite
     ///////////////////////////////////////////////////////////////////////////
 
     #region SQLiteChangeSetMetadataItem Class
+    /// <summary>
+    /// This interface implements properties and methods used to fetch metadata
+    /// about one change within a set of changes for a database.
+    /// </summary>
     internal sealed class SQLiteChangeSetMetadataItem :
         ISQLiteChangeSetMetadataItem
     {
         #region Private Data
+        /// <summary>
+        /// The <see cref="SQLiteChangeSetIterator" /> instance to use.  This
+        /// will NOT be owned by this class and will not be disposed upon this
+        /// class being disposed or finalized.
+        /// </summary>
         private SQLiteChangeSetIterator iterator;
         #endregion
 
         ///////////////////////////////////////////////////////////////////////
 
         #region Public Constructors
+        /// <summary>
+        /// Constructs an instance of this class using the specified iterator
+        /// instance.
+        /// </summary>
+        /// <param name="iterator">
+        /// The native iterator handle to use.
+        /// </param>
         public SQLiteChangeSetMetadataItem(
             SQLiteChangeSetIterator iterator
             )
@@ -4167,6 +4314,9 @@ namespace System.Data.SQLite
         ///////////////////////////////////////////////////////////////////////
 
         #region Private Methods
+        /// <summary>
+        /// Throws an exception if the managed iterator instance is invalid.
+        /// </summary>
         private void CheckIterator()
         {
             if (iterator == null)
@@ -4177,6 +4327,12 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
+        /// <summary>
+        /// Populates the underlying data for the <see cref="TableName" />,
+        /// <see cref="NumberOfColumns" />, <see cref="OperationCode" />, and
+        /// <see cref="Indirect" /> properties, using the appropriate native
+        /// API.
+        /// </summary>
         private void PopulateOperationMetadata()
         {
             if ((tableName == null) || (numberOfColumns == null) ||
@@ -4205,6 +4361,11 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
+        /// <summary>
+        /// Populates the underlying data for the
+        /// <see cref="PrimaryKeyColumns" /> property using the appropriate
+        /// native API.
+        /// </summary>
         private void PopulatePrimaryKeyColumns()
         {
             if (primaryKeyColumns == null)
@@ -4234,6 +4395,11 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
+        /// <summary>
+        /// Populates the underlying data for the
+        /// <see cref="NumberOfForeignKeyConflicts" /> property using the
+        /// appropriate native API.
+        /// </summary>
         private void PopulateNumberOfForeignKeyConflicts()
         {
             if (numberOfForeignKeyConflicts == null)
@@ -4260,7 +4426,16 @@ namespace System.Data.SQLite
         ///////////////////////////////////////////////////////////////////////
 
         #region ISQLiteChangeSetMetadataItem Members
+        /// <summary>
+        /// Backing field for the <see cref="TableName" /> property. This value
+        /// will be null if this field has not yet been populated via the
+        /// underlying native API.
+        /// </summary>
         private string tableName;
+
+        /// <summary>
+        /// The name of the table the change was made to.
+        /// </summary>
         public string TableName
         {
             get
@@ -4274,7 +4449,20 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
+        /// <summary>
+        /// Backing field for the <see cref="NumberOfColumns" /> property. This
+        /// value will be null if this field has not yet been populated via the
+        /// underlying native API.
+        /// </summary>
         private int? numberOfColumns;
+
+        /// <summary>
+        /// The number of columns impacted by this change.  This value can be
+        /// used to determine the highest valid column index that may be used
+        /// with the <see cref="GetOldValue" />, <see cref="GetNewValue" />,
+        /// and <see cref="GetConflictValue" /> methods of this interface.  It
+        /// will be this value minus one.
+        /// </summary>
         public int NumberOfColumns
         {
             get
@@ -4288,7 +4476,20 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
+        /// <summary>
+        /// Backing field for the <see cref="OperationCode" /> property.  This
+        /// value will be null if this field has not yet been populated via the
+        /// underlying native API.
+        /// </summary>
         private SQLiteAuthorizerActionCode? operationCode;
+
+        /// <summary>
+        /// This will contain the value
+        /// <see cref="SQLiteAuthorizerActionCode.Insert" />,
+        /// <see cref="SQLiteAuthorizerActionCode.Update" />, or
+        /// <see cref="SQLiteAuthorizerActionCode.Delete" />, corresponding to
+        /// the overall type of change this item represents.
+        /// </summary>
         public SQLiteAuthorizerActionCode OperationCode
         {
             get
@@ -4302,7 +4503,17 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
+        /// <summary>
+        /// Backing field for the <see cref="Indirect" /> property.  This value
+        /// will be null if this field has not yet been populated via the
+        /// underlying native API.
+        /// </summary>
         private bool? indirect;
+
+        /// <summary>
+        /// Non-zero if this change is considered to be indirect (i.e. as
+        /// though they were made via a trigger or foreign key action).
+        /// </summary>
         public bool Indirect
         {
             get
@@ -4316,7 +4527,19 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
+        /// <summary>
+        /// Backing field for the <see cref="PrimaryKeyColumns" /> property.
+        /// This value will be null if this field has not yet been populated
+        /// via the underlying native API.
+        /// </summary>
         private bool[] primaryKeyColumns;
+
+        /// <summary>
+        /// This array contains a <see cref="Boolean" /> for each column in
+        /// the table associated with this change.  The element will be zero
+        /// if the column is not part of the primary key; otherwise, it will
+        /// be non-zero.
+        /// </summary>
         public bool[] PrimaryKeyColumns
         {
             get
@@ -4330,7 +4553,20 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
+        /// <summary>
+        /// Backing field for the <see cref="NumberOfForeignKeyConflicts" />
+        /// property.  This value will be null if this field has not yet been
+        /// populated via the underlying native API.
+        /// </summary>
         private int? numberOfForeignKeyConflicts;
+
+        /// <summary>
+        /// This method may only be called from within a
+        /// <see cref="SessionConflictCallback" /> delegate when the conflict
+        /// type is <see cref="SQLiteChangeSetConflictType.ForeignKey" />.  It
+        /// returns the total number of known foreign key violations in the
+        /// destination database.
+        /// </summary>
         public int NumberOfForeignKeyConflicts
         {
             get
@@ -4344,6 +4580,20 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
+        /// <summary>
+        /// Queries and returns the original value of a given column for this
+        /// change.  This method may only be called when the
+        /// <see cref="OperationCode" /> has a value of
+        /// <see cref="SQLiteAuthorizerActionCode.Update" /> or
+        /// <see cref="SQLiteAuthorizerActionCode.Delete" />.
+        /// </summary>
+        /// <param name="columnIndex">
+        /// The index for the column.  This value must be between zero and one
+        /// less than the total number of columns for this table.
+        /// </param>
+        /// <returns>
+        /// The original value of a given column for this change.
+        /// </returns>
         public SQLiteValue GetOldValue(
             int columnIndex
             )
@@ -4361,6 +4611,20 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
+        /// <summary>
+        /// Queries and returns the updated value of a given column for this
+        /// change.  This method may only be called when the
+        /// <see cref="OperationCode" /> has a value of
+        /// <see cref="SQLiteAuthorizerActionCode.Insert" /> or
+        /// <see cref="SQLiteAuthorizerActionCode.Update" />.
+        /// </summary>
+        /// <param name="columnIndex">
+        /// The index for the column.  This value must be between zero and one
+        /// less than the total number of columns for this table.
+        /// </param>
+        /// <returns>
+        /// The updated value of a given column for this change.
+        /// </returns>
         public SQLiteValue GetNewValue(
             int columnIndex
             )
@@ -4378,6 +4642,20 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
+        /// <summary>
+        /// Queries and returns the conflicting value of a given column for
+        /// this change.  This method may only be called from within a
+        /// <see cref="SessionConflictCallback" /> delegate when the conflict
+        /// type is <see cref="SQLiteChangeSetConflictType.Data" /> or
+        /// <see cref="SQLiteChangeSetConflictType.Conflict" />.
+        /// </summary>
+        /// <param name="columnIndex">
+        /// The index for the column.  This value must be between zero and one
+        /// less than the total number of columns for this table.
+        /// </param>
+        /// <returns>
+        /// The conflicting value of a given column for this change.
+        /// </returns>
         public SQLiteValue GetConflictValue(
             int columnIndex
             )
