@@ -746,6 +746,9 @@ namespace System.Data.SQLite
         ///////////////////////////////////////////////////////////////////////
 
         #region IDisposable Members
+        /// <summary>
+        /// Disposes of this object instance.
+        /// </summary>
         public void Dispose()
         {
             Dispose(true);
@@ -756,7 +759,14 @@ namespace System.Data.SQLite
         ///////////////////////////////////////////////////////////////////////
 
         #region IDisposable "Pattern" Members
+        /// <summary>
+        /// Non-zero if this object instance has been disposed.
+        /// </summary>
         private bool disposed;
+
+        /// <summary>
+        /// Throws an exception if this object instance has been disposed.
+        /// </summary>
         private void CheckDisposed() /* throw */
         {
 #if THROW_ON_DISPOSED
@@ -770,6 +780,13 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
+        /// <summary>
+        /// Disposes or finalizes this object instance.
+        /// </summary>
+        /// <param name="disposing">
+        /// Non-zero if this object is being disposed; otherwise, this object
+        /// is being finalized.
+        /// </param>
         protected virtual void Dispose(bool disposing)
         {
             try
@@ -812,6 +829,9 @@ namespace System.Data.SQLite
         ///////////////////////////////////////////////////////////////////////
 
         #region Destructor
+        /// <summary>
+        /// Finalizes this object instance.
+        /// </summary>
         ~SQLiteChangeSetIterator()
         {
             Dispose(false);
@@ -902,7 +922,14 @@ namespace System.Data.SQLite
         ///////////////////////////////////////////////////////////////////////
 
         #region IDisposable "Pattern" Members
+        /// <summary>
+        /// Non-zero if this object instance has been disposed.
+        /// </summary>
         private bool disposed;
+
+        /// <summary>
+        /// Throws an exception if this object instance has been disposed.
+        /// </summary>
         private void CheckDisposed() /* throw */
         {
 #if THROW_ON_DISPOSED
@@ -916,6 +943,13 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
+        /// <summary>
+        /// Disposes or finalizes this object instance.
+        /// </summary>
+        /// <param name="disposing">
+        /// Non-zero if this object is being disposed; otherwise, this object
+        /// is being finalized.
+        /// </param>
         protected override void Dispose(bool disposing)
         {
             //
@@ -1041,7 +1075,14 @@ namespace System.Data.SQLite
         ///////////////////////////////////////////////////////////////////////
 
         #region IDisposable "Pattern" Members
+        /// <summary>
+        /// Non-zero if this object instance has been disposed.
+        /// </summary>
         private bool disposed;
+
+        /// <summary>
+        /// Throws an exception if this object instance has been disposed.
+        /// </summary>
         private void CheckDisposed() /* throw */
         {
 #if THROW_ON_DISPOSED
@@ -1055,6 +1096,13 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
+        /// <summary>
+        /// Disposes or finalizes this object instance.
+        /// </summary>
+        /// <param name="disposing">
+        /// Non-zero if this object is being disposed; otherwise, this object
+        /// is being finalized.
+        /// </param>
         protected override void Dispose(bool disposing)
         {
             try
@@ -1090,21 +1138,54 @@ namespace System.Data.SQLite
     ///////////////////////////////////////////////////////////////////////////
 
     #region SQLiteStreamAdapter Class
+    /// <summary>
+    /// This class is used to act as a bridge between a <see cref="Stream" />
+    /// instance and the delegates used with the native streaming API.
+    /// </summary>
     internal sealed class SQLiteStreamAdapter : IDisposable
     {
         #region Private Data
-        private Stream stream; /* EXEMPT: NOT OWNED */
+        /// <summary>
+        /// The managed stream instance used to in order to service the native
+        /// delegates for both input and output.
+        /// </summary>
+        private Stream stream;
+
+        /// <summary>
+        /// The flags associated with the connection.
+        /// </summary>
         private SQLiteConnectionFlags flags;
 
         ///////////////////////////////////////////////////////////////////////
 
+        /// <summary>
+        /// The delegate used to provide input to the native streaming API.
+        /// It will be null -OR- point to the <see cref="Input" /> method.
+        /// method.
+        /// </summary>
         private UnsafeNativeMethods.xSessionInput xInput;
+
+        /// <summary>
+        /// The delegate used to provide output to the native streaming API.
+        /// It will be null -OR- point to the <see cref="Output" /> method.
+        /// </summary>
         private UnsafeNativeMethods.xSessionOutput xOutput;
         #endregion
 
         ///////////////////////////////////////////////////////////////////////
 
         #region Public Constructors
+        /// <summary>
+        /// Constructs a new instance of this class using the specified managed
+        /// stream and connection flags.
+        /// </summary>
+        /// <param name="stream">
+        /// The managed stream instance to be used in order to service the
+        /// native delegates for both input and output.
+        /// </param>
+        /// <param name="flags">
+        /// The flags associated with the parent connection.
+        /// </param>
         public SQLiteStreamAdapter(
             Stream stream,
             SQLiteConnectionFlags flags
@@ -1118,6 +1199,14 @@ namespace System.Data.SQLite
         ///////////////////////////////////////////////////////////////////////
 
         #region Private Methods
+        /// <summary>
+        /// Queries and returns the flags associated with the connection for
+        /// this instance.
+        /// </summary>
+        /// <returns>
+        /// The <see cref="SQLiteConnectionFlags" /> value.  There is no return
+        /// value reserved to indicate an error.
+        /// </returns>
         private SQLiteConnectionFlags GetFlags()
         {
             return flags;
@@ -1127,6 +1216,13 @@ namespace System.Data.SQLite
         ///////////////////////////////////////////////////////////////////////
 
         #region Public Methods
+        /// <summary>
+        /// Returns a delegate that wraps the <see cref="Input" /> method,
+        /// creating it first if necessary.
+        /// </summary>
+        /// <returns>
+        /// A delegate that refers to the <see cref="Input" /> method.
+        /// </returns>
         public UnsafeNativeMethods.xSessionInput GetInputDelegate()
         {
             CheckDisposed();
@@ -1139,6 +1235,13 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
+        /// <summary>
+        /// Returns a delegate that wraps the <see cref="Output" /> method,
+        /// creating it first if necessary.
+        /// </summary>
+        /// <returns>
+        /// A delegate that refers to the <see cref="Output" /> method.
+        /// </returns>
         public UnsafeNativeMethods.xSessionOutput GetOutputDelegate()
         {
             CheckDisposed();
@@ -1153,6 +1256,27 @@ namespace System.Data.SQLite
         ///////////////////////////////////////////////////////////////////////
 
         #region Native Callback Methods
+        /// <summary>
+        /// This method attempts to read <paramref name="nData" /> bytes from
+        /// the managed stream, writing them to the <paramref name="pData"/>
+        /// buffer.
+        /// </summary>
+        /// <param name="context">
+        /// Optional extra context information.  Currently, this will always
+        /// have a value of <see cref="IntPtr.Zero" />.
+        /// </param>
+        /// <param name="pData">
+        /// A preallocated native buffer to receive the requested input bytes.
+        /// It must be at least <see cref="nData" /> bytes in size.
+        /// </param>
+        /// <param name="nData">
+        /// Upon entry, the number of bytes to read.  Upon exit, the number of
+        /// bytes actually read.  This value may be zero upon exit.
+        /// </param>
+        /// <returns>
+        /// The value <see cref="SQLiteErrorCode.Ok" /> upon success -OR- an
+        /// appropriate error code upon failure.
+        /// </returns>
         private SQLiteErrorCode Input(
             IntPtr context,
             IntPtr pData,
@@ -1204,6 +1328,26 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
+        /// <summary>
+        /// This method attempts to write <paramref name="nData" /> bytes to
+        /// the managed stream, reading them from the <paramref name="pData"/>
+        /// buffer.
+        /// </summary>
+        /// <param name="context">
+        /// Optional extra context information.  Currently, this will always
+        /// have a value of <see cref="IntPtr.Zero" />.
+        /// </param>
+        /// <param name="pData">
+        /// A preallocated native buffer containing the requested output
+        /// bytes.  It must be at least <see cref="nData" /> bytes in size.
+        /// </param>
+        /// <param name="nData">
+        /// The number of bytes to write.
+        /// </param>
+        /// <returns>
+        /// The value <see cref="SQLiteErrorCode.Ok" /> upon success -OR- an
+        /// appropriate error code upon failure.
+        /// </returns>
         private SQLiteErrorCode Output(
             IntPtr context,
             IntPtr pData,
@@ -1258,6 +1402,9 @@ namespace System.Data.SQLite
         ///////////////////////////////////////////////////////////////////////
 
         #region IDisposable Members
+        /// <summary>
+        /// Disposes of this object instance.
+        /// </summary>
         public void Dispose()
         {
             Dispose(true);
@@ -1268,7 +1415,14 @@ namespace System.Data.SQLite
         ///////////////////////////////////////////////////////////////////////
 
         #region IDisposable "Pattern" Members
+        /// <summary>
+        /// Non-zero if this object instance has been disposed.
+        /// </summary>
         private bool disposed;
+
+        /// <summary>
+        /// Throws an exception if this object instance has been disposed.
+        /// </summary>
         private void CheckDisposed() /* throw */
         {
 #if THROW_ON_DISPOSED
@@ -1282,6 +1436,13 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
+        /// <summary>
+        /// Disposes or finalizes this object instance.
+        /// </summary>
+        /// <param name="disposing">
+        /// Non-zero if this object is being disposed; otherwise, this object
+        /// is being finalized.
+        /// </param>
         private /* protected virtual */ void Dispose(bool disposing)
         {
             try
@@ -1322,6 +1483,9 @@ namespace System.Data.SQLite
         ///////////////////////////////////////////////////////////////////////
 
         #region Destructor
+        /// <summary>
+        /// Finalizes this object instance.
+        /// </summary>
         ~SQLiteStreamAdapter()
         {
             Dispose(false);
@@ -1333,16 +1497,37 @@ namespace System.Data.SQLite
     ///////////////////////////////////////////////////////////////////////////
 
     #region SQLiteSessionStreamManager Class
+    /// <summary>
+    /// This class manages a collection of <see cref="SQLiteStreamAdapter"/>
+    /// instances. When used, it takes responsibility for creating, returning,
+    /// and disposing of its <see cref="SQLiteStreamAdapter"/> instances.
+    /// </summary>
     internal sealed class SQLiteSessionStreamManager : IDisposable
     {
         #region Private Data
+        /// <summary>
+        /// The managed collection of <see cref="SQLiteStreamAdapter" />
+        /// instances, keyed by their associated <see cref="Stream" />
+        /// instance.
+        /// </summary>
         private Dictionary<Stream, SQLiteStreamAdapter> streamAdapters;
+
+        /// <summary>
+        /// The flags associated with the connection.
+        /// </summary>
         private SQLiteConnectionFlags flags;
         #endregion
 
         ///////////////////////////////////////////////////////////////////////
 
         #region Public Constructors
+        /// <summary>
+        /// Constructs a new instance of this class using the specified
+        /// connection flags.
+        /// </summary>
+        /// <param name="flags">
+        /// The flags associated with the parent connection.
+        /// </param>
         public SQLiteSessionStreamManager(
             SQLiteConnectionFlags flags
             )
@@ -1356,6 +1541,10 @@ namespace System.Data.SQLite
         ///////////////////////////////////////////////////////////////////////
 
         #region Private Methods
+        /// <summary>
+        /// Makes sure the collection of <see cref="SQLiteStreamAdapter" />
+        /// is created.
+        /// </summary>
         private void InitializeStreamAdapters()
         {
             if (streamAdapters != null)
@@ -1366,6 +1555,10 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
+        /// <summary>
+        /// Makes sure the collection of <see cref="SQLiteStreamAdapter" />
+        /// is disposed.
+        /// </summary>
         private void DisposeStreamAdapters()
         {
             if (streamAdapters == null)
@@ -1390,6 +1583,20 @@ namespace System.Data.SQLite
         ///////////////////////////////////////////////////////////////////////
 
         #region Public Methods
+        /// <summary>
+        /// Attempts to return a <see cref="SQLiteStreamAdapter" /> instance
+        /// suitable for the specified <see cref="Stream" />.
+        /// </summary>
+        /// <param name="stream">
+        /// The <see cref="Stream" /> instance.  If this value is null, a null
+        /// value will be returned.
+        /// </param>
+        /// <returns>
+        /// A <see cref="SQLiteStreamAdapter" /> instance.  Typically, these
+        /// are always freshly created; however, this method is designed to
+        /// return the existing <see cref="SQLiteStreamAdapter" /> instance
+        /// associated with the specified stream, should one exist.
+        /// </returns>
         public SQLiteStreamAdapter GetAdapter(
             Stream stream
             )
@@ -1414,6 +1621,9 @@ namespace System.Data.SQLite
         ///////////////////////////////////////////////////////////////////////
 
         #region IDisposable Members
+        /// <summary>
+        /// Disposes of this object instance.
+        /// </summary>
         public void Dispose()
         {
             Dispose(true);
@@ -1424,7 +1634,14 @@ namespace System.Data.SQLite
         ///////////////////////////////////////////////////////////////////////
 
         #region IDisposable "Pattern" Members
+        /// <summary>
+        /// Non-zero if this object instance has been disposed.
+        /// </summary>
         private bool disposed;
+
+        /// <summary>
+        /// Throws an exception if this object instance has been disposed.
+        /// </summary>
         private void CheckDisposed() /* throw */
         {
 #if THROW_ON_DISPOSED
@@ -1438,6 +1655,13 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
+        /// <summary>
+        /// Disposes or finalizes this object instance.
+        /// </summary>
+        /// <param name="disposing">
+        /// Non-zero if this object is being disposed; otherwise, this object
+        /// is being finalized.
+        /// </param>
         private /* protected virtual */ void Dispose(bool disposing)
         {
             try
@@ -1471,6 +1695,9 @@ namespace System.Data.SQLite
         ///////////////////////////////////////////////////////////////////////
 
         #region Destructor
+        /// <summary>
+        /// Finalizes this object instance.
+        /// </summary>
         ~SQLiteSessionStreamManager()
         {
             Dispose(false);
@@ -1482,20 +1709,42 @@ namespace System.Data.SQLite
     ///////////////////////////////////////////////////////////////////////////
 
     #region SQLiteChangeGroup Class
+    /// <summary>
+    /// This class represents a group of change sets (or patch sets).
+    /// </summary>
     internal sealed class SQLiteChangeGroup : ISQLiteChangeGroup
     {
         #region Private Data
+        /// <summary>
+        /// The <see cref="SQLiteSessionStreamManager" /> instance associated
+        /// with this change group.
+        /// </summary>
         private SQLiteSessionStreamManager streamManager;
+
+        /// <summary>
+        /// The flags associated with the connection.
+        /// </summary>
         private SQLiteConnectionFlags flags;
 
         ///////////////////////////////////////////////////////////////////////
 
+        /// <summary>
+        /// The native handle for this change group.  This will be deleted when
+        /// this instance is disposed or finalized.
+        /// </summary>
         private IntPtr changeGroup;
         #endregion
 
         ///////////////////////////////////////////////////////////////////////
 
         #region Public Constructors
+        /// <summary>
+        /// Constructs a new instance of this class using the specified
+        /// connection flags.
+        /// </summary>
+        /// <param name="flags">
+        /// The flags associated with the parent connection.
+        /// </param>
         public SQLiteChangeGroup(
             SQLiteConnectionFlags flags
             )
@@ -1509,6 +1758,9 @@ namespace System.Data.SQLite
         ///////////////////////////////////////////////////////////////////////
 
         #region Private Methods
+        /// <summary>
+        /// Throws an exception if the native change group handle is invalid.
+        /// </summary>
         private void CheckHandle()
         {
             if (changeGroup == IntPtr.Zero)
@@ -1517,6 +1769,10 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
+        /// <summary>
+        /// Makes sure the native change group handle is valid, creating it if
+        /// necessary.
+        /// </summary>
         private void InitializeHandle()
         {
             if (changeGroup != IntPtr.Zero)
@@ -1531,6 +1787,10 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
+        /// <summary>
+        /// Makes sure the <see cref="SQLiteSessionStreamManager" /> instance
+        /// is available, creating it if necessary.
+        /// </summary>
         private void InitializeStreamManager()
         {
             if (streamManager != null)
@@ -1541,6 +1801,20 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
+        /// <summary>
+        /// Attempts to return a <see cref="SQLiteStreamAdapter" /> instance
+        /// suitable for the specified <see cref="Stream" />.
+        /// </summary>
+        /// <param name="stream">
+        /// The <see cref="Stream" /> instance.  If this value is null, a null
+        /// value will be returned.
+        /// </param>
+        /// <returns>
+        /// A <see cref="SQLiteStreamAdapter" /> instance.  Typically, these
+        /// are always freshly created; however, this method is designed to
+        /// return the existing <see cref="SQLiteStreamAdapter" /> instance
+        /// associated with the specified stream, should one exist.
+        /// </returns>
         private SQLiteStreamAdapter GetStreamAdapter(
             Stream stream
             )
@@ -1554,6 +1828,14 @@ namespace System.Data.SQLite
         ///////////////////////////////////////////////////////////////////////
 
         #region ISQLiteChangeGroup Members
+        /// <summary>
+        /// Attempts to add a change set (or patch set) to this change group
+        /// instance.  The underlying data must be contained entirely within
+        /// the <paramref name="rawData" /> byte array.
+        /// </summary>
+        /// <param name="rawData">
+        /// The raw byte data for the specified change set (or patch set).
+        /// </param>
         public void AddChangeSet(
             byte[] rawData
             )
@@ -1589,6 +1871,15 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
+        /// <summary>
+        /// Attempts to add a change set (or patch set) to this change group
+        /// instance.  The underlying data will be read from the specified
+        /// <see cref="Stream" />.
+        /// </summary>
+        /// <param name="stream">
+        /// The <see cref="Stream" /> instance containing the raw change set
+        /// (or patch set) data to read.
+        /// </param>
         public void AddChangeSet(
             Stream stream
             )
@@ -1616,6 +1907,14 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
+        /// <summary>
+        /// Attempts to create and return, via <paramref name="rawData" />, the
+        /// combined set of changes represented by this change group instance.
+        /// </summary>
+        /// <param name="rawData">
+        /// Upon success, this will contain the raw byte data for all the
+        /// changes in this change group instance.
+        /// </param>
         public void CreateChangeSet(
             ref byte[] rawData
             )
@@ -1651,6 +1950,14 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
+        /// <summary>
+        /// Attempts to create and write, via <paramref name="stream" />, the
+        /// combined set of changes represented by this change group instance.
+        /// </summary>
+        /// <param name="stream">
+        /// Upon success, the raw byte data for all the changes in this change
+        /// group instance will be written to this <see cref="Stream" />.
+        /// </param>
         public void CreateChangeSet(
             Stream stream
             )
@@ -1680,6 +1987,9 @@ namespace System.Data.SQLite
         ///////////////////////////////////////////////////////////////////////
 
         #region IDisposable Members
+        /// <summary>
+        /// Disposes of this object instance.
+        /// </summary>
         public void Dispose()
         {
             Dispose(true);
@@ -1690,7 +2000,14 @@ namespace System.Data.SQLite
         ///////////////////////////////////////////////////////////////////////
 
         #region IDisposable "Pattern" Members
+        /// <summary>
+        /// Non-zero if this object instance has been disposed.
+        /// </summary>
         private bool disposed;
+
+        /// <summary>
+        /// Throws an exception if this object instance has been disposed.
+        /// </summary>
         private void CheckDisposed() /* throw */
         {
 #if THROW_ON_DISPOSED
@@ -1704,6 +2021,13 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
+        /// <summary>
+        /// Disposes or finalizes this object instance.
+        /// </summary>
+        /// <param name="disposing">
+        /// Non-zero if this object is being disposed; otherwise, this object
+        /// is being finalized.
+        /// </param>
         private /* protected virtual */ void Dispose(bool disposing)
         {
             try
@@ -1749,6 +2073,9 @@ namespace System.Data.SQLite
         ///////////////////////////////////////////////////////////////////////
 
         #region Destructor
+        /// <summary>
+        /// Finalizes this object instance.
+        /// </summary>
         ~SQLiteChangeGroup()
         {
             Dispose(false);
@@ -2179,7 +2506,14 @@ namespace System.Data.SQLite
         ///////////////////////////////////////////////////////////////////////
 
         #region IDisposable "Pattern" Members
+        /// <summary>
+        /// Non-zero if this object instance has been disposed.
+        /// </summary>
         private bool disposed;
+
+        /// <summary>
+        /// Throws an exception if this object instance has been disposed.
+        /// </summary>
         private void CheckDisposed() /* throw */
         {
 #if THROW_ON_DISPOSED
@@ -2190,6 +2524,13 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
+        /// <summary>
+        /// Disposes or finalizes this object instance.
+        /// </summary>
+        /// <param name="disposing">
+        /// Non-zero if this object is being disposed; otherwise, this object
+        /// is being finalized.
+        /// </param>
         protected override void Dispose(bool disposing)
         {
             try
@@ -2376,7 +2717,14 @@ namespace System.Data.SQLite
         ///////////////////////////////////////////////////////////////////////
 
         #region IDisposable "Pattern" Members
+        /// <summary>
+        /// Non-zero if this object instance has been disposed.
+        /// </summary>
         private bool disposed;
+
+        /// <summary>
+        /// Throws an exception if this object instance has been disposed.
+        /// </summary>
         private void CheckDisposed() /* throw */
         {
 #if THROW_ON_DISPOSED
@@ -2390,6 +2738,13 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
+        /// <summary>
+        /// Disposes or finalizes this object instance.
+        /// </summary>
+        /// <param name="disposing">
+        /// Non-zero if this object is being disposed; otherwise, this object
+        /// is being finalized.
+        /// </param>
         protected override void Dispose(bool disposing)
         {
             try
@@ -2646,7 +3001,14 @@ namespace System.Data.SQLite
         ///////////////////////////////////////////////////////////////////////
 
         #region IDisposable "Pattern" Members
+        /// <summary>
+        /// Non-zero if this object instance has been disposed.
+        /// </summary>
         private bool disposed;
+
+        /// <summary>
+        /// Throws an exception if this object instance has been disposed.
+        /// </summary>
         private void CheckDisposed() /* throw */
         {
 #if THROW_ON_DISPOSED
@@ -2660,6 +3022,13 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
+        /// <summary>
+        /// Disposes or finalizes this object instance.
+        /// </summary>
+        /// <param name="disposing">
+        /// Non-zero if this object is being disposed; otherwise, this object
+        /// is being finalized.
+        /// </param>
         protected override void Dispose(bool disposing)
         {
             try
@@ -2877,7 +3246,14 @@ namespace System.Data.SQLite
         ///////////////////////////////////////////////////////////////////////
 
         #region IDisposable "Pattern" Members
+        /// <summary>
+        /// Non-zero if this object instance has been disposed.
+        /// </summary>
         private bool disposed;
+
+        /// <summary>
+        /// Throws an exception if this object instance has been disposed.
+        /// </summary>
         private void CheckDisposed() /* throw */
         {
 #if THROW_ON_DISPOSED
@@ -2891,6 +3267,13 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
+        /// <summary>
+        /// Disposes or finalizes this object instance.
+        /// </summary>
+        /// <param name="disposing">
+        /// Non-zero if this object is being disposed; otherwise, this object
+        /// is being finalized.
+        /// </param>
         protected override void Dispose(bool disposing)
         {
             try
@@ -3046,6 +3429,9 @@ namespace System.Data.SQLite
         ///////////////////////////////////////////////////////////////////////
 
         #region IDisposable Members
+        /// <summary>
+        /// Disposes of this object instance.
+        /// </summary>
         public void Dispose()
         {
             Dispose(true);
@@ -3056,7 +3442,14 @@ namespace System.Data.SQLite
         ///////////////////////////////////////////////////////////////////////
 
         #region IDisposable "Pattern" Members
+        /// <summary>
+        /// Non-zero if this object instance has been disposed.
+        /// </summary>
         private bool disposed;
+
+        /// <summary>
+        /// Throws an exception if this object instance has been disposed.
+        /// </summary>
         private void CheckDisposed() /* throw */
         {
 #if THROW_ON_DISPOSED
@@ -3070,6 +3463,13 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
+        /// <summary>
+        /// Disposes or finalizes this object instance.
+        /// </summary>
+        /// <param name="disposing">
+        /// Non-zero if this object is being disposed; otherwise, this object
+        /// is being finalized.
+        /// </param>
         protected virtual void Dispose(bool disposing)
         {
             try
@@ -3103,6 +3503,9 @@ namespace System.Data.SQLite
         ///////////////////////////////////////////////////////////////////////
 
         #region Destructor
+        /// <summary>
+        /// Finalizes this object instance.
+        /// </summary>
         ~SQLiteChangeSetEnumerator()
         {
             Dispose(false);
@@ -3147,7 +3550,14 @@ namespace System.Data.SQLite
         ///////////////////////////////////////////////////////////////////////
 
         #region IDisposable "Pattern" Members
+        /// <summary>
+        /// Non-zero if this object instance has been disposed.
+        /// </summary>
         private bool disposed;
+
+        /// <summary>
+        /// Throws an exception if this object instance has been disposed.
+        /// </summary>
         private void CheckDisposed() /* throw */
         {
 #if THROW_ON_DISPOSED
@@ -3161,6 +3571,13 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
+        /// <summary>
+        /// Disposes or finalizes this object instance.
+        /// </summary>
+        /// <param name="disposing">
+        /// Non-zero if this object is being disposed; otherwise, this object
+        /// is being finalized.
+        /// </param>
         protected override void Dispose(bool disposing)
         {
             try
@@ -3213,7 +3630,14 @@ namespace System.Data.SQLite
         ///////////////////////////////////////////////////////////////////////
 
         #region IDisposable "Pattern" Members
+        /// <summary>
+        /// Non-zero if this object instance has been disposed.
+        /// </summary>
         private bool disposed;
+
+        /// <summary>
+        /// Throws an exception if this object instance has been disposed.
+        /// </summary>
         private void CheckDisposed() /* throw */
         {
 #if THROW_ON_DISPOSED
@@ -3227,6 +3651,13 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
+        /// <summary>
+        /// Disposes or finalizes this object instance.
+        /// </summary>
+        /// <param name="disposing">
+        /// Non-zero if this object is being disposed; otherwise, this object
+        /// is being finalized.
+        /// </param>
         protected override void Dispose(bool disposing)
         {
             try
@@ -3513,6 +3944,9 @@ namespace System.Data.SQLite
         ///////////////////////////////////////////////////////////////////////
 
         #region IDisposable Members
+        /// <summary>
+        /// Disposes of this object instance.
+        /// </summary>
         public void Dispose()
         {
             Dispose(true);
@@ -3523,7 +3957,14 @@ namespace System.Data.SQLite
         ///////////////////////////////////////////////////////////////////////
 
         #region IDisposable "Pattern" Members
+        /// <summary>
+        /// Non-zero if this object instance has been disposed.
+        /// </summary>
         private bool disposed;
+
+        /// <summary>
+        /// Throws an exception if this object instance has been disposed.
+        /// </summary>
         private void CheckDisposed() /* throw */
         {
 #if THROW_ON_DISPOSED
@@ -3537,6 +3978,13 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
+        /// <summary>
+        /// Disposes or finalizes this object instance.
+        /// </summary>
+        /// <param name="disposing">
+        /// Non-zero if this object is being disposed; otherwise, this object
+        /// is being finalized.
+        /// </param>
         private /* protected virtual */ void Dispose(bool disposing)
         {
             try
@@ -3571,6 +4019,9 @@ namespace System.Data.SQLite
         ///////////////////////////////////////////////////////////////////////
 
         #region Destructor
+        /// <summary>
+        /// Finalizes this object instance.
+        /// </summary>
         ~SQLiteChangeSetMetadataItem()
         {
             Dispose(false);
