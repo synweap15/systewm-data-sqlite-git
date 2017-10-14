@@ -205,15 +205,15 @@
 </p>
 
 <p>
-  Currently, Visual Studio 2005, 2008, 2010, 2012, 2013, and 2015 are supported,
-  including the &quot;Express&quot; editions; however, in order to build the
-  entire solution, including the necessary native code, the &quot;Professional&quot;
-  edition (or higher) is required.  It may be possible to install both Visual C#
-  Express and Visual C++ Express and then build the corresponding sub-projects
-  via their respective integrated development environments (IDE); however, this
-  configuration has <b>not</b> been tested.  The design-time components are
-  <b>no longer</b> supported for the Express editions due to licensing
-  restrictions.
+  Currently, Visual Studio 2005, 2008, 2010, 2012, 2013, 2015, and 2017 are
+  supported, including the &quot;Express&quot; editions; however, in order to
+  build the entire solution, including the necessary native code, the
+  &quot;Professional&quot; edition (or higher) is required.  It may be possible
+  to install both Visual C# Express and Visual C++ Express and then build the
+  corresponding sub-projects via their respective integrated development
+  environments (IDE); however, this configuration has <b>not</b> been tested.
+  The design-time components are <b>no longer</b> supported for the Express
+  editions due to licensing restrictions.
 </p>
 
 <hr>

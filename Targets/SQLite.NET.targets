@@ -258,4 +258,61 @@
     <Exec Condition="'$(DoesMachineMatchPlatform)' != 'false'"
           Command="XCOPY &quot;$(OutDir)$(TargetName).*&quot; &quot;$(OutDir)..\..\$(BaseConfiguration)\bin\&quot; /D /E /V /I /F /H /Y" />
   </Target>
+
+  <!--
+  ******************************************************************************
+  **                        Visual Studio 2017 Targets                        **
+  ******************************************************************************
+  -->
+
+  <Target Name="MaybeFindVsSdk2017"
+          Condition="'$(MaybeFindVsSdk2017)' != 'false' And
+                     '$(MSBuildProjectDirectory)' != '' And
+                     !HasTrailingSlash('$(MSBuildProjectDirectory)') And
+                     Exists('$(MSBuildProjectDirectory)\..\Externals\vswhere\vswhere.exe')">
+    <!--
+        HACK: Use a couple undocumented properties of the Exec task in order
+              to capture the console output of the "vswhere" command.  This
+              is needed to locate the SDK for Visual Studio 2017.  For more
+              information, see:
+
+              https://stackoverflow.com/questions/8938679
+    -->
+    <Exec ConsoleToMSBuild="true" Command="&quot;$(MSBuildProjectDirectory)\..\Externals\vswhere\vswhere.exe&quot; -version 15.0 -products * -requires Microsoft.VisualStudio.Component.VSSDK -property installationPath"
+          WorkingDirectory="$(MSBuildProjectDirectory)\..\Externals\vswhere">
+      <Output TaskParameter="ConsoleOutput" PropertyName="VS150INSTALLATIONPATH" />
+    </Exec>
+
+    <CreateProperty Condition="'$(VS150INSTALLATIONPATH)' != '' And
+                               !HasTrailingSlash('$(VS150INSTALLATIONPATH)') And
+                               Exists('$(VS150INSTALLATIONPATH)\VSSDK')"
+                    Value="$(VS150INSTALLATIONPATH)\VSSDK\">
+      <Output TaskParameter="Value" PropertyName="VSSDK150Install" />
+    </CreateProperty>
+  </Target>
+
+  <!--
+  ******************************************************************************
+  -->
+
+  <Target Name="MaybeMissingVsSdk2017"
+          Condition="'$(MaybeMissingVsSdk2017)' != 'false' And
+                     ('$(VSSDK150Install)' == '' Or
+                      !Exists('$(VSSDK150Install)VisualStudioIntegration\Common\Assemblies\v4.0\Microsoft.Data.ConnectionUI.dll') Or
+                      !Exists('$(VSSDK150Install)VisualStudioIntegration\Common\Assemblies\v4.0\Microsoft.VisualStudio.Data.dll') Or
+                      !Exists('$(VSSDK150Install)VisualStudioIntegration\Common\Assemblies\v4.0\Microsoft.VisualStudio.Data.Services.dll') Or
+                      !Exists('$(VSSDK150Install)VisualStudioIntegration\Common\Assemblies\v2.0\Microsoft.VisualStudio.OLE.Interop.dll') Or
+                      !Exists('$(VSSDK150Install)VisualStudioIntegration\Common\Assemblies\v4.0\Microsoft.VisualStudio.Shell.15.0.dll') Or
+                      !Exists('$(VSSDK150Install)VisualStudioIntegration\Common\Assemblies\v2.0\Microsoft.VisualStudio.Shell.Interop.dll') Or
+                      !Exists('$(VSSDK150Install)VisualStudioIntegration\Common\Assemblies\v2.0\Microsoft.VisualStudio.Shell.Interop.8.0.dll') Or
+                      !Exists('$(VSSDK150Install)VisualStudioIntegration\Common\Assemblies\v2.0\Microsoft.VisualStudio.Shell.Interop.9.0.dll') Or
+                      !Exists('$(VSSDK150Install)VisualStudioIntegration\Common\Assemblies\v2.0\Microsoft.VisualStudio.Shell.Interop.10.0.dll'))">
+    <!--
+        NOTE: We cannot build this project without the necessary reference
+              assemblies; therefore, skip building it altogether.
+    -->
+    <CreateProperty Value="MissingVsSdk">
+      <Output TaskParameter="Value" PropertyName="BuildDependsOn" />
+    </CreateProperty>
+  </Target>
 </Project>

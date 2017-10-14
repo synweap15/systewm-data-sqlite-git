@@ -23,6 +23,7 @@ using System.Security;
 using System.Security.Permissions;
 #endif
 
+using System.Text;
 using System.Threading;
 using System.Windows.Forms;
 using System.Xml;
@@ -202,7 +203,7 @@ namespace System.Data.SQLite
     ///////////////////////////////////////////////////////////////////////////
 
     #region Installer Class
-#if NET_40 || NET_45 || NET_451 || NET_452 || NET_46 || NET_461 || NET_462
+#if NET_40 || NET_45 || NET_451 || NET_452 || NET_46 || NET_461 || NET_462 || NET_47
     [SecurityCritical()]
 #else
     [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
@@ -771,8 +772,10 @@ namespace System.Data.SQLite
                     CheckDisposed();
 
                     if (classesRoot == null)
+                    {
                         classesRoot = new MockRegistryKey(
                             Registry.ClassesRoot, whatIf, readOnly, safe);
+                    }
 
                     return classesRoot;
                 }
@@ -788,8 +791,10 @@ namespace System.Data.SQLite
                     CheckDisposed();
 
                     if (currentConfig == null)
+                    {
                         currentConfig = new MockRegistryKey(
                             Registry.CurrentConfig, whatIf, readOnly, safe);
+                    }
 
                     return currentConfig;
                 }
@@ -805,8 +810,10 @@ namespace System.Data.SQLite
                     CheckDisposed();
 
                     if (currentUser == null)
+                    {
                         currentUser = new MockRegistryKey(
                             Registry.CurrentUser, whatIf, readOnly, safe);
+                    }
 
                     return currentUser;
                 }
@@ -822,8 +829,10 @@ namespace System.Data.SQLite
                     CheckDisposed();
 
                     if (dynData == null)
+                    {
                         dynData = new MockRegistryKey(
                             Registry.DynData, whatIf, readOnly, safe);
+                    }
 
                     return dynData;
                 }
@@ -839,8 +848,10 @@ namespace System.Data.SQLite
                     CheckDisposed();
 
                     if (localMachine == null)
+                    {
                         localMachine = new MockRegistryKey(
                             Registry.LocalMachine, whatIf, readOnly, safe);
+                    }
 
                     return localMachine;
                 }
@@ -856,8 +867,10 @@ namespace System.Data.SQLite
                     CheckDisposed();
 
                     if (performanceData == null)
+                    {
                         performanceData = new MockRegistryKey(
                             Registry.PerformanceData, whatIf, readOnly, safe);
+                    }
 
                     return performanceData;
                 }
@@ -873,8 +886,10 @@ namespace System.Data.SQLite
                     CheckDisposed();
 
                     if (users == null)
+                    {
                         users = new MockRegistryKey(
                             Registry.Users, whatIf, readOnly, safe);
+                    }
 
                     return users;
                 }
@@ -1193,11 +1208,16 @@ namespace System.Data.SQLite
                     //
                     RegistryKey subKey = key.OpenSubKey(subKeyName);
 
-                    return (subKey != null) ?
-                        new MockRegistryKey(
-                                subKey, whatIf, readOnly, safe) :
-                        new MockRegistryKey(
-                                key, subKeyName, whatIf, readOnly, safe);
+                    if (subKey != null)
+                    {
+                        return new MockRegistryKey(
+                            subKey, whatIf, readOnly, safe);
+                    }
+                    else
+                    {
+                        return new MockRegistryKey(
+                            key, subKeyName, whatIf, readOnly, safe);
+                    }
                 }
                 else
                 {
@@ -1285,6 +1305,18 @@ namespace System.Data.SQLite
 
             ///////////////////////////////////////////////////////////////////
 
+            public string[] GetValueNames()
+            {
+                CheckDisposed();
+
+                if (key == null)
+                    return null;
+
+                return key.GetValueNames();
+            }
+
+            ///////////////////////////////////////////////////////////////////
+
             public MockRegistryKey OpenSubKey(
                 string subKeyName
                 )
@@ -1312,8 +1344,10 @@ namespace System.Data.SQLite
                 RegistryKey subKey = key.OpenSubKey(
                     subKeyName, whatIf ? false : writable);
 
-                return (subKey != null) ?
-                    new MockRegistryKey(subKey, whatIf, readOnly, safe) : null;
+                if (subKey == null)
+                    return null;
+
+                return new MockRegistryKey(subKey, whatIf, readOnly, safe);
             }
 
             ///////////////////////////////////////////////////////////////////
@@ -1347,7 +1381,7 @@ namespace System.Data.SQLite
                         return null;
 
                     return !String.IsNullOrEmpty(subKeyName) ?
-                        String.Format("{0}\\{1}", key.Name, subKeyName) :
+                        RegistryHelper.JoinKeyNames(key.Name, subKeyName) :
                         key.Name;
                 }
             }
@@ -1517,10 +1551,78 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
+        #region RegistryRootKeyNames Class
+        private static class RegistryRootKeyNames
+        {
+            public const string HKEY_CLASSES_ROOT = "HKEY_CLASSES_ROOT";
+            public const string HKCR = "HKCR";
+
+            ///////////////////////////////////////////////////////////////////
+
+            public const string HKEY_CURRENT_CONFIG = "HKEY_CURRENT_CONFIG";
+            public const string HKCC = "HKCC";
+
+            ///////////////////////////////////////////////////////////////////
+
+            public const string HKEY_CURRENT_USER = "HKEY_CURRENT_USER";
+            public const string HKCU = "HKCU";
+
+            ///////////////////////////////////////////////////////////////////
+
+            public const string HKEY_DYN_DATA = "HKEY_DYN_DATA";
+            public const string HKDD = "HKDD";
+
+            ///////////////////////////////////////////////////////////////////
+
+            public const string HKEY_LOCAL_MACHINE = "HKEY_LOCAL_MACHINE";
+            public const string HKLM = "HKLM";
+
+            ///////////////////////////////////////////////////////////////////
+
+            public const string HKEY_PERFORMANCE_DATA = "HKEY_PERFORMANCE_DATA";
+            public const string HKPD = "HKPD";
+
+            ///////////////////////////////////////////////////////////////////
+
+            public const string HKEY_USERS = "HKEY_USERS";
+            public const string HKU = "HKU";
+        }
+        #endregion
+
+        ///////////////////////////////////////////////////////////////////////
+
         #region RegistryHelper Class
+        #region Private Constants
+        private const char KeyNameSeparator = '\\';
+
+        ///////////////////////////////////////////////////////////////////////
+
+        private static readonly char[] KeyNameSeparators = {
+            KeyNameSeparator
+        };
+        #endregion
+
+        ///////////////////////////////////////////////////////////////////////
+
         private static class RegistryHelper
         {
             #region Public Static Properties
+            private static MockRegistry readOnlyRegistry;
+            public static MockRegistry ReadOnlyRegistry
+            {
+                get { return readOnlyRegistry; }
+            }
+
+            ///////////////////////////////////////////////////////////////////
+
+            private static MockRegistry readWriteRegistry;
+            public static MockRegistry ReadWriteRegistry
+            {
+                get { return readWriteRegistry; }
+            }
+
+            ///////////////////////////////////////////////////////////////////
+
             private static int subKeysCreated;
             public static int SubKeysCreated
             {
@@ -1563,6 +1665,196 @@ namespace System.Data.SQLite
             ///////////////////////////////////////////////////////////////////
 
             #region Public Static Methods
+            public static void ReinitializeDefaultRegistries(
+                bool whatIf,
+                bool safe
+                )
+            {
+                if (readOnlyRegistry != null)
+                {
+                    readOnlyRegistry.Dispose();
+                    readOnlyRegistry = null;
+                }
+
+                if (readWriteRegistry != null)
+                {
+                    readWriteRegistry.Dispose();
+                    readWriteRegistry = null;
+                }
+
+                readOnlyRegistry = new MockRegistry(whatIf, true, safe);
+                readWriteRegistry = new MockRegistry(whatIf, false, safe);
+            }
+
+            ///////////////////////////////////////////////////////////////////
+
+            public static MockRegistryKey GetReadOnlyRootKey(
+                string name
+                )
+            {
+                return GetRootKey(readOnlyRegistry, name);
+            }
+
+            ///////////////////////////////////////////////////////////////////
+
+            public static MockRegistryKey GetReadWriteRootKey(
+                string name
+                )
+            {
+                return GetRootKey(readWriteRegistry, name);
+            }
+
+            ///////////////////////////////////////////////////////////////////
+
+            public static MockRegistryKey GetRootKey(
+                MockRegistry registry,
+                string name
+                )
+            {
+                if (registry == null)
+                    return null;
+
+                if (String.Equals(
+                        name, RegistryRootKeyNames.HKEY_CLASSES_ROOT,
+                        StringComparison.OrdinalIgnoreCase) ||
+                    String.Equals(
+                        name, RegistryRootKeyNames.HKCR,
+                        StringComparison.OrdinalIgnoreCase))
+                {
+                    return registry.ClassesRoot;
+                }
+                else if (String.Equals(
+                        name, RegistryRootKeyNames.HKEY_CURRENT_CONFIG,
+                        StringComparison.OrdinalIgnoreCase) ||
+                    String.Equals(
+                        name, RegistryRootKeyNames.HKCC,
+                        StringComparison.OrdinalIgnoreCase))
+                {
+                    return registry.CurrentConfig;
+                }
+                else if (String.Equals(
+                        name, RegistryRootKeyNames.HKEY_CURRENT_USER,
+                        StringComparison.OrdinalIgnoreCase) ||
+                    String.Equals(
+                        name, RegistryRootKeyNames.HKCU,
+                        StringComparison.OrdinalIgnoreCase))
+                {
+                    return registry.CurrentUser;
+                }
+                else if (String.Equals(
+                        name, RegistryRootKeyNames.HKEY_DYN_DATA,
+                        StringComparison.OrdinalIgnoreCase) ||
+                    String.Equals(
+                        name, RegistryRootKeyNames.HKDD,
+                        StringComparison.OrdinalIgnoreCase))
+                {
+                    return registry.DynData;
+                }
+                else if (String.Equals(
+                        name, RegistryRootKeyNames.HKEY_LOCAL_MACHINE,
+                        StringComparison.OrdinalIgnoreCase) ||
+                    String.Equals(
+                        name, RegistryRootKeyNames.HKLM,
+                        StringComparison.OrdinalIgnoreCase))
+                {
+                    return registry.LocalMachine;
+                }
+                else if (String.Equals(
+                        name, RegistryRootKeyNames.HKEY_PERFORMANCE_DATA,
+                        StringComparison.OrdinalIgnoreCase) ||
+                    String.Equals(
+                        name, RegistryRootKeyNames.HKPD,
+                        StringComparison.OrdinalIgnoreCase))
+                {
+                    return registry.PerformanceData;
+                }
+                else if (String.Equals(
+                        name, RegistryRootKeyNames.HKEY_USERS,
+                        StringComparison.OrdinalIgnoreCase) ||
+                    String.Equals(
+                        name, RegistryRootKeyNames.HKU,
+                        StringComparison.OrdinalIgnoreCase))
+                {
+                    return registry.Users;
+                }
+
+                return null;
+            }
+
+            ///////////////////////////////////////////////////////////////////
+
+            public static string JoinKeyNames(
+                params string[] names
+                )
+            {
+                if ((names == null) || (names.Length == 0))
+                    return null;
+
+                StringBuilder builder = new StringBuilder();
+
+                foreach (string name in names)
+                {
+                    if (name == null)
+                        continue;
+
+                    string newName = name.Trim(KeyNameSeparator);
+
+                    if (String.IsNullOrEmpty(newName))
+                        continue;
+
+                    if (builder.Length > 0)
+                        builder.Append(KeyNameSeparator);
+
+                    builder.Append(newName);
+                }
+
+                return builder.ToString();
+            }
+
+            ///////////////////////////////////////////////////////////////////
+
+            public static string JoinKeyNames(
+                MockRegistryKey key,
+                params string[] names
+                )
+            {
+                string result = JoinKeyNames(names);
+
+                if (key != null)
+                    result = JoinKeyNames(key.Name, result);
+
+                return result;
+            }
+
+            ///////////////////////////////////////////////////////////////////
+
+            public static string[] SplitKeyName(
+                string keyName
+                )
+            {
+                if (keyName == null)
+                    return null;
+
+                return keyName.Split(
+                    KeyNameSeparators, StringSplitOptions.RemoveEmptyEntries);
+            }
+
+            ///////////////////////////////////////////////////////////////////
+
+            public static string LastSubKeyName(
+                string keyName
+                )
+            {
+                string[] subKeyNames = SplitKeyName(keyName);
+
+                if ((subKeyNames == null) || (subKeyNames.Length == 0))
+                    return null;
+
+                return subKeyNames[subKeyNames.Length - 1];
+            }
+
+            ///////////////////////////////////////////////////////////////////
+
             [MethodImpl(MethodImplOptions.NoInlining)]
             public static MockRegistryKey OpenSubKey(
                 MockRegistryKey rootKey,
@@ -1573,12 +1865,14 @@ namespace System.Data.SQLite
                 )
             {
                 if (verbose)
+                {
                     TraceOps.DebugAndTrace(writable ?
                         TracePriority.Highest : TracePriority.Higher,
                         debugCallback, traceCallback, String.Format(
                         "rootKey = {0}, subKeyName = {1}, writable = {2}",
                         ForDisplay(rootKey), ForDisplay(subKeyName),
                         ForDisplay(writable)), traceCategory);
+                }
 
                 if (rootKey == null)
                     return null;
@@ -1605,11 +1899,13 @@ namespace System.Data.SQLite
                 )
             {
                 if (verbose)
+                {
                     TraceOps.DebugAndTrace(TracePriority.Highest,
                         debugCallback, traceCallback, String.Format(
                         "rootKey = {0}, subKeyName = {1}",
                         ForDisplay(rootKey), ForDisplay(subKeyName)),
                         traceCategory);
+                }
 
                 if (rootKey == null)
                     return null;
@@ -1659,11 +1955,13 @@ namespace System.Data.SQLite
                 )
             {
                 if (verbose)
+                {
                     TraceOps.DebugAndTrace(TracePriority.Highest,
                         debugCallback, traceCallback, String.Format(
                         "rootKey = {0}, subKeyName = {1}",
                         ForDisplay(rootKey), ForDisplay(subKeyName)),
                         traceCategory);
+                }
 
                 if (rootKey == null)
                     return;
@@ -1685,11 +1983,13 @@ namespace System.Data.SQLite
                 )
             {
                 if (verbose)
+                {
                     TraceOps.DebugAndTrace(TracePriority.Highest,
                         debugCallback, traceCallback, String.Format(
                         "rootKey = {0}, subKeyName = {1}",
                         ForDisplay(rootKey), ForDisplay(subKeyName)),
                         traceCategory);
+                }
 
                 if (rootKey == null)
                     return;
@@ -1710,9 +2010,11 @@ namespace System.Data.SQLite
                 )
             {
                 if (verbose)
+                {
                     TraceOps.DebugAndTrace(TracePriority.High,
                         debugCallback, traceCallback, String.Format(
                         "key = {0}", ForDisplay(key)), traceCategory);
+                }
 
                 if (key == null)
                     return null;
@@ -1732,11 +2034,13 @@ namespace System.Data.SQLite
                 )
             {
                 if (verbose)
+                {
                     TraceOps.DebugAndTrace(TracePriority.High,
                         debugCallback, traceCallback, String.Format(
                         "key = {0}, name = {1}, defaultValue = {2}",
                         ForDisplay(key), ForDisplay(name),
                         ForDisplay(defaultValue)), traceCategory);
+                }
 
                 if (key == null)
                     return null;
@@ -1760,11 +2064,13 @@ namespace System.Data.SQLite
                 )
             {
                 if (verbose)
+                {
                     TraceOps.DebugAndTrace(TracePriority.Highest,
                         debugCallback, traceCallback, String.Format(
                         "key = {0}, name = {1}, value = {2}",
                         ForDisplay(key), ForDisplay(name), ForDisplay(value)),
                         traceCategory);
+                }
 
                 if (key == null)
                     return;
@@ -1787,10 +2093,12 @@ namespace System.Data.SQLite
                 )
             {
                 if (verbose)
+                {
                     TraceOps.DebugAndTrace(TracePriority.Highest,
                         debugCallback, traceCallback, String.Format(
                         "key = {0}, name = {1}", ForDisplay(key),
                         ForDisplay(name)), traceCategory);
+                }
 
                 if (key == null)
                     return;
@@ -2055,12 +2363,14 @@ namespace System.Data.SQLite
                 bool noNetFx46,
                 bool noNetFx461,
                 bool noNetFx462,
+                bool noNetFx47,
                 bool noVs2005,
                 bool noVs2008,
                 bool noVs2010,
                 bool noVs2012,
                 bool noVs2013,
                 bool noVs2015,
+                bool noVs2017,
                 bool noTrace,
                 bool noConsole,
                 bool noLog,
@@ -2102,12 +2412,14 @@ namespace System.Data.SQLite
                 this.noNetFx46 = noNetFx46;
                 this.noNetFx461 = noNetFx461;
                 this.noNetFx462 = noNetFx462;
+                this.noNetFx47 = noNetFx47;
                 this.noVs2005 = noVs2005;
                 this.noVs2008 = noVs2008;
                 this.noVs2010 = noVs2010;
                 this.noVs2012 = noVs2012;
                 this.noVs2013 = noVs2013;
                 this.noVs2015 = noVs2015;
+                this.noVs2017 = noVs2017;
                 this.noTrace = noTrace;
                 this.noConsole = noConsole;
                 this.noLog = noLog;
@@ -2304,8 +2616,8 @@ namespace System.Data.SQLite
                     TracePriority.Default, TracePriority.Default, false, true,
                     false, false, false, false, false, false, false, false,
                     false, false, false, false, false, false, false, false,
-                    false, false, false, false, false, false, true, true,
-                    false, false, false);
+                    false, false, false, false, false, false, false, false,
+                    true, true, false, false, false);
             }
 
             ///////////////////////////////////////////////////////////////////
@@ -2887,6 +3199,27 @@ namespace System.Data.SQLite
 
                             configuration.noNetFx462 = (bool)value;
                         }
+                        else if (MatchOption(newArg, "noNetFx47"))
+                        {
+                            bool? value = ParseBoolean(text);
+
+                            if (value == null)
+                            {
+                                error = TraceOps.DebugAndTrace(
+                                    TracePriority.Lowest, debugCallback,
+                                    traceCallback, String.Format(
+                                    "Invalid {0} boolean value: {1}",
+                                    ForDisplay(arg), ForDisplay(text)),
+                                    traceCategory);
+
+                                if (strict)
+                                    return false;
+
+                                continue;
+                            }
+
+                            configuration.noNetFx47 = (bool)value;
+                        }
                         else if (MatchOption(newArg, "noRuntimeVersion"))
                         {
                             bool? value = ParseBoolean(text);
@@ -3054,6 +3387,27 @@ namespace System.Data.SQLite
                             }
 
                             configuration.noVs2015 = (bool)value;
+                        }
+                        else if (MatchOption(newArg, "noVs2017"))
+                        {
+                            bool? value = ParseBoolean(text);
+
+                            if (value == null)
+                            {
+                                error = TraceOps.DebugAndTrace(
+                                    TracePriority.Lowest, debugCallback,
+                                    traceCallback, String.Format(
+                                    "Invalid {0} boolean value: {1}",
+                                    ForDisplay(arg), ForDisplay(text)),
+                                    traceCategory);
+
+                                if (strict)
+                                    return false;
+
+                                continue;
+                            }
+
+                            configuration.noVs2017 = (bool)value;
                         }
                         else if (MatchOption(newArg, "perUser"))
                         {
@@ -3395,10 +3749,12 @@ namespace System.Data.SQLite
                         //       mode is [now] disabled, issue a warning.
                         //
                         if (Debugger.IsAttached)
+                        {
                             TraceOps.DebugAndTrace(TracePriority.MediumHigh,
                                 debugCallback, traceCallback,
                                 "Forced to disable \"what-if\" mode with " +
                                 "debugger attached.", traceCategory);
+                        }
                     }
                     else
                     {
@@ -3513,10 +3869,12 @@ namespace System.Data.SQLite
                         configuration.noNetFx46 = true;
                         configuration.noNetFx461 = true;
                         configuration.noNetFx462 = true;
+                        configuration.noNetFx47 = true;
                         configuration.noVs2010 = true;
                         configuration.noVs2012 = true;
                         configuration.noVs2013 = true;
                         configuration.noVs2015 = true;
+                        configuration.noVs2017 = true;
 
                         TraceOps.DebugAndTrace(TracePriority.Medium,
                             debugCallback, traceCallback, String.Format(
@@ -3713,7 +4071,7 @@ namespace System.Data.SQLite
                 //
                 return !noNetFx35 || !noNetFx40 || !noNetFx45 ||
                     !noNetFx451 || !noNetFx452 || !noNetFx46 ||
-                    !noNetFx461 || !noNetFx462;
+                    !noNetFx461 || !noNetFx462 || !noNetFx47;
             }
 
             ///////////////////////////////////////////////////////////////////
@@ -3766,7 +4124,7 @@ namespace System.Data.SQLite
                 //
                 if (noNetFx40 &&
                     noNetFx45 && noNetFx451 && noNetFx452 && noNetFx46 &&
-                    noNetFx461 && noNetFx462)
+                    noNetFx461 && noNetFx462 && noNetFx47)
                 {
                     return false;
                 }
@@ -4057,6 +4415,10 @@ namespace System.Data.SQLite
                         traceCategory);
 
                     traceCallback(String.Format(NameAndValueFormat,
+                        "NoNetFx47", ForDisplay(noNetFx47)),
+                        traceCategory);
+
+                    traceCallback(String.Format(NameAndValueFormat,
                         "NoVs2005", ForDisplay(noVs2005)),
                         traceCategory);
 
@@ -4078,6 +4440,10 @@ namespace System.Data.SQLite
 
                     traceCallback(String.Format(NameAndValueFormat,
                         "NoVs2015", ForDisplay(noVs2015)),
+                        traceCategory);
+
+                    traceCallback(String.Format(NameAndValueFormat,
+                        "NoVs2017", ForDisplay(noVs2017)),
                         traceCategory);
 
                     traceCallback(String.Format(NameAndValueFormat,
@@ -4536,6 +4902,15 @@ namespace System.Data.SQLite
 
             ///////////////////////////////////////////////////////////////////
 
+            private bool noNetFx47;
+            public bool NoNetFx47
+            {
+                get { return noNetFx47; }
+                set { noNetFx47 = value; }
+            }
+
+            ///////////////////////////////////////////////////////////////////
+
             private bool noVs2005;
             public bool NoVs2005
             {
@@ -4586,6 +4961,15 @@ namespace System.Data.SQLite
             {
                 get { return noVs2015; }
                 set { noVs2015 = value; }
+            }
+
+            ///////////////////////////////////////////////////////////////////
+
+            private bool noVs2017;
+            public bool NoVs2017
+            {
+                get { return noVs2017; }
+                set { noVs2017 = value; }
             }
 
             ///////////////////////////////////////////////////////////////////
@@ -4953,9 +5337,9 @@ namespace System.Data.SQLite
             //         applications running on a 64-bit operating system.
             //         Ticket [a0677309f0] has further details.
             //
-            return String.Format("{0}{1}", RootKeyName,
+            return RegistryHelper.JoinKeyNames(RootKeyName,
                 !perUser && wow64 && Is64BitProcess() ?
-                    "\\" + Wow64SubKeyName : String.Empty);
+                    Wow64SubKeyName : String.Empty);
         }
 
         ///////////////////////////////////////////////////////////////////////
@@ -5130,8 +5514,9 @@ namespace System.Data.SQLite
             bool wow64
             )
         {
-            return String.Format("{0}\\Microsoft\\.NETFramework",
-                GetRootKeyName(perUser, wow64));
+            return RegistryHelper.JoinKeyNames(
+                GetRootKeyName(perUser, wow64),
+                "Microsoft", ".NETFramework");
         }
 
         ///////////////////////////////////////////////////////////////////////
@@ -5144,12 +5529,12 @@ namespace System.Data.SQLite
             bool wow64
             )
         {
-            string format = !String.IsNullOrEmpty(platformName) ?
-                "{0}\\Microsoft\\{1}\\v{2}\\{3}" :
-                "{0}\\Microsoft\\{1}\\v{2}";
+            string frameworkVersionString = (frameworkVersion != null) ?
+                "v" + frameworkVersion.ToString() : null;
 
-            return String.Format(format, GetRootKeyName(perUser, wow64),
-                frameworkName, frameworkVersion, platformName);
+            return RegistryHelper.JoinKeyNames(
+                GetRootKeyName(perUser, wow64), "Microsoft", frameworkName,
+                frameworkVersionString, platformName);
         }
 
         ///////////////////////////////////////////////////////////////////////
@@ -5307,6 +5692,14 @@ namespace System.Data.SQLite
                     //
                     if ((configuration == null) || !configuration.NoNetFx462)
                         desktopVersionList.Add(new Version(4, 6, 2));
+
+                    //
+                    // NOTE: The .NET Framework 4.7 does not have its own
+                    //       directory; however, it still may have assembly
+                    //       folders for use in Visual Studio, etc.
+                    //
+                    if ((configuration == null) || !configuration.NoNetFx47)
+                        desktopVersionList.Add(new Version(4, 7));
 
                     frameworkList.Versions.Add(".NETFramework",
                         desktopVersionList);
@@ -5623,11 +6016,13 @@ namespace System.Data.SQLite
                             saved = true;
 
                         if (verbose)
+                        {
                             TraceOps.DebugAndTrace(TracePriority.Lowest,
                                 debugCallback, traceCallback, String.Format(
                                 "localSaved = {0}, saved = {1}",
                                 ForDisplay(localSaved), ForDisplay(saved)),
                                 traceCategory);
+                        }
                     }
                 }
             }
@@ -5815,6 +6210,9 @@ namespace System.Data.SQLite
 
                 if ((configuration == null) || !configuration.NoVs2015)
                     vsList.Versions.Add(new Version(14, 0));// 2015
+
+                if ((configuration == null) || !configuration.NoVs2017)
+                    vsList.Versions.Add(new Version(15, 0));// 2017
             }
         }
 
@@ -6047,10 +6445,12 @@ namespace System.Data.SQLite
             if (dirty || whatIf)
             {
                 if (verbose)
+                {
                     TraceOps.DebugAndTrace(TracePriority.Highest,
                         debugCallback, traceCallback, String.Format(
                         "addElement = {0}", ForDisplay(addElement)),
                         traceCategory);
+                }
 
                 if (!whatIf)
                     document.Save(fileName);
@@ -6090,8 +6490,8 @@ namespace System.Data.SQLite
                 dirty = true;
             }
 
-            XmlElement removeElement = document.SelectSingleNode(
-                String.Format(XPathForRemoveElement, invariantName)) as XmlElement;
+            XmlElement removeElement = document.SelectSingleNode(String.Format(
+                XPathForRemoveElement, invariantName)) as XmlElement;
 
             if (removeElement != null)
             {
@@ -6102,11 +6502,13 @@ namespace System.Data.SQLite
             if (dirty || whatIf)
             {
                 if (verbose)
+                {
                     TraceOps.DebugAndTrace(TracePriority.Highest,
                         debugCallback, traceCallback, String.Format(
                         "addElement = {0}, removeElement = {1}",
                         ForDisplay(addElement), ForDisplay(removeElement)),
                         traceCategory);
+                }
 
                 if (!whatIf)
                     document.Save(fileName);
@@ -6176,17 +6578,17 @@ namespace System.Data.SQLite
             bool wow64
             )
         {
+            string frameworkVersionString = (frameworkVersion != null) ?
+                "v" + frameworkVersion.ToString() : null;
+
             //
             // NOTE: This registry key appears to always be 32-bit only
             //       (i.e. probably because it is only used by Visual
             //       Studio, which is currently always 32-bit only).
             //
-            string format = !String.IsNullOrEmpty(platformName) ?
-                "{0}\\Microsoft\\{1}\\v{2}\\{3}\\AssemblyFoldersEx" :
-                "{0}\\Microsoft\\{1}\\v{2}\\AssemblyFoldersEx";
-
-            return String.Format(format, GetRootKeyName(perUser, wow64),
-                frameworkName, frameworkVersion, platformName);
+            return String.Format(GetRootKeyName(perUser, wow64),
+                "Microsoft", frameworkName, frameworkVersionString,
+                platformName, "AssemblyFoldersEx");
         }
 
         ///////////////////////////////////////////////////////////////////////
@@ -6215,8 +6617,8 @@ namespace System.Data.SQLite
                 if (key == null)
                 {
                     error = String.Format(
-                        "could not open registry key: {0}\\{1}",
-                        rootKey, keyName);
+                        "could not open registry key: {0}",
+                        RegistryHelper.JoinKeyNames(rootKey, keyName));
 
                     return false;
                 }
@@ -6227,8 +6629,8 @@ namespace System.Data.SQLite
                     if (subKey == null)
                     {
                         error = String.Format(
-                            "could not create registry key: {0}\\{1}",
-                            key, subKeyName);
+                            "could not create registry key: {0}",
+                            RegistryHelper.JoinKeyNames(key, subKeyName));
 
                         return false;
                     }
@@ -6267,8 +6669,8 @@ namespace System.Data.SQLite
                 if (key == null)
                 {
                     error = String.Format(
-                        "could not open registry key: {0}\\{1}",
-                        rootKey, keyName);
+                        "could not open registry key: {0}",
+                        RegistryHelper.JoinKeyNames(rootKey, keyName));
 
                     return false;
                 }
@@ -6334,8 +6736,9 @@ namespace System.Data.SQLite
             bool wow64
             )
         {
-            return String.Format("{0}\\Microsoft\\VisualStudio",
-                GetRootKeyName(perUser, wow64));
+            return RegistryHelper.JoinKeyNames(
+                GetRootKeyName(perUser, wow64),
+                "Microsoft", "VisualStudio");
         }
 
         ///////////////////////////////////////////////////////////////////////
@@ -6350,9 +6753,9 @@ namespace System.Data.SQLite
             if (vsVersion == null)
                 return null;
 
-            return String.Format(
-                "{0}\\{1}{2}", GetVsRootKeyName(perUser, wow64), vsVersion,
-                suffix);
+            return RegistryHelper.JoinKeyNames(
+                GetVsRootKeyName(perUser, wow64),
+                String.Format("{0}{1}", vsVersion, suffix));
         }
 
         ///////////////////////////////////////////////////////////////////////
@@ -6390,8 +6793,8 @@ namespace System.Data.SQLite
                 if (key == null)
                 {
                     error = String.Format(
-                        "could not open registry key: {0}\\{1}",
-                        rootKey, keyName);
+                        "could not open registry key: {0}",
+                        RegistryHelper.JoinKeyNames(rootKey, keyName));
 
                     return false;
                 }
@@ -6402,8 +6805,9 @@ namespace System.Data.SQLite
                     if (subKey == null)
                     {
                         error = String.Format(
-                            "could not open registry key: {0}\\DataSources",
-                            key);
+                            "could not open registry key: {0}",
+                            RegistryHelper.JoinKeyNames(key,
+                                "DataSources"));
 
                         return false;
                     }
@@ -6416,8 +6820,10 @@ namespace System.Data.SQLite
                         if (dataSourceKey == null)
                         {
                             error = String.Format(
-                                "could not create registry key: {0}\\{1}", key,
-                                package.DataSourceId.ToString(VsIdFormat));
+                                "could not create registry key: {0}",
+                                RegistryHelper.JoinKeyNames(key,
+                                    package.DataSourceId.ToString(
+                                        VsIdFormat)));
 
                             return false;
                         }
@@ -6436,8 +6842,8 @@ namespace System.Data.SQLite
                             whatIf, verbose);
 
                         RegistryHelper.CreateSubKey(dataSourceKey,
-                            String.Format("SupportingProviders\\{0}",
-                            package.DataProviderId.ToString(VsIdFormat)),
+                            RegistryHelper.JoinKeyNames("SupportingProviders",
+                                package.DataProviderId.ToString(VsIdFormat)),
                             whatIf, verbose);
                     }
                 }
@@ -6480,8 +6886,8 @@ namespace System.Data.SQLite
                 if (key == null)
                 {
                     error = String.Format(
-                        "could not open registry key: {0}\\{1}",
-                        rootKey, keyName);
+                        "could not open registry key: {0}",
+                        RegistryHelper.JoinKeyNames(rootKey, keyName));
 
                     return false;
                 }
@@ -6492,8 +6898,9 @@ namespace System.Data.SQLite
                     if (subKey == null)
                     {
                         error = String.Format(
-                            "could not open registry key: {0}\\DataSources",
-                            key);
+                            "could not open registry key: {0}",
+                            RegistryHelper.JoinKeyNames(key,
+                                "DataSources"));
 
                         return false;
                     }
@@ -6589,8 +6996,8 @@ namespace System.Data.SQLite
                 if (key == null)
                 {
                     error = String.Format(
-                        "could not open registry key: {0}\\{1}",
-                        rootKey, keyName);
+                        "could not open registry key: {0}",
+                        RegistryHelper.JoinKeyNames(rootKey, keyName));
 
                     return false;
                 }
@@ -6601,8 +7008,9 @@ namespace System.Data.SQLite
                     if (subKey == null)
                     {
                         error = String.Format(
-                            "could not open registry key: {0}\\DataProviders",
-                            key);
+                            "could not open registry key: {0}",
+                            RegistryHelper.JoinKeyNames(key,
+                                "DataProviders"));
 
                         return false;
                     }
@@ -6615,8 +7023,10 @@ namespace System.Data.SQLite
                         if (dataProviderKey == null)
                         {
                             error = String.Format(
-                                "could not create registry key: {0}\\{1}", key,
-                                package.DataProviderId.ToString(VsIdFormat));
+                                "could not create registry key: {0}",
+                                RegistryHelper.JoinKeyNames(key,
+                                    package.DataProviderId.ToString(
+                                        VsIdFormat)));
 
                             return false;
                         }
@@ -6666,24 +7076,24 @@ namespace System.Data.SQLite
                             verbose);
 
                         RegistryHelper.CreateSubKey(dataProviderKey,
-                            "SupportedObjects\\DataConnectionUIControl",
-                            whatIf, verbose);
+                            RegistryHelper.JoinKeyNames("SupportedObjects",
+                                "DataConnectionUIControl"), whatIf, verbose);
 
                         RegistryHelper.CreateSubKey(dataProviderKey,
-                            "SupportedObjects\\DataConnectionProperties",
-                            whatIf, verbose);
+                            RegistryHelper.JoinKeyNames("SupportedObjects",
+                                "DataConnectionProperties"), whatIf, verbose);
 
                         RegistryHelper.CreateSubKey(dataProviderKey,
-                            "SupportedObjects\\DataConnectionSupport", whatIf,
-                            verbose);
+                            RegistryHelper.JoinKeyNames("SupportedObjects",
+                                "DataConnectionSupport"), whatIf, verbose);
 
                         RegistryHelper.CreateSubKey(dataProviderKey,
-                            "SupportedObjects\\DataObjectSupport", whatIf,
-                            verbose);
+                            RegistryHelper.JoinKeyNames("SupportedObjects",
+                                "DataObjectSupport"), whatIf, verbose);
 
                         RegistryHelper.CreateSubKey(dataProviderKey,
-                            "SupportedObjects\\DataViewSupport", whatIf,
-                            verbose);
+                            RegistryHelper.JoinKeyNames("SupportedObjects",
+                                "DataViewSupport"), whatIf, verbose);
                     }
                 }
             }
@@ -6719,8 +7129,8 @@ namespace System.Data.SQLite
                 if (key == null)
                 {
                     error = String.Format(
-                        "could not open registry key: {0}\\{1}",
-                        rootKey, keyName);
+                        "could not open registry key: {0}",
+                        RegistryHelper.JoinKeyNames(rootKey, keyName));
 
                     return false;
                 }
@@ -6731,8 +7141,9 @@ namespace System.Data.SQLite
                     if (subKey == null)
                     {
                         error = String.Format(
-                            "could not open registry key: {0}\\DataProviders",
-                            key);
+                            "could not open registry key: {0}",
+                            RegistryHelper.JoinKeyNames(key,
+                                "DataProviders"));
 
                         return false;
                     }
@@ -6860,8 +7271,8 @@ namespace System.Data.SQLite
                 if (key == null)
                 {
                     error = String.Format(
-                        "could not open registry key: {0}\\{1}",
-                        rootKey, keyName);
+                        "could not open registry key: {0}",
+                        RegistryHelper.JoinKeyNames(rootKey, keyName));
 
                     return false;
                 }
@@ -6872,8 +7283,9 @@ namespace System.Data.SQLite
                     if (subKey == null)
                     {
                         error = String.Format(
-                            "could not open registry key: {0}\\Packages",
-                            key);
+                            "could not open registry key: {0}",
+                            RegistryHelper.JoinKeyNames(key,
+                                "Packages"));
 
                         return false;
                     }
@@ -6905,8 +7317,9 @@ namespace System.Data.SQLite
                         if (packageKey == null)
                         {
                             error = String.Format(
-                                "could not create registry key: {0}\\{1}",
-                                key, package.PackageId.ToString(VsIdFormat));
+                                "could not create registry key: {0}",
+                                RegistryHelper.JoinKeyNames(key,
+                                    package.PackageId.ToString(VsIdFormat)));
 
                             return false;
                         }
@@ -6953,8 +7366,9 @@ namespace System.Data.SQLite
                             if (toolboxKey == null)
                             {
                                 error = String.Format(
-                                    "could not create registry key: " +
-                                    "{0}\\Toolbox", packageKey);
+                                    "could not create registry key: {0}",
+                                    RegistryHelper.JoinKeyNames(packageKey,
+                                        "Toolbox"));
 
                                 return false;
                             }
@@ -6972,8 +7386,9 @@ namespace System.Data.SQLite
                     if (subKey == null)
                     {
                         error = String.Format(
-                            "could not open registry key: {0}\\Menus",
-                            key);
+                            "could not open registry key: {0}",
+                            RegistryHelper.JoinKeyNames(key,
+                                "Menus"));
 
                         return false;
                     }
@@ -6989,8 +7404,9 @@ namespace System.Data.SQLite
                     if (subKey == null)
                     {
                         error = String.Format(
-                            "could not open registry key: {0}\\Services",
-                            key);
+                            "could not open registry key: {0}",
+                            RegistryHelper.JoinKeyNames(key,
+                                "Services"));
 
                         return false;
                     }
@@ -7003,8 +7419,9 @@ namespace System.Data.SQLite
                         if (serviceKey == null)
                         {
                             error = String.Format(
-                                "could not create registry key: {0}\\{1}",
-                                key, package.ServiceId.ToString(VsIdFormat));
+                                "could not create registry key: {0}",
+                                RegistryHelper.JoinKeyNames(key,
+                                    package.ServiceId.ToString(VsIdFormat)));
 
                             return false;
                         }
@@ -7058,8 +7475,8 @@ namespace System.Data.SQLite
                 if (key == null)
                 {
                     error = String.Format(
-                        "could not open registry key: {0}\\{1}",
-                        rootKey, keyName);
+                        "could not open registry key: {0}",
+                        RegistryHelper.JoinKeyNames(rootKey, keyName));
 
                     return false;
                 }
@@ -7070,8 +7487,9 @@ namespace System.Data.SQLite
                     if (subKey == null)
                     {
                         error = String.Format(
-                            "could not open registry key: {0}\\Packages",
-                            key);
+                            "could not open registry key: {0}",
+                            RegistryHelper.JoinKeyNames(key,
+                                "Packages"));
 
                         return false;
                     }
@@ -7087,8 +7505,9 @@ namespace System.Data.SQLite
                     if (subKey == null)
                     {
                         error = String.Format(
-                            "could not open registry key: {0}\\Menus",
-                            key);
+                            "could not open registry key: {0}",
+                            RegistryHelper.JoinKeyNames(key,
+                                "Menus"));
 
                         return false;
                     }
@@ -7104,8 +7523,9 @@ namespace System.Data.SQLite
                     if (subKey == null)
                     {
                         error = String.Format(
-                            "could not open registry key: {0}\\Services",
-                            key);
+                            "could not open registry key: {0}",
+                            RegistryHelper.JoinKeyNames(key,
+                                "Services"));
 
                         return false;
                     }
@@ -7251,9 +7671,11 @@ namespace System.Data.SQLite
                 VsDevEnvSetupErrorDataReceived);
 
             if (verbose)
+            {
                 TraceOps.DebugAndTrace(TracePriority.Highest,
                     debugCallback, traceCallback, ForDisplay(startInfo),
                     traceCategory);
+            }
 
             //
             // NOTE: In "what-if" mode, do not actually start the process.
@@ -7263,10 +7685,12 @@ namespace System.Data.SQLite
                 process.Start();
 
                 if (verbose)
+                {
                     TraceOps.DebugAndTrace(TracePriority.Highest,
                         debugCallback, traceCallback, String.Format(
                         "process = {0}", ForDisplay(process)),
                         traceCategory);
+                }
 
                 process.BeginOutputReadLine();
                 process.BeginErrorReadLine();
@@ -7298,11 +7722,13 @@ namespace System.Data.SQLite
             //       package removal have been completed).
             //
             if (verbose)
+            {
                 TraceOps.DebugAndTrace(TracePriority.Highest,
                     debugCallback, traceCallback, String.Format(
                     "Preparing to run Visual Studio {0} 'setup' mode to " +
                     "refresh its configuration.", ForDisplay(vsVersion)),
                     traceCategory);
+            }
 
             return AddVsDevEnvSetup(
                 vsVersion, directory, perUser, whatIf, verbose, ref error);
@@ -7377,6 +7803,28 @@ namespace System.Data.SQLite
                     !Configuration.CheckRuntimeVersion(
                         configuration, true, ref error))
                 {
+                    TraceOps.ShowMessage(TracePriority.Highest,
+                        debugCallback, traceCallback, thisAssembly,
+                        error, traceCategory, MessageBoxButtons.OK,
+                        MessageBoxIcon.Error);
+
+                    TraceOps.DebugAndTrace(TracePriority.MediumHigh,
+                        debugCallback, traceCallback, "Failure.",
+                        traceCategory);
+
+                    return 1; /* FAILURE */
+                }
+                #endregion
+
+                ///////////////////////////////////////////////////////////////
+
+                #region Error Message for Visual Studio 2017
+                if (!configuration.NoVs2017)
+                {
+                    error = "Visual Studio 2017 is not supported, " +
+                        "please see \"https://urn.to/r/vs2017_ddex\" " +
+                        "for more information.";
+
                     TraceOps.ShowMessage(TracePriority.Highest,
                         debugCallback, traceCallback, thisAssembly,
                         error, traceCategory, MessageBoxButtons.OK,
