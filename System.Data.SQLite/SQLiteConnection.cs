@@ -1761,6 +1761,47 @@ namespace System.Data.SQLite
     ///////////////////////////////////////////////////////////////////////////////////////////////
 
     /// <summary>
+    /// Attempts to lookup the native handle associated with the connection.  An exception will
+    /// be thrown if this cannot be accomplished.
+    /// </summary>
+    /// <param name="connection">
+    /// The connection associated with the desired native handle.
+    /// </param>
+    /// <returns>
+    /// The native handle associated with the connection or <see cref="IntPtr.Zero" /> if it
+    /// cannot be determined.
+    /// </returns>
+    private static SQLiteConnectionHandle GetNativeHandle(
+        SQLiteConnection connection
+        )
+    {
+        if (connection == null)
+            throw new ArgumentNullException("connection");
+
+        SQLite3 sqlite3 = connection._sql as SQLite3;
+
+        if (sqlite3 == null)
+            throw new InvalidOperationException("Connection has no wrapper");
+
+        SQLiteConnectionHandle handle = sqlite3._sql;
+
+        if (handle == null)
+            throw new InvalidOperationException("Connection has an invalid handle.");
+
+        IntPtr handlePtr = handle;
+
+        if (handlePtr == IntPtr.Zero)
+        {
+            throw new InvalidOperationException(
+                "Connection has an invalid handle pointer.");
+        }
+
+        return handle;
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+
+    /// <summary>
     /// Raises the <see cref="Changed" /> event.
     /// </summary>
     /// <param name="connection">
@@ -2973,6 +3014,86 @@ namespace System.Data.SQLite
     {
       return CreateCommand();
     }
+
+#if INTEROP_SESSION_EXTENSION
+    /// <summary>
+    /// Attempts to create a new <see cref="ISQLiteSession" /> object instance
+    /// using this connection and the specified database name.
+    /// </summary>
+    /// <param name="databaseName">
+    /// The name of the database for the newly created session.
+    /// </param>
+    /// <returns>
+    /// The newly created session -OR- null if it cannot be created.
+    /// </returns>
+    public ISQLiteSession CreateSession(
+        string databaseName
+        )
+    {
+        CheckDisposed();
+
+        return new SQLiteSession(GetNativeHandle(this), _flags, databaseName);
+    }
+
+    /// <summary>
+    /// Attempts to create a new <see cref="ISQLiteChangeSet" /> object instance
+    /// using this connection and the specified raw data.
+    /// </summary>
+    /// <param name="rawData">
+    /// The raw data that contains a change set (or patch set).
+    /// </param>
+    /// <returns>
+    /// The newly created change set -OR- null if it cannot be created.
+    /// </returns>
+    public ISQLiteChangeSet CreateChangeSet(
+        byte[] rawData
+        )
+    {
+        CheckDisposed();
+
+        return new SQLiteMemoryChangeSet(rawData, GetNativeHandle(this), _flags);
+    }
+
+    /// <summary>
+    /// Attempts to create a new <see cref="ISQLiteChangeSet" /> object instance
+    /// using this connection and the specified stream.
+    /// </summary>
+    /// <param name="inputStream">
+    /// The stream where the raw data that contains a change set (or patch set)
+    /// may be read.
+    /// </param>
+    /// <param name="outputStream">
+    /// The stream where the raw data that contains a change set (or patch set)
+    /// may be written.
+    /// </param>
+    /// <returns>
+    /// The newly created change set -OR- null if it cannot be created.
+    /// </returns>
+    public ISQLiteChangeSet CreateChangeSet(
+        Stream inputStream,
+        Stream outputStream
+        )
+    {
+        CheckDisposed();
+
+        return new SQLiteStreamChangeSet(
+            inputStream, outputStream, GetNativeHandle(this), _flags);
+    }
+
+    /// <summary>
+    /// Attempts to create a new <see cref="ISQLiteChangeGroup" /> object
+    /// instance using this connection.
+    /// </summary>
+    /// <returns>
+    /// The newly created change group -OR- null if it cannot be created.
+    /// </returns>
+    public ISQLiteChangeGroup CreateChangeGroup()
+    {
+        CheckDisposed();
+
+        return new SQLiteChangeGroup(_flags);
+    }
+#endif
 
     /// <summary>
     /// Returns the data source file name without extension or path.

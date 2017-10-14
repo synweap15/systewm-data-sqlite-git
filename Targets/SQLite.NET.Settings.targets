@@ -711,6 +711,21 @@
     <InteropVirtualTable Condition="'$(InteropVirtualTable)' == ''">true</InteropVirtualTable>
 
     <!--
+        NOTE: Enable including the session module as a statically available
+              extension?  By default, this is enabled.  If this is disabled,
+              support for using the session module in managed code will be
+              unavailable.  If this is enabled, it must also be enabled via
+              the "INTEROP_SESSION_EXTENSION=1" preprocessor define being
+              present in the "INTEROP_EXTRA_DEFINES" macro in the build
+              properties file:
+
+                  "SQLite.Interop\props\SQLite.Interop.20YY.[vs]props"
+
+              both for the corresponding version(s) of Visual Studio.
+    -->
+    <InteropSessionExtension Condition="'$(InteropSessionExtension)' == ''">true</InteropSessionExtension>
+
+    <!--
         NOTE: Enable the use of native Windows APIs, when available?  By
               default, this is enabled.  If this is disabled, all features
               that require the use of native Windows APIs will be unavailable.

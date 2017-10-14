@@ -118,4 +118,14 @@
     <Compile Include="SQLiteModuleEnumerable.cs" />
     <Compile Include="SQLiteModuleNoop.cs" />
   </ItemGroup>
+
+  <!--
+  ******************************************************************************
+  **                         Session Extension Files                          **
+  ******************************************************************************
+  -->
+
+  <ItemGroup Condition="'$(InteropSessionExtension)' != 'false'">
+    <Compile Include="SQLiteSession.cs" />
+  </ItemGroup>
 </Project>

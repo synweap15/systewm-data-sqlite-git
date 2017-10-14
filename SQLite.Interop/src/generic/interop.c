@@ -11,6 +11,15 @@
 #define WINAPI
 #endif
 
+#if /* SQLITE_VERSION_NUMBER >= 3013000 && */ defined(INTEROP_SESSION_EXTENSION)
+#ifndef SQLITE_ENABLE_SESSION
+#define SQLITE_ENABLE_SESSION (1)
+#endif
+#ifndef SQLITE_ENABLE_PREUPDATE_HOOK
+#define SQLITE_ENABLE_PREUPDATE_HOOK (1)
+#endif
+#endif
+
 #include "../core/sqlite3.c"
 
 #if !SQLITE_OS_WIN
@@ -131,6 +140,9 @@ static const char * const azInteropCompileOpt[] = {
 #endif
 #ifdef INTEROP_REGEXP_EXTENSION
   "REGEXP_EXTENSION",
+#endif
+#ifdef INTEROP_SESSION_EXTENSION
+  "SESSION_EXTENSION",
 #endif
 #ifdef INTEROP_SHA1_EXTENSION
   "SHA1_EXTENSION",

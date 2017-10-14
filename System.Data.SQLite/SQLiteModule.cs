@@ -338,6 +338,27 @@ namespace System.Data.SQLite
 
         #region Internal Marshal Helper Methods
         /// <summary>
+        /// Converts a native pointer to a native sqlite3_value structure into
+        /// a managed <see cref="SQLiteValue" /> object instance.
+        /// </summary>
+        /// <param name="pValue">
+        /// The native pointer to a native sqlite3_value structure to convert.
+        /// </param>
+        /// <returns>
+        /// The managed <see cref="SQLiteValue" /> object instance or null upon
+        /// failure.
+        /// </returns>
+        internal static SQLiteValue FromIntPtr(
+            IntPtr pValue
+            )
+        {
+            if (pValue == IntPtr.Zero) return null;
+            return new SQLiteValue(pValue);
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+
+        /// <summary>
         /// Converts a logical array of native pointers to native sqlite3_value
         /// structures into a managed array of <see cref="SQLiteValue" />
         /// object instances.
@@ -571,6 +592,52 @@ namespace System.Data.SQLite
 
             return SQLiteBytes.FromIntPtr(
                 UnsafeNativeMethods.sqlite3_value_blob(pValue), GetBytes());
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+
+        /// <summary>
+        /// Gets and returns an <see cref="Object" /> instance associated with
+        /// this value.
+        /// </summary>
+        /// <returns>
+        /// The <see cref="Object" /> associated with this value.  If the type
+        /// affinity of the object is unknown or cannot be determined, a null
+        /// value will be returned.
+        /// </returns>
+        public object GetObject()
+        {
+            switch (GetTypeAffinity())
+            {
+                case TypeAffinity.Uninitialized:
+                    {
+                        return null;
+                    }
+                case TypeAffinity.Int64:
+                    {
+                        return GetInt64();
+                    }
+                case TypeAffinity.Double:
+                    {
+                        return GetDouble();
+                    }
+                case TypeAffinity.Text:
+                    {
+                        return GetString();
+                    }
+                case TypeAffinity.Blob:
+                    {
+                        return GetBytes();
+                    }
+                case TypeAffinity.Null:
+                    {
+                        return DBNull.Value;
+                    }
+                default:
+                    {
+                        return null;
+                    }
+            }
         }
 
         ///////////////////////////////////////////////////////////////////////
@@ -3484,6 +3551,33 @@ namespace System.Data.SQLite
             string value
             )
         {
+            int length = 0;
+
+            return Utf8IntPtrFromString(value, ref length);
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+
+        /// <summary>
+        /// Converts the specified managed string into a native NUL-terminated
+        /// UTF-8 string pointer using memory obtained from the SQLite core
+        /// library.
+        /// </summary>
+        /// <param name="value">
+        /// The managed string to convert.
+        /// </param>
+        /// <param name="length">
+        /// The length of the native string, in bytes.
+        /// </param>
+        /// <returns>
+        /// The native NUL-terminated UTF-8 string pointer or
+        /// <see cref="IntPtr.Zero" /> upon failure.
+        /// </returns>
+        public static IntPtr Utf8IntPtrFromString(
+            string value,
+            ref int length
+            )
+        {
             if (value == null)
                 return IntPtr.Zero;
 
@@ -3493,7 +3587,7 @@ namespace System.Data.SQLite
             if (bytes == null)
                 return IntPtr.Zero;
 
-            int length = bytes.Length;
+            length = bytes.Length;
 
             result = SQLiteMemory.Allocate(length + 1);
 
@@ -3640,10 +3734,35 @@ namespace System.Data.SQLite
             byte[] value
             )
         {
+            int length = 0;
+
+            return ToIntPtr(value, ref length);
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+
+        /// <summary>
+        /// Converts a managed byte array into a native pointer to a logical
+        /// array of bytes.
+        /// </summary>
+        /// <param name="value">
+        /// The managed byte array to convert.
+        /// </param>
+        /// <param name="length">
+        /// The length, in bytes, of the converted logical array of bytes.
+        /// </param>
+        /// <returns>
+        /// The native pointer to a logical byte array or null upon failure.
+        /// </returns>
+        public static IntPtr ToIntPtr(
+            byte[] value,
+            ref int length
+            )
+        {
             if (value == null)
                 return IntPtr.Zero;
 
-            int length = value.Length;
+            length = value.Length;
 
             if (length == 0)
                 return IntPtr.Zero;
