@@ -1286,7 +1286,11 @@ runTest {test session-1.10.1 {change group (memory)} -setup {
   set rawData(3) [createMemoryChangeSetForObject $changeGroup]
   object removeref $rawData(3)
 
-  set changeSet [$connection CreateChangeSet $rawData(3)]
+  set changeSet \
+      [createMemoryChangeSetForConnection $connection $rawData(3)]
+
+  object removeref $changeSet
+
   changeSetToString $changeSet true
 } -cleanup {
   cleanupSomeText
