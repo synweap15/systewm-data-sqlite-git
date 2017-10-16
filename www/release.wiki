@@ -470,6 +470,32 @@
   </li>
 </ol>
 
+<a name="buildNuGetPackages"></a>
+<h2>Build NuGet Packages</h2>
+
+<ol>
+  <li>Open a normal command prompt window with &quot;cmd.exe&quot;.</li>
+
+  <li>Change the current directory to &quot;&lt;root&gt;\Setup&quot;.</li>
+
+  <li>
+    Enter the following command to build all the NuGet packages:
+    <br />
+    <br />
+    <b>build_nuget.bat</b>
+    <br />
+    <br />
+    <i>This assumes that the NuGet binary is available somewhere along the
+    [https://en.wikipedia.org/wiki/PATH_%28variable%29 | PATH].<br />Please refer
+    to [https://docs.nuget.org/ | NuGet Documentation] for further details.</i>
+  </li>
+
+  <li>
+    Make sure everything succeeds with no errors; the console output may be
+    checked if any errors should occur.
+  </li>
+</ol>
+
 <a name="verifyAllPackages"></a>
 <h2>Verify All Release Packages</h2>
 
@@ -503,32 +529,6 @@
     &quot;&lt;root&gt;\Setup\data\verify.lst&quot; may need to be updated to
     account for the files that have been added and/or removed from the release
     archives since the previous release.</i>
-  </li>
-</ol>
-
-<a name="buildNuGetPackages"></a>
-<h2>Build NuGet Packages</h2>
-
-<ol>
-  <li>Open a normal command prompt window with &quot;cmd.exe&quot;.</li>
-
-  <li>Change the current directory to &quot;&lt;root&gt;\Setup&quot;.</li>
-
-  <li>
-    Enter the following command to build all the NuGet packages:
-    <br />
-    <br />
-    <b>build_nuget.bat</b>
-    <br />
-    <br />
-    <i>This assumes that the NuGet binary is available somewhere along the
-    [https://en.wikipedia.org/wiki/PATH_%28variable%29 | PATH].<br />Please refer
-    to [https://docs.nuget.org/ | NuGet Documentation] for further details.</i>
-  </li>
-
-  <li>
-    Make sure everything succeeds with no errors; the console output may be
-    checked if any errors should occur.
   </li>
 </ol>
 

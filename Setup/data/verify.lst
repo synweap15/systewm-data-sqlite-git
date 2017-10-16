@@ -928,6 +928,7 @@ set sds_manifests(source) {
   tools/install/Resources/manifest.xml
 }
 
+###############################################################################
 #
 # NOTE: This is the list of Eagle files that should be present in the full
 #       source code archive.  These files are needed only to run the test
@@ -977,6 +978,18 @@ set sds_manifests(eagle) {
   Externals/Eagle/lib/Test1.0/pkgIndex.eagle
   Externals/Eagle/lib/Test1.0/pkgIndex.tcl
   Externals/Eagle/lib/Test1.0/prologue.eagle
+}
+
+###############################################################################
+#
+# NOTE: This is the list of external files that should be present in the full
+#       source code archive.  These files may be required by the build and/or
+#       during release processing.  If missing, some features and/or build
+#       options may be unavailable.
+#
+set sds_manifests(external) {
+  Externals/vswhere/
+  Externals/vswhere/vswhere.exe
 }
 
 ###############################################################################
@@ -1488,7 +1501,7 @@ set manifests(sqlite-netFx-source-.zip) [list sds \
     source]
 
 set manifests(sqlite-netFx-full-source-.zip) [list sds \
-    source eagle]
+    source eagle external]
 
 ###############################################################################
 ################### Visual Studio 2005 / .NET Framework 2.0 ###################
