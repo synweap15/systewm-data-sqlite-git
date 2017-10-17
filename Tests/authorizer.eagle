@@ -154,7 +154,7 @@ DropTempView v2 {} temp {}}} 0 0} {DropTempTrigger {{0 DropTempTrigger tr2 t2\
 temp {}}} 0 0} {DropTempIndex {{0 DropTempIndex i2 t2 temp {}}} 0 0}\
 {DropTempTable {{0 DropTempTable t2 {} temp {}}} 0 0} {DropView {{0 DropView v1\
 {} main {}}} 0 0} {DropTrigger {{0 DropTrigger tr1 t1 main {}}} 0 0} {DropIndex\
-{{0 DropIndex i1 t1 main {}}} 0 0} {Recursive {{0 Recursive {} {} {} {}}} 0 -1}\
+{{0 DropIndex i1 t1 main {}}} 0 0} {Recursive {{0 Recursive {} {} {} t4}} 0 -1}\
 {DropTable {{0 DropTable t1 {} main {}}} 0 0} {Transaction {{0 Transaction\
 BEGIN {} {} {}} {0 Transaction COMMIT {} {} {}}} 0 -1} {Savepoint {{0 Savepoint\
 BEGIN s1 {} {}} {0 Savepoint RELEASE s1 {} {}}} 0 -1} {Attach {{0 Attach\
