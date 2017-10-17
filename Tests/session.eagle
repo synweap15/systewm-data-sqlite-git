@@ -20,6 +20,20 @@ runSQLiteTestPrologue
 
 ###############################################################################
 
+#
+# HACK: When running on Mono, always insert a "-parametertypes" option when
+#       calling method overloads that require a Stream.
+#
+proc useStreamMaybeWithMono { args } {
+  if {[isMono]} then {
+    set args [linsert $args 1 -parametertypes [list System.IO.Stream]]
+  }
+
+  return [uplevel 1 $args]
+}
+
+###############################################################################
+
 proc getSomeText { random count } {
   set items [list \
       Alpha Bravo Charlie Delta Echo Foxtrot Golf Hotel \
@@ -174,7 +188,7 @@ proc addStreamChangeSetForObject { object fileName } {
     set stream [object create -alias \
         System.IO.FileStream $fileName Open Read]
 
-    $object AddChangeSet $stream
+    useStreamMaybeWithMono $object AddChangeSet $stream
 
     return true
   }
@@ -190,9 +204,9 @@ proc writeStreamChangeSetForObject { object fileName {patch false} } {
         System.IO.FileStream $fileName Create Write]
 
     if {$patch} then {
-      $object CreatePatchSet $stream
+      useStreamMaybeWithMono $object CreatePatchSet $stream
     } else {
-      $object CreateChangeSet $stream
+      useStreamMaybeWithMono $object CreateChangeSet $stream
     }
 
     $stream Flush; $stream Close
@@ -1403,6 +1417,7 @@ rename createMemoryChangeSetForConnection ""
 rename forDisplay ""
 rename cleanupSomeText ""
 rename getSomeText ""
+rename useStreamMaybeWithMono ""
 
 ###############################################################################
 
