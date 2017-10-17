@@ -2927,7 +2927,7 @@ namespace System.Data.SQLite
 
         /// <summary>
         /// Attempts to create and return, via <paramref name="rawData" />, the
-        /// combined set of changes represented by this session instance.
+        /// set of changes represented by this session instance.
         /// </summary>
         /// <param name="rawData">
         /// Upon success, this will contain the raw byte data for all the
@@ -2968,7 +2968,7 @@ namespace System.Data.SQLite
 
         /// <summary>
         /// Attempts to create and write, via <paramref name="stream" />, the
-        /// combined set of changes represented by this session instance.
+        /// set of changes represented by this session instance.
         /// </summary>
         /// <param name="stream">
         /// Upon success, the raw byte data for all the changes in this session
@@ -3003,8 +3003,7 @@ namespace System.Data.SQLite
 
         /// <summary>
         /// Attempts to create and return, via <paramref name="rawData" />, the
-        /// combined set of changes represented by this session instance as a
-        /// patch set.
+        /// set of changes represented by this session instance as a patch set.
         /// </summary>
         /// <param name="rawData">
         /// Upon success, this will contain the raw byte data for all the
@@ -3045,8 +3044,7 @@ namespace System.Data.SQLite
 
         /// <summary>
         /// Attempts to create and write, via <paramref name="stream" />, the
-        /// combined set of changes represented by this session instance as a
-        /// patch set.
+        /// set of changes represented by this session instance as a patch set.
         /// </summary>
         /// <param name="stream">
         /// Upon success, the raw byte data for all the changes in this session
