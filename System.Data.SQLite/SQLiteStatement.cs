@@ -441,11 +441,14 @@ namespace System.Data.SQLite
           return;
       }
 
+      bool invariantDecimal = ((_flags & SQLiteConnectionFlags.BindInvariantDecimal)
+          == SQLiteConnectionFlags.BindInvariantDecimal);
+
       if ((_flags & SQLiteConnectionFlags.BindDecimalAsText) == SQLiteConnectionFlags.BindDecimalAsText)
       {
           if (obj is Decimal)
           {
-              _sql.Bind_Text(this, _flags, index, invariantText ?
+              _sql.Bind_Text(this, _flags, index, invariantText || invariantDecimal ?
                   SQLiteConvert.ToStringWithProvider(obj, invariantCultureInfo) :
                   SQLiteConvert.ToStringWithProvider(obj, cultureInfo));
 
@@ -495,7 +498,6 @@ namespace System.Data.SQLite
         case DbType.Single:
         case DbType.Double:
         case DbType.Currency:
-        //case DbType.Decimal: // Dont store decimal as double ... loses precision
           _sql.Bind_Double(this, _flags, index, Convert.ToDouble(obj, cultureInfo));
           break;
         case DbType.Binary:
@@ -514,9 +516,9 @@ namespace System.Data.SQLite
           }
           break;
         case DbType.Decimal: // Dont store decimal as double ... loses precision
-          _sql.Bind_Text(this, _flags, index, invariantText ?
-              SQLiteConvert.ToStringWithProvider(Convert.ToDecimal(obj, cultureInfo), invariantCultureInfo) :
-              SQLiteConvert.ToStringWithProvider(Convert.ToDecimal(obj, cultureInfo), cultureInfo));
+          _sql.Bind_Text(this, _flags, index, invariantText || invariantDecimal ?
+            SQLiteConvert.ToStringWithProvider(Convert.ToDecimal(obj, cultureInfo), invariantCultureInfo) :
+            SQLiteConvert.ToStringWithProvider(Convert.ToDecimal(obj, cultureInfo), cultureInfo));
           break;
         default:
           _sql.Bind_Text(this, _flags, index, invariantText ?

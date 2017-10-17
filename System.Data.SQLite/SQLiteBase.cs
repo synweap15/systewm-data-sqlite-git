@@ -1260,6 +1260,12 @@ namespace System.Data.SQLite
       GetDecimalAsText = 0x20000000000,
 
       /// <summary>
+      /// When binding <see cref="Decimal" /> parameter values, always use
+      /// the invariant culture when converting their values to strings.
+      /// </summary>
+      BindInvariantDecimal = 0x40000000000,
+
+      /// <summary>
       /// When binding parameter values or returning column values, always
       /// treat them as though they were plain text (i.e. no numeric,
       /// date/time, or other conversions should be attempted).
@@ -1316,13 +1322,18 @@ namespace System.Data.SQLite
 #endif
 
       /// <summary>
-      /// The default extra flags for new connections.
+      /// The default logging related flags for new connections.
       /// </summary>
 #if INTEROP_VIRTUAL_TABLE
-      Default = LogCallbackException | LogModuleException,
+      LogDefault = LogCallbackException | LogModuleException,
 #else
-      Default = LogCallbackException,
+      LogDefault = LogCallbackException,
 #endif
+
+      /// <summary>
+      /// The default extra flags for new connections.
+      /// </summary>
+      Default = LogDefault | BindInvariantDecimal,
 
       /// <summary>
       /// The default extra flags for new connections with all logging enabled.
