@@ -1266,6 +1266,12 @@ namespace System.Data.SQLite
       BindInvariantDecimal = 0x40000000000,
 
       /// <summary>
+      /// When returning <see cref="Decimal" /> column values, always use
+      /// the invariant culture when converting their values from strings.
+      /// </summary>
+      GetInvariantDecimal = 0x80000000000,
+
+      /// <summary>
       /// When binding parameter values or returning column values, always
       /// treat them as though they were plain text (i.e. no numeric,
       /// date/time, or other conversions should be attempted).
@@ -1333,7 +1339,7 @@ namespace System.Data.SQLite
       /// <summary>
       /// The default extra flags for new connections.
       /// </summary>
-      Default = LogDefault | BindInvariantDecimal,
+      Default = LogDefault | BindInvariantDecimal | GetInvariantDecimal,
 
       /// <summary>
       /// The default extra flags for new connections with all logging enabled.

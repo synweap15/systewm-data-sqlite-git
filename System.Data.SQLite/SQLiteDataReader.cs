@@ -871,7 +871,13 @@ namespace System.Data.SQLite
             return _keyInfo.GetDecimal(i - PrivateVisibleFieldCount);
 
         VerifyType(i, DbType.Decimal);
-        return Decimal.Parse(_activeStatement._sql.GetText(_activeStatement, i), NumberStyles.AllowDecimalPoint | NumberStyles.AllowExponent | NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture);
+
+        CultureInfo cultureInfo = CultureInfo.CurrentCulture;
+
+        if ((_flags & SQLiteConnectionFlags.GetInvariantDecimal) == SQLiteConnectionFlags.GetInvariantDecimal)
+            cultureInfo = CultureInfo.InvariantCulture;
+
+        return Decimal.Parse(_activeStatement._sql.GetText(_activeStatement, i), NumberStyles.AllowDecimalPoint | NumberStyles.AllowExponent | NumberStyles.AllowLeadingSign, cultureInfo);
     }
 
     /// <summary>
