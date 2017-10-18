@@ -22,7 +22,11 @@ runSQLiteTestPrologue
 
 #
 # HACK: When running on Mono, always insert a "-parametertypes" option when
-#       calling method overloads that require a Stream.
+#       calling method overloads that require a Stream, due to their broken
+#       (as of 5.0) implementation of the Type.IsAssignableFrom method.
+#       Without this option, the Eagle core marshaller will select the wrong
+#       method overload, which will cause all tests that use a stream-based
+#       method overload to fail.
 #
 proc useStreamMaybeWithMono { args } {
   if {[isMono]} then {
