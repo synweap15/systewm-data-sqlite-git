@@ -5432,7 +5432,7 @@ namespace System.Data.SQLite
     /// Build a Columns schema
     /// </summary>
     /// <param name="strCatalog">The catalog (attached database) to query, can be null</param>
-    /// <param name="strTable">The table to retrieve schema information for, must not be null</param>
+    /// <param name="strTable">The table to retrieve schema information for, can be null</param>
     /// <param name="strColumn">The column to retrieve schema information for, can be null</param>
     /// <returns>DataTable</returns>
     private DataTable Schema_Columns(string strCatalog, string strTable, string strColumn)
