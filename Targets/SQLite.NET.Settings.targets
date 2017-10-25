@@ -543,8 +543,8 @@
     <!--
         NOTE: Enable exposing the CryptoAPI based codec from the custom built
               interop DLL (i.e. "SQLite.Interop.dll")?  By default, this is
-              disabled.  If this is enabled, support for databases encrypted
-              using the CryptoAPI will be available.  If this is enabled, it
+              enabled.  If this is disabled, support for databases encrypted
+              using the CryptoAPI will be unavailable.  If this is enabled, it
               must also be enabled via the "SQLITE_HAS_CODEC=1" preprocessor
               define being present in the "SQLITE_EXTRA_DEFINES" macro in the
               build properties file:
@@ -558,7 +558,7 @@
 
               both for the corresponding version(s) of Visual Studio.
     -->
-    <InteropCodec Condition="'$(InteropCodec)' == ''">false</InteropCodec>
+    <InteropCodec Condition="'$(InteropCodec)' == ''">true</InteropCodec>
 
     <!--
         NOTE: Enable including SEE with the custom built interop DLL (i.e.
