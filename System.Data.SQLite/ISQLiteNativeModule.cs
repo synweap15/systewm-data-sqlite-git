@@ -96,7 +96,7 @@ namespace System.Data.SQLite
         /// virtual table is an eponymous-only virtual table.  New instances of
         /// the virtual table cannot be created using CREATE VIRTUAL TABLE and the
         /// virtual table can only be used via its module name.
-        /// Note that SQLite versions prior to 3.9.0 do not understand
+        /// Note that SQLite versions prior to 3.9.0 (2015-10-14) do not understand
         /// eponymous-only virtual tables and will segfault if an attempt is made
         /// to CREATE VIRTUAL TABLE on an eponymous-only virtual table because
         /// the xCreate method was not checked for null.
@@ -203,10 +203,15 @@ namespace System.Data.SQLite
         /// </para>
         /// <para>
         /// The rowid column is not accessible on a
-        /// WITHOUT ROWID virtual table (of course).  Furthermore, since the
-        /// xUpdate method depends on having a valid rowid, the xUpdate method 
-        /// must be NULL for a WITHOUT ROWID virtual table.  That in turn means that
-        /// WITHOUT ROWID virtual tables must be read-only.
+        /// WITHOUT ROWID virtual table (of course).
+        /// </para>
+        /// <para>
+        /// The xUpdate method was originally designed around having a
+        /// ROWID as a single value.  The xUpdate method has been expanded to
+        /// accommodate an arbitrary PRIMARY KEY in place of the ROWID, but the
+        /// PRIMARY KEY must still be only one column.  For this reason, SQLite
+        /// will reject any WITHOUT ROWID virtual table that has more than one
+        /// PRIMARY KEY column and a non-NULL xUpdate method.
         /// </para>
         /// </summary>
         /// <param name="pDb">
@@ -408,16 +413,21 @@ namespace System.Data.SQLite
         /// In addition, there are some defined constants:
         /// </para>
         /// <para><code>
-        /// #define SQLITE_INDEX_CONSTRAINT_EQ      2
-        /// #define SQLITE_INDEX_CONSTRAINT_GT      4
-        /// #define SQLITE_INDEX_CONSTRAINT_LE      8
-        /// #define SQLITE_INDEX_CONSTRAINT_LT     16
-        /// #define SQLITE_INDEX_CONSTRAINT_GE     32
-        /// #define SQLITE_INDEX_CONSTRAINT_MATCH  64
-        /// #define SQLITE_INDEX_CONSTRAINT_LIKE   65     /* 3.10.0 and later only */
-        /// #define SQLITE_INDEX_CONSTRAINT_GLOB   66     /* 3.10.0 and later only */
-        /// #define SQLITE_INDEX_CONSTRAINT_REGEXP 67     /* 3.10.0 and later only */
-        /// #define SQLITE_INDEX_SCAN_UNIQUE        1     /* Scan visits at most 1 row */
+        /// #define SQLITE_INDEX_CONSTRAINT_EQ         2
+        /// #define SQLITE_INDEX_CONSTRAINT_GT         4
+        /// #define SQLITE_INDEX_CONSTRAINT_LE         8
+        /// #define SQLITE_INDEX_CONSTRAINT_LT        16
+        /// #define SQLITE_INDEX_CONSTRAINT_GE        32
+        /// #define SQLITE_INDEX_CONSTRAINT_MATCH     64
+        /// #define SQLITE_INDEX_CONSTRAINT_LIKE      65  /* 3.10.0 and later */
+        /// #define SQLITE_INDEX_CONSTRAINT_GLOB      66  /* 3.10.0 and later */
+        /// #define SQLITE_INDEX_CONSTRAINT_REGEXP    67  /* 3.10.0 and later */
+        /// #define SQLITE_INDEX_CONSTRAINT_NE        68  /* 3.21.0 and later */
+        /// #define SQLITE_INDEX_CONSTRAINT_ISNOT     69  /* 3.21.0 and later */
+        /// #define SQLITE_INDEX_CONSTRAINT_ISNOTNULL 70  /* 3.21.0 and later */
+        /// #define SQLITE_INDEX_CONSTRAINT_ISNULL    71  /* 3.21.0 and later */
+        /// #define SQLITE_INDEX_CONSTRAINT_IS        72  /* 3.21.0 and later */
+        /// #define SQLITE_INDEX_SCAN_UNIQUE           1  /* Scan visits at most 1 row */
         /// </code></para>
         /// <para>
         /// The SQLite core calls the xBestIndex method when it is compiling a query
@@ -1046,8 +1056,9 @@ namespace System.Data.SQLite
         /// using the sqlite3_declare_vtab() call.  All hidden columns are included.
         /// </para>
         /// <para>
-        /// When doing an insert without a rowid (argc>1, argv[1] is an SQL NULL), the 
-        /// implementation must set *pRowid to the rowid of the newly inserted row; 
+        /// When doing an insert without a rowid (argc>1, argv[1] is an SQL NULL),
+        /// on a virtual table that uses ROWID (but not on a WITHOUT ROWID virtual table,
+        /// the implementation must set *pRowid to the rowid of the newly inserted row; 
         /// this will become the value returned by the sqlite3_last_insert_rowid()
         /// function. Setting this value in all the other cases is a harmless no-op;
         /// the SQLite engine ignores the *pRowid return value if argc==1 or 
@@ -1061,17 +1072,24 @@ namespace System.Data.SQLite
         /// </para>
         /// <para><code>
         /// <![CDATA[<dl>]]>
-        /// <![CDATA[<dt>]]><![CDATA[<b>]]>argc = 1<![CDATA[</b>]]>
-        /// <![CDATA[</dt>]]><![CDATA[<dd>]]>The single row with rowid equal to argv[0] is deleted. No insert occurs.
+        /// <![CDATA[<dt>]]><![CDATA[<b>]]>argc = 1 <![CDATA[<br>]]> argv[0] &#8800; NULL<![CDATA[</b>]]>
+        /// <![CDATA[</dt>]]><![CDATA[<dd>]]>
+        /// The single row with rowid or PRIMARY KEY equal to argv[0] is deleted. 
+        /// No insert occurs.
         /// <![CDATA[</dd>]]><![CDATA[<dt>]]><![CDATA[<b>]]>argc &gt; 1 <![CDATA[<br>]]> argv[0] = NULL<![CDATA[</b>]]>
-        /// <![CDATA[</dt>]]><![CDATA[<dd>]]>A new row is inserted with a rowid argv[1] and column values in
-        ///        argv[2] and following.  If argv[1] is an SQL NULL,
-        ///        the a new unique rowid is generated automatically.
+        /// <![CDATA[</dt>]]><![CDATA[<dd>]]>
+        /// A new row is inserted with column values taken from
+        /// argv[2] and following.  In a rowid virtual table, if argv[1] is an SQL NULL,
+        /// then a new unique rowid is generated automatically.  The argv[1] will be NULL
+        /// for a WITHOUT ROWID virtual table, in which case the implementation should
+        /// take the PRIMARY KEY value from the appropiate column in argv[2] and following.
         /// <![CDATA[</dd>]]><![CDATA[<dt>]]><![CDATA[<b>]]>argc &gt; 1 <![CDATA[<br>]]> argv[0] &#8800; NULL <![CDATA[<br>]]> argv[0] = argv[1]<![CDATA[</b>]]>
-        /// <![CDATA[</dt>]]><![CDATA[<dd>]]>The row with rowid argv[0] is updated with new values 
-        ///        in argv[2] and following parameters.
+        /// <![CDATA[</dt>]]><![CDATA[<dd>]]>
+        /// The row with rowid or PRIMARY KEY argv[0] is updated with new values 
+        /// in argv[2] and following parameters.
         /// <![CDATA[</dd>]]><![CDATA[<dt>]]><![CDATA[<b>]]>argc &gt; 1 <![CDATA[<br>]]> argv[0] &#8800; NULL <![CDATA[<br>]]> argv[0] &#8800; argv[1]<![CDATA[</b>]]>
-        /// <![CDATA[</dt>]]><![CDATA[<dd>]]> The row with rowid argv[0] is updated with rowid argv[1] 
+        /// <![CDATA[</dt>]]><![CDATA[<dd>]]> The row with rowid or PRIMARY KEY argv[0] is updated with 
+        /// the rowid or PRIMARY KEY in argv[1] 
         /// and new values in argv[2] and following parameters. This will occur 
         /// when an SQL statement updates a rowid, as in the statement:
         /// <para><code>

@@ -121,7 +121,7 @@ different in the following important respects:
     not compatible with any other SQL database engine.
 </ul>
 
-<p>The C-language API for SQLite provides the <a href="c3ref/c_fcntl_busyhandler.html#sqlitefcntlpragma">SQLITE_FCNTL_PRAGMA</a>
+<p>The C-language API for SQLite provides the <a href="c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlpragma">SQLITE_FCNTL_PRAGMA</a>
 <a href="c3ref/file_control.html">file control</a> which gives <a href="vfs.html">VFS</a> implementations the
 opportunity to add new PRAGMA statements or to override the meaning of
 built-in PRAGMA statements.</p>
@@ -221,7 +221,7 @@ Additional notes:
 <ul>
 <li><p>
 Table-valued functions exist only for built-in PRAGMAs, not for PRAGMAs
-defined using the <a href="c3ref/c_fcntl_busyhandler.html#sqlitefcntlpragma">SQLITE_FCNTL_PRAGMA</a> file control.
+defined using the <a href="c3ref/c_fcntl_begin_atomic_write.html#sqlitefcntlpragma">SQLITE_FCNTL_PRAGMA</a> file control.
 <li><p>
 Table-valued functions exist only for PRAGMAs that return results and
 that have no side-effects.

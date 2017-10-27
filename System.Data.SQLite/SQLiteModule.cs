@@ -755,7 +755,32 @@ namespace System.Data.SQLite
         /// <summary>
         /// This value represents the REGEXP operator.
         /// </summary>
-        Regexp = 67
+        Regexp = 67,
+
+        /// <summary>
+        /// This value represents the inequality operator.
+        /// </summary>
+        NotEqualTo = 68,
+
+        /// <summary>
+        /// This value represents the IS NOT operator.
+        /// </summary>
+        IsNot = 69,
+
+        /// <summary>
+        /// This value represents the IS NOT NULL operator.
+        /// </summary>
+        IsNotNull = 70,
+
+        /// <summary>
+        /// This value represents the IS NULL operator.
+        /// </summary>
+        IsNull = 71,
+
+        /// <summary>
+        /// This value represents the IS operator.
+        /// </summary>
+        Is = 72
     }
     #endregion
 
