@@ -34,10 +34,6 @@ static void * sqlite3pager_get_codecarg(Pager *pPager)
   return (pPager->xCodec) ? pPager->pCodec: NULL;
 }
 
-void sqlite3_activate_see(const char *info)
-{
-}
-
 /* Create a cryptographic context.  Use the enhanced provider because it is available on
 ** most platforms
 */
@@ -152,7 +148,7 @@ void sqlite3CodecSizeChange(void *pArg, int pageSize, int reservedSize)
 }
 
 /* Encrypt/Decrypt functionality, called by pager.c */
-void * sqlite3Codec(void *pArg, void *data, Pgno nPageNum, int nMode)
+static void *sqlite3Codec(void *pArg, void *data, Pgno nPageNum, int nMode)
 {
   LPCRYPTBLOCK pBlock = (LPCRYPTBLOCK)pArg;
   DWORD dwPageSize;
@@ -326,6 +322,10 @@ void sqlite3CodecGetKey(sqlite3 *db, int nDb, void **ppKey, int *pnKeyLen)
   if (pnKeyLen) *pnKeyLen = pBlock ? 1: 0;
 }
 
+SQLITE_API void sqlite3_activate_see(const char *info)
+{
+}
+
 /* We do not attach this key to the temp store, only the main database. */
 SQLITE_API int sqlite3_key_v2(sqlite3 *db, const char *zDbName, const void *pKey, int nKey)
 {
@@ -335,6 +335,11 @@ SQLITE_API int sqlite3_key_v2(sqlite3 *db, const char *zDbName, const void *pKey
 SQLITE_API int sqlite3_key(sqlite3 *db, const void *pKey, int nKey)
 {
   return sqlite3_key_v2(db, 0, pKey, nKey);
+}
+
+SQLITE_API int sqlite3_rekey(sqlite3 *db, const void *pKey, int nKey)
+{
+  return sqlite3_rekey_v2(db, 0, pKey, nKey);
 }
 
 /* Changes the encryption key for an existing database. */
@@ -454,11 +459,6 @@ SQLITE_API int sqlite3_rekey_v2(sqlite3 *db, const char *zDbName, const void *pK
   sqlite3_mutex_leave(db->mutex);
 
   return rc;
-}
-
-SQLITE_API int sqlite3_rekey(sqlite3 *db, const void *pKey, int nKey)
-{
-  return sqlite3_rekey_v2(db, 0, pKey, nKey);
 }
 
 #endif /* SQLITE_HAS_CODEC */
