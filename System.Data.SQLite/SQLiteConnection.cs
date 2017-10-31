@@ -1933,11 +1933,14 @@ namespace System.Data.SQLite
     /// <param name="destinationName">The destination database name.</param>
     /// <param name="sourceName">The source database name.</param>
     /// <param name="pages">
-    /// The number of pages to copy or negative to copy all remaining pages.
+    /// The number of pages to copy at a time -OR- a negative value to copy all
+    /// pages.  When a negative value is used, the <paramref name="callback" />
+    /// may never be invoked.
     /// </param>
     /// <param name="callback">
     /// The method to invoke between each step of the backup process.  This
-    /// parameter may be null (i.e. no callbacks will be performed).
+    /// parameter may be null (i.e. no callbacks will be performed).  If the
+    /// callback returns false -OR- throws an exception, the backup is canceled.
     /// </param>
     /// <param name="retryMilliseconds">
     /// The number of milliseconds to sleep after encountering a locking error
