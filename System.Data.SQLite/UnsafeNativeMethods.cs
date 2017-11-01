@@ -10,7 +10,7 @@ namespace System.Data.SQLite
   using System;
   using System.Globalization;
 
-#if !NET_COMPACT_20 && (TRACE_DETECTION || TRACE_SHARED || TRACE_PRELOAD || TRACE_HANDLE)
+#if TRACE_DETECTION || TRACE_SHARED || TRACE_PRELOAD || TRACE_HANDLE
   using System.Diagnostics;
 #endif
 
@@ -272,11 +272,37 @@ namespace System.Data.SQLite
       /// is returned verbatim by the <see cref="IsMono" /> method.
       /// </summary>
       private static bool? isMono = null;
+
+      /////////////////////////////////////////////////////////////////////////
+      /// <summary>
+      /// Keeps track of whether we successfully invoked the
+      /// <see cref="Debugger.Break" /> method.  Initially null, it is set by
+      /// the <see cref="MaybeBreakIntoDebugger" /> method on its first call.
+      /// </summary>
+      private static bool? debuggerBreak = null;
       #endregion
 
       /////////////////////////////////////////////////////////////////////////
 
       #region Private Methods
+      /// <summary>
+      /// Determines the ID of the current process.  Only used for debugging.
+      /// </summary>
+      /// <returns>
+      /// The ID of the current process -OR- zero if it cannot be determined.
+      /// </returns>
+      private static int GetProcessId()
+      {
+          Process process = Process.GetCurrentProcess();
+
+          if (process == null)
+              return 0;
+
+          return process.Id;
+      }
+
+      ///////////////////////////////////////////////////////////////////////
+
       /// <summary>
       /// Determines whether or not this assembly is running on Mono.
       /// </summary>
@@ -307,6 +333,89 @@ namespace System.Data.SQLite
       /////////////////////////////////////////////////////////////////////////
 
       #region Internal Methods
+      /// <summary>
+      /// If the "PreLoadSQLite_BreakIntoDebugger" configuration setting is
+      /// present (e.g. via the environment), give the interactive user the
+      /// opportunity to attach a debugger to the current process; otherwise,
+      /// do nothing.
+      /// </summary>
+      private static void MaybeBreakIntoDebugger()
+      {
+          lock (staticSyncRoot)
+          {
+              if (debuggerBreak != null)
+                  return;
+          }
+
+          if (UnsafeNativeMethods.GetSettingValue(
+                "PreLoadSQLite_BreakIntoDebugger", null) != null)
+          {
+              //
+              // NOTE: Attempt to use the Console in order to prompt the
+              //       interactive user (if any).  This may fail for any
+              //       number of reasons.  Even in those cases, we still
+              //       want to issue the actual request to break into the
+              //       debugger.
+              //
+              try
+              {
+                  Console.WriteLine(StringFormat(
+                      CultureInfo.CurrentCulture,
+                      "Attach a debugger to process {0} " +
+                      "and press any key to continue.",
+                      GetProcessId()));
+
+#if PLATFORM_COMPACTFRAMEWORK
+                  Console.ReadLine();
+#else
+                  Console.ReadKey();
+#endif
+              }
+#if !NET_COMPACT_20 && TRACE_SHARED
+              catch (Exception e)
+#else
+              catch (Exception)
+#endif
+              {
+#if !NET_COMPACT_20 && TRACE_SHARED
+                  try
+                  {
+                      Trace.WriteLine(HelperMethods.StringFormat(
+                          CultureInfo.CurrentCulture,
+                          "Failed to issue debugger prompt, " +
+                          "{0} may be unusable: {1}",
+                          typeof(Console), e)); /* throw */
+                  }
+                  catch
+                  {
+                      // do nothing.
+                  }
+#endif
+              }
+
+              try
+              {
+                  Debugger.Break();
+
+                  lock (staticSyncRoot)
+                  {
+                      debuggerBreak = true;
+                  }
+              }
+              catch
+              {
+                  lock (staticSyncRoot)
+                  {
+                      debuggerBreak = false;
+                  }
+
+                  throw;
+              }
+          }
+      }
+
+      /////////////////////////////////////////////////////////////////////////
+
       /// <summary>
       /// Determines if preparing a query should be logged.
       /// </summary>
@@ -988,6 +1097,12 @@ namespace System.Data.SQLite
               return;
 #endif
 #endif
+
+          //
+          // NOTE: Check if a debugger needs to be attached before
+          //       doing any real work.
+          //
+          HelperMethods.MaybeBreakIntoDebugger();
 
           #region Debug Build Only
 #if DEBUG
