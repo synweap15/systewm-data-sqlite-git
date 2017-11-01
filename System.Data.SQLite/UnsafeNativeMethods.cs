@@ -335,7 +335,7 @@ namespace System.Data.SQLite
       #region Internal Methods
       /// <summary>
       /// If the "PreLoadSQLite_BreakIntoDebugger" configuration setting is
-      /// present (e.g. via the environment), give the interactive user the
+      /// present (e.g. via the environment), give the interactive user an
       /// opportunity to attach a debugger to the current process; otherwise,
       /// do nothing.
       /// </summary>
