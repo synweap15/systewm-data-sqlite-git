@@ -339,7 +339,7 @@ namespace System.Data.SQLite
       /// opportunity to attach a debugger to the current process; otherwise,
       /// do nothing.
       /// </summary>
-      private static void MaybeBreakIntoDebugger()
+      internal static void MaybeBreakIntoDebugger()
       {
           lock (staticSyncRoot)
           {
@@ -1087,22 +1087,22 @@ namespace System.Data.SQLite
       /// </summary>
       internal static void Initialize()
       {
+          //
+          // NOTE: Check if a debugger needs to be attached before doing any
+          //       real work.
+          //
+          HelperMethods.MaybeBreakIntoDebugger();
+
 #if SQLITE_STANDARD || USE_INTEROP_DLL || PLATFORM_COMPACTFRAMEWORK
 #if PRELOAD_NATIVE_LIBRARY
           //
           // NOTE: If the "No_PreLoadSQLite" environment variable is set (to
-          //       anything), skip all our special code and simply return.
+          //       anything), skip all of our special code and simply return.
           //
           if (GetSettingValue("No_PreLoadSQLite", null) != null)
               return;
 #endif
 #endif
-
-          //
-          // NOTE: Check if a debugger needs to be attached before
-          //       doing any real work.
-          //
-          HelperMethods.MaybeBreakIntoDebugger();
 
           #region Debug Build Only
 #if DEBUG
