@@ -6586,9 +6586,9 @@ namespace System.Data.SQLite
             //       (i.e. probably because it is only used by Visual
             //       Studio, which is currently always 32-bit only).
             //
-            return String.Format(GetRootKeyName(perUser, wow64),
-                "Microsoft", frameworkName, frameworkVersionString,
-                platformName, "AssemblyFoldersEx");
+            return RegistryHelper.JoinKeyNames(
+                GetRootKeyName(perUser, wow64), "Microsoft", frameworkName,
+                frameworkVersionString, platformName, "AssemblyFoldersEx");
         }
 
         ///////////////////////////////////////////////////////////////////////
