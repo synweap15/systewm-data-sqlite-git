@@ -3352,13 +3352,15 @@ namespace System.Data.SQLite
         ///////////////////////////////////////////////////////////////////////
 
         /// <summary>
-        /// Gets and returns the actual size of the specified memory block that
-        /// was previously obtained from the <see cref="Allocate" /> method or
-        /// the SQLite core library.
+        /// Gets and returns the actual size of the specified memory block
+        /// that was previously obtained from the <see cref="Allocate" /> or
+        /// <see cref="AllocateUntracked" /> methods or directly from the
+        /// SQLite core library.
         /// </summary>
         /// <param name="pMemory">
         /// The native pointer to the memory block previously obtained from the
-        /// <see cref="Allocate" /> method or the SQLite core library.
+        /// <see cref="Allocate" /> or <see cref="AllocateUntracked" /> methods
+        /// or directly from the SQLite core library.
         /// </param>
         /// <returns>
         /// The actual size, in bytes, of the memory block specified via the
