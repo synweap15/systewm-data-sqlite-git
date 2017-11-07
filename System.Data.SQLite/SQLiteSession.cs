@@ -2376,7 +2376,7 @@ namespace System.Data.SQLite
             {
                 if (pData != IntPtr.Zero)
                 {
-                    SQLiteMemory.Free(pData);
+                    SQLiteMemory.FreeUntracked(pData);
                     pData = IntPtr.Zero;
                 }
             }
@@ -2958,7 +2958,7 @@ namespace System.Data.SQLite
             {
                 if (pData != IntPtr.Zero)
                 {
-                    SQLiteMemory.Free(pData);
+                    SQLiteMemory.FreeUntracked(pData);
                     pData = IntPtr.Zero;
                 }
             }
@@ -3034,7 +3034,7 @@ namespace System.Data.SQLite
             {
                 if (pData != IntPtr.Zero)
                 {
-                    SQLiteMemory.Free(pData);
+                    SQLiteMemory.FreeUntracked(pData);
                     pData = IntPtr.Zero;
                 }
             }
@@ -3136,7 +3136,7 @@ namespace System.Data.SQLite
             {
                 if (pError != IntPtr.Zero)
                 {
-                    SQLiteMemory.Free(pError);
+                    SQLiteMemory.FreeUntracked(pError);
                     pError = IntPtr.Zero;
                 }
             }
@@ -3594,7 +3594,7 @@ namespace System.Data.SQLite
             {
                 if (pOutData != IntPtr.Zero)
                 {
-                    SQLiteMemory.Free(pOutData);
+                    SQLiteMemory.FreeUntracked(pOutData);
                     pOutData = IntPtr.Zero;
                 }
 
@@ -3671,7 +3671,7 @@ namespace System.Data.SQLite
             {
                 if (pOutData != IntPtr.Zero)
                 {
-                    SQLiteMemory.Free(pOutData);
+                    SQLiteMemory.FreeUntracked(pOutData);
                     pOutData = IntPtr.Zero;
                 }
 

@@ -3288,7 +3288,9 @@ namespace System.Data.SQLite
         /// <summary>
         /// Allocates at least the specified number of bytes of native memory
         /// via the SQLite core library sqlite3_malloc() function and returns
-        /// the resulting native pointer.
+        /// the resulting native pointer.  If the TRACK_MEMORY_BYTES option
+        /// was enabled at compile-time, adjusts the number of bytes currently
+        /// allocated by this class.
         /// </summary>
         /// <param name="size">
         /// The number of bytes to allocate.
@@ -3327,11 +3329,12 @@ namespace System.Data.SQLite
 
         /// <summary>
         /// Gets and returns the actual size of the specified memory block that
-        /// was previously obtained from the <see cref="Allocate" /> method.
+        /// was previously obtained from the <see cref="Allocate" /> method or
+        /// the SQLite core library.
         /// </summary>
         /// <param name="pMemory">
         /// The native pointer to the memory block previously obtained from the
-        /// <see cref="Allocate" /> method.
+        /// <see cref="Allocate" /> method or the SQLite core library.
         /// </param>
         /// <returns>
         /// The actual size, in bytes, of the memory block specified via the
@@ -3356,7 +3359,9 @@ namespace System.Data.SQLite
 
         /// <summary>
         /// Frees a memory block previously obtained from the
-        /// <see cref="Allocate" /> method.
+        /// <see cref="Allocate" /> method.  If the TRACK_MEMORY_BYTES option
+        /// was enabled at compile-time, adjusts the number of bytes currently
+        /// allocated by this class.
         /// </summary>
         /// <param name="pMemory">
         /// The native pointer to the memory block previously obtained from the
@@ -3379,6 +3384,23 @@ namespace System.Data.SQLite
             }
 #endif
 
+            UnsafeNativeMethods.sqlite3_free(pMemory);
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+
+        /// <summary>
+        /// Frees a memory block previously obtained from the SQLite core
+        /// library without adjusting the number of bytes currently allocated
+        /// by this class.  This is useful when dealing with blocks of memory
+        /// that were not allocated using this class.
+        /// </summary>
+        /// <param name="pMemory">
+        /// The native pointer to the memory block previously obtained from the
+        /// SQLite core library.
+        /// </param>
+        public static void FreeUntracked(IntPtr pMemory)
+        {
             UnsafeNativeMethods.sqlite3_free(pMemory);
         }
         #endregion
