@@ -1985,7 +1985,8 @@ namespace System.Data.SQLite
                 offset, sizeof(int), IntPtr.Size);
 
             SQLiteMarshal.WriteIntPtr(pIndex, offset,
-                SQLiteString.Utf8IntPtrFromString(outputs.IndexString));
+                SQLiteString.Utf8IntPtrFromString(
+                    outputs.IndexString, false)); /* OK: FREED BY CORE*/
 
             offset = SQLiteMarshal.NextOffsetOf(
                 offset, IntPtr.Size, sizeof(int));
@@ -3328,6 +3329,29 @@ namespace System.Data.SQLite
         ///////////////////////////////////////////////////////////////////////
 
         /// <summary>
+        /// Allocates at least the specified number of bytes of native memory
+        /// via the SQLite core library sqlite3_malloc() function and returns
+        /// the resulting native pointer without adjusting the number of
+        /// allocated bytes currently tracked by this class.  This is useful
+        /// when dealing with blocks of memory that will be freed directly by
+        /// the SQLite core library.
+        /// </summary>
+        /// <param name="size">
+        /// The number of bytes to allocate.
+        /// </param>
+        /// <returns>
+        /// The native pointer that points to a block of memory of at least the
+        /// specified size -OR- <see cref="IntPtr.Zero" /> if the memory could
+        /// not be allocated.
+        /// </returns>
+        public static IntPtr AllocateUntracked(int size)
+        {
+            return UnsafeNativeMethods.sqlite3_malloc(size);
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+
+        /// <summary>
         /// Gets and returns the actual size of the specified memory block that
         /// was previously obtained from the <see cref="Allocate" /> method or
         /// the SQLite core library.
@@ -3391,9 +3415,9 @@ namespace System.Data.SQLite
 
         /// <summary>
         /// Frees a memory block previously obtained from the SQLite core
-        /// library without adjusting the number of bytes currently allocated
-        /// by this class.  This is useful when dealing with blocks of memory
-        /// that were not allocated using this class.
+        /// library without adjusting the number of allocated bytes currently
+        /// tracked by this class.  This is useful when dealing with blocks of
+        /// memory that were not allocated using this class.
         /// </summary>
         /// <param name="pMemory">
         /// The native pointer to the memory block previously obtained from the
@@ -3598,9 +3622,36 @@ namespace System.Data.SQLite
             string value
             )
         {
+            return Utf8IntPtrFromString(value, true);
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+
+        /// <summary>
+        /// Converts the specified managed string into a native NUL-terminated
+        /// UTF-8 string pointer using memory obtained from the SQLite core
+        /// library.
+        /// </summary>
+        /// <param name="value">
+        /// The managed string to convert.
+        /// </param>
+        /// <param name="tracked">
+        /// Non-zero to obtain memory from the SQLite core library without
+        /// adjusting the number of allocated bytes currently being tracked
+        /// by the <see cref="SQLiteMemory" /> class.
+        /// </param>
+        /// <returns>
+        /// The native NUL-terminated UTF-8 string pointer or
+        /// <see cref="IntPtr.Zero" /> upon failure.
+        /// </returns>
+        public static IntPtr Utf8IntPtrFromString(
+            string value,
+            bool tracked
+            )
+        {
             int length = 0;
 
-            return Utf8IntPtrFromString(value, ref length);
+            return Utf8IntPtrFromString(value, tracked, ref length);
         }
 
         ///////////////////////////////////////////////////////////////////////
@@ -3625,6 +3676,37 @@ namespace System.Data.SQLite
             ref int length
             )
         {
+            return Utf8IntPtrFromString(value, true, ref length);
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+
+        /// <summary>
+        /// Converts the specified managed string into a native NUL-terminated
+        /// UTF-8 string pointer using memory obtained from the SQLite core
+        /// library.
+        /// </summary>
+        /// <param name="value">
+        /// The managed string to convert.
+        /// </param>
+        /// <param name="tracked">
+        /// Non-zero to obtain memory from the SQLite core library without
+        /// adjusting the number of allocated bytes currently being tracked
+        /// by the <see cref="SQLiteMemory" /> class.
+        /// </param>
+        /// <param name="length">
+        /// The length of the native string, in bytes.
+        /// </param>
+        /// <returns>
+        /// The native NUL-terminated UTF-8 string pointer or
+        /// <see cref="IntPtr.Zero" /> upon failure.
+        /// </returns>
+        public static IntPtr Utf8IntPtrFromString(
+            string value,
+            bool tracked,
+            ref int length
+            )
+        {
             if (value == null)
                 return IntPtr.Zero;
 
@@ -3636,7 +3718,10 @@ namespace System.Data.SQLite
 
             length = bytes.Length;
 
-            result = SQLiteMemory.Allocate(length + 1);
+            if (tracked)
+                result = SQLiteMemory.Allocate(length + 1);
+            else
+                result = SQLiteMemory.AllocateUntracked(length + 1);
 
             if (result == IntPtr.Zero)
                 return IntPtr.Zero;
@@ -3701,12 +3786,18 @@ namespace System.Data.SQLite
         /// <param name="values">
         /// The array of managed strings to convert.
         /// </param>
+        /// <param name="tracked">
+        /// Non-zero to obtain memory from the SQLite core library without
+        /// adjusting the number of allocated bytes currently being tracked
+        /// by the <see cref="SQLiteMemory" /> class.
+        /// </param>
         /// <returns>
         /// The array of native NUL-terminated UTF-8 string pointers or null
         /// upon failure.
         /// </returns>
         public static IntPtr[] Utf8IntPtrArrayFromStringArray(
-            string[] values
+            string[] values,
+            bool tracked
             )
         {
             if (values == null)
@@ -3715,7 +3806,7 @@ namespace System.Data.SQLite
             IntPtr[] result = new IntPtr[values.Length];
 
             for (int index = 0; index < result.Length; index++)
-                result[index] = Utf8IntPtrFromString(values[index]);
+                result[index] = Utf8IntPtrFromString(values[index], tracked);
 
             return result;
         }
