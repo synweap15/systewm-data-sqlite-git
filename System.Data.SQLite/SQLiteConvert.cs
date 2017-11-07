@@ -1559,15 +1559,14 @@ namespace System.Data.SQLite
             return defaultTypeName;
         }
 
-        lock (_syncRoot)
         {
-            if (_typeNames == null)
-                _typeNames = GetSQLiteDbTypeMap();
-
             SQLiteDbTypeMapping value;
 
-            if (_typeNames.TryGetValue(dbType, out value))
+            if ((_typeNames != null) &&
+                _typeNames.TryGetValue(dbType, out value))
+            {
                 return value.typeName;
+            }
         }
 
         if (defaultTypeName != null)
@@ -2109,12 +2108,8 @@ namespace System.Data.SQLite
             return (DbType)defaultDbType;
         }
 
-        lock (_syncRoot)
         {
-            if (_typeNames == null)
-                _typeNames = GetSQLiteDbTypeMap();
-
-            if (typeName != null)
+            if ((_typeNames != null) && (typeName != null))
             {
                 SQLiteDbTypeMapping value;
 
@@ -2148,8 +2143,7 @@ namespace System.Data.SQLite
     }
     #endregion
 
-    private static object _syncRoot = new object();
-    private static SQLiteDbTypeMap _typeNames = null;
+    private static readonly SQLiteDbTypeMap _typeNames = GetSQLiteDbTypeMap();
   }
 
   /// <summary>
@@ -2941,11 +2935,7 @@ namespace System.Data.SQLite
       //       the two strings must hash to the same value.
       //
       if (value != null)
-#if !PLATFORM_COMPACTFRAMEWORK
-        return value.ToLowerInvariant().GetHashCode();
-#else
-        return value.ToLower().GetHashCode();
-#endif
+        return StringComparer.OrdinalIgnoreCase.GetHashCode(value);
       else
         throw new ArgumentNullException("value");
     }
