@@ -2921,7 +2921,7 @@ namespace System.Data.SQLite
 #endif
         if (_sql != null)
         {
-          _sql.Close(!_disposing);
+          _sql.Close(_disposing);
           _sql = null;
         }
         _transactionLevel = 0;
@@ -4847,7 +4847,7 @@ namespace System.Data.SQLite
         if (_sql == null)
             throw new InvalidOperationException("Database connection not valid for shutdown.");
 
-        _sql.Close(true); /* NOTE: MUST be closed before shutdown. */
+        _sql.Close(false); /* NOTE: MUST be closed before shutdown. */
         SQLiteErrorCode rc = _sql.Shutdown();
 
 #if !NET_COMPACT_20 && TRACE_CONNECTION
