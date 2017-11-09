@@ -3252,7 +3252,9 @@ namespace System.Data.SQLite
 
                 if (rc2 != SQLiteErrorCode.Ok)
                 {
+                    AppendError(builder, "could not unset log callback");
                     rc = rc2;
+
                     result = false;
                 }
             }
