@@ -4174,7 +4174,7 @@ namespace System.Data.SQLite
 
           OnChanged(this, new ConnectionEventArgs(
               SQLiteConnectionEventType.Opened, eventArgs, null, null, null,
-              null, null, null));
+              null, _connectionString, new object[] { opts }));
         }
         catch
         {
