@@ -1,0 +1,117 @@
+###############################################################################
+#
+# tkt-0e48e80333.eagle --
+#
+# Written by Joe Mistachkin.
+# Released to the public domain, use at your own risk!
+#
+###############################################################################
+
+package require Eagle
+package require Eagle.Library
+package require Eagle.Test
+
+runTestPrologue
+
+###############################################################################
+
+package require System.Data.SQLite.Test
+runSQLiteTestPrologue
+
+###############################################################################
+
+runTest {test tkt-0e48e80333-1.1 {unhook delegates on pooled close} -setup {
+  moveEagleShellMdaConfig false
+  saveMdaConfigEnvironment
+} -body {
+  set configFileName [file join \
+      [getBinaryDirectory] EagleShell.exe.mda.config]
+
+  writeFile $configFileName [string trim {
+    <?xml version="1.0" encoding="UTF-8" ?>
+    <mdaConfig xmlns="http://schemas.microsoft.com/CLR/2004/10/mda">
+      <assistants>
+        <callbackOnCollectedDelegate listSize="50" />
+      </assistants>
+    </mdaConfig>
+  }]
+
+  set scriptFileName [file tempname]
+
+  writeFile $scriptFileName [string trim {
+    package require Eagle
+    package require Eagle.Library
+    package require Eagle.Test
+    package require System.Data.SQLite.Test
+
+    proc traceCallback { sender e } {
+      lappend ::result [$e Statement]
+      lappend ::result [$sender IsReadOnly null]
+    }
+
+    object load System.Data.SQLite
+    set ::test_channel stdout
+
+    setupDb [set fileName tkt-0e48e80333-1.1.db]
+    sql execute $db {CREATE TABLE t1(x);}
+    cleanupDb $fileName db true false false
+
+    set ::result ""
+
+    set count 10
+
+    set sql [string trim { \
+      INSERT INTO t1 (x) VALUES(1); \
+    }]
+
+    for {set i 0} {$i < $count} {incr i} {
+      setupDb $fileName \
+          "" "" "" "" "Pooling=True;" false false
+
+      set connection [getDbConnection]
+      $connection add_Trace traceCallback
+
+      sql execute $db $sql
+
+      freeDbConnection
+      cleanupDb $fileName db true false false
+    }
+
+    if {$::result eq [lrepeat $count $sql False]} then {
+      exit Success
+    } else {
+      exit Failure
+    }
+  }]
+
+  set env(COMPLUS_MDA) 1; # enable MDA config file.
+
+  set code [catch {
+    execTestShell [list \
+        -eventflags Wait -success Success -stdout output] \
+        -preInitialize [appendArgs \" "set no(logFileName) 1" \"] \
+        -preInitialize [appendArgs \" "set no(sqliteFiles) 1" \"] \
+        -file [appendArgs \" $scriptFileName \"] \
+        -logFile [appendArgs \" [getTestLog] \"]
+  } error]
+
+  tlog "---- BEGIN STDOUT OUTPUT\n"
+  tlog $output
+  tlog "\n---- END STDOUT OUTPUT\n"
+
+  set code
+} -cleanup {
+  catch {file delete $scriptFileName}
+  catch {file delete $configFileName}
+
+  unset -nocomplain code output error scriptFileName configFileName
+
+  restoreMdaConfigEnvironment
+  moveEagleShellMdaConfig true
+} -constraints {eagle dotNet testExec command.object monoBug28 command.sql\
+compile.DATA SQLite System.Data.SQLite} -result {0}}
+
+###############################################################################
+
+runSQLiteTestEpilogue
+runTestEpilogue
