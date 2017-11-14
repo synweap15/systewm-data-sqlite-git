@@ -1201,6 +1201,32 @@ namespace eval ::Eagle {
       }
     }
 
+    proc writeSystemDataSQLiteDllConfig { data {verbose true} } {
+      set directory [getBinaryDirectory]
+
+      if {[string length $directory] == 0} then {
+        if {$verbose} then {
+          tputs $::test_channel [appendArgs \
+              "---- skipped moving \"System.Data.SQLite.dll.config\", " \
+              "no binary directory\n"]
+        }
+
+        return
+      }
+
+      set fileName [file normalize \
+          [file join $directory System.Data.SQLite.dll.config]]
+
+      writeFile $fileName $data
+
+      if {$verbose} then {
+        tputs $::test_channel \
+            "---- wrote \"System.Data.SQLite.dll.config\"\n"
+      }
+
+      return $fileName
+    }
+
     proc moveEagleShellMdaConfig { {restore false} {verbose true} } {
       set directory [getBinaryDirectory]
 
@@ -1252,6 +1278,32 @@ namespace eval ::Eagle {
           }
         }
       }
+    }
+
+    proc writeEagleShellMdaConfig { data {verbose true} } {
+      set directory [getBinaryDirectory]
+
+      if {[string length $directory] == 0} then {
+        if {$verbose} then {
+          tputs $::test_channel [appendArgs \
+              "---- skipped moving \"EagleShell.exe.mda.config\", " \
+              "no binary directory\n"]
+        }
+
+        return
+      }
+
+      set fileName [file normalize \
+          [file join $directory EagleShell.exe.mda.config]]
+
+      writeFile $fileName $data
+
+      if {$verbose} then {
+        tputs $::test_channel \
+            "---- wrote \"EagleShell.exe.mda.config\"\n"
+      }
+
+      return $fileName
     }
 
     proc getAppDomainPreamble { {prefix ""} {suffix ""} } {

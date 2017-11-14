@@ -33,6 +33,23 @@
 #
 namespace eval ::Eagle {
   if {[isEagle]} then {
+    proc checkForVendorQuiet { {name ""} } {
+      if {[info exists ::env(checkForVendorQuiet)]} then {
+        return true
+      }
+
+      if {[string length $name] > 0} then {
+        set envVarName [appendArgs quiet [string toupper \
+            [string index $name 0]] [string range $name 1 end]]
+
+        if {[info exists ::env($envVarName)]} then {
+          return true
+        }
+      }
+
+      return false
+    }
+
     proc checkForTestOverrides { channel varNames quiet } {
       set result 0
 
@@ -345,7 +362,7 @@ namespace eval ::Eagle {
         test_net_fx_2010 test_net_fx_2012 test_net_fx_2013 test_net_fx_2015 \
         test_overrides test_platform test_suite test_year test_years \
         test_year_clr_v2 test_year_clr_v4 vendor_directory \
-        vendor_test_directory]}] false
+        vendor_test_directory]}] [checkForVendorQuiet checkForTestOverrides]
 
     #
     # NOTE: Set the name of the running test suite, if necessary.
@@ -393,7 +410,7 @@ namespace eval ::Eagle {
       #
       addTestSuiteToAutoPath stdout \
           [expr {$have_vendor_directory ? "" : "vendor_directory"}] \
-          [info exists ::env(quietAddTestSuiteToAutoPath)]
+          [checkForVendorQuiet addTestSuiteToAutoPath]
 
       unset have_vendor_directory
 
@@ -405,7 +422,7 @@ namespace eval ::Eagle {
       #
       findInterpreterTestPath stdout $vendor_directory \
           [expr {$have_vendor_test_directory ? "" : "vendor_test_directory"}] \
-          [info exists ::env(quietFindInterpreterTestPath)]
+          [checkForVendorQuiet findInterpreterTestPath]
 
       unset have_vendor_test_directory
 
@@ -415,8 +432,8 @@ namespace eval ::Eagle {
       #       interpreter to point directly to it.
       #
       if {[string length $vendor_test_directory] > 0} then {
-        setupInterpreterTestPath stdout $vendor_test_directory [info exists \
-            ::env(quietSetupInterpreterTestPath)]
+        setupInterpreterTestPath stdout $vendor_test_directory \
+            [checkForVendorQuiet setupInterpreterTestPath]
       }
     }
 
