@@ -138,7 +138,7 @@ namespace System.Data.SQLite
       //       other parameters that may impact the underlying database
       //       connection may have changed.
       //
-      if (_sql != null) Close(true);
+      if (_sql != null) Close(false);
 
       //
       // NOTE: If the connection was not closed successfully, throw an

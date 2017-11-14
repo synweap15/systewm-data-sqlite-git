@@ -67,6 +67,7 @@ namespace System.Data.SQLite
     protected internal SQLiteConnectionHandle _sql;
     protected string _fileName;
     protected SQLiteConnectionFlags _flags;
+    private bool _setLogCallback;
     protected bool _usePool;
     protected int _poolVersion;
     private int _cancelCount;
@@ -192,7 +193,7 @@ namespace System.Data.SQLite
                 DisposeModules();
 #endif
 
-                Close(false); /* Disposing, cannot throw. */
+                Close(true); /* Disposing, cannot throw. */
             }
         }
         finally
@@ -245,7 +246,7 @@ namespace System.Data.SQLite
     // goes to the pool and is resurrected later, re-registered functions will overwrite the
     // previous functions.  The SQLiteFunctionCookieHandle will take care of freeing unmanaged
     // resources belonging to the previously-registered functions.
-    internal override void Close(bool canThrow)
+    internal override void Close(bool disposing)
     {
       if (_sql != null)
       {
@@ -258,9 +259,12 @@ namespace System.Data.SQLite
           bool unbindFunctions = ((_flags & SQLiteConnectionFlags.UnbindFunctionsOnClose)
                 == SQLiteConnectionFlags.UnbindFunctionsOnClose);
 
+      retry:
+
           if (_usePool)
           {
-              if (SQLiteBase.ResetConnection(_sql, _sql, canThrow))
+              if (SQLiteBase.ResetConnection(_sql, _sql, !disposing) &&
+                  UnhookNativeCallbacks(true, !disposing))
               {
                   if (unbindFunctions)
                   {
@@ -293,7 +297,7 @@ namespace System.Data.SQLite
                   SQLiteConnection.OnChanged(null, new ConnectionEventArgs(
                       SQLiteConnectionEventType.ClosedToPool, null, null,
                       null, null, _sql, _fileName, new object[] {
-                      typeof(SQLite3), canThrow, _fileName, _poolVersion }));
+                      typeof(SQLite3), !disposing, _fileName, _poolVersion }));
 
 #if !NET_COMPACT_20 && TRACE_CONNECTION
                   Trace.WriteLine(HelperMethods.StringFormat(
@@ -302,18 +306,29 @@ namespace System.Data.SQLite
                       HandleToString()));
 #endif
               }
-#if !NET_COMPACT_20 && TRACE_CONNECTION
               else
               {
+#if !NET_COMPACT_20 && TRACE_CONNECTION
                   Trace.WriteLine(HelperMethods.StringFormat(
                       CultureInfo.CurrentCulture,
                       "Close (Pool) Failure: {0}",
                       HandleToString()));
-              }
 #endif
+
+                  //
+                  // NOTE: This connection cannot be added to the pool;
+                  //       therefore, just use the normal disposal
+                  //       procedure on it.
+                  //
+                  _usePool = false;
+                  goto retry;
+              }
           }
           else
           {
+              /* IGNORED */
+              UnhookNativeCallbacks(disposing, !disposing);
+
               if (unbindFunctions)
               {
                   if (SQLiteFunction.UnbindAllFunctions(this, _flags, false))
@@ -947,7 +962,7 @@ namespace System.Data.SQLite
       //       other parameters that may impact the underlying database
       //       connection may have changed.
       //
-      if (_sql != null) Close(true);
+      if (_sql != null) Close(false);
 
       //
       // NOTE: If the connection was not closed successfully, throw an
@@ -2944,7 +2959,339 @@ namespace System.Data.SQLite
         SQLiteErrorCode rc = UnsafeNativeMethods.sqlite3_config_log(
             SQLiteConfigOpsEnum.SQLITE_CONFIG_LOG, func, IntPtr.Zero);
 
+        if (rc == SQLiteErrorCode.Ok)
+            _setLogCallback = (func != null);
+
         return rc;
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+
+    /// <summary>
+    /// Appends an error message and an appropriate line-ending to a <see cref="StringBuilder" />
+    /// instance.  This is useful because the .NET Compact Framework has a slightly different set
+    /// of supported methods for the <see cref="StringBuilder" /> class.
+    /// </summary>
+    /// <param name="builder">
+    /// The <see cref="StringBuilder" /> instance to append to.
+    /// </param>
+    /// <param name="message">
+    /// The message to append.  It will be followed by an appropriate line-ending.
+    /// </param>
+    private static void AppendError(
+        StringBuilder builder,
+        string message
+        )
+    {
+        if (builder == null)
+            return;
+
+#if !PLATFORM_COMPACTFRAMEWORK
+        builder.AppendLine(message);
+#else
+        builder.Append(message);
+        builder.Append("\r\n");
+#endif
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+
+    /// <summary>
+    /// This method attempts to cause the SQLite native library to invalidate
+    /// its function pointers that refer to this instance.  This is necessary
+    /// to prevent calls from native code into delegates that may have been
+    /// garbage collected.  Normally, these types of issues can only arise for
+    /// connections that are added to the pool; howver, it is good practice to
+    /// unconditionally invalidate function pointers that may refer to objects
+    /// being disposed.
+    /// <param name="includeGlobal">
+    /// Non-zero to also invalidate global function pointers (i.e. those that
+    /// are not directly associated with this connection on the native side).
+    /// </param>
+    /// <param name="canThrow">
+    /// Non-zero if this method is being executed within a context where it can
+    /// throw an exception in the event of failure; otherwise, zero.
+    /// </param>
+    /// </summary>
+    /// <returns>
+    /// Non-zero if this method was successful; otherwise, zero.
+    /// </returns>
+    private bool UnhookNativeCallbacks(
+        bool includeGlobal,
+        bool canThrow
+        )
+    {
+        //
+        // NOTE: Initially, this method assumes success.  Then, if any attempt
+        //       to invalidate a function pointer fails, the overall result is
+        //       set to failure.  However, this will not prevent further
+        //       attempts, if any, to invalidate subsequent function pointers.
+        //
+        bool result = true;
+        SQLiteErrorCode rc = SQLiteErrorCode.Ok;
+        StringBuilder builder = new StringBuilder();
+
+        ///////////////////////////////////////////////////////////////////////////////////////////
+
+        #region Rollback Hook (Per-Connection)
+        try
+        {
+            SetRollbackHook(null); /* throw */
+        }
+#if !NET_COMPACT_20 && TRACE_CONNECTION
+        catch (Exception e)
+#else
+        catch (Exception)
+#endif
+        {
+#if !NET_COMPACT_20 && TRACE_CONNECTION
+            try
+            {
+                Trace.WriteLine(HelperMethods.StringFormat(
+                    CultureInfo.CurrentCulture,
+                    "Failed to unset rollback hook: {0}",
+                    e)); /* throw */
+            }
+            catch
+            {
+                // do nothing.
+            }
+#endif
+
+            AppendError(builder, "failed to unset rollback hook");
+            rc = SQLiteErrorCode.Error;
+
+            result = false;
+        }
+        #endregion
+
+        ///////////////////////////////////////////////////////////////////////////////////////////
+
+        #region Trace Callback (Per-Connection)
+        try
+        {
+            SetTraceCallback(null); /* throw */
+        }
+#if !NET_COMPACT_20 && TRACE_CONNECTION
+        catch (Exception e)
+#else
+        catch (Exception)
+#endif
+        {
+#if !NET_COMPACT_20 && TRACE_CONNECTION
+            try
+            {
+                Trace.WriteLine(HelperMethods.StringFormat(
+                    CultureInfo.CurrentCulture,
+                    "Failed to unset trace callback: {0}",
+                    e)); /* throw */
+            }
+            catch
+            {
+                // do nothing.
+            }
+#endif
+
+            AppendError(builder, "failed to unset trace callback");
+            rc = SQLiteErrorCode.Error;
+
+            result = false;
+        }
+        #endregion
+
+        ///////////////////////////////////////////////////////////////////////////////////////////
+
+        #region Commit Hook (Per-Connection)
+        try
+        {
+            SetCommitHook(null); /* throw */
+        }
+#if !NET_COMPACT_20 && TRACE_CONNECTION
+        catch (Exception e)
+#else
+        catch (Exception)
+#endif
+        {
+#if !NET_COMPACT_20 && TRACE_CONNECTION
+            try
+            {
+                Trace.WriteLine(HelperMethods.StringFormat(
+                    CultureInfo.CurrentCulture,
+                    "Failed to unset commit hook: {0}",
+                    e)); /* throw */
+            }
+            catch
+            {
+                // do nothing.
+            }
+#endif
+
+            AppendError(builder, "failed to unset commit hook");
+            rc = SQLiteErrorCode.Error;
+
+            result = false;
+        }
+        #endregion
+
+        ///////////////////////////////////////////////////////////////////////////////////////////
+
+        #region Update Hook (Per-Connection)
+        try
+        {
+            SetUpdateHook(null); /* throw */
+        }
+#if !NET_COMPACT_20 && TRACE_CONNECTION
+        catch (Exception e)
+#else
+        catch (Exception)
+#endif
+        {
+#if !NET_COMPACT_20 && TRACE_CONNECTION
+            try
+            {
+                Trace.WriteLine(HelperMethods.StringFormat(
+                    CultureInfo.CurrentCulture,
+                    "Failed to unset update hook: {0}",
+                    e)); /* throw */
+            }
+            catch
+            {
+                // do nothing.
+            }
+#endif
+
+            AppendError(builder, "failed to unset update hook");
+            rc = SQLiteErrorCode.Error;
+
+            result = false;
+        }
+        #endregion
+
+        ///////////////////////////////////////////////////////////////////////////////////////////
+
+        #region Authorizer Hook (Per-Connection)
+        try
+        {
+            SetAuthorizerHook(null); /* throw */
+        }
+#if !NET_COMPACT_20 && TRACE_CONNECTION
+        catch (Exception e)
+#else
+        catch (Exception)
+#endif
+        {
+#if !NET_COMPACT_20 && TRACE_CONNECTION
+            try
+            {
+                Trace.WriteLine(HelperMethods.StringFormat(
+                    CultureInfo.CurrentCulture,
+                    "Failed to unset authorizer hook: {0}",
+                    e)); /* throw */
+            }
+            catch
+            {
+                // do nothing.
+            }
+#endif
+
+            AppendError(builder, "failed to unset authorizer hook");
+            rc = SQLiteErrorCode.Error;
+
+            result = false;
+        }
+        #endregion
+
+        ///////////////////////////////////////////////////////////////////////////////////////////
+
+        #region Progress Hook (Per-Connection)
+        try
+        {
+            SetProgressHook(0, null); /* throw */
+        }
+#if !NET_COMPACT_20 && TRACE_CONNECTION
+        catch (Exception e)
+#else
+        catch (Exception)
+#endif
+        {
+#if !NET_COMPACT_20 && TRACE_CONNECTION
+            try
+            {
+                Trace.WriteLine(HelperMethods.StringFormat(
+                    CultureInfo.CurrentCulture,
+                    "Failed to unset progress hook: {0}",
+                    e)); /* throw */
+            }
+            catch
+            {
+                // do nothing.
+            }
+#endif
+
+            AppendError(builder, "failed to unset progress hook");
+            rc = SQLiteErrorCode.Error;
+
+            result = false;
+        }
+        #endregion
+
+        ///////////////////////////////////////////////////////////////////////////////////////////
+
+        #region Log Callback (Global)
+        //
+        // NOTE: We have to be careful here because the log callback
+        //       is not per-connection on the native side.  It should
+        //       only be unset by this method if this instance was
+        //       responsible for setting it.
+        //
+        if (includeGlobal && _setLogCallback)
+        {
+            try
+            {
+                SQLiteErrorCode rc2 = SetLogCallback(null); /* throw */
+
+                if (rc2 != SQLiteErrorCode.Ok)
+                {
+                    AppendError(builder, "could not unset log callback");
+                    rc = rc2;
+
+                    result = false;
+                }
+            }
+#if !NET_COMPACT_20 && TRACE_CONNECTION
+            catch (Exception e)
+#else
+            catch (Exception)
+#endif
+            {
+#if !NET_COMPACT_20 && TRACE_CONNECTION
+                try
+                {
+                    Trace.WriteLine(HelperMethods.StringFormat(
+                        CultureInfo.CurrentCulture,
+                        "Failed to unset log callback: {0}",
+                        e)); /* throw */
+                }
+                catch
+                {
+                    // do nothing.
+                }
+#endif
+
+                AppendError(builder, "failed to unset log callback");
+                rc = SQLiteErrorCode.Error;
+
+                result = false;
+            }
+        }
+        #endregion
+
+        ///////////////////////////////////////////////////////////////////////////////////////////
+
+        if (!result && canThrow)
+            throw new SQLiteException(rc, builder.ToString());
+
+        return result;
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////

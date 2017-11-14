@@ -1201,6 +1201,111 @@ namespace eval ::Eagle {
       }
     }
 
+    proc writeSystemDataSQLiteDllConfig { data {verbose true} } {
+      set directory [getBinaryDirectory]
+
+      if {[string length $directory] == 0} then {
+        if {$verbose} then {
+          tputs $::test_channel [appendArgs \
+              "---- skipped moving \"System.Data.SQLite.dll.config\", " \
+              "no binary directory\n"]
+        }
+
+        return
+      }
+
+      set fileName [file normalize \
+          [file join $directory System.Data.SQLite.dll.config]]
+
+      writeFile $fileName $data
+
+      if {$verbose} then {
+        tputs $::test_channel \
+            "---- wrote \"System.Data.SQLite.dll.config\"\n"
+      }
+
+      return $fileName
+    }
+
+    proc moveEagleShellMdaConfig { {restore false} {verbose true} } {
+      set directory [getBinaryDirectory]
+
+      if {[string length $directory] == 0} then {
+        if {$verbose} then {
+          tputs $::test_channel [appendArgs \
+              "---- skipped moving \"EagleShell.exe.mda.config\", " \
+              "no binary directory\n"]
+        }
+
+        return
+      }
+
+      set fileName(1) [file normalize \
+          [file join $directory EagleShell.exe.mda.config]]
+
+      set fileName(2) [appendArgs $fileName(1) .moved]
+
+      if {$restore} then {
+        if {[file exists $fileName(2)]} then {
+          file rename $fileName(2) $fileName(1)
+
+          if {$verbose} then {
+            tputs $::test_channel [appendArgs \
+                "---- moved \"" $fileName(2) "\" to \"" \
+                $fileName(1) \"\n]
+          }
+        } else {
+          if {$verbose} then {
+            tputs $::test_channel [appendArgs \
+                "---- skipped moving \"" $fileName(2) \
+                "\", it does not exist\n"]
+          }
+        }
+      } else {
+        if {[file exists $fileName(1)]} then {
+          file rename $fileName(1) $fileName(2)
+
+          if {$verbose} then {
+            tputs $::test_channel [appendArgs \
+                "---- moved \"" $fileName(1) "\" to \"" \
+                $fileName(2) \"\n]
+          }
+        } else {
+          if {$verbose} then {
+            tputs $::test_channel [appendArgs \
+                "---- skipped moving \"" $fileName(1) \
+                "\", it does not exist\n"]
+          }
+        }
+      }
+    }
+
+    proc writeEagleShellMdaConfig { data {verbose true} } {
+      set directory [getBinaryDirectory]
+
+      if {[string length $directory] == 0} then {
+        if {$verbose} then {
+          tputs $::test_channel [appendArgs \
+              "---- skipped moving \"EagleShell.exe.mda.config\", " \
+              "no binary directory\n"]
+        }
+
+        return
+      }
+
+      set fileName [file normalize \
+          [file join $directory EagleShell.exe.mda.config]]
+
+      writeFile $fileName $data
+
+      if {$verbose} then {
+        tputs $::test_channel \
+            "---- wrote \"EagleShell.exe.mda.config\"\n"
+      }
+
+      return $fileName
+    }
+
     proc getAppDomainPreamble { {prefix ""} {suffix ""} } {
       #
       # NOTE: This procedure returns a test setup script fragment suitable for
@@ -2932,6 +3037,18 @@ namespace eval ::Eagle {
       if {[array size savedEnv] == 0} then {
         unset -nocomplain savedEnv
       }
+    }
+
+    proc saveMdaConfigEnvironment {} {
+      upvar 1 savedEnv savedEnv
+
+      saveEnvironmentVariables [list COMPLUS_MDA] savedEnv
+    }
+
+    proc restoreMdaConfigEnvironment {} {
+      upvar 1 savedEnv savedEnv
+
+      restoreEnvironmentVariables [list COMPLUS_MDA] savedEnv
     }
 
     proc saveGetSettingValueEnvironment {} {

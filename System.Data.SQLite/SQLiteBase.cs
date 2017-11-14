@@ -129,8 +129,8 @@ namespace System.Data.SQLite
     /// After the database has been closed implemeters should call SQLiteFunction.UnbindFunctions() to deallocate all interop allocated
     /// memory associated with the user-defined functions and collating sequences tied to the closed connection.
     /// </remarks>
-    /// <param name="canThrow">Non-zero if the operation is allowed to throw exceptions, zero otherwise.</param>
-    internal abstract void Close(bool canThrow);
+    /// <param name="disposing">Non-zero if connection is being disposed, zero otherwise.</param>
+    internal abstract void Close(bool disposing);
     /// <summary>
     /// Sets the busy timeout on the connection.  SQLiteCommand will call this before executing any command.
     /// </summary>

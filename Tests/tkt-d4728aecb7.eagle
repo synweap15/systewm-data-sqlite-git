@@ -82,10 +82,7 @@ runTest {test tkt-d4728aecb7-1.2 {tokens in XML configuration file} -setup \
 
   moveSystemDataSQLiteDllConfig false
 
-  set fileName [file join \
-      [getBinaryDirectory] System.Data.SQLite.dll.config]
-
-  writeFile $fileName [string trim {
+  set fileName [writeSystemDataSQLiteDllConfig [string trim {
     <?xml version="1.0"?>
     <configuration>
       <appSettings>
@@ -97,7 +94,7 @@ runTest {test tkt-d4728aecb7-1.2 {tokens in XML configuration file} -setup \
              value="prfx3/%PreLoadSQLite_XmlConfigDirectory%/sufx3" />
       </appSettings>
     </configuration>
-  }]
+  }]]
 
   object load -loadtype Bytes [base64 encode [readFile [file join \
       [getBinaryDirectory] System.Data.SQLite.dll]]]
