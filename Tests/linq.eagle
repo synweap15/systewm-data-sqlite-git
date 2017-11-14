@@ -30,7 +30,7 @@ runTest {test linq-1.1 {DbUpdateCommandTree with UPDATE and SELECT} -body {
   set code [catch {
     testClrExec $testLinqExeFile [list -eventflags Wait -directory \
         [file dirname $testLinqExeFile] -nocarriagereturns -stdout output \
-        -success 0] -update
+        -success Success] -update
   } error]
 
   tlog "---- BEGIN STDOUT OUTPUT\n"
@@ -63,7 +63,7 @@ runTest {test linq-1.2 {ROUND function with two arguments} -body {
   set code [catch {
     testClrExec $testLinqExeFile [list -eventflags Wait -directory \
         [file dirname $testLinqExeFile] -nocarriagereturns -stdout output \
-        -success 0] -round
+        -success Success] -round
   } error]
 
   tlog "---- BEGIN STDOUT OUTPUT\n"

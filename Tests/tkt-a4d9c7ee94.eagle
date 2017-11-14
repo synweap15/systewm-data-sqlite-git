@@ -30,7 +30,7 @@ runTest {test tkt-a4d9c7ee94-1.1 {LINQ w/BinaryGUID=false} -body {
   set code [catch {
     testClrExec $testLinqExeFile [list -eventflags Wait -directory \
         [file dirname $testLinqExeFile] -nocarriagereturns -stdout output \
-        -success 0] -binaryguid2 false
+        -success Success] -binaryguid2 false
   } error]
 
   tlog "---- BEGIN STDOUT OUTPUT\n"
@@ -75,7 +75,7 @@ runTest {test tkt-a4d9c7ee94-1.2 {LINQ w/BinaryGUID=true} -body {
   set code [catch {
     testClrExec $testLinqExeFile [list -eventflags Wait -directory \
         [file dirname $testLinqExeFile] -nocarriagereturns -stdout output \
-        -success 0] -binaryguid2 true
+        -success Success] -binaryguid2 true
   } error]
 
   tlog "---- BEGIN STDOUT OUTPUT\n"

@@ -30,7 +30,7 @@ runTest {test tkt-da9f18d039-1.1 {LINQ DateTime handling} -body {
   set code [catch {
     testClrExec $testLinqExeFile [list -eventflags Wait -directory \
         [file dirname $testLinqExeFile] -nocarriagereturns -stdout output \
-        -success 0] -datetime
+        -success Success] -datetime
   } error]
 
   tlog "---- BEGIN STDOUT OUTPUT\n"
@@ -67,7 +67,7 @@ runTest {test tkt-da9f18d039-1.2 {EF6 DateTime handling} -body {
   set code [catch {
     testClrExec $testEf6ExeFile [list -eventflags Wait -directory \
         [file dirname $testEf6ExeFile] -nocarriagereturns -stdout output \
-        -success 0] -datetime
+        -success Success] -datetime
   } error]
 
   tlog "---- BEGIN STDOUT OUTPUT\n"

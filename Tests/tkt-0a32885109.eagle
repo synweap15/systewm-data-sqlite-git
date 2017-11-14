@@ -30,7 +30,7 @@ runTest {test tkt-0a32885109-1.1 {LINQ compound-operator handling} -body {
   set code [catch {
     testClrExec $testLinqExeFile [list -eventflags Wait -directory \
         [file dirname $testLinqExeFile] -nocarriagereturns -stdout output \
-        -success 0] -unionall
+        -success Success] -unionall
   } error]
 
   tlog "---- BEGIN STDOUT OUTPUT\n"

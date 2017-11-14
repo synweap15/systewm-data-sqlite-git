@@ -32,7 +32,7 @@ runTest {test tkt-59edc1018b-1.1 {LINQ with EndsWith} -body {
     set code [catch {
       testClrExec $testLinqExeFile [list -eventflags Wait -directory \
           [file dirname $testLinqExeFile] -nocarriagereturns -stdout output \
-          -success 0] -endsWith $value
+          -success Success] -endsWith $value
     } error]
 
     tlog "---- BEGIN STDOUT OUTPUT\n"
@@ -71,7 +71,7 @@ runTest {test tkt-59edc1018b-1.2 {EF6 with EndsWith} -body {
     set code [catch {
       testClrExec $testEf6ExeFile [list -eventflags Wait -directory \
           [file dirname $testEf6ExeFile] -nocarriagereturns -stdout output \
-          -success 0] -endsWith $value
+          -success Success] -endsWith $value
     } error]
 
     tlog "---- BEGIN STDOUT OUTPUT\n"

@@ -32,7 +32,7 @@ runTest {test tkt-8b7d179c3c-1.1 {LINQ with Skip and Take} -body {
     set code [catch {
       testClrExec $testLinqExeFile [list -eventflags Wait -directory \
           [file dirname $testLinqExeFile] -nocarriagereturns -stdout output \
-          -success 0] -skip $pageSize
+          -success Success] -skip $pageSize
     } error]
 
     tlog "---- BEGIN STDOUT OUTPUT\n"
@@ -82,7 +82,7 @@ runTest {test tkt-8b7d179c3c-1.2 {EF6 with Skip and Take} -body {
     set code [catch {
       testClrExec $testEf6ExeFile [list -eventflags Wait -directory \
           [file dirname $testEf6ExeFile] -nocarriagereturns -stdout output \
-          -success 0] -skip $pageSize
+          -success Success] -skip $pageSize
     } error]
 
     tlog "---- BEGIN STDOUT OUTPUT\n"

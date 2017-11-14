@@ -30,7 +30,7 @@ runTest {test tkt-41aea496e0-1.1 {LINQ non-rowid primary key support} -body {
   set code [catch {
     testClrExec $testLinqExeFile [list -eventflags Wait -directory \
         [file dirname $testLinqExeFile] -nocarriagereturns -stdout output \
-        -success 0] -complexprimarykey
+        -success Success] -complexprimarykey
   } error]
 
   tlog "---- BEGIN STDOUT OUTPUT\n"

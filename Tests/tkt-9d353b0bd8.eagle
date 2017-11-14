@@ -30,7 +30,7 @@ runTest {test tkt-9d353b0bd8-1.1 {DbModificationCommandTree w/INSERT} -body {
   set code [catch {
     testClrExec $testLinqExeFile [list -eventflags Wait -directory \
         [file dirname $testLinqExeFile] -nocarriagereturns -stdout output \
-        -success 0] -insert
+        -success Success] -insert
   } error]
 
   tlog "---- BEGIN STDOUT OUTPUT\n"

@@ -32,7 +32,7 @@ runTest {test tkt-ccfa69fc32-1.1 {LINQ Transaction Scope} -body {
     set code [catch {
       testClrExec $testLinqExeFile [list -eventflags Wait -directory \
           [file dirname $testLinqExeFile] -nocarriagereturns -stdout output \
-          -success 0] -efTransaction $add
+          -success Success] -efTransaction $add
     } error]
 
     tlog "---- BEGIN STDOUT OUTPUT\n"
@@ -72,7 +72,7 @@ runTest {test tkt-ccfa69fc32-1.2 {EF6 Transaction Scope} -body {
     set code [catch {
       testClrExec $testEf6ExeFile [list -eventflags Wait -directory \
           [file dirname $testEf6ExeFile] -nocarriagereturns -stdout output \
-          -success 0] -efTransaction $add
+          -success Success] -efTransaction $add
     } error]
 
     tlog "---- BEGIN STDOUT OUTPUT\n"
