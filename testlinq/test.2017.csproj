@@ -65,7 +65,8 @@
                           '$(NetFx46)' != 'false' Or
                           '$(NetFx461)' != 'false' Or
                           '$(NetFx462)' != 'false' Or
-                          '$(NetFx47)' != 'false'">
+                          '$(NetFx47)' != 'false' Or
+                          '$(NetFx471)' != 'false'">
       <HintPath>$(SQLiteNetDir)\Externals\EntityFramework\lib\net45\EntityFramework.dll</HintPath>
     </Reference>
   </ItemGroup>
@@ -84,7 +85,8 @@
                          '$(TargetFrameworkVersion)' == 'v4.6' Or
                          '$(TargetFrameworkVersion)' == 'v4.6.1' Or
                          '$(TargetFrameworkVersion)' == 'v4.6.2' Or
-                         '$(TargetFrameworkVersion)' == 'v4.7')"
+                         '$(TargetFrameworkVersion)' == 'v4.7' Or
+                         '$(TargetFrameworkVersion)' == 'v4.7.1')"
              Include="NorthwindModel.Linq.2017.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -98,7 +100,8 @@
                          '$(TargetFrameworkVersion)' == 'v4.6' Or
                          '$(TargetFrameworkVersion)' == 'v4.6.1' Or
                          '$(TargetFrameworkVersion)' == 'v4.6.2' Or
-                         '$(TargetFrameworkVersion)' == 'v4.7')"
+                         '$(TargetFrameworkVersion)' == 'v4.7' Or
+                         '$(TargetFrameworkVersion)' == 'v4.7.1')"
              Include="NorthwindModel.EF6.2017.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -118,7 +121,8 @@
                       '$(TargetFrameworkVersion)' == 'v4.6' Or
                       '$(TargetFrameworkVersion)' == 'v4.6.1' Or
                       '$(TargetFrameworkVersion)' == 'v4.6.2' Or
-                      '$(TargetFrameworkVersion)' == 'v4.7')"
+                      '$(TargetFrameworkVersion)' == 'v4.7' Or
+                      '$(TargetFrameworkVersion)' == 'v4.7.1')"
           Include="2017\LINQ\App.Config" />
     <None Condition="'$(UseEntityFramework6)' != 'false' And
                      ('$(TargetFrameworkVersion)' == 'v4.0' Or
@@ -128,7 +132,8 @@
                       '$(TargetFrameworkVersion)' == 'v4.6' Or
                       '$(TargetFrameworkVersion)' == 'v4.6.1' Or
                       '$(TargetFrameworkVersion)' == 'v4.6.2' Or
-                      '$(TargetFrameworkVersion)' == 'v4.7')"
+                      '$(TargetFrameworkVersion)' == 'v4.7' Or
+                      '$(TargetFrameworkVersion)' == 'v4.7.1')"
           Include="2017\EF6\App.Config" />
     <None Include="northwindEF.db">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -146,7 +151,8 @@
                               '$(TargetFrameworkVersion)' == 'v4.6' Or
                               '$(TargetFrameworkVersion)' == 'v4.6.1' Or
                               '$(TargetFrameworkVersion)' == 'v4.6.2' Or
-                              '$(TargetFrameworkVersion)' == 'v4.7')"
+                              '$(TargetFrameworkVersion)' == 'v4.7' Or
+                              '$(TargetFrameworkVersion)' == 'v4.7.1')"
                   Include="NorthwindModel.Linq.2017.edmx">
       <Generator>EntityModelCodeGenerator</Generator>
       <LastGenOutput>NorthwindModel.Linq.2017.Designer.cs</LastGenOutput>
@@ -159,7 +165,8 @@
                               '$(TargetFrameworkVersion)' == 'v4.6' Or
                               '$(TargetFrameworkVersion)' == 'v4.6.1' Or
                               '$(TargetFrameworkVersion)' == 'v4.6.2' Or
-                              '$(TargetFrameworkVersion)' == 'v4.7')"
+                              '$(TargetFrameworkVersion)' == 'v4.7' Or
+                              '$(TargetFrameworkVersion)' == 'v4.7.1')"
                   Include="NorthwindModel.EF6.2017.edmx">
       <Generator>EntityModelCodeGenerator</Generator>
       <LastGenOutput>NorthwindModel.EF6.2017.Designer.cs</LastGenOutput>

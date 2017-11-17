@@ -54,7 +54,7 @@ namespace System.Data.SQLite
         SQLiteLog.Initialize();
 
         string version =
-#if NET_40 || NET_45 || NET_451 || NET_452 || NET_46 || NET_461 || NET_462 || NET_47
+#if NET_40 || NET_45 || NET_451 || NET_452 || NET_46 || NET_461 || NET_462 || NET_47 || NET_471
             "4.0.0.0";
 #else
             "3.5.0.0";

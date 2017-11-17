@@ -42,20 +42,20 @@ using System.Runtime.ConstrainedExecution;
 [assembly: CLSCompliant(true)]
 [assembly: InternalsVisibleTo("System.Data.SQLite.Linq, PublicKey=" + System.Data.SQLite.SQLite3.PublicKey)]
 
-#if NET_40 || NET_45 || NET_451 || NET_452 || NET_46 || NET_461 || NET_462 || NET_47
+#if NET_40 || NET_45 || NET_451 || NET_452 || NET_46 || NET_461 || NET_462 || NET_47 || NET_471
 [assembly: InternalsVisibleTo("System.Data.SQLite.EF6, PublicKey=" + System.Data.SQLite.SQLite3.PublicKey)]
 #endif
 
 [assembly: NeutralResourcesLanguage("en")]
 
 #if !PLATFORM_COMPACTFRAMEWORK
-#if !NET_40 && !NET_45 && !NET_451 && !NET_452 && !NET_46 && !NET_461 && !NET_462 && !NET_47
+#if !NET_40 && !NET_45 && !NET_451 && !NET_452 && !NET_46 && !NET_461 && !NET_462 && !NET_47 && !NET_471
 [assembly: AllowPartiallyTrustedCallers]
 #endif
 
 [assembly: ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
 
-#if NET_40 || NET_45 || NET_451 || NET_452 || NET_46 || NET_461 || NET_462 || NET_47
+#if NET_40 || NET_45 || NET_451 || NET_452 || NET_46 || NET_461 || NET_462 || NET_47 || NET_471
 //
 // NOTE: This attribute is only available in .NET Framework 4.0 or higher.
 //
@@ -72,7 +72,7 @@ using System.Runtime.ConstrainedExecution;
 //
 // You can specify all the values or you can default the Revision and Build Numbers
 // by using the '*' as shown below:
-[assembly: AssemblyVersion("1.0.106.0")]
+[assembly: AssemblyVersion("1.0.107.0")]
 #if !PLATFORM_COMPACTFRAMEWORK
-[assembly: AssemblyFileVersion("1.0.106.0")]
+[assembly: AssemblyFileVersion("1.0.107.0")]
 #endif

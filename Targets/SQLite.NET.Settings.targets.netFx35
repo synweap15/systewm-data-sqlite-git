@@ -40,6 +40,7 @@
     <NetFx461>false</NetFx461>
     <NetFx462>false</NetFx462>
     <NetFx47>false</NetFx47>
+    <NetFx471>false</NetFx471>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <TargetFrameworkProfile></TargetFrameworkProfile>
     <Prefer32Bit>false</Prefer32Bit>

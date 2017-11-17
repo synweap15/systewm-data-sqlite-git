@@ -24,7 +24,7 @@ namespace System.Data.SQLite
 
   using System.Runtime.InteropServices;
 
-#if (NET_40 || NET_45 || NET_451 || NET_452 || NET_46 || NET_461 || NET_462 || NET_47) && !PLATFORM_COMPACTFRAMEWORK
+#if (NET_40 || NET_45 || NET_451 || NET_452 || NET_46 || NET_461 || NET_462 || NET_47 || NET_471) && !PLATFORM_COMPACTFRAMEWORK
   using System.Runtime.Versioning;
 #endif
 
@@ -1501,7 +1501,7 @@ namespace System.Data.SQLite
       {
           if (assembly != null)
           {
-#if NET_40 || NET_45 || NET_451 || NET_452 || NET_46 || NET_461 || NET_462 || NET_47
+#if NET_40 || NET_45 || NET_451 || NET_452 || NET_46 || NET_461 || NET_462 || NET_47 || NET_471
               try
               {
                   if (assembly.IsDefined(
@@ -2740,7 +2740,7 @@ namespace System.Data.SQLite
     //       System.Data.SQLite functionality (e.g. being able to bind
     //       parameters and handle column values of types Int64 and Double).
     //
-    internal const string SQLITE_DLL = "SQLite.Interop.106.dll";
+    internal const string SQLITE_DLL = "SQLite.Interop.107.dll";
 #elif SQLITE_STANDARD
     //
     // NOTE: Otherwise, if the standard SQLite library is enabled, use it.

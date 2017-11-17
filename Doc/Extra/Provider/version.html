@@ -43,6 +43,14 @@
     <div id="mainSection">
     <div id="mainBody">
     <h1 class="heading">Version History</h1>
+    <p><b>1.0.107.0 - January XX, 2018 <font color="red">(release scheduled)</font></b></p>
+    <ul>
+      <li>Updated to <a href="https://www.sqlite.org/draft/releaselog/3_22_0.html">SQLite 3.22.0</a>.</li>
+      <li>Improve performance of type name lookups by removing superfluous locking and string creation.</li>
+      <li>Fix some internal memory accounting present only in the debug build.</li>
+      <li>Make sure inbound native delegates are unhooked before adding a connection to the pool. Fix for <a href="https://system.data.sqlite.org/index.html/info/0e48e80333">[0e48e80333]</a>.</li>
+      <li>Add preliminary support for the .NET Framework 4.7.1.</li>
+    </ul>
     <p><b>1.0.106.0 - November 2, 2017</b></p>
     <ul>
       <li>Updated to <a href="https://www.sqlite.org/releaselog/3_21_0.html">SQLite 3.21.0</a>.</li>

@@ -1,7 +1,7 @@
 @ECHO OFF
 
 ::
-:: set_netFx47.bat --
+:: set_netFx471.bat --
 ::
 :: Written by Joe Mistachkin.
 :: Released to the public domain, use at your own risk!
@@ -32,7 +32,7 @@ IF NOT DEFINED YEAR (
 )
 
 IF NOT DEFINED FRAMEWORK (
-  SET FRAMEWORK=netFx47
+  SET FRAMEWORK=netFx471
 )
 
 :end_of_file

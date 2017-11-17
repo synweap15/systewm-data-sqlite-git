@@ -37,7 +37,7 @@ using System.Runtime.ConstrainedExecution;
 [assembly: ComVisible(false)]
 [assembly: CLSCompliant(true)]
 
-#if !NET_40 && !NET_45 && !NET_451 && !NET_452 && !NET_46 && !NET_461 && !NET_462 && !NET_47
+#if !NET_40 && !NET_45 && !NET_451 && !NET_452 && !NET_46 && !NET_461 && !NET_462 && !NET_47 && !NET_471
 [assembly: AllowPartiallyTrustedCallers]
 #endif
 
@@ -53,5 +53,5 @@ using System.Runtime.ConstrainedExecution;
 // You can specify all the values or you can default the Build and Revision Numbers
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("1.0.106.0")]
-[assembly: AssemblyFileVersion("1.0.106.0")]
+[assembly: AssemblyVersion("1.0.107.0")]
+[assembly: AssemblyFileVersion("1.0.107.0")]

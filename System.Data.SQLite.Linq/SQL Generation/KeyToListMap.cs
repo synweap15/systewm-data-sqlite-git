@@ -10,7 +10,7 @@ using System.Text;
 using System.Collections.ObjectModel;
 using System.Collections;
 
-#if NET_40 || NET_45 || NET_451 || NET_452 || NET_46 || NET_461 || NET_462 || NET_47
+#if NET_40 || NET_45 || NET_451 || NET_452 || NET_46 || NET_461 || NET_462 || NET_47 || NET_471
 using System.Runtime;
 #endif
 
@@ -123,7 +123,7 @@ namespace System.Data.SQLite.Linq
 
 		internal IEnumerable<KeyValuePair<TKey, List<TValue>>> KeyValuePairs
 		{
-#if NET_40 || NET_45 || NET_451 || NET_452 || NET_46 || NET_461 || NET_462 || NET_47
+#if NET_40 || NET_45 || NET_451 || NET_452 || NET_46 || NET_461 || NET_462 || NET_47 || NET_471
 			[TargetedPatchingOptOut("Performance critical to inline this type of method across NGen image boundaries")]
 #endif
 			get
