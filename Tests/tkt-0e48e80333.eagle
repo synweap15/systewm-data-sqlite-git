@@ -141,7 +141,7 @@ runTest {test tkt-0e48e80333-1.2 {delegate MDA on pooled close} -setup {
     set count(1) 1000; # thread work-item count
     set count(2) 1000; # per-thread query count
     set count(3) [expr {$count(1) * $count(2)}]; # total query count
-    set count(4) [expr {0.5 * $count(3)}]; # timeout in seconds
+    set count(4) [expr {0.00002 * $count(3)}]; # timeout in seconds
     set count(5) 10; # busy loop sleep milliseconds
 
     set sql { \
@@ -275,13 +275,23 @@ runTest {test tkt-0e48e80333-1.2 {delegate MDA on pooled close} -setup {
   tlog $output
   tlog "\n---- END STDOUT OUTPUT\n"
 
-  list $code [string trim $error]
+  set error [string trim $error]
+
+  if {![regexp -- {0 (\d+)$} $error dummy count]} then {
+    set count <unknown>
+  }
+
+  tputs $test_channel [appendArgs \
+      "---- executed a total of " $count " queries\n"]
+
+  list $code $error
 } -cleanup {
   cleanupDb $fileName
 
   catch {file delete $scriptFileName}
   catch {file delete $configFileName}
 
+  unset -nocomplain dummy count
   unset -nocomplain code output error scriptFileName configFileName
   unset -nocomplain db fileName
 
@@ -290,7 +300,7 @@ runTest {test tkt-0e48e80333-1.2 {delegate MDA on pooled close} -setup {
   moveEagleShellMdaConfig true
 } -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
 System.Data.SQLite compileCSharp} -match regexp -result {^0 \{Ok\
-System#CodeDom#Compiler#CompilerResults#\d+ \{\} 0 \{\} 0 1000\}$}}
+System#CodeDom#Compiler#CompilerResults#\d+ \{\} 0 \{\} 0 \d+\}$}}
 
 ###############################################################################
 
