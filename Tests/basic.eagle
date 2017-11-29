@@ -746,22 +746,22 @@ runTest {test data-1.14 {DateTime using invariant culture} -setup {
   sql execute $db "INSERT INTO t1 (x, y) VALUES(5, '12:00');"
   sql execute $db "INSERT INTO t1 (x, y) VALUES(6, '12/16/2009 12:00');"
 
-  sql execute $db "INSERT INTO t1 (x, y) VALUES(7, ?);" \
+  sql execute -datetimekind Utc $db "INSERT INTO t1 (x, y) VALUES(7, ?);" \
       [list param1 DateTime "Wednesday, 16 December 2009"]
 
-  sql execute $db "INSERT INTO t1 (x, y) VALUES(8, ?);" \
+  sql execute -datetimekind Utc $db "INSERT INTO t1 (x, y) VALUES(8, ?);" \
       [list param1 DateTime 12:00:00]
 
-  sql execute $db "INSERT INTO t1 (x, y) VALUES(9, ?);" \
+  sql execute -datetimekind Utc $db "INSERT INTO t1 (x, y) VALUES(9, ?);" \
       [list param1 DateTime "Wednesday, 16 December 2009 12:00:00"]
 
-  sql execute $db "INSERT INTO t1 (x, y) VALUES(10, ?);" \
+  sql execute -datetimekind Utc $db "INSERT INTO t1 (x, y) VALUES(10, ?);" \
       [list param1 DateTime 12/16/2009]
 
-  sql execute $db "INSERT INTO t1 (x, y) VALUES(11, ?);" \
+  sql execute -datetimekind Utc $db "INSERT INTO t1 (x, y) VALUES(11, ?);" \
       [list param1 DateTime 12:00]
 
-  sql execute $db "INSERT INTO t1 (x, y) VALUES(12, ?);" \
+  sql execute -datetimekind Utc $db "INSERT INTO t1 (x, y) VALUES(12, ?);" \
       [list param1 DateTime "12/16/2009 12:00"]
 
   sql execute -execute reader -datetimeformat [getDateTimeFormat] $db \
@@ -807,22 +807,22 @@ runTest {test data-1.15 {DateTime using current culture} -setup {
   sql execute $db "INSERT INTO t1 (x, y) VALUES(5, '12:00');"
   sql execute $db "INSERT INTO t1 (x, y) VALUES(6, '12/16/2009 12:00');"
 
-  sql execute $db "INSERT INTO t1 (x, y) VALUES(7, ?);" \
+  sql execute -datetimekind Utc $db "INSERT INTO t1 (x, y) VALUES(7, ?);" \
       [list param1 DateTime "Wednesday, 16 December 2009"]
 
-  sql execute $db "INSERT INTO t1 (x, y) VALUES(8, ?);" \
+  sql execute -datetimekind Utc $db "INSERT INTO t1 (x, y) VALUES(8, ?);" \
       [list param1 DateTime 12:00:00]
 
-  sql execute $db "INSERT INTO t1 (x, y) VALUES(9, ?);" \
+  sql execute -datetimekind Utc $db "INSERT INTO t1 (x, y) VALUES(9, ?);" \
       [list param1 DateTime "Wednesday, 16 December 2009 12:00:00"]
 
-  sql execute $db "INSERT INTO t1 (x, y) VALUES(10, ?);" \
+  sql execute -datetimekind Utc $db "INSERT INTO t1 (x, y) VALUES(10, ?);" \
       [list param1 DateTime 12/16/2009]
 
-  sql execute $db "INSERT INTO t1 (x, y) VALUES(11, ?);" \
+  sql execute -datetimekind Utc $db "INSERT INTO t1 (x, y) VALUES(11, ?);" \
       [list param1 DateTime 12:00]
 
-  sql execute $db "INSERT INTO t1 (x, y) VALUES(12, ?);" \
+  sql execute -datetimekind Utc $db "INSERT INTO t1 (x, y) VALUES(12, ?);" \
       [list param1 DateTime "12/16/2009 12:00"]
 
   sql execute -execute reader -datetimeformat [getDateTimeFormat] $db \

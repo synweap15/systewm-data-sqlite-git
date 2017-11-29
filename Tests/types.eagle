@@ -180,6 +180,9 @@ set savedDateTimeFormat [object invoke Interpreter.GetActive DateTimeFormat]
 if {![isObjectHandle $savedDateTimeFormat]} then {set savedDateTimeFormat null}
 object invoke Interpreter.GetActive DateTimeFormat [getDateTimeFormat]
 
+set savedDateTimeKind [object invoke Interpreter.GetActive DateTimeKind]
+object invoke Interpreter.GetActive DateTimeKind Utc
+
 ###############################################################################
 
 for {set i 0} {$i < [llength $params]} {incr i} {
@@ -346,6 +349,9 @@ SQLite System.Data.SQLite} -result $expectedResult}
 
 object invoke Interpreter.GetActive DateTimeFormat $savedDateTimeFormat
 unset -nocomplain savedDateTimeFormat
+
+object invoke Interpreter.GetActive DateTimeKind $savedDateTimeKind
+unset -nocomplain savedDateTimeKind
 
 ###############################################################################
 
