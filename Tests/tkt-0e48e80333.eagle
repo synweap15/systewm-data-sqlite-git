@@ -63,7 +63,7 @@ runTest {test tkt-0e48e80333-1.1 {unhook delegates on pooled close} -setup {
 
     for {set i 0} {$i < $count} {incr i} {
       setupDb $fileName \
-          "" "" "" "" "Pooling=True;" false false
+          "" "" "" "" "Pooling=True;" true false
 
       set connection [getDbConnection]
       $connection add_Trace traceCallback
