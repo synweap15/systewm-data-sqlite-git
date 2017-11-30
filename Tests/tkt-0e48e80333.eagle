@@ -97,6 +97,8 @@ runTest {test tkt-0e48e80333-1.1 {unhook delegates on pooled close} -setup {
 
   set code
 } -cleanup {
+  cleanupDb tkt-0e48e80333-1.1.db
+
   catch {file delete $scriptFileName}
   catch {file delete $configFileName}
 
