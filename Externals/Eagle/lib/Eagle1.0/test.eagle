@@ -270,6 +270,9 @@ namespace eval ::Eagle {
       return [list]
     }
 
+    #
+    # NOTE: Refer to the array in the context of the caller.
+    #
     upvar 1 $varName array
 
     #
@@ -286,6 +289,69 @@ namespace eval ::Eagle {
     }
 
     return $result
+  }
+
+  proc testResultGet { script } {
+    set code [catch {uplevel 1 $script} result]
+    return [expr {$code == 0 ? $result : "<error>"}]
+  }
+
+  proc testValueGet { varName {integer false} } {
+    #
+    # NOTE: Returns the results of [array get] in a well-defined order
+    #       -OR- the value of the scalar variable.
+    #
+    if {[string length $varName] == 0} then {
+      return [list]
+    }
+
+    #
+    # NOTE: Is the specified variable (in the context of the caller) an
+    #       array?
+    #
+    if {[uplevel 1 [list array exists $varName]]} then {
+      #
+      # NOTE: Refer to the array in the context of the caller.
+      #
+      upvar 1 $varName array
+
+      #
+      # NOTE: Build the command that will sort the array names into order.
+      #
+      set command [list lsort]
+      if {$integer} then {lappend command -integer}
+      lappend command [array names array]
+
+      set result [list]
+
+      foreach name [eval $command] {
+        lappend result $name $array($name)
+      }
+    } else {
+      #
+      # NOTE: Grab the value of the scalar variable in the context of the
+      #       caller and then return both the name and the value.
+      #
+      set varValue [uplevel 1 [list set $varName]]
+      set result [list $varValue]
+    }
+
+    return $result
+  }
+
+  proc getFirstLineOfError { error } {
+    set error [string map [list \r\n \n] $error]
+    set index [string first \n $error]
+
+    if {$index != -1} then {
+      incr index -1
+
+      if {$index > 0} then {
+        return [string range $error 0 $index]
+      }
+    }
+
+    return $error
   }
 
   proc calculateBogoCops { {milliseconds 2000} {legacy false} } {
@@ -381,7 +447,7 @@ namespace eval ::Eagle {
               catch {after cancel $event}
             }
 
-            after flags =$flags
+            after flags [appendArgs = $flags]
           }
         } finally {
           interp bgerror {} $bgerror
@@ -1383,6 +1449,14 @@ namespace eval ::Eagle {
                   $::test_break_on_leak}]
   }
 
+  proc isBreakOnDemand {} {
+    global env
+
+    return [expr {[info exists env(isBreakOnDemand)] && \
+                  [string is boolean -strict $env(isBreakOnDemand)] && \
+                  $env(isBreakOnDemand)}]
+  }
+
   proc isStopOnFailure {} {
     return [expr {[info exists ::test_stop_on_failure] && \
                   [string is boolean -strict $::test_stop_on_failure] && \
@@ -1561,6 +1635,14 @@ namespace eval ::Eagle {
 
         unset -nocomplain ::test_suite_running
         error ""; # no message
+      }
+
+      #
+      # NOTE: Unless forbidden from doing so, attempt to automatically
+      #       cleanup any stale (e.g. temporary) object references now.
+      #
+      if {![info exists ::no(cleanupReferences)]} then {
+        catch {object cleanup -references}
       }
     } else {
       if {$error} then {
@@ -1748,11 +1830,10 @@ namespace eval ::Eagle {
 
       if {[llength [info commands tcl]] > 0} then {
         catch {set array(tcl,$index) [tcl ready]}
+        catch {set array(tclInterps,$index) [llength [tcl interps]]}
+        catch {set array(tclThreads,$index) [llength [tcl threads]]}
+        catch {set array(tclCommands,$index) [llength [tcl command list]]}
       }
-
-      catch {set array(tclInterps,$index) [llength [tcl interps]]}
-      catch {set array(tclThreads,$index) [llength [tcl threads]]}
-      catch {set array(tclCommands,$index) [llength [tcl command list]]}
 
       #
       # NOTE: Grab the number of active threads that are active because
@@ -2176,9 +2257,17 @@ namespace eval ::Eagle {
     #
     # NOTE: Process each file name we have been given by the caller...
     #
-    set total [llength $fileNames]; set lastPercent -1
+    set total 0; set lastPercent -1
 
     foreach fileName $fileNames {
+      #
+      # NOTE: If configured to break into the debugger before running the
+      #       test file, do it now.
+      #
+      if {[isBreakOnDemand]} then {
+        testDebugBreak
+      }
+
       #
       # NOTE: In terms of files, not tests, what percent done are we now?
       #
@@ -2358,6 +2447,17 @@ namespace eval ::Eagle {
             }
 
             #
+            # NOTE: At this point, we know that another test file was
+            #       processed successfully.
+            #
+            incr total
+
+            if {![info exists ::no(runPercent)]} then {
+              reportTestPercent $channel $percent \
+                  $total [llength $failed] [llength $leaked]
+            }
+
+            #
             # NOTE: Are we being prevented from waiting after the file?
             #
             if {![info exists ::no(postWait)]} then {
@@ -2423,7 +2523,7 @@ namespace eval ::Eagle {
               #       the failure.  Set a special variable for the epilogue
               #       to pick up on (later).
               #
-              lappend ::test_suite_errors $error
+              lappend ::test_suite_errors [list $fileName $error]
             }
           }
 
@@ -2495,12 +2595,6 @@ namespace eval ::Eagle {
             tputs $channel [appendArgs \
                 "==== \"" $fileName "\" NON_TEST_FILE\n"]
           }
-
-          #
-          # NOTE: This file does not actually count towards the total (i.e.
-          #       it contains no actual tests).
-          #
-          incr total -1
         }
 
         #
@@ -2534,12 +2628,6 @@ namespace eval ::Eagle {
         if {![info exists ::no(runSkippedFile)]} then {
           tputs $channel [appendArgs "==== \"" $fileName "\" SKIPPED\n"]
         }
-
-        #
-        # NOTE: This file does not actually count towards the total (i.e.
-        #       it is part of the test suite infrastructure).
-        #
-        incr total -1
       }
 
       #
@@ -3339,6 +3427,12 @@ namespace eval ::Eagle {
           "---- cleanup \"" $name "\" results: " $result \n]
 
       catch {uplevel 1 [list object invoke -flags +NonPublic \
+          Eagle._Components.Private.ProcessOps ClearOutputCache]} result
+
+      tputs $channel [appendArgs \
+          "---- ProcessOps cleanup results: " $result \n]
+
+      catch {uplevel 1 [list object invoke -flags +NonPublic \
           Eagle._Components.Private.EnumOps ClearEnumCache]} result
 
       tputs $channel [appendArgs \
@@ -3373,11 +3467,15 @@ namespace eval ::Eagle {
       }
 
       #
-      # NOTE: Save the current background error handler for later restoration
-      #       and then reset the current background error handler to nothing.
+      # NOTE: Force any [vwait] that may be in the contained script to stop
+      #       when it hits the script cancellation, saving the preexisting
+      #       event wait flags first for later restoration.
       #
-      set bgerror [interp bgerror {}]
-      interp bgerror {} ""
+      set savedEventWaitFlags [object invoke -flags +NonPublic \
+          Interpreter.GetActive eventWaitFlags]
+
+      object invoke -flags +NonPublic Interpreter.GetActive \
+          eventWaitFlags [combineFlags $savedEventWaitFlags StopOnError]
 
       try {
         #
@@ -3405,8 +3503,8 @@ namespace eval ::Eagle {
 
             #
             # NOTE: Schedule the event to cancel the script we are about to
-            #       evaluate, capturing the name so we can cancel it later, if
-            #       necessary.
+            #       evaluate, capturing the name so we can cancel it later,
+            #       if necessary.
             #
             set event [after $milliseconds [list interp cancel]]
 
@@ -3420,10 +3518,62 @@ namespace eval ::Eagle {
             catch {after cancel $event}
           }
 
-          after flags =$flags
+          after flags [appendArgs = $flags]
         }
       } finally {
-        interp bgerror {} $bgerror
+        if {[info exists savedEventWaitFlags]} then {
+          object invoke -flags +NonPublic Interpreter.GetActive \
+              eventWaitFlags $savedEventWaitFlags
+        }
+      }
+    }
+
+    proc vwaitWithTimeout { varName {milliseconds 2000} } {
+      #
+      # NOTE: Verify that the number of milliseconds requested is positive or
+      #       zero.
+      #
+      if {$milliseconds < 0} then {
+        error "number of milliseconds cannot be negative"
+      }
+
+      try {
+        #
+        # NOTE: Schedule the event to cancel the script we are about to
+        #       evaluate, capturing the name so we can cancel it later,
+        #       if necessary.
+        #
+        set event [after $milliseconds [list interp cancel]]
+
+        if {[catch {
+          #
+          # NOTE: Refer to the specified variable in the context of our
+          #       caller.
+          #
+          upvar 1 $varName variable
+
+          #
+          # NOTE: Wait for the variable to be changed -OR- for the wait
+          #       to be canceled.
+          #
+          vwait -eventwaitflags {+NoBgError StopOnError} -- variable
+        }] == 0} then {
+          #
+          # NOTE: The wait completed successfully, the variable should
+          #       have been changed.
+          #
+          return true
+        } else {
+          #
+          # NOTE: The wait did not complete, it may have been canceled
+          #       and the variable may or may not have been changed.
+          #
+          return false
+        }
+      } finally {
+        if {[info exists event]} then {
+          catch {after cancel $event}
+        }
       }
     }
 
@@ -3799,7 +3949,7 @@ namespace eval ::Eagle {
         getDefaultTestLog getTestLog getLastTestLog getTestSuite \
         getTestMachine getTestPlatform getTestConfiguration getTestSuffix \
         getTestUncountedLeaks getTestAssemblyName canTestExec testExec \
-        testClrExec execTestShell isRandomOrder isBreakOnLeak \
+        testClrExec execTestShell isRandomOrder isBreakOnDemand isBreakOnLeak \
         isStopOnFailure isStopOnLeak isExitOnComplete returnInfoScript \
         runTestPrologue runTestEpilogue hookPuts unhookPuts runTest \
         testDebugBreak testArrayGet testShim tsource recordTestStatistics \

@@ -1701,6 +1701,18 @@ if {![info exists no([file tail [info script]])]} then {
           #
           checkForCompileOption $test_channel LIMITED_EDITION
         }
+
+        #
+        # NOTE: Has runtime "demo edition" checking support been
+        #       disabled (at compile-time)?  This only applies to
+        #       third-party plugins and applications.
+        #
+        if {![info exists no(compileDemoEdition)]} then {
+          #
+          # NOTE: This is not currently used by any tests.
+          #
+          checkForCompileOption $test_channel DEMO_EDITION
+        }
       }
     }
 
@@ -1976,6 +1988,17 @@ if {![info exists no([file tail [info script]])]} then {
       }
 
       #
+      # NOTE: Has embedded resource testing support been disabled?
+      #
+      if {![info exists no(testResources)]} then {
+        #
+        # NOTE: For test "interp-1.400".
+        #
+        checkForObjectMember $test_channel Eagle._Tests.Default \
+            *TestGetResourceString*
+      }
+
+      #
       # NOTE: Has asynchronous testing support been disabled?
       #
       if {![info exists no(testAsynchronous)]} then {
@@ -2063,6 +2086,23 @@ if {![info exists no([file tail [info script]])]} then {
         #
         checkForObjectMember $test_channel Eagle._Tests.Default \
             *TestSetComplain*
+      }
+
+      #
+      # NOTE: Has enumerable variable testing support been disabled?
+      #
+      if {![info exists no(testEnumerableVariables)]} then {
+        #
+        # NOTE: For test "basic-1.105".
+        #
+        checkForObjectMember $test_channel Eagle._Tests.Default \
+            *TestSetupIntArray*
+
+        checkForObjectMember $test_channel Eagle._Tests.Default \
+            *TestSetVariableEnumerable*
+
+        checkForObjectMember $test_channel Eagle._Tests.Default \
+            *TestUnsetVariableEnumerable*
       }
 
       #
@@ -2245,6 +2285,12 @@ if {![info exists no([file tail [info script]])]} then {
         #
         checkForObjectMember $test_channel Eagle._Tests.Default \
             *TestReturnOfSelf*
+
+        #
+        # NOTE: For test "object-3.17".
+        #
+        checkForObjectMember $test_channel Eagle._Tests.Default \
+            *TestByRefByteArray*
 
         #
         # NOTE: For test "object-4.1".
@@ -3070,6 +3116,19 @@ if {![info exists no([file tail [info script]])]} then {
     checkForWindowsVersion $test_channel
   }
 
+  if {![info exists no(operatingSystemUpdates)]} then {
+    if {[isEagle] && [info exists tcl_platform(osExtra)]} then {
+      vwaitWithTimeout tcl_platform(osExtra) $test_timeout
+    }
+
+    checkForOperatingSystemUpdate $test_channel KB936929
+    checkForOperatingSystemUpdate $test_channel KB976932
+    checkForOperatingSystemUpdate $test_channel "November Update"
+    checkForOperatingSystemUpdate $test_channel "Anniversary Update"
+    checkForOperatingSystemUpdate $test_channel "Creators Update"
+    checkForOperatingSystemUpdate $test_channel "Fall Creators Update"
+  }
+
   if {![info exists no(scriptLibrary)]} then {
     checkForScriptLibrary $test_channel
   }
@@ -3312,6 +3371,10 @@ if {![info exists no([file tail [info script]])]} then {
 
   if {![info exists no(tip405)]} then {
     checkForTip405 $test_channel
+  }
+
+  if {![info exists no(tip421)]} then {
+    checkForTip421 $test_channel
   }
 
   if {![info exists no(tip426)]} then {

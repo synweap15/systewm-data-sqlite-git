@@ -24,7 +24,8 @@ namespace eval ::Eagle {
   # NOTE: This is the procedure that detects whether or not we are running
   #       in Eagle (otherwise, it is assumed that we are running in vanilla
   #       Tcl).  This procedure must work correctly in both Tcl and Eagle
-  #       and must return non-zero only when running in Eagle.
+  #       and must return non-zero only when running in Eagle.  The same
+  #       procedure is also defined in the "init.eagle" file.
   #
   proc isEagle {} {
     #

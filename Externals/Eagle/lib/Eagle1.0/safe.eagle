@@ -26,7 +26,8 @@ namespace eval ::Eagle {
   #       This procedure must function correctly in both Tcl and Eagle
   #       and must return non-zero only when running in Eagle.  This
   #       procedure must be defined in this script file because it is
-  #       needed while this script file is being evaluated.
+  #       needed while this script file is being evaluated.  The same
+  #       procedure is also defined in the "init.eagle" file.
   #
   # <bootstrap>
   proc isEagle {} {

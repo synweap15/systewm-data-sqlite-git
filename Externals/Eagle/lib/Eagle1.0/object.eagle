@@ -148,9 +148,7 @@ namespace eval ::Eagle {
   #       empty string) if the value is not a valid opaque object handle.
   #
   proc getStringFromObjectHandle { value {default ""} } {
-    global null
-
-    if {[isObjectHandle $value] && $value ne $null} then {
+    if {[isNonNullObjectHandle $value]} then {
       return [object invoke $value ToString]
     }
 
@@ -174,6 +172,16 @@ namespace eval ::Eagle {
     }
 
     return false
+  }
+
+  #
+  # NOTE: This procedure returns non-zero if the specified value can be used
+  #       as an opaque object handle -AND- the value does not represent a null
+  #       value.
+  #
+  proc isNonNullObjectHandle { value } {
+    global null
+    return [expr {[isObjectHandle $value] && $value ne $null}]
   }
 
   #
@@ -222,6 +230,93 @@ namespace eval ::Eagle {
     }
 
     return false
+  }
+
+  #
+  # NOTE: This procedure evaluates a script asynchronously and optionally
+  #       notifies another script upon its completion.  The first argument
+  #       is the notification script; if an empty string, there will be no
+  #       notification when asynchronous script evaluation is completed.
+  #       If there is exactly one more argument, it is evaluated verbatim;
+  #       otherwise, all remaining arguments are concatenated via [concat]
+  #       and evaluated asynchronously.  If the script cannot be submitted
+  #       for asynchronous evaluation, a script error will be raised.
+  #
+  proc evalAsync { doneScript args } {
+    #
+    # NOTE: This procedure requires the [object] command in order to work.
+    #       If it is not available, bail out now.
+    #
+    if {[llength [info commands object]] == 0} then {
+      error "cannot eval async: missing \[object\] command"
+    }
+
+    #
+    # NOTE: If the core library was not compiled with thread-safety enabled,
+    #       this procedure cannot be used because it could corrupt the state
+    #       of the interpreter.
+    #
+    if {[lsearch -exact -- \
+        $::eagle_platform(compileOptions) THREADING] == -1} then {
+      error "cannot eval async: library missing THREADING compile-option"
+    }
+
+    #
+    # NOTE: If there is more than one script optional argument, use [concat]
+    #       to build up the final script; otherwise, use the single argument
+    #       verbatim.  This mirrors the behavior of [eval].
+    #
+    if {[llength $args] > 1} then {
+      set asyncScript [concat $args]
+    } else {
+      set asyncScript [lindex $args 0]
+    }
+
+    #
+    # NOTE: Is there a script to be evaluated when the asynchronous script
+    #       evaluation is complete?  If so, build an anonymous procedure
+    #       that wraps it; otherwise, set the callback argument to null, so
+    #       the core marshaller will handle the lack of a callback correctly.
+    #       The context argument will be added to this script prior to it
+    #       being evaluated; however, it is not actually used by this script.
+    #
+    if {[string length $doneScript] > 0} then {
+      set callback [list -callbackflags {+ResetCancel FireAndForget} \
+          -- apply [list [list script context] {uplevel 1 $script}] \
+          $doneScript]
+    } else {
+      set callback null
+    }
+
+    #
+    # NOTE: Initialize the local variable that will be used to receive the
+    #       script error, if any.
+    #
+    set error null
+
+    #
+    # NOTE: Attempt to submit the script for asynchonous evaluation.  Use
+    #       the dynamic callback mechanism with the anonymous procedure we
+    #       constructed above.
+    #
+    set code [object invoke -verbose \
+        -marshalflags +DynamicCallback -- Interpreter.GetActive \
+        EvaluateScript $asyncScript $callback null error]
+
+    #
+    # NOTE: Check the return code, which only indicates if the script was
+    #       actually submitted for asynchronous evaluation, to make sure
+    #       it was successful.  If not, raise a script error.
+    #
+    if {$code ne "Ok"} then {
+      error [getStringFromObjectHandle $error]
+    }
+
+    #
+    # NOTE: Upon success, return an empty string.  The actual script result
+    #       will be sent to the callback script, if any.
+    #
+    return ""
   }
 
   #
