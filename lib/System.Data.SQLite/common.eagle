@@ -2938,8 +2938,11 @@ namespace eval ::Eagle {
       }
 
       #
-      # NOTE: Check if the file still exists.
+      # NOTE: Check if the file still exists; initially, assume all files will
+      #       be deleted successfully, if necessary.
       #
+      set success true
+
       if {!$isMemory && $delete && [file exists $fileName]} then {
         #
         # NOTE: Skip deleting database files if somebody sets the global
@@ -2947,34 +2950,76 @@ namespace eval ::Eagle {
         #
         if {![info exists ::no(cleanupDbFile)]} then {
           #
+          # NOTE: Attempt to delete the test WAL file, if any, now.
+          #
+          set walFileName [appendArgs $fileName -wal]
+
+          if {[file exists $walFileName]} then {
+            #
+            # NOTE: If there is a WAL file, it should be zero bytes at this
+            #       point.
+            #
+            if {[set size [file size $walFileName]] == 0} then {
+              #
+              # NOTE: We somehow failed to delete the WAL file, report why.
+              #
+              if {[catch {file delete $walFileName} error]} then {
+                tputs $::test_channel [appendArgs \
+                    "==== WARNING: failed to delete WAL file \"" $walFileName \
+                    "\" during cleanup, error: " \n\t $error \n]
+
+                set success false
+              }
+            } else {
+              tputs $::test_channel [appendArgs \
+                  "==== WARNING: WAL file \"" $walFileName "\" is " $size \
+                  " bytes in size, skipping all file deletions...\n"]
+
+              return 1; # error
+            }
+          }
+
+          #
+          # NOTE: Attempt to delete the test SHM file, if any, now.
+          #
+          set shmFileName [appendArgs $fileName -shm]
+
+          if {[file exists $shmFileName] && \
+              [catch {file delete $shmFileName} error]} then {
+            #
+            # NOTE: We somehow failed to delete the SHM file, report why.
+            #
+            tputs $::test_channel [appendArgs \
+                "==== WARNING: failed to delete SHM file \"" $shmFileName \
+                "\" during cleanup, error: " \n\t $error \n]
+
+            set success false
+          }
+
+          #
           # NOTE: Attempt to delete the test database file now.
           #
-          if {[set code [catch {file delete $fileName} error]]} then {
+          if {[catch {file delete $fileName} error]} then {
             #
             # NOTE: We somehow failed to delete the file, report why.
             #
             tputs $::test_channel [appendArgs \
                 "==== WARNING: failed to delete database file \"" $fileName \
                 "\" during cleanup, error: " \n\t $error \n]
+
+            set success false
           }
         } else {
           #
           # NOTE: Show that we skipped deleting the file.
           #
-          set code 0
-
           tputs $::test_channel [appendArgs \
               "==== WARNING: skipped deleting database file \"" $fileName \
               "\" during cleanup\n"]
         }
-      } else {
-        #
-        # NOTE: The file does not exist, success!
-        #
-        set code 0
       }
 
-      return $code
+      return [expr {$success ? 0 : 1}]
     }
 
     proc saveEnvironmentVariables { names {varName ""} } {
