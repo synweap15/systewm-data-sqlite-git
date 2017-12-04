@@ -4150,9 +4150,9 @@ runTest {test data-1.81 {SQLiteCommand.VerifyOnly method} -setup {
       $code(9) [extractSystemDataSQLiteExceptionMessage $result(9)] \
       $result(10)
 } -cleanup {
-  cleanupDb $fileName
-
   freeDbConnection
+
+  cleanupDb $fileName
 
   unset -nocomplain result code command connection db fileName
 } -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
