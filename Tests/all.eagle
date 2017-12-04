@@ -28,6 +28,7 @@ runTestPrologue
 #
 package require System.Data.SQLite.Test
 runSQLiteTestPrologue
+runSQLiteTestFilesPrologue
 
 ###############################################################################
 
@@ -69,5 +70,6 @@ if {[array size no] == 0} then {unset no}
 
 ###############################################################################
 
+runSQLiteTestFilesEpilogue
 runSQLiteTestEpilogue
 runTestEpilogue
