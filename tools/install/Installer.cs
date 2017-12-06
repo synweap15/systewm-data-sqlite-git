@@ -1188,6 +1188,15 @@ namespace System.Data.SQLite
 
             ///////////////////////////////////////////////////////////////////
 
+            public void DisableClose()
+            {
+                CheckDisposed();
+
+                noClose = true;
+            }
+
+            ///////////////////////////////////////////////////////////////////
+
             public MockRegistryKey CreateSubKey(
                 string subKeyName
                 )
@@ -1424,6 +1433,14 @@ namespace System.Data.SQLite
             public bool Safe
             {
                 get { CheckDisposed(); return safe; }
+            }
+
+            ///////////////////////////////////////////////////////////////////
+
+            public bool noClose;
+            public bool NoClose
+            {
+                get { CheckDisposed(); return noClose; }
             }
             #endregion
 
@@ -1723,7 +1740,9 @@ namespace System.Data.SQLite
 
                         if (key != null)
                         {
-                            key.Close();
+                            if (!noClose)
+                                key.Close();
+
                             key = null;
                         }
                     }
@@ -1824,20 +1843,17 @@ namespace System.Data.SQLite
             //       registry operations (just below).
             //
             private static object syncRoot = new object();
+
+            //
+            // NOTE: This is the list of registry write operations when it is
+            //       set to non-null.
+            //
+            private static RegistryOperationList operationList;
             #endregion
 
             ///////////////////////////////////////////////////////////////////
 
             #region Public Static Properties
-            private static RegistryOperationList operationList;
-            public static RegistryOperationList OperationList
-            {
-                get { lock (syncRoot) { return operationList; } }
-                set { lock (syncRoot) { operationList = value; } }
-            }
-
-            ///////////////////////////////////////////////////////////////////
-
             private static MockRegistry readOnlyRegistry;
             public static MockRegistry ReadOnlyRegistry
             {
@@ -1896,6 +1912,27 @@ namespace System.Data.SQLite
             ///////////////////////////////////////////////////////////////////
 
             #region Public Static Methods
+            public static void EnableOrDisableOperationList(
+                bool enable
+                )
+            {
+                lock (syncRoot) /* TRANSACTIONAL */
+                {
+                    if (enable)
+                    {
+                        if (operationList == null)
+                            operationList = new RegistryOperationList();
+                    }
+                    else if (operationList != null)
+                    {
+                        operationList.Dispose();
+                        operationList = null;
+                    }
+                }
+            }
+
+            ///////////////////////////////////////////////////////////////////
+
             public static void ReinitializeDefaultRegistries(
                 bool whatIf,
                 bool safe
@@ -2338,19 +2375,41 @@ namespace System.Data.SQLite
 
             ///////////////////////////////////////////////////////////////////
 
+            [MethodImpl(MethodImplOptions.NoInlining)]
             public static int WriteOperationList(
-                string fileName
+                string fileName,
+                bool verbose
                 )
             {
                 int count = 0;
 
                 if (String.IsNullOrEmpty(fileName))
+                {
+                    if (verbose)
+                    {
+                        TraceOps.DebugAndTrace(TracePriority.Highest,
+                            debugCallback, traceCallback,
+                            "Registry operation log file name not set.",
+                            traceCategory);
+                    }
+
                     return count;
+                }
 
                 lock (syncRoot) /* TRANSACTIONAL */
                 {
                     if (operationList == null)
+                    {
+                        if (verbose)
+                        {
+                            TraceOps.DebugAndTrace(TracePriority.Highest,
+                                debugCallback, traceCallback,
+                                "Registry operation list is invalid.",
+                                traceCategory);
+                        }
+
                         return count;
+                    }
 
                     using (StreamWriter streamWriter = new StreamWriter(
                             fileName))
@@ -2360,12 +2419,20 @@ namespace System.Data.SQLite
                             if (operation == null)
                                 continue;
 
-                            streamWriter.WriteLine(operationList.ToString());
+                            streamWriter.WriteLine(operation.ToString());
                             count++;
                         }
 
                         streamWriter.Flush();
                     }
+                }
+
+                if (verbose)
+                {
+                    TraceOps.DebugAndTrace(TracePriority.Highest,
+                        debugCallback, traceCallback, String.Format(
+                        "Wrote {0} registry operations to its log file.",
+                        count), traceCategory);
                 }
 
                 return count;
@@ -2431,12 +2498,81 @@ namespace System.Data.SQLite
 
         #region RegistryOperationList Class
         [Serializable()]
-        private sealed class RegistryOperationList : List<RegistryOperation>
+        private sealed class RegistryOperationList : List<RegistryOperation>, IDisposable
         {
             #region Public Constructors
             public RegistryOperationList()
             {
                 // do nothing.
+            }
+            #endregion
+
+            ///////////////////////////////////////////////////////////////////
+
+            #region IDisposable "Pattern" Members
+            private bool disposed;
+            private void CheckDisposed() /* throw */
+            {
+                if (!disposed)
+                    return;
+
+                throw new ObjectDisposedException(
+                    typeof(RegistryOperationList).Name);
+            }
+
+            ///////////////////////////////////////////////////////////////////
+
+            private /* protected virtual */ void Dispose(
+                bool disposing
+                )
+            {
+                if (!disposed)
+                {
+                    if (disposing)
+                    {
+                        ////////////////////////////////////
+                        // dispose managed resources here...
+                        ////////////////////////////////////
+
+                        foreach (RegistryOperation operation in this)
+                        {
+                            if (operation == null)
+                                continue;
+
+                            operation.Dispose();
+                        }
+
+                        Clear();
+                    }
+
+                    //////////////////////////////////////
+                    // release unmanaged resources here...
+                    //////////////////////////////////////
+
+                    //
+                    // NOTE: This object is now disposed.
+                    //
+                    disposed = true;
+                }
+            }
+            #endregion
+
+            ///////////////////////////////////////////////////////////////////
+
+            #region IDisposable Members
+            public void Dispose()
+            {
+                Dispose(true);
+                GC.SuppressFinalize(this);
+            }
+            #endregion
+
+            ///////////////////////////////////////////////////////////////////
+
+            #region Destructor
+            ~RegistryOperationList()
+            {
+                Dispose(false);
             }
             #endregion
         }
@@ -2447,6 +2583,12 @@ namespace System.Data.SQLite
         #region RegistryOperation Class
         private sealed class RegistryOperation
         {
+            #region Private Constants
+            private const char FieldDelimiter = '\t';
+            #endregion
+
+            ///////////////////////////////////////////////////////////////////
+
             #region Public Constructors
             public RegistryOperation(
                 string methodName,
@@ -2477,9 +2619,14 @@ namespace System.Data.SQLite
                     //
                     // NOTE: Make sure this copy of the root registry key
                     //       cannot be used to accidentally make registry
-                    //       changes.
+                    //       changes.  Also, prevent this MockRegistryKey
+                    //       object from closing its underlying registry
+                    //       key as we will need it later.  This instance
+                    //       will close it.
                     //
                     this.key = new MockRegistryKey(key, true, true, true);
+
+                    key.DisableClose();
                 }
                 else
                 {
@@ -2598,9 +2745,13 @@ namespace System.Data.SQLite
                 StringBuilder builder = new StringBuilder();
 
                 builder.Append(ForDisplay(methodName));
+                builder.Append(FieldDelimiter);
                 builder.Append(ForDisplay(key));
+                builder.Append(FieldDelimiter);
                 builder.Append(ForDisplay(subKeyName));
+                builder.Append(FieldDelimiter);
                 builder.Append(ForDisplay(valueName));
+                builder.Append(FieldDelimiter);
 
                 builder.Append(ForDisplay(
                     MockRegistryKey.ValueToString(value, ", ", "<null>")));
@@ -4368,12 +4519,11 @@ namespace System.Data.SQLite
                     //
                     if (configuration.registryLogFileName != null)
                     {
-                        RegistryHelper.OperationList =
-                            new RegistryOperationList();
+                        RegistryHelper.EnableOrDisableOperationList(true);
 
                         TraceOps.DebugAndTrace(TracePriority.MediumHigh,
                             debugCallback, traceCallback, String.Format(
-                            "Registry logging to file \"{0}\" enabled.",
+                            "Registry logging to file {0} enabled.",
                             ForDisplay(configuration.registryLogFileName)),
                             traceCategory);
                     }
@@ -8985,7 +9135,10 @@ namespace System.Data.SQLite
                     //       operations now.
                     //
                     RegistryHelper.WriteOperationList(
-                        configuration.RegistryLogFileName);
+                        configuration.RegistryLogFileName,
+                        configuration.Verbose);
+
+                    RegistryHelper.EnableOrDisableOperationList(false);
                     #endregion
 
                     ///////////////////////////////////////////////////////////
