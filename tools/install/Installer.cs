@@ -1197,6 +1197,21 @@ namespace System.Data.SQLite
 
             ///////////////////////////////////////////////////////////////////
 
+            public MockRegistryKey Clone(
+                bool whatIf,
+                bool readOnly,
+                bool safe
+                )
+            {
+                CheckDisposed();
+
+                return new MockRegistryKey(
+                    key, this.whatIf || whatIf, this.readOnly || readOnly,
+                    this.safe || safe);
+            }
+
+            ///////////////////////////////////////////////////////////////////
+
             public MockRegistryKey CreateSubKey(
                 string subKeyName
                 )
@@ -2626,7 +2641,7 @@ namespace System.Data.SQLite
                     //       key as we will need it later.  This instance
                     //       will close it.
                     //
-                    this.key = new MockRegistryKey(key, true, true, true);
+                    this.key = key.Clone(true, true, true);
 
                     key.DisableClose();
                 }
