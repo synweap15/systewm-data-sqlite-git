@@ -489,7 +489,7 @@ namespace System.Data.SQLite
             ///////////////////////////////////////////////////////////////////
 
             [MethodImpl(MethodImplOptions.NoInlining)]
-            private static string GetMethodName(
+            public static string GetMethodName(
                 StackTrace stackTrace,
                 int level
                 )
@@ -557,7 +557,7 @@ namespace System.Data.SQLite
                 string category
                 )
             {
-                lock (syncRoot)
+                lock (syncRoot) /* TRANSACTIONAL */
                 {
                     if (debugListeners != null)
                     {
@@ -577,7 +577,7 @@ namespace System.Data.SQLite
                 string category
                 )
             {
-                lock (syncRoot)
+                lock (syncRoot) /* TRANSACTIONAL */
                 {
                     //
                     // NOTE: Write the message to all the active trace
@@ -1469,6 +1469,218 @@ namespace System.Data.SQLite
 
             ///////////////////////////////////////////////////////////////////
 
+            #region Public Static Methods
+            public static bool NameEquals(
+                string name1,
+                string name2
+                )
+            {
+                return String.Equals(
+                    name1, name2, StringComparison.OrdinalIgnoreCase);
+            }
+
+            ///////////////////////////////////////////////////////////////////
+
+            public static bool ValueEquals(
+                object value1,
+                object value2
+                )
+            {
+                if ((value1 == null) || (value2 == null))
+                    return ((value1 == null) && (value2 == null));
+
+                if (Object.ReferenceEquals(value1, value2))
+                    return true;
+
+                Type type1 = value1.GetType();
+                Type type2 = value2.GetType();
+
+                if (!Object.ReferenceEquals(type1, type2))
+                    return false;
+
+                if (type1 == typeof(int)) // DWord
+                {
+                    return ((int)value1 == (int)value2);
+                }
+                else if (type1 == typeof(long)) // QWord
+                {
+                    return ((long)value1 == (long)value2);
+                }
+                else if (type1 == typeof(string)) // String / ExpandString
+                {
+                    return String.Equals(
+                        (string)value1, (string)value2,
+                        StringComparison.Ordinal);
+                }
+                else if (type1 == typeof(string[])) // MultiString
+                {
+                    string[] array1 = (string[])value1;
+                    string[] array2 = (string[])value2;
+
+                    int length1 = array1.Length;
+
+                    if (length1 != array2.Length)
+                        return false;
+
+                    for (int index1 = 0; index1 < length1; index1++)
+                    {
+                        if (!String.Equals(
+                                array1[index1], array2[index1],
+                                StringComparison.Ordinal))
+                        {
+                            return false;
+                        }
+                    }
+
+                    return true;
+                }
+                else if (type1 == typeof(byte[])) // Binary
+                {
+                    byte[] array1 = (byte[])value1;
+                    byte[] array2 = (byte[])value2;
+
+                    int length1 = array1.Length;
+
+                    if (length1 != array2.Length)
+                        return false;
+
+                    for (int index1 = 0; index1 < length1; index1++)
+                        if (array1[index1] != array2[index1])
+                            return false;
+
+                    return true;
+                }
+
+                return false;
+            }
+
+            ///////////////////////////////////////////////////////////////////
+
+            public static int ValueHashCode(
+                object value
+                )
+            {
+                int result = 0;
+
+                if (value != null)
+                {
+                    Type type = value.GetType();
+
+                    if ((type == typeof(int)) || // DWord
+                        (type == typeof(long)) || // QWord
+                        (type == typeof(string))) // String / ExpandString
+                    {
+                        result = value.GetHashCode();
+                    }
+                    else if ((type == typeof(string[])) || // MultiString
+                        (type == typeof(byte[]))) // Binary
+                    {
+                        Array array = (Array)value;
+                        int length = array.Length;
+
+                        for (int index = 0; index < length; index++)
+                        {
+                            object element = array.GetValue(index);
+
+                            if (element == null)
+                                continue;
+
+                            result ^= element.GetHashCode();
+                        }
+                    }
+                }
+
+                return result;
+            }
+
+            ///////////////////////////////////////////////////////////////////
+
+            public static string ValueToString(
+                object value,
+                string delimiter,
+                string nullValue
+                )
+            {
+                string result = null;
+
+                if (value != null)
+                {
+                    Type type = value.GetType();
+
+                    if ((type == typeof(int)) || // DWord
+                        (type == typeof(long)) || // QWord
+                        (type == typeof(string))) // String / ExpandString
+                    {
+                        result = value.ToString();
+                    }
+                    else if ((type == typeof(string[])) || // MultiString
+                        (type == typeof(byte[]))) // Binary
+                    {
+                        StringBuilder builder = new StringBuilder();
+                        Array array = (Array)value;
+                        int length = array.Length;
+
+                        for (int index = 0; index < length; index++)
+                        {
+                            if ((index > 0) && (delimiter != null))
+                                builder.Append(delimiter);
+
+                            object element = array.GetValue(index);
+
+                            if (element == null)
+                            {
+                                if (nullValue != null)
+                                    builder.Append(nullValue);
+
+                                continue;
+                            }
+
+                            builder.Append(element.ToString());
+                        }
+
+                        result = builder.ToString();
+                    }
+                }
+
+                return result;
+            }
+
+            ///////////////////////////////////////////////////////////////////
+
+            public static bool Equals(
+                MockRegistryKey key1,
+                MockRegistryKey key2
+                )
+            {
+                if ((key1 == null) || (key2 == null))
+                    return ((key1 == null) && (key2 == null));
+
+                if (Object.ReferenceEquals(key1, key2))
+                    return true;
+
+                return NameEquals(key1.Name, key2.Name);
+            }
+
+            ///////////////////////////////////////////////////////////////////
+
+            public static int GetHashCode(
+                MockRegistryKey key
+                )
+            {
+                if (key != null)
+                {
+                    string name = key.Name;
+
+                    if (name != null)
+                        return name.GetHashCode();
+                }
+
+                return 0;
+            }
+            #endregion
+
+            ///////////////////////////////////////////////////////////////////
+
             #region Implicit Conversion Operators
             //
             // BUGBUG: Remove me?  This should be safe because in "what-if"
@@ -1606,7 +1818,26 @@ namespace System.Data.SQLite
 
         private static class RegistryHelper
         {
+            #region Private Data
+            //
+            // NOTE: This is used to synchronize access to the list of logged
+            //       registry operations (just below).
+            //
+            private static object syncRoot = new object();
+            #endregion
+
+            ///////////////////////////////////////////////////////////////////
+
             #region Public Static Properties
+            private static RegistryOperationList operationList;
+            public static RegistryOperationList OperationList
+            {
+                get { lock (syncRoot) { return operationList; } }
+                set { lock (syncRoot) { operationList = value; } }
+            }
+
+            ///////////////////////////////////////////////////////////////////
+
             private static MockRegistry readOnlyRegistry;
             public static MockRegistry ReadOnlyRegistry
             {
@@ -1714,66 +1945,52 @@ namespace System.Data.SQLite
                 if (registry == null)
                     return null;
 
-                if (String.Equals(
-                        name, RegistryRootKeyNames.HKEY_CLASSES_ROOT,
-                        StringComparison.OrdinalIgnoreCase) ||
-                    String.Equals(
-                        name, RegistryRootKeyNames.HKCR,
-                        StringComparison.OrdinalIgnoreCase))
+                if (MockRegistryKey.NameEquals(
+                        name, RegistryRootKeyNames.HKEY_CLASSES_ROOT) ||
+                    MockRegistryKey.NameEquals(
+                        name, RegistryRootKeyNames.HKCR))
                 {
                     return registry.ClassesRoot;
                 }
-                else if (String.Equals(
-                        name, RegistryRootKeyNames.HKEY_CURRENT_CONFIG,
-                        StringComparison.OrdinalIgnoreCase) ||
-                    String.Equals(
-                        name, RegistryRootKeyNames.HKCC,
-                        StringComparison.OrdinalIgnoreCase))
+                else if (MockRegistryKey.NameEquals(
+                        name, RegistryRootKeyNames.HKEY_CURRENT_CONFIG) ||
+                    MockRegistryKey.NameEquals(
+                        name, RegistryRootKeyNames.HKCC))
                 {
                     return registry.CurrentConfig;
                 }
-                else if (String.Equals(
-                        name, RegistryRootKeyNames.HKEY_CURRENT_USER,
-                        StringComparison.OrdinalIgnoreCase) ||
-                    String.Equals(
-                        name, RegistryRootKeyNames.HKCU,
-                        StringComparison.OrdinalIgnoreCase))
+                else if (MockRegistryKey.NameEquals(
+                        name, RegistryRootKeyNames.HKEY_CURRENT_USER) ||
+                    MockRegistryKey.NameEquals(
+                        name, RegistryRootKeyNames.HKCU))
                 {
                     return registry.CurrentUser;
                 }
-                else if (String.Equals(
-                        name, RegistryRootKeyNames.HKEY_DYN_DATA,
-                        StringComparison.OrdinalIgnoreCase) ||
-                    String.Equals(
-                        name, RegistryRootKeyNames.HKDD,
-                        StringComparison.OrdinalIgnoreCase))
+                else if (MockRegistryKey.NameEquals(
+                        name, RegistryRootKeyNames.HKEY_DYN_DATA) ||
+                    MockRegistryKey.NameEquals(
+                        name, RegistryRootKeyNames.HKDD))
                 {
                     return registry.DynData;
                 }
-                else if (String.Equals(
-                        name, RegistryRootKeyNames.HKEY_LOCAL_MACHINE,
-                        StringComparison.OrdinalIgnoreCase) ||
-                    String.Equals(
-                        name, RegistryRootKeyNames.HKLM,
-                        StringComparison.OrdinalIgnoreCase))
+                else if (MockRegistryKey.NameEquals(
+                        name, RegistryRootKeyNames.HKEY_LOCAL_MACHINE) ||
+                    MockRegistryKey.NameEquals(
+                        name, RegistryRootKeyNames.HKLM))
                 {
                     return registry.LocalMachine;
                 }
-                else if (String.Equals(
-                        name, RegistryRootKeyNames.HKEY_PERFORMANCE_DATA,
-                        StringComparison.OrdinalIgnoreCase) ||
-                    String.Equals(
-                        name, RegistryRootKeyNames.HKPD,
-                        StringComparison.OrdinalIgnoreCase))
+                else if (MockRegistryKey.NameEquals(
+                        name, RegistryRootKeyNames.HKEY_PERFORMANCE_DATA) ||
+                    MockRegistryKey.NameEquals(
+                        name, RegistryRootKeyNames.HKPD))
                 {
                     return registry.PerformanceData;
                 }
-                else if (String.Equals(
-                        name, RegistryRootKeyNames.HKEY_USERS,
-                        StringComparison.OrdinalIgnoreCase) ||
-                    String.Equals(
-                        name, RegistryRootKeyNames.HKU,
-                        StringComparison.OrdinalIgnoreCase))
+                else if (MockRegistryKey.NameEquals(
+                        name, RegistryRootKeyNames.HKEY_USERS) ||
+                    MockRegistryKey.NameEquals(
+                        name, RegistryRootKeyNames.HKU))
                 {
                     return registry.Users;
                 }
@@ -1939,6 +2156,8 @@ namespace System.Data.SQLite
                 }
                 finally
                 {
+                    MaybeLogOperation(GetMethodName(), rootKey, subKeyName);
+
                     subKeysCreated++;
                 }
             }
@@ -1969,6 +2188,8 @@ namespace System.Data.SQLite
                 if (!whatIf)
                     rootKey.DeleteSubKey(subKeyName, throwOnMissing);
 
+                MaybeLogOperation(GetMethodName(), rootKey, subKeyName);
+
                 subKeysDeleted++;
             }
 
@@ -1996,6 +2217,8 @@ namespace System.Data.SQLite
 
                 if (!whatIf)
                     rootKey.DeleteSubKeyTree(subKeyName);
+
+                MaybeLogOperation(GetMethodName(), rootKey, subKeyName);
 
                 subKeysDeleted++;
             }
@@ -2078,6 +2301,8 @@ namespace System.Data.SQLite
                 if (!whatIf)
                     key.SetValue(name, value);
 
+                MaybeLogOperation(GetMethodName(), key, name, value);
+
                 keyValuesWritten++;
             }
 
@@ -2106,7 +2331,346 @@ namespace System.Data.SQLite
                 if (!whatIf)
                     key.DeleteValue(name, throwOnMissing);
 
+                MaybeLogOperation(GetMethodName(), key, name, null);
+
                 keyValuesDeleted++;
+            }
+
+            ///////////////////////////////////////////////////////////////////
+
+            public static int WriteOperationList(
+                string fileName
+                )
+            {
+                int count = 0;
+
+                if (String.IsNullOrEmpty(fileName))
+                    return count;
+
+                lock (syncRoot) /* TRANSACTIONAL */
+                {
+                    if (operationList == null)
+                        return count;
+
+                    using (StreamWriter streamWriter = new StreamWriter(
+                            fileName))
+                    {
+                        foreach (RegistryOperation operation in operationList)
+                        {
+                            if (operation == null)
+                                continue;
+
+                            streamWriter.WriteLine(operationList.ToString());
+                            count++;
+                        }
+
+                        streamWriter.Flush();
+                    }
+                }
+
+                return count;
+            }
+            #endregion
+
+            ///////////////////////////////////////////////////////////////////
+
+            #region Private Static Methods
+            [MethodImpl(MethodImplOptions.NoInlining)]
+            private static string GetMethodName()
+            {
+                return TraceOps.GetMethodName(null, 1);
+            }
+
+            ///////////////////////////////////////////////////////////////////
+
+            private static void MaybeLogOperation(
+                string methodName,
+                MockRegistryKey key,
+                string subKeyName
+                )
+            {
+                MaybeLogOperation(methodName, key, subKeyName, null, null);
+            }
+
+            ///////////////////////////////////////////////////////////////////
+
+            private static void MaybeLogOperation(
+                string methodName,
+                MockRegistryKey key,
+                string valueName,
+                object value
+                )
+            {
+                MaybeLogOperation(methodName, key, null, valueName, value);
+            }
+
+            ///////////////////////////////////////////////////////////////////
+
+            private static void MaybeLogOperation(
+                string methodName,
+                MockRegistryKey key,
+                string subKeyName,
+                string valueName,
+                object value
+                )
+            {
+                lock (syncRoot) /* TRANSACTIONAL */
+                {
+                    if (operationList == null)
+                        return;
+
+                    operationList.Add(new RegistryOperation(
+                        methodName, key, subKeyName, valueName, value));
+                }
+            }
+            #endregion
+        }
+        #endregion
+
+        ///////////////////////////////////////////////////////////////////////
+
+        #region RegistryOperationList Class
+        [Serializable()]
+        private sealed class RegistryOperationList : List<RegistryOperation>
+        {
+            #region Public Constructors
+            public RegistryOperationList()
+            {
+                // do nothing.
+            }
+            #endregion
+        }
+        #endregion
+
+        ///////////////////////////////////////////////////////////////////////
+
+        #region RegistryOperation Class
+        private sealed class RegistryOperation
+        {
+            #region Public Constructors
+            public RegistryOperation(
+                string methodName,
+                MockRegistryKey key,
+                string subKeyName,
+                string valueName,
+                object value
+                )
+            {
+                this.methodName = methodName;
+                this.subKeyName = subKeyName;
+                this.valueName = valueName;
+                this.value = value;
+
+                SetKey(key);
+            }
+            #endregion
+
+            ///////////////////////////////////////////////////////////////////
+
+            #region Private Methods
+            private void SetKey(
+                MockRegistryKey key
+                )
+            {
+                if (key != null)
+                {
+                    //
+                    // NOTE: Make sure this copy of the root registry key
+                    //       cannot be used to accidentally make registry
+                    //       changes.
+                    //
+                    this.key = new MockRegistryKey(key, true, true, true);
+                }
+                else
+                {
+                    this.key = null;
+                }
+            }
+            #endregion
+
+            ///////////////////////////////////////////////////////////////////
+
+            #region Public Properties
+            private string methodName;
+            public string MethodName
+            {
+                get { CheckDisposed(); return methodName; }
+            }
+
+            ///////////////////////////////////////////////////////////////////
+
+            private MockRegistryKey key;
+            public MockRegistryKey Key
+            {
+                get { CheckDisposed(); return key; }
+            }
+
+            ///////////////////////////////////////////////////////////////////
+
+            private string subKeyName;
+            public string SubKeyName
+            {
+                get { CheckDisposed(); return subKeyName; }
+            }
+
+            ///////////////////////////////////////////////////////////////////
+
+            private string valueName;
+            public string ValueName
+            {
+                get { CheckDisposed(); return valueName; }
+            }
+
+            ///////////////////////////////////////////////////////////////////
+
+            private object value;
+            public object Value
+            {
+                get { CheckDisposed(); return value; }
+            }
+            #endregion
+
+            ///////////////////////////////////////////////////////////////////
+
+            #region System.Object Overrides
+            public override bool Equals(
+                object obj
+                )
+            {
+                CheckDisposed();
+
+                RegistryOperation operation = obj as RegistryOperation;
+
+                if (operation == null)
+                    return false;
+
+                if (!String.Equals(operation.methodName, methodName))
+                    return false;
+
+                if (!MockRegistryKey.Equals(operation.key, key))
+                    return false;
+
+                if (!MockRegistryKey.NameEquals(
+                        operation.subKeyName, subKeyName))
+                {
+                    return false;
+                }
+
+                if (!String.Equals(operation.valueName, valueName))
+                    return false;
+
+                if (!MockRegistryKey.ValueEquals(operation.value, value))
+                    return false;
+
+                return true;
+            }
+
+            ///////////////////////////////////////////////////////////////////
+
+            public override int GetHashCode()
+            {
+                CheckDisposed();
+
+                int result = 0;
+
+                if (methodName != null)
+                    result ^= methodName.GetHashCode();
+
+                result ^= MockRegistryKey.GetHashCode(key);
+
+                if (subKeyName != null)
+                    result ^= subKeyName.GetHashCode();
+
+                if (valueName != null)
+                    result ^= valueName.GetHashCode();
+
+                result ^= MockRegistryKey.ValueHashCode(value);
+
+                return result;
+            }
+
+            ///////////////////////////////////////////////////////////////////
+
+            public override string ToString()
+            {
+                CheckDisposed();
+
+                StringBuilder builder = new StringBuilder();
+
+                builder.Append(ForDisplay(methodName));
+                builder.Append(ForDisplay(key));
+                builder.Append(ForDisplay(subKeyName));
+                builder.Append(ForDisplay(valueName));
+
+                builder.Append(ForDisplay(
+                    MockRegistryKey.ValueToString(value, ", ", "<null>")));
+
+                return builder.ToString();
+            }
+            #endregion
+
+            ///////////////////////////////////////////////////////////////////
+
+            #region IDisposable "Pattern" Members
+            private bool disposed;
+            private void CheckDisposed() /* throw */
+            {
+                if (!disposed)
+                    return;
+
+                throw new ObjectDisposedException(
+                    typeof(RegistryOperation).Name);
+            }
+
+            ///////////////////////////////////////////////////////////////////
+
+            private /* protected virtual */ void Dispose(
+                bool disposing
+                )
+            {
+                if (!disposed)
+                {
+                    if (disposing)
+                    {
+                        ////////////////////////////////////
+                        // dispose managed resources here...
+                        ////////////////////////////////////
+
+                        if (key != null)
+                        {
+                            key.Close();
+                            key = null;
+                        }
+                    }
+
+                    //////////////////////////////////////
+                    // release unmanaged resources here...
+                    //////////////////////////////////////
+
+                    //
+                    // NOTE: This object is now disposed.
+                    //
+                    disposed = true;
+                }
+            }
+            #endregion
+
+            ///////////////////////////////////////////////////////////////////
+
+            #region IDisposable Members
+            public void Dispose()
+            {
+                Dispose(true);
+                GC.SuppressFinalize(this);
+            }
+            #endregion
+
+            ///////////////////////////////////////////////////////////////////
+
+            #region Destructor
+            ~RegistryOperation()
+            {
+                Dispose(false);
             }
             #endregion
         }
@@ -2334,6 +2898,7 @@ namespace System.Data.SQLite
             private Configuration(
                 Assembly assembly,
                 string logFileName,
+                string registryLogFileName,
                 string directory,
                 string coreFileName,
                 string linqFileName,
@@ -2384,6 +2949,7 @@ namespace System.Data.SQLite
             {
                 this.assembly = assembly;
                 this.logFileName = logFileName;
+                this.registryLogFileName = registryLogFileName;
                 this.directory = directory;
                 this.coreFileName = coreFileName;
                 this.linqFileName = linqFileName;
@@ -2611,9 +3177,9 @@ namespace System.Data.SQLite
                     ref ef6FileName, ref designerFileName);
 
                 return new Configuration(
-                    thisAssembly, null, directory, coreFileName, linqFileName,
-                    ef6FileName, designerFileName, null, null, null,
-                    TraceOps.DebugFormat, TraceOps.TraceFormat,
+                    thisAssembly, null, null, directory, coreFileName,
+                    linqFileName, ef6FileName, designerFileName, null, null,
+                    null, TraceOps.DebugFormat, TraceOps.TraceFormat,
                     InstallFlags.Default, ProviderFlags.Default,
                     TracePriority.Default, TracePriority.Default, false, true,
                     false, false, false, false, false, false, false, false,
@@ -3475,6 +4041,10 @@ namespace System.Data.SQLite
 
                             configuration.providerFlags = (ProviderFlags)value;
                         }
+                        else if (MatchOption(newArg, "registryLogFileName"))
+                        {
+                            configuration.registryLogFileName = text;
+                        }
                         else if (MatchOption(newArg, "registryVersion"))
                         {
                             configuration.registryVersion = text;
@@ -3785,6 +4355,26 @@ namespace System.Data.SQLite
                             debugCallback, traceCallback,
                             "No actual changes will be made to this " +
                             "system because \"what-if\" mode is enabled.",
+                            traceCategory);
+                    }
+
+                    //
+                    // NOTE: If the registry log file name has been set, its
+                    //       value will be used verbatim as the place where
+                    //       all registry write operations will (eventually)
+                    //       be logged.  Make sure the registry helper class
+                    //       has a valid operation list; otherwise, it will
+                    //       not perform any logging.
+                    //
+                    if (configuration.registryLogFileName != null)
+                    {
+                        RegistryHelper.OperationList =
+                            new RegistryOperationList();
+
+                        TraceOps.DebugAndTrace(TracePriority.MediumHigh,
+                            debugCallback, traceCallback, String.Format(
+                            "Registry logging to file \"{0}\" enabled.",
+                            ForDisplay(configuration.registryLogFileName)),
                             traceCategory);
                     }
 
@@ -4324,6 +4914,11 @@ namespace System.Data.SQLite
                         traceCategory);
 
                     traceCallback(String.Format(NameAndValueFormat,
+                        "RegistryLogFileName",
+                        ForDisplay(registryLogFileName)),
+                        traceCategory);
+
+                    traceCallback(String.Format(NameAndValueFormat,
                         "Directory", ForDisplay(directory)),
                         traceCategory);
 
@@ -4666,6 +5261,15 @@ namespace System.Data.SQLite
             {
                 get { return logFileName; }
                 set { logFileName = value; }
+            }
+
+            ///////////////////////////////////////////////////////////////////
+
+            private string registryLogFileName;
+            public string RegistryLogFileName
+            {
+                get { return registryLogFileName; }
+                set { registryLogFileName = value; }
             }
 
             ///////////////////////////////////////////////////////////////////
@@ -5458,6 +6062,12 @@ namespace System.Data.SQLite
                 DataReceivedEventArgs eventArgs = (DataReceivedEventArgs)value;
 
                 result = ForDisplay(eventArgs.Data); /* RECURSIVE */
+            }
+            else if (type == typeof(MockRegistryKey))
+            {
+                MockRegistryKey key = (MockRegistryKey)value;
+
+                result = ForDisplay(key.ToString()); /* RECURSIVE */
             }
             else
             {
@@ -8365,6 +8975,17 @@ namespace System.Data.SQLite
                         "filesDeleted = {2}", ForDisplay(filesCreated),
                         ForDisplay(filesModified), ForDisplay(filesDeleted)),
                         traceCategory);
+                    #endregion
+
+                    ///////////////////////////////////////////////////////////
+
+                    #region Write Registry Log (Optional)
+                    //
+                    // NOTE: If applicable, write the list of registry write
+                    //       operations now.
+                    //
+                    RegistryHelper.WriteOperationList(
+                        configuration.RegistryLogFileName);
                     #endregion
 
                     ///////////////////////////////////////////////////////////
