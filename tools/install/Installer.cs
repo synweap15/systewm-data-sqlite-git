@@ -2586,6 +2586,7 @@ namespace System.Data.SQLite
         {
             #region Private Constants
             private const char FieldDelimiter = '\t';
+            private const string ListElementDelimiter = ", ";
             #endregion
 
             ///////////////////////////////////////////////////////////////////
@@ -2754,8 +2755,8 @@ namespace System.Data.SQLite
                 builder.Append(ForDisplay(valueName));
                 builder.Append(FieldDelimiter);
 
-                builder.Append(ForDisplay(
-                    MockRegistryKey.ValueToString(value, ", ", "<null>")));
+                builder.Append(ForDisplay(MockRegistryKey.ValueToString(
+                    value, ListElementDelimiter, DisplayNull)));
 
                 return builder.ToString();
             }
@@ -5947,6 +5948,11 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
+        private const string DisplayNull = "<null>";
+        private const string DisplayEmpty = "<empty>";
+
+        ///////////////////////////////////////////////////////////////////////
+
         private const string CLRv2ImageRuntimeVersion = "v2.0.50727";
         private const string CLRv4ImageRuntimeVersion = "v4.0.30319";
 
@@ -6171,7 +6177,7 @@ namespace System.Data.SQLite
             )
         {
             if (value == null)
-                return "<null>";
+                return DisplayNull;
 
             string result;
             Type type = value.GetType();
@@ -6225,7 +6231,7 @@ namespace System.Data.SQLite
                 result = value.ToString();
 
                 if (result.Length == 0)
-                    return "<empty>";
+                    return DisplayEmpty;
 
                 if (type.IsSubclassOf(typeof(Exception)))
                 {
