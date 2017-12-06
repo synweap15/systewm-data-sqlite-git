@@ -297,8 +297,35 @@ namespace System.Data.SQLite
         ///////////////////////////////////////////////////////////////////////
 
         #region Private Helper Classes
+        #region ObjectHelper Class
+        private static class ObjectHelper
+        {
+            public static bool AreEqual(
+                object value1,
+                object value2
+                )
+            {
+                if ((value1 == null) || (value2 == null))
+                    return ((value1 == null) && (value2 == null));
+
+                if (Object.ReferenceEquals(value1, value2))
+                    return true;
+
+                return value1.Equals(value2);
+            }
+        }
+        #endregion
+
+        ///////////////////////////////////////////////////////////////////////
+
         #region AnyPair Class
-        private sealed class AnyPair<T1, T2>
+        private sealed class AnyPair<T1, T2> :
+            IComparer<AnyPair<T1, T2>>,
+            IComparable<AnyPair<T1, T2>>,
+            IComparable,
+            IEquatable<AnyPair<T1, T2>>,
+            IEqualityComparer<AnyPair<T1, T2>>,
+            ICloneable
         {
             #region Public Constructors
             //
@@ -343,6 +370,160 @@ namespace System.Data.SQLite
             public T2 Y
             {
                 get { return y; }
+            }
+            #endregion
+
+            ///////////////////////////////////////////////////////////////////
+
+            #region System.Object Overrides
+            public override bool Equals(
+                object obj
+                )
+            {
+                AnyPair<T1, T2> anyPair = obj as AnyPair<T1, T2>;
+
+                if (anyPair != null)
+                {
+                    if (!ObjectHelper.AreEqual(X, anyPair.X))
+                        return false;
+
+                    if (!ObjectHelper.AreEqual(Y, anyPair.Y))
+                        return false;
+
+                    return true;
+                }
+
+                return false;
+            }
+
+            ///////////////////////////////////////////////////////////////////
+
+            public override string ToString()
+            {
+                //
+                // TODO: The delimiter here is hard-coded to a space.  This
+                //       may need to be changed, e.g. if the use-cases for
+                //       this class change.
+                //
+                return String.Format("{0} {1}", X, Y);
+            }
+
+            ///////////////////////////////////////////////////////////////////
+
+            public override int GetHashCode()
+            {
+                int result = 0;
+                T1 x = X;
+
+                if (x != null)
+                    result ^= x.GetHashCode();
+
+                T2 y = Y;
+
+                if (y != null)
+                    result ^= y.GetHashCode();
+
+                return result;
+            }
+            #endregion
+
+            ///////////////////////////////////////////////////////////////////
+
+            #region IComparer<AnyPair<T1,T2>> Members
+            public int Compare(
+                AnyPair<T1, T2> x,
+                AnyPair<T1, T2> y
+                )
+            {
+                if ((x == null) && (y == null))
+                {
+                    return 0;
+                }
+                else if (x == null)
+                {
+                    return -1;
+                }
+                else if (y == null)
+                {
+                    return 1;
+                }
+                else
+                {
+                    int result = Comparer<T1>.Default.Compare(x.X, y.X);
+
+                    if (result != 0)
+                        return result;
+
+                    return Comparer<T2>.Default.Compare(x.Y, y.Y);
+                }
+            }
+            #endregion
+
+            ///////////////////////////////////////////////////////////////////
+
+            #region IComparable<AnyPair<T1,T2>> Members
+            public int CompareTo(
+                AnyPair<T1, T2> other
+                )
+            {
+                return Compare(this, other);
+            }
+            #endregion
+
+            ///////////////////////////////////////////////////////////////////
+
+            #region IComparable Members
+            public int CompareTo(
+                object obj
+                )
+            {
+                AnyPair<T1, T2> anyPair = obj as AnyPair<T1, T2>;
+
+                if (anyPair == null)
+                    throw new ArgumentException();
+
+                return CompareTo(anyPair);
+            }
+            #endregion
+
+            ///////////////////////////////////////////////////////////////////
+
+            #region IEquatable<AnyPair<T1,T2>> Members
+            public bool Equals(
+                AnyPair<T1, T2> other
+                )
+            {
+                return CompareTo(other) == 0;
+            }
+            #endregion
+
+            ///////////////////////////////////////////////////////////////////
+
+            #region IEqualityComparer<AnyPair<T1,T2>> Members
+            public bool Equals(
+                AnyPair<T1, T2> x,
+                AnyPair<T1, T2> y
+                )
+            {
+                return ObjectHelper.AreEqual(x, y);
+            }
+
+            ///////////////////////////////////////////////////////////////////
+
+            public int GetHashCode(
+                AnyPair<T1, T2> obj
+                )
+            {
+                return (obj != null) ? obj.GetHashCode() : 0;
+            }
+            #endregion
+
+            ///////////////////////////////////////////////////////////////////
+
+            #region ICloneable Members
+            public object Clone()
+            {
+                return new AnyPair<T1, T2>(X, Y);
             }
             #endregion
         }
@@ -1226,7 +1407,7 @@ namespace System.Data.SQLite
                 {
                     //
                     // HACK: Attempt to open the specified sub-key.  If this
-                    //       fails, we will simply return the wrapped root key
+                    //       fails, we'll simply return the wrapped root key
                     //       itself since no writes are allowed in "what-if"
                     //       mode anyhow.
                     //
