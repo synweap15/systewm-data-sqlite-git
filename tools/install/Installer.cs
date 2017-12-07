@@ -1387,8 +1387,8 @@ namespace System.Data.SQLite
                 CheckDisposed();
 
                 return new MockRegistryKey(
-                    key, this.whatIf || whatIf, this.readOnly || readOnly,
-                    this.safe || safe);
+                    key, subKeyName, this.whatIf || whatIf, this.readOnly ||
+                    readOnly, this.safe || safe);
             }
 
             ///////////////////////////////////////////////////////////////////
