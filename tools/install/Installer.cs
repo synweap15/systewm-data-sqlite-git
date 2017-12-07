@@ -2682,6 +2682,20 @@ namespace System.Data.SQLite
                     if (operationList == null)
                         return;
 
+                    if (methodName != null)
+                    {
+                        string typePrefix = String.Format(
+                            "{0}{1}", typeof(RegistryHelper).Name,
+                            Type.Delimiter);
+
+                        if (methodName.StartsWith(
+                                typePrefix, StringComparison.Ordinal))
+                        {
+                            methodName = methodName.Substring(
+                                typePrefix.Length);
+                        }
+                    }
+
                     operationList.Add(new RegistryOperation(
                         methodName, key, subKeyName, valueName, value));
                 }
