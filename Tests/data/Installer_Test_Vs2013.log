@@ -30,7 +30,7 @@ Installer.exe: #[getLineNumber]: RegistryHelper.SetValue: key = "HKEY_LOCAL_MACH
 Installer.exe: #[getLineNumber]: RegistryHelper.SetValue: key = "HKEY_LOCAL_MACHINE\Software${wow64}\Microsoft\VisualStudio\12.0\Packages\{dcbe6c8d-0e57-4099-a183-98ff74c64d9c}", name = "ProductName", value = "System.Data.SQLite Designer Package"
 Installer.exe: #[getLineNumber]: RegistryHelper.SetValue: key = "HKEY_LOCAL_MACHINE\Software${wow64}\Microsoft\VisualStudio\12.0\Packages\{dcbe6c8d-0e57-4099-a183-98ff74c64d9c}", name = "ProductVersion", value = "1.0"
 Installer.exe: #[getLineNumber]: RegistryHelper.CreateSubKey: rootKey = "HKEY_LOCAL_MACHINE\Software${wow64}\Microsoft\VisualStudio\12.0\Packages\{dcbe6c8d-0e57-4099-a183-98ff74c64d9c}", subKeyName = "Toolbox"
-Installer.exe: #[getLineNumber]: RegistryHelper.SetValue: key = "HKEY_LOCAL_MACHINE\Software${wow64}\Microsoft\VisualStudio\12.0\Packages\Toolbox", name = "Default Items", value = 3
+Installer.exe: #[getLineNumber]: RegistryHelper.SetValue: key = "HKEY_LOCAL_MACHINE\Software${wow64}\Microsoft\VisualStudio\12.0\Packages\{dcbe6c8d-0e57-4099-a183-98ff74c64d9c}\Toolbox", name = "Default Items", value = 3
 Installer.exe: #[getLineNumber]: RegistryHelper.OpenSubKey: rootKey = "HKEY_LOCAL_MACHINE\Software${wow64}\Microsoft\VisualStudio\12.0", subKeyName = "Menus", writable = True
 Installer.exe: #[getLineNumber]: RegistryHelper.SetValue: key = "HKEY_LOCAL_MACHINE\Software${wow64}\Microsoft\VisualStudio\12.0\Menus", name = "{dcbe6c8d-0e57-4099-a183-98ff74c64d9c}", value = ", 1000, 3"
 Installer.exe: #[getLineNumber]: RegistryHelper.OpenSubKey: rootKey = "HKEY_LOCAL_MACHINE\Software${wow64}\Microsoft\VisualStudio\12.0", subKeyName = "Services", writable = True
@@ -67,4 +67,5 @@ Installer.exe: #[getLineNumber]: RegistryHelper.GetValue: key = "HKEY_LOCAL_MACH
 Installer.exe: #[getLineNumber]: Installer.AddVsDevEnvSetup: fileName = "[file nativename [file join [expr {$is64 ? ${::env(ProgramFiles(x86))} : $::env(ProgramFiles)}] {Microsoft Visual Studio 12.0} Common7 IDE devenv.exe]]", arguments = "/setup", workingDirectory = "[file nativename [file join [expr {$is64 ? ${::env(ProgramFiles(x86))} : $::env(ProgramFiles)}] {Microsoft Visual Studio 12.0} Common7 IDE]]\", useShellExecute = False, redirectStandardOutput = True, redirectStandardError = True
 Installer.exe: #[getLineNumber]: Installer.Main: subKeysCreated = 12, subKeysDeleted = 1, keyValuesRead = 5, keyValuesWritten = 23, keyValuesDeleted = 0
 Installer.exe: #[getLineNumber]: Installer.Main: filesCreated = 1, filesModified = 2, filesDeleted = 0
+Installer.exe: #[getLineNumber]: RegistryHelper.WriteOperationList: Registry operation log file name not set.
 Installer.exe: #[getLineNumber]: Installer.Main: Success.

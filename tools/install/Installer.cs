@@ -1254,6 +1254,7 @@ namespace System.Data.SQLite
                 whatIf = true;
                 readOnly = true;
                 safe = true;
+                noClose = false;
             }
             #endregion
 
@@ -1374,6 +1375,17 @@ namespace System.Data.SQLite
                 CheckDisposed();
 
                 noClose = true;
+            }
+
+            ///////////////////////////////////////////////////////////////////
+
+            public void ResetSubKeyName(
+                string subKeyName
+                )
+            {
+                CheckDisposed();
+
+                this.subKeyName = subKeyName;
             }
 
             ///////////////////////////////////////////////////////////////////
@@ -2376,9 +2388,29 @@ namespace System.Data.SQLite
                         //
                         MockRegistryKey key = rootKey.OpenSubKey(subKeyName);
 
-                        return (key != null) ?
-                            key : new MockRegistryKey(
-                                rootKey, subKeyName, whatIf, false, false);
+                        if (key != null)
+                            return key;
+
+                        //
+                        // BUGFIX: The registry key we are supposed to create
+                        //         does not exist and we cannot create it since
+                        //         this is "what-if" mode.  The problem here is
+                        //         this will have a "side-effect" of discarding
+                        //         any sub-key name value from within the root
+                        //         key specified by the caller (and then passed
+                        //         to the MockRegistryKey constructor).  Since
+                        //         we still want to use that registry key, we
+                        //         need to migrate that sub-key name from the
+                        //         root key, by combining it with the sub-key
+                        //         name specified by the caller and use the new
+                        //         combined sub-key name for the constructor.
+                        //
+                        string newSubKeyName = subKeyName;
+
+                        AdjustSubKeyNameForWhatIf(rootKey, ref newSubKeyName);
+
+                        return new MockRegistryKey(
+                            rootKey, newSubKeyName, whatIf, false, false);
                     }
                     else
                     {
@@ -2574,6 +2606,7 @@ namespace System.Data.SQLite
             [MethodImpl(MethodImplOptions.NoInlining)]
             public static int WriteOperationList(
                 string fileName,
+                bool header,
                 bool verbose
                 )
             {
@@ -2610,6 +2643,12 @@ namespace System.Data.SQLite
                     using (StreamWriter streamWriter = new StreamWriter(
                             fileName))
                     {
+                        if (header)
+                        {
+                            streamWriter.WriteLine(
+                                RegistryOperation.GetHeaderLine());
+                        }
+
                         foreach (RegistryOperation operation in operationList)
                         {
                             if (operation == null)
@@ -2638,6 +2677,26 @@ namespace System.Data.SQLite
             ///////////////////////////////////////////////////////////////////
 
             #region Private Static Methods
+            private static void AdjustSubKeyNameForWhatIf(
+                MockRegistryKey rootKey,
+                ref string subKeyName
+                )
+            {
+                if (rootKey == null)
+                    return;
+
+                string rootKeySubKeyName = rootKey.SubKeyName;
+
+                if (rootKeySubKeyName == null)
+                    return;
+
+                subKeyName = (subKeyName != null) ?
+                    JoinKeyNames(rootKeySubKeyName, subKeyName) :
+                    rootKeySubKeyName;
+            }
+
+            ///////////////////////////////////////////////////////////////////
+
             [MethodImpl(MethodImplOptions.NoInlining)]
             private static string GetMethodName()
             {
@@ -2891,7 +2950,51 @@ namespace System.Data.SQLite
 
             ///////////////////////////////////////////////////////////////////
 
+            #region Public Static Methods
+            public static string GetHeaderLine()
+            {
+                StringBuilder builder = new StringBuilder();
+
+                builder.Append("MethodName");
+                builder.Append(FieldDelimiter);
+                builder.Append("Key");
+                builder.Append(FieldDelimiter);
+                builder.Append("SubKeyName");
+                builder.Append(FieldDelimiter);
+                builder.Append("ValueName");
+                builder.Append(FieldDelimiter);
+                builder.Append("Value");
+
+                return builder.ToString();
+            }
+            #endregion
+
+            ///////////////////////////////////////////////////////////////////
+
             #region System.Object Overrides
+            public override string ToString()
+            {
+                CheckDisposed();
+
+                StringBuilder builder = new StringBuilder();
+
+                builder.Append(ForDisplay(methodName));
+                builder.Append(FieldDelimiter);
+                builder.Append(ForDisplay(key));
+                builder.Append(FieldDelimiter);
+                builder.Append(ForDisplay(subKeyName));
+                builder.Append(FieldDelimiter);
+                builder.Append(ForDisplay(valueName));
+                builder.Append(FieldDelimiter);
+
+                builder.Append(ForDisplay(MockRegistryKey.ValueToString(
+                    value, ListElementDelimiter, DisplayNull)));
+
+                return builder.ToString();
+            }
+
+            ///////////////////////////////////////////////////////////////////
+
             public override bool Equals(
                 object obj
                 )
@@ -2946,29 +3049,6 @@ namespace System.Data.SQLite
                 result ^= MockRegistryKey.ValueHashCode(value);
 
                 return result;
-            }
-
-            ///////////////////////////////////////////////////////////////////
-
-            public override string ToString()
-            {
-                CheckDisposed();
-
-                StringBuilder builder = new StringBuilder();
-
-                builder.Append(ForDisplay(methodName));
-                builder.Append(FieldDelimiter);
-                builder.Append(ForDisplay(key));
-                builder.Append(FieldDelimiter);
-                builder.Append(ForDisplay(subKeyName));
-                builder.Append(FieldDelimiter);
-                builder.Append(ForDisplay(valueName));
-                builder.Append(FieldDelimiter);
-
-                builder.Append(ForDisplay(MockRegistryKey.ValueToString(
-                    value, ListElementDelimiter, DisplayNull)));
-
-                return builder.ToString();
             }
             #endregion
 
@@ -9352,7 +9432,7 @@ namespace System.Data.SQLite
                     //       operations now.
                     //
                     RegistryHelper.WriteOperationList(
-                        configuration.RegistryLogFileName,
+                        configuration.RegistryLogFileName, true,
                         configuration.Verbose);
 
                     RegistryHelper.EnableOrDisableOperationList(false);
