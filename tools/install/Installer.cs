@@ -99,17 +99,17 @@ namespace System.Data.SQLite
     public enum InstallFlags
     {
         #region Normal Values
-        None = 0x0,
-        CoreGlobalAssemblyCache = 0x1,
-        LinqGlobalAssemblyCache = 0x2,
-        Ef6GlobalAssemblyCache = 0x4,
-        AssemblyFolders = 0x8,
-        DbProviderFactory = 0x10,
-        VsPackage = 0x20,
-        VsPackageGlobalAssemblyCache = 0x40,
-        VsDataSource = 0x80,
-        VsDataProvider = 0x100,
-        VsDevEnvSetup = 0x200,
+        None = 0x0,                          // No actions should be taken
+        CoreGlobalAssemblyCache = 0x1,       // GAC System.Data.SQLite.dll
+        LinqGlobalAssemblyCache = 0x2,       // GAC System.Data.SQLite.Linq.dll
+        Ef6GlobalAssemblyCache = 0x4,        // GAC System.Data.SQLite.EF6.dll
+        AssemblyFolders = 0x8,               // Registry AssemblyFolders[Ex]
+        DbProviderFactory = 0x10,            // machine.config data provider
+        VsPackage = 0x20,                    // Registry VS package
+        VsPackageGlobalAssemblyCache = 0x40, // GAC SQLite.Designer.dll
+        VsDataSource = 0x80,                 // Registry VS data source
+        VsDataProvider = 0x100,              // Registry VS data provider
+        VsDevEnvSetup = 0x200,               // Runs VS in "/setup" mode
         #endregion
 
         ///////////////////////////////////////////////////////////////////////
@@ -126,13 +126,22 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
-        Vs = VsPackage | VsPackageGlobalAssemblyCache | VsDataSource |
-             VsDataProvider | VsDevEnvSetup,
+        VsRegistry = VsPackage | VsDataSource | VsDataProvider,
+
+        Vs = VsRegistry | VsPackageGlobalAssemblyCache | VsDevEnvSetup,
 
         ///////////////////////////////////////////////////////////////////////
 
         AllGlobalAssemblyCache = FrameworkGlobalAssemblyCache |
                                  VsPackageGlobalAssemblyCache,
+
+        ///////////////////////////////////////////////////////////////////////
+
+        AllRegistry = AssemblyFolders | VsRegistry,
+
+        ///////////////////////////////////////////////////////////////////////
+
+        Standard = DbProviderFactory | VsRegistry,
 
         ///////////////////////////////////////////////////////////////////////
 
@@ -2048,7 +2057,7 @@ namespace System.Data.SQLite
             #region Private Data
             //
             // NOTE: This is used to synchronize access to the list of logged
-            //       registry operations (just below).
+            //       write operations (just below).
             //
             private static object syncRoot = new object();
 
@@ -2618,7 +2627,7 @@ namespace System.Data.SQLite
                     {
                         TraceOps.DebugAndTrace(TracePriority.Highest,
                             debugCallback, traceCallback,
-                            "Registry operation log file name not set.",
+                            "Operation log file name not set.",
                             traceCategory);
                     }
 
@@ -2633,7 +2642,7 @@ namespace System.Data.SQLite
                         {
                             TraceOps.DebugAndTrace(TracePriority.Highest,
                                 debugCallback, traceCallback,
-                                "Registry operation list is invalid.",
+                                "Operation list is invalid.",
                                 traceCategory);
                         }
 
@@ -2666,7 +2675,7 @@ namespace System.Data.SQLite
                 {
                     TraceOps.DebugAndTrace(TracePriority.Highest,
                         debugCallback, traceCallback, String.Format(
-                        "Wrote {0} registry operations to its log file.",
+                        "Wrote {0} operations to log file.",
                         count), traceCategory);
                 }
 

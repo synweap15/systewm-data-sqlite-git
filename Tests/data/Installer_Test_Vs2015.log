@@ -62,5 +62,5 @@ Installer.exe: #[getLineNumber]: RegistryHelper.GetValue: key = "HKEY_LOCAL_MACH
 Installer.exe: #[getLineNumber]: Installer.AddVsDevEnvSetup: fileName = "[file nativename [file join [expr {$is64 ? ${::env(ProgramFiles(x86))} : $::env(ProgramFiles)}] {Microsoft Visual Studio 14.0} Common7 IDE devenv.exe]]", arguments = "/setup", workingDirectory = "[file nativename [file join [expr {$is64 ? ${::env(ProgramFiles(x86))} : $::env(ProgramFiles)}] {Microsoft Visual Studio 14.0} Common7 IDE]]\", useShellExecute = False, redirectStandardOutput = True, redirectStandardError = True
 Installer.exe: #[getLineNumber]: Installer.Main: subKeysCreated = 11, subKeysDeleted = 0, keyValuesRead = 5, keyValuesWritten = 22, keyValuesDeleted = 0
 Installer.exe: #[getLineNumber]: Installer.Main: filesCreated = 1, filesModified = 2, filesDeleted = 0
-Installer.exe: #[getLineNumber]: RegistryHelper.WriteOperationList: Registry operation log file name not set.
+Installer.exe: #[getLineNumber]: RegistryHelper.WriteOperationList: Operation log file name not set.
 Installer.exe: #[getLineNumber]: Installer.Main: Success.
