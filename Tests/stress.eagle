@@ -48,10 +48,11 @@ reportSQLiteResources $test_channel
 
 runTest {test stress-1.1 {multithreaded stress testing} -setup {
   unset -nocomplain result thread index workload priority journalMode \
-      noWorkload priorities srcDb db fileName compiled options count \
-      times logFileName logListener event timeout connection \
-      indicators iterations exitOnFail coTaskMem noTrace failures \
-      status workloadNames workloadCallbacks
+      pageSize noWorkload priorities srcDb db fileName compiled options \
+      count times logFileName logListener event timeout connection \
+      indicators iterations exitOnFail coTaskMem noTrace beginTransaction \
+      endTransaction errorTransaction failures status workloadNames \
+      workloadCallbacks
 
   #############################################################################
 
