@@ -539,11 +539,11 @@ runTest {test stress-1.1 {multithreaded stress testing} -setup {
 
   tputs $test_channel [appendArgs \
       "---- the initial journal mode is " \
-      [expr {[llength $journalMode] > 0 ? $journalMode : "none"}] \n]
+      [expr {[string length $journalMode] > 0 ? $journalMode : "none"}] \n]
 
   tputs $test_channel [appendArgs \
       "---- the initial page size is " \
-      [expr {[llength $pageSize] > 0 ? $pageSize : "none"}] \n]
+      [expr {[string length $pageSize] > 0 ? $pageSize : "none"}] \n]
 
   tputs $test_channel [appendArgs \
       "---- workloads to be skipped... " \
