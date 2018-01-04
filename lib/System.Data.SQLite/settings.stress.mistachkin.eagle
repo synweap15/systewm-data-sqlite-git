@@ -18,3 +18,6 @@
 # set noTrace true;       # Disable SQLite trace logging to a file?
 # set beginTransaction "BEGIN"; # SQL to execute before modifying the database.
 # set endTransaction "COMMIT";  # SQL to execute after modifying the database.
+
+# addRuntimeOption sharedCache
+# addRuntimeOption dmlOnly

@@ -486,7 +486,7 @@ runTest {test stress-1.1 {multithreaded stress testing} -setup {
   #
   # TODO: Update these if the workload numbers change.
   #
-  if {[hasRuntimeOption sharedCache]} then {
+  if {[hasRuntimeOption sharedCache] || [hasRuntimeOption dmlOnly]} then {
     lappend noWorkload 12; # NOTE: Backup to in-memory database.
     lappend noWorkload 13; # NOTE: Backup from in-memory database.
   }
@@ -658,7 +658,7 @@ runTest {test stress-1.1 {multithreaded stress testing} -setup {
     lappend ::times(1) [lindex [time {
       initTest A
       setupWorkloadFileDb $dstFileName db
-      for {set index 2} {$index <= $count1} {incr index} {
+      for {set index 4} {$index <= $count1} {incr index} {
         if {[catch {
           sql execute $db [appendArgs \
               "CREATE TABLE IF NOT EXISTS t" \
@@ -691,7 +691,7 @@ runTest {test stress-1.1 {multithreaded stress testing} -setup {
     lappend ::times(2) [lindex [time {
       initTest B
       setupWorkloadFileDb $dstFileName db
-      for {set index 2} {$index <= $count1} {incr index} {
+      for {set index 4} {$index <= $count1} {incr index} {
         if {[catch {
           sql execute $db [appendArgs \
               "DROP TABLE IF EXISTS t" $index \;]
@@ -1560,6 +1560,46 @@ runTest {test stress-1.1 {multithreaded stress testing} -setup {
       doneTest V
     }] 0]
   }]
+
+  #############################################################################
+  #                              WORKLOAD #23 (W)                             #
+  #############################################################################
+
+  set workload(23) [list \
+      [list srcFileName dstFileName table count1 count2 count3 \
+            count4 count5 count6 count7] {
+    #
+    # NOTE: Workload #23, "big" INSERT and DELETE statements.
+    #
+    waitTest W
+    lappend ::times(23) [lindex [time {
+      initTest W
+      setupWorkloadFileDb $dstFileName db
+      for {set index 1} {$index <= $count1} {incr index} {
+        if {[catch {
+          beginTransaction $db
+          sql execute $db [appendArgs \
+              "WITH s(i) AS " \
+              "(SELECT 1 UNION ALL SELECT i+1 FROM s WHERE i<" \
+              $count5 ") INSERT INTO t2 SELECT RANDOMBLOB(" $count3 \
+              ") FROM s; WITH s(i) AS " \
+              "(SELECT 1 UNION ALL SELECT i+1 FROM s WHERE i<" \
+              $count5 ") INSERT INTO t3 SELECT RANDOMBLOB(" $count3 \
+              ") FROM s; DELETE FROM t3;"]
+          endTransaction $db
+          showTest W
+        } error]} then {
+          if {[isExpectedError $error]} then {
+            showTest w
+          } else {
+            failTest w $error
+          }
+        }
+      }
+      cleanupDb $dstFileName db false true false
+      doneTest W
+    }] 0]
+  }]
 } -body {
   set workloadNames(all) [array names workload]
 
@@ -1597,7 +1637,11 @@ runTest {test stress-1.1 {multithreaded stress testing} -setup {
     unset -nocomplain thread status; doneTest
 
     sql execute $srcDb "CREATE TABLE IF NOT EXISTS t1(x PRIMARY KEY, y, z);"
+    sql execute $srcDb "CREATE TABLE IF NOT EXISTS t2(x);"
+    sql execute $srcDb "CREATE TABLE IF NOT EXISTS t3(x);"
     sql execute $db "CREATE TABLE IF NOT EXISTS t1(x PRIMARY KEY, y, z);"
+    sql execute $db "CREATE TABLE IF NOT EXISTS t2(x);"
+    sql execute $db "CREATE TABLE IF NOT EXISTS t3(x);"
 
     sql execute $srcDb "CREATE INDEX IF NOT EXISTS i1 ON t1(y);"
     sql execute $db "CREATE INDEX IF NOT EXISTS i1 ON t1(y);"
