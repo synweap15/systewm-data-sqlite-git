@@ -62,8 +62,14 @@ runTest {test stress-1.1 {multithreaded stress testing} -setup {
     #       sense.  Also, disable use of "PRAGMA temp_store_directory" when
     #       setting up the new connection because it is not thread-safe.
     #
-    uplevel 1 [list setupDb $fileName "" "" "" "" "" false false true false \
+    uplevel 1 [list setupDb \
+        $fileName "" "" "" "" "" false false true false \
         $varName true]
+
+    if {[string length $::pageSize] > 0} then {
+      sql execute [uplevel 1 set $varName] [appendArgs \
+          "PRAGMA page_size=" $::pageSize \;]
+    }
   }
 
   #############################################################################
@@ -74,8 +80,34 @@ runTest {test stress-1.1 {multithreaded stress testing} -setup {
     #       disable use of "PRAGMA temp_store_directory" when setting up
     #       the new connection because it is not thread-safe.
     #
-    uplevel 1 [list setupDb $fileName $::journalMode "" "" "" "" true false \
+    uplevel 1 [list setupDb \
+        $fileName $::journalMode "" "" "" "" true false \
         false false $varName true]
+
+    if {[string length $::pageSize] > 0} then {
+      sql execute [uplevel 1 set $varName] [appendArgs \
+          "PRAGMA page_size=" $::pageSize \;]
+    }
+  }
+
+  #############################################################################
+
+  proc beginTransaction { db } {
+    set sql $::beginTransaction
+
+    if {[string length $sql] > 0} then {
+      sql execute $db $sql
+    }
+  }
+
+  #############################################################################
+
+  proc endTransaction { db } {
+    set sql $::endTransaction
+
+    if {[string length $sql] > 0} then {
+      sql execute $db $sql
+    }
   }
 
   #############################################################################
@@ -335,21 +367,24 @@ runTest {test stress-1.1 {multithreaded stress testing} -setup {
   # NOTE: Setup the default values for the tunable workload parameters.  Any,
   #       all, or none of these may be overriden via the command line.
   #
-  set count(0) 3;         # Workload repeat count (i.e. total full runs).
-  set count(1) 5;         # Workload iteration count (within a run).
-  set count(2) 200;       # Workload iteration delay (milliseconds).
-  set count(3) 57;        # Workload "small" data chunk size, in bytes.
-  set count(4) 10000;     # Workload "big" data chunk size, in bytes.
-  set count(5) 209715200; # Maximum heap memory to exclude at one time.
-  set count(6) 15;        # Workload auxiliary iteration count (within a run).
-  set count(7) 100;       # Workload auxiliary iteration delay (milliseconds).
-  set count(8) 5000;      # Workload auxiliary data value (for use by run).
-  set journalMode "";     # Initial journal mode for database files.
-  set noWorkload [list];  # Workloads to be omitted from the run, by index.
-  set priorities [list];  # Dictionary of workload thread priorities.
-  set exitOnFail false;   # Halt testing and exit process on test failure?
-  set coTaskMem true;     # Use AllocCoTaskMem/FreeCoTaskMem for memory?
-  set noTrace false;      # Disable SQLite trace logging to a file?
+  set count(0) 3;          # Workload repeat count (i.e. total full runs).
+  set count(1) 5;          # Workload iteration count (within a run).
+  set count(2) 200;        # Workload iteration delay (milliseconds).
+  set count(3) 57;         # Workload "small" data chunk size, in bytes.
+  set count(4) 10000;      # Workload "big" data chunk size, in bytes.
+  set count(5) 209715200;  # Maximum heap memory to exclude at one time.
+  set count(6) 15;         # Workload auxiliary iteration count (within a run).
+  set count(7) 100;        # Workload auxiliary iteration delay (milliseconds).
+  set count(8) 5000;       # Workload auxiliary data value (for use by run).
+  set journalMode "";      # Initial journal mode for database files.
+  set pageSize "";         # Initial page size for database files.
+  set noWorkload [list];   # Workloads to be omitted from the run, by index.
+  set priorities [list];   # Dictionary of workload thread priorities.
+  set exitOnFail false;    # Halt testing and exit process on test failure?
+  set coTaskMem true;      # Use AllocCoTaskMem/FreeCoTaskMem for memory?
+  set noTrace false;       # Disable SQLite trace logging to a file?
+  set beginTransaction ""; # SQL to execute before modifying the database.
+  set endTransaction "";   # SQL to execute after modifying the database.
 
   #############################################################################
 
@@ -371,11 +406,14 @@ runTest {test stress-1.1 {multithreaded stress testing} -setup {
         [list null MustHaveIntegerValue -1 -1 -count7 $count(7)] \
         [list null MustHaveIntegerValue -1 -1 -count8 $count(8)] \
         [list null MustHaveValue -1 -1 -journalMode $journalMode] \
+        [list null MustHaveIntegerValue -1 -1 -pageSize $pageSize] \
         [list null MustHaveListValue -1 -1 -noWorkload $noWorkload] \
         [list null MustHaveListValue -1 -1 -priorities $priorities] \
         [list null MustHaveBooleanValue -1 -1 -exitOnFail $exitOnFail] \
         [list null MustHaveBooleanValue -1 -1 -coTaskMem $coTaskMem] \
-        [list null MustHaveBooleanValue -1 -1 -noTrace $noTrace]] $argv
+        [list null MustHaveBooleanValue -1 -1 -noTrace $noTrace] \
+        [list null MustHaveValue -1 -1 -beginTransaction $beginTransaction] \
+        [list null MustHaveValue -1 -1 -endTransaction $endTransaction]] $argv
 
     set count(0) $options(-count0,value)
     set count(1) $options(-count1,value)
@@ -387,11 +425,14 @@ runTest {test stress-1.1 {multithreaded stress testing} -setup {
     set count(7) $options(-count7,value)
     set count(8) $options(-count8,value)
     set journalMode $options(-journalMode,value)
+    set pageSize $options(-pageSize,value)
     set noWorkload $options(-noWorkload,value)
     set priorities $options(-priorities,value)
     set exitOnFail $options(-exitOnFail,value)
     set coTaskMem $options(-coTaskMem,value)
     set noTrace $options(-noTrace,value)
+    set beginTransaction $options(-beginTransaction,value)
+    set endTransaction $options(-endTransaction,value)
   }
 
   #############################################################################
@@ -443,8 +484,24 @@ runTest {test stress-1.1 {multithreaded stress testing} -setup {
   #       is to disable the backup tests when shared-cache mode is being used
   #       for testing.
   #
+  # TODO: Update these if the workload numbers change.
+  #
   if {[hasRuntimeOption sharedCache]} then {
-    lappend noWorkload 12 13; # TODO: Update if the workload numbers change.
+    lappend noWorkload 12; # NOTE: Backup to in-memory database.
+    lappend noWorkload 13; # NOTE: Backup from in-memory database.
+  }
+
+  #
+  # NOTE: Omit some workloads if we are only interested in data manipulation
+  #       (DML) statements.
+  #
+  # TODO: Update these if the workload numbers change.
+  #
+  if {[hasRuntimeOption dmlOnly]} then {
+    lappend noWorkload  1; # NOTE: CREATE TABLE
+    lappend noWorkload  2; # NOTE: DROP TABLE
+    lappend noWorkload 17; # NOTE: PRAGMA journal_mode
+    lappend noWorkload 22; # NOTE: PRAGMA default_cache_size
   }
 
   #############################################################################
@@ -485,6 +542,10 @@ runTest {test stress-1.1 {multithreaded stress testing} -setup {
       [expr {[llength $journalMode] > 0 ? $journalMode : "none"}] \n]
 
   tputs $test_channel [appendArgs \
+      "---- the initial page size is " \
+      [expr {[llength $pageSize] > 0 ? $pageSize : "none"}] \n]
+
+  tputs $test_channel [appendArgs \
       "---- workloads to be skipped... " \
       [expr {[llength $noWorkload] > 0 ? $noWorkload : "none"}] \n]
 
@@ -504,6 +565,16 @@ runTest {test stress-1.1 {multithreaded stress testing} -setup {
   tputs $test_channel [appendArgs \
       "---- trace logging to a file is " \
       [expr {$noTrace ? "disabled" : "enabled"}] \n]
+
+  tputs $test_channel [appendArgs \
+      "---- begin transaction SQL is " \
+      [expr {[string length $beginTransaction] > 0 ? \
+      [appendArgs \" $beginTransaction \"] : "none"}] \n]
+
+  tputs $test_channel [appendArgs \
+      "---- end transaction SQL is " \
+      [expr {[string length $endTransaction] > 0 ? \
+      [appendArgs \" $endTransaction \"] : "none"}] \n]
 
   #############################################################################
 
@@ -578,7 +649,8 @@ runTest {test stress-1.1 {multithreaded stress testing} -setup {
   #############################################################################
 
   set workload(1) [list \
-      [list srcFileName dstFileName table count1 count2 count3] {
+      [list srcFileName dstFileName table count1 count2 count3 \
+            count4 count5 count6 count7] {
     #
     # NOTE: Workload #1, CREATE TABLE statements.
     #
@@ -610,7 +682,8 @@ runTest {test stress-1.1 {multithreaded stress testing} -setup {
   #############################################################################
 
   set workload(2) [list \
-      [list srcFileName dstFileName table count1 count2 count3] {
+      [list srcFileName dstFileName table count1 count2 count3 \
+            count4 count5 count6 count7] {
     #
     # NOTE: Workload #2, DROP TABLE statements.
     #
@@ -641,7 +714,8 @@ runTest {test stress-1.1 {multithreaded stress testing} -setup {
   #############################################################################
 
   set workload(3) [list \
-      [list srcFileName dstFileName table count1 count2 count3] {
+      [list srcFileName dstFileName table count1 count2 count3 \
+            count4 count5 count6 count7] {
     #
     # NOTE: Workload #3, "small" SELECT statements.
     #
@@ -679,7 +753,8 @@ runTest {test stress-1.1 {multithreaded stress testing} -setup {
   #############################################################################
 
   set workload(4) [list \
-      [list srcFileName dstFileName table count1 count2 count3] {
+      [list srcFileName dstFileName table count1 count2 count3 \
+            count4 count5 count6 count7] {
     #
     # NOTE: Workload #4, "big" SELECT statements.
     #
@@ -717,7 +792,8 @@ runTest {test stress-1.1 {multithreaded stress testing} -setup {
   #############################################################################
 
   set workload(5) [list \
-      [list srcFileName dstFileName table count1 count2 count3] {
+      [list srcFileName dstFileName table count1 count2 count3 \
+            count4 count5 count6 count7] {
     #
     # NOTE: Workload #5, "small" INSERT statements.
     #
@@ -727,10 +803,12 @@ runTest {test stress-1.1 {multithreaded stress testing} -setup {
       setupWorkloadFileDb $dstFileName db
       for {set index 1} {$index <= $count1} {incr index} {
         if {[catch {
+          beginTransaction $db
           sql execute $db [appendArgs "INSERT INTO " $table \
               "(x, y, z) VALUES('" [format %lX [expr {random()}]] \
               "', '" [base64 encode -- [expr {randstr($count2)}]] \
               "', 'small');"]
+          endTransaction $db
           showTest E
         } error]} then {
           if {[isExpectedError $error]} then {
@@ -750,7 +828,8 @@ runTest {test stress-1.1 {multithreaded stress testing} -setup {
   #############################################################################
 
   set workload(6) [list \
-      [list srcFileName dstFileName table count1 count2 count3] {
+      [list srcFileName dstFileName table count1 count2 count3 \
+            count4 count5 count6 count7] {
     #
     # NOTE: Workload #6, "big" INSERT statements.
     #
@@ -760,9 +839,11 @@ runTest {test stress-1.1 {multithreaded stress testing} -setup {
       setupWorkloadFileDb $dstFileName db
       for {set index 1} {$index <= $count1} {incr index} {
         if {[catch {
+          beginTransaction $db
           sql execute $db [appendArgs "INSERT INTO " $table \
               "(x, y, z) VALUES('" [format %lX [expr {random()}]] \
               "', RANDOMBLOB(" $count3 "), 'big');"]
+          endTransaction $db
           showTest F
         } error]} then {
           if {[isExpectedError $error]} then {
@@ -782,7 +863,8 @@ runTest {test stress-1.1 {multithreaded stress testing} -setup {
   #############################################################################
 
   set workload(7) [list \
-      [list srcFileName dstFileName table count1 count2 count3] {
+      [list srcFileName dstFileName table count1 count2 count3 \
+            count4 count5 count6 count7] {
     #
     # NOTE: Workload #7, "small" UPDATE statements.
     #
@@ -792,9 +874,11 @@ runTest {test stress-1.1 {multithreaded stress testing} -setup {
       setupWorkloadFileDb $dstFileName db
       for {set index 1} {$index <= $count1} {incr index} {
         if {[catch {
+          beginTransaction $db
           sql execute $db [appendArgs "UPDATE " $table \
               " SET y = '" [base64 encode -- [expr {randstr($count2)}]] \
               "' WHERE x LIKE '" [format %X $index] "%' AND z = 'small';"]
+          endTransaction $db
           showTest G
         } error]} then {
           if {[isExpectedError $error]} then {
@@ -814,7 +898,8 @@ runTest {test stress-1.1 {multithreaded stress testing} -setup {
   #############################################################################
 
   set workload(8) [list \
-      [list srcFileName dstFileName table count1 count2 count3] {
+      [list srcFileName dstFileName table count1 count2 count3 \
+            count4 count5 count6 count7] {
     #
     # NOTE: Workload #8, "big" UPDATE statements.
     #
@@ -824,9 +909,11 @@ runTest {test stress-1.1 {multithreaded stress testing} -setup {
       setupWorkloadFileDb $dstFileName db
       for {set index 1} {$index <= $count1} {incr index} {
         if {[catch {
+          beginTransaction $db
           sql execute $db [appendArgs "UPDATE " $table \
               " SET y = RANDOMBLOB(" $count3 ") WHERE x LIKE '" \
               [format %X $index] "%' AND z = 'big';"]
+          endTransaction $db
           showTest H
         } error]} then {
           if {[isExpectedError $error]} then {
@@ -846,7 +933,8 @@ runTest {test stress-1.1 {multithreaded stress testing} -setup {
   #############################################################################
 
   set workload(9) [list \
-      [list srcFileName dstFileName table count1 count2 count3] {
+      [list srcFileName dstFileName table count1 count2 count3 \
+            count4 count5 count6 count7] {
     #
     # NOTE: Workload #9, "small" DELETE statements.
     #
@@ -856,8 +944,10 @@ runTest {test stress-1.1 {multithreaded stress testing} -setup {
       setupWorkloadFileDb $dstFileName db
       for {set index 1} {$index <= $count1} {incr index} {
         if {[catch {
+          beginTransaction $db
           sql execute $db [appendArgs "DELETE FROM " $table \
               " WHERE x LIKE '" [format %X $index] "%' AND z = 'small';"]
+          endTransaction $db
           showTest I
         } error]} then {
           if {[isExpectedError $error]} then {
@@ -877,7 +967,8 @@ runTest {test stress-1.1 {multithreaded stress testing} -setup {
   #############################################################################
 
   set workload(10) [list \
-      [list srcFileName dstFileName table count1 count2 count3] {
+      [list srcFileName dstFileName table count1 count2 count3 \
+            count4 count5 count6 count7] {
     #
     # NOTE: Workload #10, "big" DELETE statements.
     #
@@ -887,8 +978,10 @@ runTest {test stress-1.1 {multithreaded stress testing} -setup {
       setupWorkloadFileDb $dstFileName db
       for {set index 1} {$index <= $count1} {incr index} {
         if {[catch {
+          beginTransaction $db
           sql execute $db [appendArgs "DELETE FROM " $table \
               " WHERE x LIKE '" [format %X $index] "%' AND z = 'big';"]
+          endTransaction $db
           showTest J
         } error]} then {
           if {[isExpectedError $error]} then {
@@ -908,7 +1001,8 @@ runTest {test stress-1.1 {multithreaded stress testing} -setup {
   #############################################################################
 
   set workload(11) [list \
-      [list srcFileName dstFileName table count1 count2 count3] {
+      [list srcFileName dstFileName table count1 count2 count3 \
+            count4 count5 count6 count7] {
     #
     # NOTE: Workload #11, VACUUM statement.
     #
@@ -938,7 +1032,8 @@ runTest {test stress-1.1 {multithreaded stress testing} -setup {
   #############################################################################
 
   set workload(12) [list \
-      [list srcFileName dstFileName table count1 count2 count3] {
+      [list srcFileName dstFileName table count1 count2 count3 \
+            count4 count5 count6 count7] {
     #
     # NOTE: Workload #12, backup to in-memory database.
     #
@@ -1020,7 +1115,8 @@ runTest {test stress-1.1 {multithreaded stress testing} -setup {
   #############################################################################
 
   set workload(13) [list \
-      [list srcFileName dstFileName table count1 count2 count3] {
+      [list srcFileName dstFileName table count1 count2 count3 \
+            count4 count5 count6 count7] {
     #
     # NOTE: Workload #13, backup from an in-memory database.
     #
@@ -1102,7 +1198,8 @@ runTest {test stress-1.1 {multithreaded stress testing} -setup {
   #############################################################################
 
   set workload(14) [list \
-      [list srcFileName dstFileName table count1 count2 count3] {
+      [list srcFileName dstFileName table count1 count2 count3 \
+            count4 count5 count6 count7] {
     #
     # NOTE: Workload #14, PRAGMA integrity check statement.
     #
@@ -1136,7 +1233,8 @@ runTest {test stress-1.1 {multithreaded stress testing} -setup {
   #############################################################################
 
   set workload(15) [list \
-      [list srcFileName dstFileName table count1 count2 count3] {
+      [list srcFileName dstFileName table count1 count2 count3 \
+            count4 count5 count6 count7] {
     #
     # NOTE: Workload #15, force managed garbage collection
     #
@@ -1164,14 +1262,15 @@ runTest {test stress-1.1 {multithreaded stress testing} -setup {
   #############################################################################
 
   set workload(16) [list \
-      [list srcFileName dstFileName table count1 count2 count3] {
+      [list srcFileName dstFileName table count1 count2 count3 \
+            count4 count5 count6 count7] {
     #
     # NOTE: Workload #16, allocate (exclude) some native heap memory
     #
     waitTest P
     lappend ::times(16) [lindex [time {
       initTest P
-      set maxSize $::count(5)
+      set maxSize $count4
       object invoke GC AddMemoryPressure $maxSize
       try {
         for {set index 1} {$index <= $count1} {incr index} {
@@ -1204,7 +1303,8 @@ runTest {test stress-1.1 {multithreaded stress testing} -setup {
   #############################################################################
 
   set workload(17) [list \
-      [list srcFileName dstFileName table count1 count2 count3] {
+      [list srcFileName dstFileName table count1 count2 count3 \
+            count4 count5 count6 count7] {
     #
     # NOTE: Workload #17, change the database journal mode
     #
@@ -1235,7 +1335,8 @@ runTest {test stress-1.1 {multithreaded stress testing} -setup {
   #############################################################################
 
   set workload(18) [list \
-      [list srcFileName dstFileName table count1 count2 count3] {
+      [list srcFileName dstFileName table count1 count2 count3 \
+            count4 count5 count6 count7] {
     #
     # NOTE: Workload #18, execute queries against the in-memory database
     #
@@ -1245,6 +1346,10 @@ runTest {test stress-1.1 {multithreaded stress testing} -setup {
       setupWorkloadMemDb $srcFileName db
       for {set index 1} {$index <= $count1} {incr index} {
         if {[catch {
+          #
+          # NOTE: Maybe start a new transaction.
+          #
+          beginTransaction $db
           #
           # NOTE: Workload #18.3, "small" SELECT statements.
           #
@@ -1305,6 +1410,10 @@ runTest {test stress-1.1 {multithreaded stress testing} -setup {
           sql execute $db [appendArgs "DELETE FROM " $table \
               " WHERE x LIKE '" [format %X $index] "%' AND z = 'big';"]
           #
+          # NOTE: Maybe end the current transaction.
+          #
+          endTransaction $db
+          #
           # NOTE: Workload #18.11, VACUUM statement.
           #
           sql execute $db "VACUUM;"
@@ -1335,7 +1444,8 @@ runTest {test stress-1.1 {multithreaded stress testing} -setup {
   #############################################################################
 
   set workload(19) [list \
-      [list srcFileName dstFileName table count1 count2 count3] {
+      [list srcFileName dstFileName table count1 count2 count3 \
+            count4 count5 count6 count7] {
     #
     # NOTE: Workload #19, rapidly open/close connections, thread #1.
     #
@@ -1364,7 +1474,8 @@ runTest {test stress-1.1 {multithreaded stress testing} -setup {
   #############################################################################
 
   set workload(20) [list \
-      [list srcFileName dstFileName table count1 count2 count3] {
+      [list srcFileName dstFileName table count1 count2 count3 \
+            count4 count5 count6 count7] {
     #
     # NOTE: Workload #20, rapidly open/close connections, thread #2.
     #
@@ -1393,17 +1504,18 @@ runTest {test stress-1.1 {multithreaded stress testing} -setup {
   #############################################################################
 
   set workload(21) [list \
-      [list srcFileName dstFileName table count1 count2 count3] {
+      [list srcFileName dstFileName table count1 count2 count3 \
+            count4 count5 count6 count7] {
     #
     # NOTE: Workload #21, rapidly try to release all non-essential memory.
     #
     waitTest U
     lappend ::times(21) [lindex [time {
       initTest U
-      for {set index 1} {$index <= $::count(6)} {incr index} {
+      for {set index 1} {$index <= $count5} {incr index} {
         if {[catch {
           releaseMem -1
-          showTestWithDelay U 0 $::count(7)
+          showTestWithDelay U 0 $count6
         } error]} then {
           if {[isExpectedError $error]} then {
             showTest u
@@ -1421,7 +1533,8 @@ runTest {test stress-1.1 {multithreaded stress testing} -setup {
   #############################################################################
 
   set workload(22) [list \
-      [list srcFileName dstFileName table count1 count2 count3] {
+      [list srcFileName dstFileName table count1 count2 count3 \
+            count4 count5 count6 count7] {
     #
     # NOTE: Workload #22, rapidly try to change the default cache size.
     #
@@ -1429,12 +1542,12 @@ runTest {test stress-1.1 {multithreaded stress testing} -setup {
     lappend ::times(22) [lindex [time {
       initTest V
       setupWorkloadFileDb $dstFileName db
-      for {set index 1} {$index <= $::count(6)} {incr index} {
+      for {set index 1} {$index <= $count5} {incr index} {
         if {[catch {
           sql execute $db [appendArgs \
               "PRAGMA default_cache_size=" \
-              [expr {int(rand() * $::count(8))}] \;]
-          showTestWithDelay V 0 $::count(7)
+              [expr {int(rand() * $count7)}] \;]
+          showTestWithDelay V 0 $count6
         } error]} then {
           if {[isExpectedError $error]} then {
             showTest v
@@ -1492,7 +1605,7 @@ runTest {test stress-1.1 {multithreaded stress testing} -setup {
     foreach index(1) [lsort -integer $workloadNames(enabled)] {
       set workloadCallbacks($index(1)) [list \
           apply $workload($index(1)) $fileName(1) $fileName(2) t1 $count(1) \
-          $count(3) $count(4)]
+          $count(3) $count(4) $count(5) $count(6) $count(7) $count(8)]
 
       set thread($index(1)) [object create -alias System.Threading.Thread \
           $workloadCallbacks($index(1)) 1048576]
@@ -1622,6 +1735,8 @@ runTest {test stress-1.1 {multithreaded stress testing} -setup {
   rename isExpectedError ""
   rename formatWorkloadTime ""
   rename formatWorkloadResult ""
+  rename endTransaction ""
+  rename beginTransaction ""
   rename setupWorkloadFileDb ""
   rename setupWorkloadMemDb ""
 
@@ -1652,10 +1767,10 @@ runTest {test stress-1.1 {multithreaded stress testing} -setup {
   rename setupLogging ""
 
   unset -nocomplain result thread index workload priority journalMode \
-      noWorkload priorities srcDb db fileName compiled options count \
-      times logFileName logListener event timeout connection \
-      indicators iterations exitOnFail coTaskMem noTrace failures \
-      status workloadNames workloadCallbacks
+      pageSize noWorkload priorities srcDb db fileName compiled options \
+      count times logFileName logListener event timeout connection \
+      indicators iterations exitOnFail coTaskMem noTrace beginTransaction \
+      endTransaction failures status workloadNames workloadCallbacks
 } -time true -constraints {eagle command.object monoBug40 command.sql\
 compile.DATA SQLite System.Data.SQLite compileCSharp} -result {0}}
 
