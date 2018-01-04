@@ -11,6 +11,10 @@
 # set count(2) 200;       # Workload iteration delay, in milliseconds.
 # set count(3) 10000;     # Workload "small" data chunk size, in bytes.
 # set count(5) 209715200; # Maximum heap memory to exclude at one time.
+# set journalMode WAL;    # Initial journal mode for database files.
+# set pageSize 4096;      # Initial page size for database files.
+# set noWorkload [list];  # Workloads to be omitted from the run, by index.
 # set exitOnFail true;    # Halt testing and exit process on test failure?
 # set noTrace true;       # Disable SQLite trace logging to a file?
-# set noWorkload [list];  # Workloads to be omitted from the run, by index.
+# set beginTransaction "BEGIN"; # SQL to execute before modifying the database.
+# set endTransaction "COMMIT";  # SQL to execute after modifying the database.
