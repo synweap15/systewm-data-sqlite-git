@@ -112,6 +112,16 @@ runTest {test stress-1.1 {multithreaded stress testing} -setup {
 
   #############################################################################
 
+  proc errorTransaction { db } {
+    set sql $::errorTransaction
+
+    if {[string length $sql] > 0} then {
+      sql execute $db $sql
+    }
+  }
+
+  #############################################################################
+
   proc formatWorkloadResult { index } {
     set result [appendArgs "---- iterations for workload (" $index "): "]
 
@@ -383,8 +393,9 @@ runTest {test stress-1.1 {multithreaded stress testing} -setup {
   set exitOnFail false;    # Halt testing and exit process on test failure?
   set coTaskMem true;      # Use AllocCoTaskMem/FreeCoTaskMem for memory?
   set noTrace false;       # Disable SQLite trace logging to a file?
-  set beginTransaction ""; # SQL to execute before modifying the database.
-  set endTransaction "";   # SQL to execute after modifying the database.
+  set beginTransaction ""; # SQL just before modifying the database.
+  set endTransaction "";   # SQL just after modifying the database.
+  set errorTransaction ""; # SQL just after a database modification error.
 
   #############################################################################
 
@@ -413,7 +424,9 @@ runTest {test stress-1.1 {multithreaded stress testing} -setup {
         [list null MustHaveBooleanValue -1 -1 -coTaskMem $coTaskMem] \
         [list null MustHaveBooleanValue -1 -1 -noTrace $noTrace] \
         [list null MustHaveValue -1 -1 -beginTransaction $beginTransaction] \
-        [list null MustHaveValue -1 -1 -endTransaction $endTransaction]] $argv
+        [list null MustHaveValue -1 -1 -endTransaction $endTransaction] \
+        [list null MustHaveValue -1 -1 -errorTransaction $errorTransaction]] \
+        $argv
 
     set count(0) $options(-count0,value)
     set count(1) $options(-count1,value)
@@ -433,6 +446,7 @@ runTest {test stress-1.1 {multithreaded stress testing} -setup {
     set noTrace $options(-noTrace,value)
     set beginTransaction $options(-beginTransaction,value)
     set endTransaction $options(-endTransaction,value)
+    set errorTransaction $options(-errorTransaction,value)
   }
 
   #############################################################################
@@ -575,6 +589,11 @@ runTest {test stress-1.1 {multithreaded stress testing} -setup {
       "---- end transaction SQL is " \
       [expr {[string length $endTransaction] > 0 ? \
       [appendArgs \" $endTransaction \"] : "none"}] \n]
+
+  tputs $test_channel [appendArgs \
+      "---- error transaction SQL is " \
+      [expr {[string length $errorTransaction] > 0 ? \
+      [appendArgs \" $errorTransaction \"] : "none"}] \n]
 
   #############################################################################
 
@@ -811,6 +830,7 @@ runTest {test stress-1.1 {multithreaded stress testing} -setup {
           endTransaction $db
           showTest E
         } error]} then {
+          catch {errorTransaction $db}
           if {[isExpectedError $error]} then {
             showTest e
           } else {
@@ -846,6 +866,7 @@ runTest {test stress-1.1 {multithreaded stress testing} -setup {
           endTransaction $db
           showTest F
         } error]} then {
+          catch {errorTransaction $db}
           if {[isExpectedError $error]} then {
             showTest f
           } else {
@@ -881,6 +902,7 @@ runTest {test stress-1.1 {multithreaded stress testing} -setup {
           endTransaction $db
           showTest G
         } error]} then {
+          catch {errorTransaction $db}
           if {[isExpectedError $error]} then {
             showTest g
           } else {
@@ -916,6 +938,7 @@ runTest {test stress-1.1 {multithreaded stress testing} -setup {
           endTransaction $db
           showTest H
         } error]} then {
+          catch {errorTransaction $db}
           if {[isExpectedError $error]} then {
             showTest h
           } else {
@@ -950,6 +973,7 @@ runTest {test stress-1.1 {multithreaded stress testing} -setup {
           endTransaction $db
           showTest I
         } error]} then {
+          catch {errorTransaction $db}
           if {[isExpectedError $error]} then {
             showTest i
           } else {
@@ -984,6 +1008,7 @@ runTest {test stress-1.1 {multithreaded stress testing} -setup {
           endTransaction $db
           showTest J
         } error]} then {
+          catch {errorTransaction $db}
           if {[isExpectedError $error]} then {
             showTest j
           } else {
@@ -1427,6 +1452,7 @@ runTest {test stress-1.1 {multithreaded stress testing} -setup {
           }
           showTest R
         } error]} then {
+          catch {errorTransaction $db}
           if {[isExpectedError $error]} then {
             showTest r
           } else {
@@ -1589,6 +1615,7 @@ runTest {test stress-1.1 {multithreaded stress testing} -setup {
           endTransaction $db
           showTest W
         } error]} then {
+          catch {errorTransaction $db}
           if {[isExpectedError $error]} then {
             showTest w
           } else {
@@ -1779,6 +1806,7 @@ runTest {test stress-1.1 {multithreaded stress testing} -setup {
   rename isExpectedError ""
   rename formatWorkloadTime ""
   rename formatWorkloadResult ""
+  rename errorTransaction ""
   rename endTransaction ""
   rename beginTransaction ""
   rename setupWorkloadFileDb ""
@@ -1814,7 +1842,8 @@ runTest {test stress-1.1 {multithreaded stress testing} -setup {
       pageSize noWorkload priorities srcDb db fileName compiled options \
       count times logFileName logListener event timeout connection \
       indicators iterations exitOnFail coTaskMem noTrace beginTransaction \
-      endTransaction failures status workloadNames workloadCallbacks
+      endTransaction errorTransaction failures status workloadNames \
+      workloadCallbacks
 } -time true -constraints {eagle command.object monoBug40 command.sql\
 compile.DATA SQLite System.Data.SQLite compileCSharp} -result {0}}
 

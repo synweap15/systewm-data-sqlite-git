@@ -16,8 +16,10 @@
 # set noWorkload [list];  # Workloads to be omitted from the run, by index.
 # set exitOnFail true;    # Halt testing and exit process on test failure?
 # set noTrace true;       # Disable SQLite trace logging to a file?
-# set beginTransaction "BEGIN"; # SQL to execute before modifying the database.
-# set endTransaction "COMMIT";  # SQL to execute after modifying the database.
+
+# set beginTransaction "BEGIN";    # SQL just before modifying the database.
+# set endTransaction "COMMIT";     # SQL just after modifying the database.
+# set errorTransaction "ROLLBACK"; # SQL just after a database modification error.
 
 # addRuntimeOption sharedCache
 # addRuntimeOption dmlOnly
