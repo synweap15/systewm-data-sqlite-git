@@ -4029,6 +4029,10 @@ namespace System.Data.SQLite
             int offset
             )
         {
+#if DEBUG
+            CheckAlignment("ReadInt32", pointer, offset);
+#endif
+
 #if !PLATFORM_COMPACTFRAMEWORK
             return Marshal.ReadInt32(pointer, offset);
 #else
@@ -4058,6 +4062,10 @@ namespace System.Data.SQLite
             int offset
             )
         {
+#if DEBUG
+            CheckAlignment("ReadInt64", pointer, offset);
+#endif
+
 #if !PLATFORM_COMPACTFRAMEWORK
             return Marshal.ReadInt64(pointer, offset);
 #else
@@ -4087,6 +4095,10 @@ namespace System.Data.SQLite
             int offset
             )
         {
+#if DEBUG
+            CheckAlignment("ReadDouble", pointer, offset);
+#endif
+
 #if !PLATFORM_COMPACTFRAMEWORK
             return BitConverter.Int64BitsToDouble(Marshal.ReadInt64(
                 pointer, offset));
@@ -4118,6 +4130,10 @@ namespace System.Data.SQLite
             int offset
             )
         {
+#if DEBUG
+            CheckAlignment("ReadIntPtr", pointer, offset);
+#endif
+
 #if !PLATFORM_COMPACTFRAMEWORK
             return Marshal.ReadIntPtr(pointer, offset);
 #else
@@ -4150,6 +4166,10 @@ namespace System.Data.SQLite
             int value
             )
         {
+#if DEBUG
+            CheckAlignment("WriteInt32", pointer, offset);
+#endif
+
 #if !PLATFORM_COMPACTFRAMEWORK
             Marshal.WriteInt32(pointer, offset, value);
 #else
@@ -4180,6 +4200,10 @@ namespace System.Data.SQLite
             long value
             )
         {
+#if DEBUG
+            CheckAlignment("WriteInt64", pointer, offset);
+#endif
+
 #if !PLATFORM_COMPACTFRAMEWORK
             Marshal.WriteInt64(pointer, offset, value);
 #else
@@ -4210,6 +4234,10 @@ namespace System.Data.SQLite
             double value
             )
         {
+#if DEBUG
+            CheckAlignment("WriteDouble", pointer, offset);
+#endif
+
 #if !PLATFORM_COMPACTFRAMEWORK
             Marshal.WriteInt64(pointer, offset,
                 BitConverter.DoubleToInt64Bits(value));
@@ -4242,6 +4270,11 @@ namespace System.Data.SQLite
             IntPtr value
             )
         {
+#if DEBUG
+            CheckAlignment("WriteIntPtr(pointer)", pointer, offset);
+            CheckAlignment("WriteIntPtr(value)", value, 0);
+#endif
+
 #if !PLATFORM_COMPACTFRAMEWORK
             Marshal.WriteIntPtr(pointer, offset, value);
 #else
@@ -4280,6 +4313,37 @@ namespace System.Data.SQLite
             if (value == null) return 0;
             return value.GetHashCode();
         }
+        #endregion
+
+        ///////////////////////////////////////////////////////////////////////
+
+        #region Private Methods
+#if DEBUG
+        private static void CheckAlignment(
+            string type,
+            IntPtr pointer,
+            int offset
+            )
+        {
+            if ((pointer.ToInt64() % IntPtr.Size) != 0)
+            {
+                SQLiteLog.LogMessage(SQLiteErrorCode.Warning,
+                    HelperMethods.StringFormat(
+                    CultureInfo.CurrentCulture,
+                    "{0}: pointer {1} is not aligned to {2}: {3}",
+                    type, pointer, IntPtr.Size, Environment.StackTrace));
+            }
+
+            if ((offset % IntPtr.Size) != 0)
+            {
+                SQLiteLog.LogMessage(SQLiteErrorCode.Warning,
+                    HelperMethods.StringFormat(
+                    CultureInfo.CurrentCulture,
+                    "{0}: offset {1} is not aligned to {2}: {3}",
+                    type, offset, IntPtr.Size, Environment.StackTrace));
+            }
+        }
+#endif
         #endregion
     }
     #endregion
