@@ -3368,6 +3368,10 @@ namespace System.Data.SQLite
         /// </returns>
         public static int Size(IntPtr pMemory)
         {
+#if DEBUG
+            SQLiteMarshal.CheckAlignment("Size", pMemory, 0, IntPtr.Size);
+#endif
+
 #if !SQLITE_STANDARD
             return UnsafeNativeMethods.sqlite3_malloc_size_interop(pMemory);
 #elif TRACK_MEMORY_BYTES
@@ -3395,6 +3399,10 @@ namespace System.Data.SQLite
         /// </param>
         public static void Free(IntPtr pMemory)
         {
+#if DEBUG
+            SQLiteMarshal.CheckAlignment("Free", pMemory, 0, IntPtr.Size);
+#endif
+
 #if TRACK_MEMORY_BYTES
             if (pMemory != IntPtr.Zero)
             {
@@ -3427,6 +3435,11 @@ namespace System.Data.SQLite
         /// </param>
         public static void FreeUntracked(IntPtr pMemory)
         {
+#if DEBUG
+            SQLiteMarshal.CheckAlignment(
+                "FreeUntracked", pMemory, 0, IntPtr.Size);
+#endif
+
             UnsafeNativeMethods.sqlite3_free(pMemory);
         }
         #endregion
@@ -4030,7 +4043,7 @@ namespace System.Data.SQLite
             )
         {
 #if DEBUG
-            CheckAlignment("ReadInt32", pointer, offset);
+            CheckAlignment("ReadInt32", pointer, offset, sizeof(int));
 #endif
 
 #if !PLATFORM_COMPACTFRAMEWORK
@@ -4063,7 +4076,7 @@ namespace System.Data.SQLite
             )
         {
 #if DEBUG
-            CheckAlignment("ReadInt64", pointer, offset);
+            CheckAlignment("ReadInt64", pointer, offset, sizeof(long));
 #endif
 
 #if !PLATFORM_COMPACTFRAMEWORK
@@ -4096,7 +4109,7 @@ namespace System.Data.SQLite
             )
         {
 #if DEBUG
-            CheckAlignment("ReadDouble", pointer, offset);
+            CheckAlignment("ReadDouble", pointer, offset, sizeof(double));
 #endif
 
 #if !PLATFORM_COMPACTFRAMEWORK
@@ -4131,7 +4144,7 @@ namespace System.Data.SQLite
             )
         {
 #if DEBUG
-            CheckAlignment("ReadIntPtr", pointer, offset);
+            CheckAlignment("ReadIntPtr", pointer, offset, IntPtr.Size);
 #endif
 
 #if !PLATFORM_COMPACTFRAMEWORK
@@ -4167,7 +4180,7 @@ namespace System.Data.SQLite
             )
         {
 #if DEBUG
-            CheckAlignment("WriteInt32", pointer, offset);
+            CheckAlignment("WriteInt32", pointer, offset, sizeof(int));
 #endif
 
 #if !PLATFORM_COMPACTFRAMEWORK
@@ -4201,7 +4214,7 @@ namespace System.Data.SQLite
             )
         {
 #if DEBUG
-            CheckAlignment("WriteInt64", pointer, offset);
+            CheckAlignment("WriteInt64", pointer, offset, sizeof(long));
 #endif
 
 #if !PLATFORM_COMPACTFRAMEWORK
@@ -4235,7 +4248,7 @@ namespace System.Data.SQLite
             )
         {
 #if DEBUG
-            CheckAlignment("WriteDouble", pointer, offset);
+            CheckAlignment("WriteDouble", pointer, offset, sizeof(double));
 #endif
 
 #if !PLATFORM_COMPACTFRAMEWORK
@@ -4271,8 +4284,10 @@ namespace System.Data.SQLite
             )
         {
 #if DEBUG
-            CheckAlignment("WriteIntPtr(pointer)", pointer, offset);
-            CheckAlignment("WriteIntPtr(value)", value, 0);
+            CheckAlignment(
+                "WriteIntPtr(pointer)", pointer, offset, IntPtr.Size);
+
+            CheckAlignment("WriteIntPtr(value)", value, 0, IntPtr.Size);
 #endif
 
 #if !PLATFORM_COMPACTFRAMEWORK
@@ -4319,28 +4334,24 @@ namespace System.Data.SQLite
 
         #region Private Methods
 #if DEBUG
-        private static void CheckAlignment(
+        internal static void CheckAlignment(
             string type,
             IntPtr pointer,
-            int offset
+            int offset,
+            int size
             )
         {
-            if ((pointer.ToInt64() % IntPtr.Size) != 0)
-            {
-                SQLiteLog.LogMessage(SQLiteErrorCode.Warning,
-                    HelperMethods.StringFormat(
-                    CultureInfo.CurrentCulture,
-                    "{0}: pointer {1} is not aligned to {2}: {3}",
-                    type, pointer, IntPtr.Size, Environment.StackTrace));
-            }
+            IntPtr savedPointer = pointer;
 
-            if ((offset % IntPtr.Size) != 0)
+            if (offset != 0)
+                pointer = new IntPtr(pointer.ToInt64() + offset);
+
+            if ((pointer.ToInt64() % size) != 0)
             {
                 SQLiteLog.LogMessage(SQLiteErrorCode.Warning,
-                    HelperMethods.StringFormat(
-                    CultureInfo.CurrentCulture,
-                    "{0}: offset {1} is not aligned to {2}: {3}",
-                    type, offset, IntPtr.Size, Environment.StackTrace));
+                    HelperMethods.StringFormat(CultureInfo.CurrentCulture,
+                    "{0}: pointer {1} and offset {2} not aligned to {3}: {4}",
+                    type, savedPointer, offset, size, Environment.StackTrace));
             }
         }
 #endif
