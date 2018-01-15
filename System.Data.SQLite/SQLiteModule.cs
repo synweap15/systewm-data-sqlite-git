@@ -5978,7 +5978,7 @@ namespace System.Data.SQLite
         {
             try
             {
-                if (logErrors)
+                if (logErrors && (error != null))
                 {
                     SQLiteLog.LogMessage(SQLiteErrorCode.Error,
                         HelperMethods.StringFormat(
