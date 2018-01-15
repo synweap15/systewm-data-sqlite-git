@@ -4484,31 +4484,31 @@ namespace System.Data.SQLite
     [StructLayout(LayoutKind.Sequential)]
     internal struct sqlite3_module
     {
-        public int iVersion;
-        public xCreate xCreate;
-        public xConnect xConnect;
-        public xBestIndex xBestIndex;
-        public xDisconnect xDisconnect;
-        public xDestroy xDestroy;
-        public xOpen xOpen;
-        public xClose xClose;
-        public xFilter xFilter;
-        public xNext xNext;
-        public xEof xEof;
-        public xColumn xColumn;
-        public xRowId xRowId;
-        public xUpdate xUpdate;
-        public xBegin xBegin;
-        public xSync xSync;
-        public xCommit xCommit;
-        public xRollback xRollback;
-        public xFindFunction xFindFunction;
-        public xRename xRename;
+        /*   0 */ public int iVersion;
+        /*   8 */ public xCreate xCreate;
+        /*  16 */ public xConnect xConnect;
+        /*  24 */ public xBestIndex xBestIndex;
+        /*  32 */ public xDisconnect xDisconnect;
+        /*  40 */ public xDestroy xDestroy;
+        /*  48 */ public xOpen xOpen;
+        /*  56 */ public xClose xClose;
+        /*  64 */ public xFilter xFilter;
+        /*  72 */ public xNext xNext;
+        /*  80 */ public xEof xEof;
+        /*  88 */ public xColumn xColumn;
+        /*  96 */ public xRowId xRowId;
+        /* 104 */ public xUpdate xUpdate;
+        /* 112 */ public xBegin xBegin;
+        /* 120 */ public xSync xSync;
+        /* 128 */ public xCommit xCommit;
+        /* 136 */ public xRollback xRollback;
+        /* 144 */ public xFindFunction xFindFunction;
+        /* 152 */ public xRename xRename;
         /* The methods above are in version 1 of the sqlite3_module
          * object.  Those below are for version 2 and greater. */
-        public xSavepoint xSavepoint;
-        public xRelease xRelease;
-        public xRollbackTo xRollbackTo;
+        /* 160 */ public xSavepoint xSavepoint;
+        /* 168 */ public xRelease xRelease;
+        /* 176 */ public xRollbackTo xRollbackTo;
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -4516,9 +4516,9 @@ namespace System.Data.SQLite
     [StructLayout(LayoutKind.Sequential)]
     internal struct sqlite3_vtab
     {
-        public IntPtr pModule;
-        public int nRef; /* NO LONGER USED */
-        public IntPtr zErrMsg;
+        /*  0 */ public IntPtr pModule;
+        /*  8 */ public int nRef; /* NO LONGER USED */
+        /* 16 */ public IntPtr zErrMsg;
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -4526,7 +4526,7 @@ namespace System.Data.SQLite
     [StructLayout(LayoutKind.Sequential)]
     internal struct sqlite3_vtab_cursor
     {
-        public IntPtr pVTab;
+        /* 0 */ public IntPtr pVTab;
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -4550,10 +4550,10 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
-        public int iColumn;
-        public SQLiteIndexConstraintOp op;
-        public byte usable;
-        public int iTermOffset;
+        /* 0 */ public int iColumn;
+        /* 4 */ public SQLiteIndexConstraintOp op;
+        /* 5 */ public byte usable;
+        /* 8 */ public int iTermOffset;
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -4575,8 +4575,8 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
-        public int iColumn; /* Column number */
-        public byte desc;   /* True for DESC.  False for ASC. */
+        /* 0 */ public int iColumn; /* Column number */
+        /* 4 */ public byte desc;   /* True for DESC.  False for ASC. */
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -4608,20 +4608,20 @@ namespace System.Data.SQLite
     internal struct sqlite3_index_info
     {
         /* Inputs */
-        public int nConstraint; /* Number of entries in aConstraint */
-        public IntPtr aConstraint;
-        public int nOrderBy;    /* Number of entries in aOrderBy */
-        public IntPtr aOrderBy;
+        /*  0 */ public int nConstraint; /* Number of entries in aConstraint */
+        /*  8 */ public IntPtr aConstraint;
+        /* 16 */ public int nOrderBy;    /* Number of entries in aOrderBy */
+        /* 24 */ public IntPtr aOrderBy;
         /* Outputs */
-        public IntPtr aConstraintUsage;
-        public int idxNum;           /* Number used to identify the index */
-        public string idxStr;        /* String, possibly obtained from sqlite3_malloc */
-        public int needToFreeIdxStr; /* Free idxStr using sqlite3_free() if true */
-        public int orderByConsumed;  /* True if output is already ordered */
-        public double estimatedCost; /* Estimated cost of using this index */
-        public long estimatedRows;   /* Estimated number of rows returned */
-        public SQLiteIndexFlags idxFlags; /* Mask of SQLITE_INDEX_SCAN_* flags */
-        public long colUsed;         /* Input: Mask of columns used by statement */
+        /* 32 */ public IntPtr aConstraintUsage;
+        /* 40 */ public int idxNum;           /* Number used to identify the index */
+        /* 48 */ public string idxStr;        /* String, possibly obtained from sqlite3_malloc */
+        /* 56 */ public int needToFreeIdxStr; /* Free idxStr using sqlite3_free() if true */
+        /* 60 */ public int orderByConsumed;  /* True if output is already ordered */
+        /* 64 */ public double estimatedCost; /* Estimated cost of using this index */
+        /* 72 */ public long estimatedRows;   /* Estimated number of rows returned */
+        /* 80 */ public SQLiteIndexFlags idxFlags; /* Mask of SQLITE_INDEX_SCAN_* flags */
+        /* 88 */ public long colUsed;         /* Input: Mask of columns used by statement */
     }
 #endif
     #endregion
