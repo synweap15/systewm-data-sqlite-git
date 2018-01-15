@@ -306,7 +306,8 @@
                       !Exists('$(VSSDK150Install)VisualStudioIntegration\Common\Assemblies\v2.0\Microsoft.VisualStudio.Shell.Interop.dll') Or
                       !Exists('$(VSSDK150Install)VisualStudioIntegration\Common\Assemblies\v2.0\Microsoft.VisualStudio.Shell.Interop.8.0.dll') Or
                       !Exists('$(VSSDK150Install)VisualStudioIntegration\Common\Assemblies\v2.0\Microsoft.VisualStudio.Shell.Interop.9.0.dll') Or
-                      !Exists('$(VSSDK150Install)VisualStudioIntegration\Common\Assemblies\v2.0\Microsoft.VisualStudio.Shell.Interop.10.0.dll'))">
+                      !Exists('$(VSSDK150Install)VisualStudioIntegration\Common\Assemblies\v2.0\Microsoft.VisualStudio.Shell.Interop.10.0.dll') Or
+                      !Exists('$(VSSDK150Install)VisualStudioIntegration\Common\Assemblies\v4.0\Microsoft.VisualStudio.Shell.Interop.15.3.DesignTime.dll'))">
     <!--
         NOTE: We cannot build this project without the necessary reference
               assemblies; therefore, skip building it altogether.
