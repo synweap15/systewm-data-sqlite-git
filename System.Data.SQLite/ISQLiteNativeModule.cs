@@ -1082,7 +1082,7 @@ namespace System.Data.SQLite
         /// argv[2] and following.  In a rowid virtual table, if argv[1] is an SQL NULL,
         /// then a new unique rowid is generated automatically.  The argv[1] will be NULL
         /// for a WITHOUT ROWID virtual table, in which case the implementation should
-        /// take the PRIMARY KEY value from the appropiate column in argv[2] and following.
+        /// take the PRIMARY KEY value from the appropriate column in argv[2] and following.
         /// <![CDATA[</dd>]]><![CDATA[<dt>]]><![CDATA[<b>]]>argc &gt; 1 <![CDATA[<br>]]> argv[0] &#8800; NULL <![CDATA[<br>]]> argv[0] = argv[1]<![CDATA[</b>]]>
         /// <![CDATA[</dt>]]><![CDATA[<dd>]]>
         /// The row with rowid or PRIMARY KEY argv[0] is updated with new values 
@@ -1110,6 +1110,26 @@ namespace System.Data.SQLite
         /// datatype, attempting to store a value that is too
         /// large or too small, or attempting to change a read-only value) then the
         /// xUpdate must fail with an appropriate error code.
+        /// </para>
+        /// <para>
+        /// If the xUpdate method is performing an UPDATE, then
+        /// sqlite3_value_nochange(X) can be used to discover which columns
+        /// of the virtual table were actually modified by the UPDATE
+        /// statement.  The sqlite3_value_nochange(X) interface returns
+        /// true for columns that do not change.
+        /// On every UPDATE, SQLite will first invoke
+        /// xColumn separately for each unchanging column in the table to 
+        /// obtain the value for that column.  The xColumn method can
+        /// check to see if the column is unchanged at the SQL level
+        /// by invoking sqlite3_vtab_nochange().  If xColumn sees that
+        /// the column is not being modified, it should return without setting 
+        /// a result using one of the sqlite3_result_xxxxx()
+        /// interfaces.  Only in that case sqlite3_value_nochange() will be
+        /// true within the xUpdate method.  If xColumn does
+        /// invoke one or more sqlite3_result_xxxxx()
+        /// interfaces, then SQLite understands that as a change in the value
+        /// of the column and the sqlite3_value_nochange() call for that
+        /// column within xUpdate will return false.
         /// </para>
         /// <para>
         /// There might be one or more sqlite3_vtab_cursor objects open and in use 
