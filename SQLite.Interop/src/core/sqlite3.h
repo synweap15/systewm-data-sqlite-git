@@ -125,7 +125,7 @@ extern "C" {
 */
 #define SQLITE_VERSION        "3.22.0"
 #define SQLITE_VERSION_NUMBER 3022000
-#define SQLITE_SOURCE_ID      "2018-01-11 18:15:40 a5d09dfaa337fa51d6e702c6aefe58824ab1e7d221c6e79166e2c6f9c7ab1501"
+#define SQLITE_SOURCE_ID      "2018-01-22 18:45:57 0c55d179733b46d8d0ba4d88e01a25e10677046ee3da1d5b1581e86726f2171d"
 
 /*
 ** CAPI3REF: Run-Time Library Version Numbers
@@ -510,7 +510,6 @@ SQLITE_API int sqlite3_exec(
 #define SQLITE_CANTOPEN_ISDIR          (SQLITE_CANTOPEN | (2<<8))
 #define SQLITE_CANTOPEN_FULLPATH       (SQLITE_CANTOPEN | (3<<8))
 #define SQLITE_CANTOPEN_CONVPATH       (SQLITE_CANTOPEN | (4<<8))
-#define SQLITE_CANTOPEN_DIRTYWAL       (SQLITE_CANTOPEN | (5<<8))
 #define SQLITE_CORRUPT_VTAB            (SQLITE_CORRUPT | (1<<8))
 #define SQLITE_READONLY_RECOVERY       (SQLITE_READONLY | (1<<8))
 #define SQLITE_READONLY_CANTLOCK       (SQLITE_READONLY | (2<<8))
@@ -2952,8 +2951,8 @@ SQLITE_API SQLITE_DEPRECATED void *sqlite3_profile(sqlite3*,
 ** KEYWORDS: SQLITE_TRACE
 **
 ** These constants identify classes of events that can be monitored
-** using the [sqlite3_trace_v2()] tracing logic.  The third argument
-** to [sqlite3_trace_v2()] is an OR-ed combination of one or more of
+** using the [sqlite3_trace_v2()] tracing logic.  The M argument
+** to [sqlite3_trace_v2(D,M,X,P)] is an OR-ed combination of one or more of
 ** the following constants.  ^The first argument to the trace callback
 ** is one of the following constants.
 **
@@ -4799,6 +4798,9 @@ SQLITE_API SQLITE_DEPRECATED int sqlite3_memory_alarm(void(*)(void*,sqlite3_int6
 ** datatype of the value
 ** <tr><td><b>sqlite3_value_numeric_type&nbsp;&nbsp;</b>
 ** <td>&rarr;&nbsp;&nbsp;<td>Best numeric datatype of the value
+** <tr><td><b>sqlite3_value_nochange&nbsp;&nbsp;</b>
+** <td>&rarr;&nbsp;&nbsp;<td>True if the column is unchanged in an UPDATE
+** against a virtual table.
 ** </table></blockquote>
 **
 ** <b>Details:</b>
@@ -4847,6 +4849,19 @@ SQLITE_API SQLITE_DEPRECATED int sqlite3_memory_alarm(void(*)(void*,sqlite3_int6
 ** then the conversion is performed.  Otherwise no conversion occurs.
 ** The [SQLITE_INTEGER | datatype] after conversion is returned.)^
 **
+** ^Within the [xUpdate] method of a [virtual table], the
+** sqlite3_value_nochange(X) interface returns true if and only if
+** the column corresponding to X is unchanged by the UPDATE operation
+** that the xUpdate method call was invoked to implement and if
+** and the prior [xColumn] method call that was invoked to extracted
+** the value for that column returned without setting a result (probably
+** because it queried [sqlite3_vtab_nochange()] and found that the column
+** was unchanging).  ^Within an [xUpdate] method, any value for which
+** sqlite3_value_nochange(X) is true will in all other respects appear
+** to be a NULL value.  If sqlite3_value_nochange(X) is invoked anywhere other
+** than within an [xUpdate] method call for an UPDATE statement, then
+** the return value is arbitrary and meaningless.
+**
 ** Please pay particular attention to the fact that the pointer returned
 ** from [sqlite3_value_blob()], [sqlite3_value_text()], or
 ** [sqlite3_value_text16()] can be invalidated by a subsequent call to
@@ -4869,6 +4884,7 @@ SQLITE_API int sqlite3_value_bytes(sqlite3_value*);
 SQLITE_API int sqlite3_value_bytes16(sqlite3_value*);
 SQLITE_API int sqlite3_value_type(sqlite3_value*);
 SQLITE_API int sqlite3_value_numeric_type(sqlite3_value*);
+SQLITE_API int sqlite3_value_nochange(sqlite3_value*);
 
 /*
 ** CAPI3REF: Finding The Subtype Of SQL Values
@@ -8306,6 +8322,13 @@ SQLITE_API int sqlite3_vtab_on_conflict(sqlite3 *);
 ** column value will not change.  Applications might use this to substitute
 ** a lighter-weight value to return that the corresponding [xUpdate] method
 ** understands as a "no-change" value.
+**
+** If the [xColumn] method calls sqlite3_vtab_nochange() and finds that
+** the column is not changed by the UPDATE statement, they the xColumn
+** method can optionally return without setting a result, without calling
+** any of the [sqlite3_result_int|sqlite3_result_xxxxx() interfaces].
+** In that case, [sqlite3_value_nochange(X)] will return true for the
+** same column in the [xUpdate] method.
 */
 SQLITE_API int sqlite3_vtab_nochange(sqlite3_context*);
 
@@ -9051,6 +9074,35 @@ SQLITE_API int sqlite3session_indirect(sqlite3_session *pSession, int bIndirect)
 **
 ** SQLITE_OK is returned if the call completes without error. Or, if an error 
 ** occurs, an SQLite error code (e.g. SQLITE_NOMEM) is returned.
+**
+** <h3>Special sqlite_stat1 Handling</h3>
+**
+** As of SQLite version 3.22.0, the "sqlite_stat1" table is an exception to 
+** some of the rules above. In SQLite, the schema of sqlite_stat1 is:
+**  <pre>
+**  &nbsp;     CREATE TABLE sqlite_stat1(tbl,idx,stat)  
+**  </pre>
+**
+** Even though sqlite_stat1 does not have a PRIMARY KEY, changes are 
+** recorded for it as if the PRIMARY KEY is (tbl,idx). Additionally, changes 
+** are recorded for rows for which (idx IS NULL) is true. However, for such
+** rows a zero-length blob (SQL value X'') is stored in the changeset or
+** patchset instead of a NULL value. This allows such changesets to be
+** manipulated by legacy implementations of sqlite3changeset_invert(),
+** concat() and similar.
+**
+** The sqlite3changeset_apply() function automatically converts the 
+** zero-length blob back to a NULL value when updating the sqlite_stat1
+** table. However, if the application calls sqlite3changeset_new(),
+** sqlite3changeset_old() or sqlite3changeset_conflict on a changeset 
+** iterator directly (including on a changeset iterator passed to a
+** conflict-handler callback) then the X'' value is returned. The application
+** must translate X'' to NULL itself if required.
+**
+** Legacy (older than 3.22.0) versions of the sessions module cannot capture
+** changes made to the sqlite_stat1 table. Legacy versions of the
+** sqlite3changeset_apply() function silently ignore any modifications to the
+** sqlite_stat1 table that are part of a changeset or patchset.
 */
 SQLITE_API int sqlite3session_attach(
   sqlite3_session *pSession,      /* Session object */
