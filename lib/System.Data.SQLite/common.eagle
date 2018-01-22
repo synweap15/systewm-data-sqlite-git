@@ -3084,6 +3084,18 @@ namespace eval ::Eagle {
       }
     }
 
+    proc saveEagleShellEnvironment {} {
+      upvar 1 savedEnv savedEnv
+
+      saveEnvironmentVariables [list NoMutexes] savedEnv
+    }
+
+    proc restoreEagleShellEnvironment {} {
+      upvar 1 savedEnv savedEnv
+
+      restoreEnvironmentVariables [list NoMutexes] savedEnv
+    }
+
     proc saveMdaConfigEnvironment {} {
       upvar 1 savedEnv savedEnv
 

@@ -22,6 +22,8 @@ runSQLiteTestPrologue
 
 runTest {test tkt-0e48e80333-1.1 {unhook delegates on pooled close} -setup {
   moveEagleShellMdaConfig false
+
+  saveEagleShellEnvironment
   saveMdaConfigEnvironment
 } -body {
   set configFileName [writeEagleShellMdaConfig [string trim {
@@ -81,6 +83,7 @@ runTest {test tkt-0e48e80333-1.1 {unhook delegates on pooled close} -setup {
     }
   }]
 
+  set env(NoMutexes) 1; # ignore Eagle mutexes.
   set env(COMPLUS_MDA) 1; # enable MDA config file.
 
   set code [catch {
@@ -105,6 +108,8 @@ runTest {test tkt-0e48e80333-1.1 {unhook delegates on pooled close} -setup {
   unset -nocomplain code output error scriptFileName configFileName
 
   restoreMdaConfigEnvironment
+  restoreEagleShellEnvironment
+
   moveEagleShellMdaConfig true
 } -constraints {eagle dotNet testExec command.object monoBug28 command.sql\
 compile.DATA SQLite System.Data.SQLite} -result {0}}
@@ -113,7 +118,8 @@ compile.DATA SQLite System.Data.SQLite} -result {0}}
 
 runTest {test tkt-0e48e80333-1.2 {delegate MDA on pooled close} -setup {
   moveEagleShellMdaConfig false
-  saveEnvironmentVariables [list checkForVendorQuiet]
+
+  saveEagleShellEnvironment
   saveMdaConfigEnvironment
 
   setupDb [set fileName tkt-0e48e80333-1.2.db]
@@ -261,7 +267,7 @@ runTest {test tkt-0e48e80333-1.2 {delegate MDA on pooled close} -setup {
         } result] : [set result ""]}] $result]
   }]
 
-  set env(checkForVendorQuiet) 1
+  set env(NoMutexes) 1; # ignore Eagle mutexes.
   set env(COMPLUS_MDA) 1; # enable MDA config file.
 
   set code [catch {
@@ -277,7 +283,8 @@ runTest {test tkt-0e48e80333-1.2 {delegate MDA on pooled close} -setup {
   tlog $output
   tlog "\n---- END STDOUT OUTPUT\n"
 
-  set error [string trim $error]
+  set error [lindex \
+      [split [string map [list \r\n \n] [string trim $error]] \n] end]
 
   if {![regexp -- {0 (\d+)$} $error dummy count]} then {
     set count <unknown>
@@ -298,7 +305,8 @@ runTest {test tkt-0e48e80333-1.2 {delegate MDA on pooled close} -setup {
   unset -nocomplain db fileName
 
   restoreMdaConfigEnvironment
-  restoreEnvironmentVariables [list checkForVendorQuiet]
+  restoreEagleShellEnvironment
+
   moveEagleShellMdaConfig true
 } -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
 System.Data.SQLite compileCSharp} -match regexp -result {^0 \{Ok\
