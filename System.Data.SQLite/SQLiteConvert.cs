@@ -1251,6 +1251,10 @@ namespace System.Data.SQLite
       typeof(string),   // Text (3)
       typeof(byte[]),   // Blob (4)
       typeof(object),   // Null (5)
+      null,             // Undefined (6)
+      null,             // Undefined (7)
+      null,             // Undefined (8)
+      null,             // Undefined (9)
       typeof(DateTime), // DateTime (10)
       typeof(object)    // None (11)
     };
@@ -1330,7 +1334,9 @@ namespace System.Data.SQLite
       int.MaxValue, // AnsiStringFixedLength (22)
       int.MaxValue, // StringFixedLength (23)
       int.MaxValue, // ?? (24)
-      int.MaxValue  // Xml (25)
+      int.MaxValue, // Xml (25)
+      8,            // DateTime2 (26)
+      10            // DateTimeOffset (27)
     };
 
     internal static object DbTypeToNumericPrecision(DbType typ)
@@ -1364,7 +1370,9 @@ namespace System.Data.SQLite
       DBNull.Value, // AnsiStringFixedLength (22)
       DBNull.Value, // StringFixedLength (23)
       DBNull.Value, // ?? (24)
-      DBNull.Value  // Xml (25)
+      DBNull.Value, // Xml (25)
+      DBNull.Value, // DateTime2 (26)
+      DBNull.Value  // DateTimeOffset (27)
     };
 
     internal static object DbTypeToNumericScale(DbType typ)
@@ -1398,7 +1406,9 @@ namespace System.Data.SQLite
       DBNull.Value, // AnsiStringFixedLength (22)
       DBNull.Value, // StringFixedLength (23)
       DBNull.Value, // ?? (24)
-      DBNull.Value  // Xml (25)
+      DBNull.Value, // Xml (25)
+      DBNull.Value, // DateTime2 (26)
+      DBNull.Value  // DateTimeOffset (27)
     };
 
     /// <summary>
@@ -1592,32 +1602,42 @@ namespace System.Data.SQLite
     }
 
     private static Type[] _dbtypeToType = {
-      typeof(string),   // AnsiString (0)
-      typeof(byte[]),   // Binary (1)
-      typeof(byte),     // Byte (2)
-      typeof(bool),     // Boolean (3)
-      typeof(decimal),  // Currency (4)
-      typeof(DateTime), // Date (5)
-      typeof(DateTime), // DateTime (6)
-      typeof(decimal),  // Decimal (7)
-      typeof(double),   // Double (8)
-      typeof(Guid),     // Guid (9)
-      typeof(Int16),    // Int16 (10)
-      typeof(Int32),    // Int32 (11)
-      typeof(Int64),    // Int64 (12)
-      typeof(object),   // Object (13)
-      typeof(sbyte),    // SByte (14)
-      typeof(float),    // Single (15)
-      typeof(string),   // String (16)
-      typeof(DateTime), // Time (17)
-      typeof(UInt16),   // UInt16 (18)
-      typeof(UInt32),   // UInt32 (19)
-      typeof(UInt64),   // UInt64 (20)
-      typeof(double),   // VarNumeric (21)
-      typeof(string),   // AnsiStringFixedLength (22)
-      typeof(string),   // StringFixedLength (23)
-      typeof(string),   // ?? (24)
-      typeof(string),   // Xml (25)
+      typeof(string),        // AnsiString (0)
+      typeof(byte[]),        // Binary (1)
+      typeof(byte),          // Byte (2)
+      typeof(bool),          // Boolean (3)
+      typeof(decimal),       // Currency (4)
+      typeof(DateTime),      // Date (5)
+      typeof(DateTime),      // DateTime (6)
+      typeof(decimal),       // Decimal (7)
+      typeof(double),        // Double (8)
+      typeof(Guid),          // Guid (9)
+      typeof(Int16),         // Int16 (10)
+      typeof(Int32),         // Int32 (11)
+      typeof(Int64),         // Int64 (12)
+      typeof(object),        // Object (13)
+      typeof(sbyte),         // SByte (14)
+      typeof(float),         // Single (15)
+      typeof(string),        // String (16)
+      typeof(DateTime),      // Time (17)
+      typeof(UInt16),        // UInt16 (18)
+      typeof(UInt32),        // UInt32 (19)
+      typeof(UInt64),        // UInt64 (20)
+      typeof(double),        // VarNumeric (21)
+      typeof(string),        // AnsiStringFixedLength (22)
+      typeof(string),        // StringFixedLength (23)
+      typeof(string),        // ?? (24)
+      typeof(string),        // Xml (25)
+      typeof(DateTime),      // DateTime2 (26)
+#if NET_35 || NET_40 || NET_45 || NET_451 || NET_452 || NET_46 || NET_461 || NET_462 || NET_47 || NET_471
+      //
+      // NOTE: This type is only available on the
+      //       .NET Framework 2.0 SP1 and later.
+      //
+      typeof(DateTimeOffset) // DateTimeOffset (27)
+#else
+      typeof(DateTime)       // DateTimeOffset (27)
+#endif
     };
 
     /// <summary>
