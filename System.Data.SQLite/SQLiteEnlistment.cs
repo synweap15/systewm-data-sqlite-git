@@ -187,7 +187,11 @@ namespace System.Data.SQLite
       CheckDisposed();
 
       SQLiteConnection cnn = _transaction.Connection;
-      cnn._enlistment = null;
+
+      lock (cnn._enlistmentSyncRoot)
+      {
+          cnn._enlistment = null;
+      }
 
       try
       {
@@ -230,7 +234,11 @@ namespace System.Data.SQLite
       CheckDisposed();
 
       SQLiteConnection cnn = _transaction.Connection;
-      cnn._enlistment = null;
+
+      lock (cnn._enlistmentSyncRoot)
+      {
+          cnn._enlistment = null;
+      }
 
       try
       {

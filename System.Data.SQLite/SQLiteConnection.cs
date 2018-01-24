@@ -1471,6 +1471,12 @@ namespace System.Data.SQLite
 
 #if !PLATFORM_COMPACTFRAMEWORK
     /// <summary>
+    /// This object is used with lock statements to synchronize access to the
+    /// <see cref="_enlistment" /> field, below.
+    /// </summary>
+    internal readonly object _enlistmentSyncRoot = new object();
+
+    /// <summary>
     /// Whether or not the connection is enlisted in a distrubuted transaction
     /// </summary>
     internal SQLiteEnlistment _enlistment;
@@ -2899,24 +2905,27 @@ namespace System.Data.SQLite
       if (_sql != null)
       {
 #if !PLATFORM_COMPACTFRAMEWORK
-        if (_enlistment != null)
+        lock (_enlistmentSyncRoot) /* TRANSACTIONAL */
         {
-          // If the connection is enlisted in a transaction scope and the scope is still active,
-          // we cannot truly shut down this connection until the scope has completed.  Therefore make a
-          // hidden connection temporarily to hold open the connection until the scope has completed.
-          SQLiteConnection cnn = new SQLiteConnection();
-          cnn._sql = _sql;
-          cnn._transactionLevel = _transactionLevel;
-          cnn._transactionSequence = _transactionSequence;
-          cnn._enlistment = _enlistment;
-          cnn._connectionState = _connectionState;
-          cnn._version = _version;
+          if (_enlistment != null)
+          {
+            // If the connection is enlisted in a transaction scope and the scope is still active,
+            // we cannot truly shut down this connection until the scope has completed.  Therefore make a
+            // hidden connection temporarily to hold open the connection until the scope has completed.
+            SQLiteConnection cnn = new SQLiteConnection();
+            cnn._sql = _sql;
+            cnn._transactionLevel = _transactionLevel;
+            cnn._transactionSequence = _transactionSequence;
+            cnn._enlistment = _enlistment;
+            cnn._connectionState = _connectionState;
+            cnn._version = _version;
 
-          cnn._enlistment._transaction._cnn = cnn;
-          cnn._enlistment._disposeConnection = true;
+            _enlistment._transaction._cnn = cnn;
+            _enlistment._disposeConnection = true;
 
-          _sql = null;
-          _enlistment = null;
+            _sql = null;
+            _enlistment = null;
+          }
         }
 #endif
         if (_sql != null)
@@ -3367,28 +3376,31 @@ namespace System.Data.SQLite
     /// <param name="transaction">The distributed transaction to enlist in</param>
     public override void EnlistTransaction(System.Transactions.Transaction transaction)
     {
-      CheckDisposed();
+        CheckDisposed();
 
-      if (_enlistment != null && transaction == _enlistment._scope)
-        return;
-      else if (_enlistment != null)
-        throw new ArgumentException("Already enlisted in a transaction");
+        lock (_enlistmentSyncRoot) /* TRANSACTIONAL */
+        {
+            if (_enlistment != null && transaction == _enlistment._scope)
+                return;
+            else if (_enlistment != null)
+                throw new ArgumentException("Already enlisted in a transaction");
 
-      if (_transactionLevel > 0 && transaction != null)
-        throw new ArgumentException("Unable to enlist in transaction, a local transaction already exists");
-      else if (transaction == null)
-        throw new ArgumentNullException("Unable to enlist in transaction, it is null");
+            if (_transactionLevel > 0 && transaction != null)
+                throw new ArgumentException("Unable to enlist in transaction, a local transaction already exists");
+            else if (transaction == null)
+                throw new ArgumentNullException("Unable to enlist in transaction, it is null");
 
-      bool strictEnlistment = ((_flags & SQLiteConnectionFlags.StrictEnlistment) ==
-          SQLiteConnectionFlags.StrictEnlistment);
+            bool strictEnlistment = ((_flags & SQLiteConnectionFlags.StrictEnlistment) ==
+                SQLiteConnectionFlags.StrictEnlistment);
 
-      _enlistment = new SQLiteEnlistment(this, transaction,
-          GetFallbackDefaultIsolationLevel(), strictEnlistment,
-          strictEnlistment);
+            _enlistment = new SQLiteEnlistment(this, transaction,
+                GetFallbackDefaultIsolationLevel(), strictEnlistment,
+                strictEnlistment);
 
-      OnChanged(this, new ConnectionEventArgs(
-          SQLiteConnectionEventType.EnlistTransaction, null, null, null, null,
-          null, null, new object[] { _enlistment }));
+            OnChanged(this, new ConnectionEventArgs(
+                SQLiteConnectionEventType.EnlistTransaction, null, null, null, null,
+                null, null, new object[] { _enlistment }));
+        }
     }
 #endif
 
