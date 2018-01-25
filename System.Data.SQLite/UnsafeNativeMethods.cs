@@ -144,7 +144,7 @@ namespace System.Data.SQLite
       /// These numbers are used for debugging and testing purposes only.
       /// </summary>
       /// <param name="viaFile">
-      /// Non-zero if the specified setting is being read from the XML
+      /// Non-zero if the specified settings were read from the XML
       /// configuration file.
       /// </param>
       /// <returns>
@@ -170,6 +170,35 @@ namespace System.Data.SQLite
                       return null;
 
                   return new Dictionary<string, int>(settingReadCounts);
+              }
+          }
+      }
+
+      /////////////////////////////////////////////////////////////////////////
+
+      /// <summary>
+      /// Clears the read counts for the runtime configuration settings.
+      /// These numbers are used for debugging and testing purposes only.
+      /// </summary>
+      /// <param name="viaFile">
+      /// Non-zero if the specified settings were read from the XML
+      /// configuration file.
+      /// </param>
+      public static void ClearSettingReadCounts(
+          bool viaFile
+          )
+      {
+          lock (staticSyncRoot)
+          {
+              if (viaFile)
+              {
+                  if (settingFileReadCounts != null)
+                      settingFileReadCounts.Clear();
+              }
+              else
+              {
+                  if (settingReadCounts != null)
+                      settingReadCounts.Clear();
               }
           }
       }
@@ -222,6 +251,41 @@ namespace System.Data.SQLite
                           settingReadCounts.Add(name, 1);
                   }
               }
+          }
+      }
+
+      /////////////////////////////////////////////////////////////////////////
+
+      /// <summary>
+      /// Queries the counters.  These numbers are used for debugging and
+      /// testing purposes only.
+      /// </summary>
+      /// <returns>
+      /// A copy of the counters -OR- null if they are not available.
+      /// </returns>
+      public static object GetOtherCounts()
+      {
+          lock (staticSyncRoot)
+          {
+              if (otherCounts == null)
+                  return null;
+
+              return new Dictionary<string, int>(otherCounts);
+          }
+      }
+
+      /////////////////////////////////////////////////////////////////////////
+
+      /// <summary>
+      /// Clears the counters.  These numbers are used for debugging and
+      /// testing purposes only.
+      /// </summary>
+      public static void ClearOtherCounts()
+      {
+          lock (staticSyncRoot)
+          {
+              if (otherCounts != null)
+                  otherCounts.Clear();
           }
       }
 
@@ -1151,6 +1215,17 @@ namespace System.Data.SQLite
       /// </summary>
       internal static void Initialize()
       {
+          #region Debug Build Only
+#if DEBUG
+          //
+          // NOTE: Create the lists of statistics that will contain
+          //       various counts used in debugging, including the
+          //       number of times each setting value has been read.
+          //
+          DebugData.Initialize();
+#endif
+          #endregion
+
           //
           // NOTE: Check if a debugger needs to be attached before doing any
           //       real work.
@@ -1167,17 +1242,6 @@ namespace System.Data.SQLite
               return;
 #endif
 #endif
-
-          #region Debug Build Only
-#if DEBUG
-          //
-          // NOTE: Create the lists of statistics that will contain
-          //       various counts used in debugging, including the
-          //       number of times each setting value has been read.
-          //
-          DebugData.Initialize();
-#endif
-          #endregion
 
           lock (staticSyncRoot)
           {

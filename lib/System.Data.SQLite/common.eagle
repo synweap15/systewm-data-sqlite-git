@@ -3583,8 +3583,7 @@ namespace eval ::Eagle {
     proc getSettingReadCount { name {viaFile false} } {
       if {[haveConstraint buildConfiguration.Debug] && [catch {
         object invoke -flags +NonPublic -alias \
-            System.Data.SQLite.DebugData [expr {$viaFile ? \
-            "settingFileReadCounts" : "settingReadCounts"}]
+            System.Data.SQLite.DebugData GetSettingReadCounts $viaFile
       } settingReadCounts] == 0} then {
         if {[string length $name] > 0} then {
           if {[$settingReadCounts TryGetValue $name value]} then {
@@ -3627,7 +3626,7 @@ namespace eval ::Eagle {
     proc getOtherCount { name } {
       if {[haveConstraint buildConfiguration.Debug] && [catch {
         object invoke -flags +NonPublic -alias \
-            System.Data.SQLite.DebugData otherCounts
+            System.Data.SQLite.DebugData GetOtherCounts
       } otherCounts] == 0} then {
         if {[string length $name] > 0} then {
           if {[$otherCounts TryGetValue $name value]} then {
@@ -3710,7 +3709,7 @@ namespace eval ::Eagle {
           [haveConstraint buildConfiguration.Debug]} then {
         if {[catch {
           object invoke -flags +NonPublic -alias \
-              System.Data.SQLite.DebugData settingReadCounts
+              System.Data.SQLite.DebugData GetSettingReadCounts false
         } settingReadCounts] == 0} then {
           set nameCount [$settingReadCounts Count]
           set valueCount 0
@@ -3726,7 +3725,10 @@ namespace eval ::Eagle {
           }
 
           if {$reset} then {
-            if {[catch {$settingReadCounts Clear} error] == 0} then {
+            if {[catch {
+              object invoke -flags +NonPublic -alias \
+                  System.Data.SQLite.DebugData ClearSettingReadCounts false
+            } error] == 0} then {
               if {!$quiet} then {
                 tputs $channel [appendArgs \
                     "---- reset setting statistics for the previous " \
@@ -3745,7 +3747,7 @@ namespace eval ::Eagle {
 
         if {[catch {
           object invoke -flags +NonPublic -alias \
-              System.Data.SQLite.DebugData settingFileReadCounts
+              System.Data.SQLite.DebugData GetSettingReadCounts true
         } settingFileReadCounts] == 0} then {
           set nameCount [$settingFileReadCounts Count]
           set valueCount 0
@@ -3761,7 +3763,10 @@ namespace eval ::Eagle {
           }
 
           if {$reset} then {
-            if {[catch {$settingFileReadCounts Clear} error] == 0} then {
+            if {[catch {
+              object invoke -flags +NonPublic -alias \
+                  System.Data.SQLite.DebugData ClearSettingReadCounts true
+            } error] == 0} then {
               if {!$quiet} then {
                 tputs $channel [appendArgs \
                     "---- reset setting statistics for the previous " \
@@ -3782,7 +3787,7 @@ namespace eval ::Eagle {
 
         if {[catch {
           object invoke -flags +NonPublic -alias \
-              System.Data.SQLite.DebugData otherCounts
+              System.Data.SQLite.DebugData GetOtherCounts
         } otherCounts] == 0} then {
           set nameCount [$otherCounts Count]
           set valueCount 0
@@ -3798,7 +3803,10 @@ namespace eval ::Eagle {
           }
 
           if {$reset} then {
-            if {[catch {$otherCounts Clear} error] == 0} then {
+            if {[catch {
+              object invoke -flags +NonPublic -alias \
+                  System.Data.SQLite.DebugData ClearOtherCounts
+            } error] == 0} then {
               if {!$quiet} then {
                 tputs $channel [appendArgs \
                     "---- reset other counters for the previous " \
@@ -4713,6 +4721,25 @@ namespace eval ::Eagle {
             tputs $::test_channel [appendArgs $sourceId \n]
           } else {
             tputs $::test_channel unknown\n
+          }
+        }
+
+        #
+        # NOTE: Reset cached "break into debugger" setting so that it can be
+        #       used during the test file, if needed.
+        #
+        if {![info exists ::no(resetBreakIntoDebugger)] && \
+            [haveSQLiteObjectCommand]} then {
+          if {[catch {
+            object invoke -flags +NonPublic \
+                System.Data.SQLite.HelperMethods ResetBreakIntoDebugger
+          } result] == 0} then {
+            tputs $::test_channel [appendArgs \
+                "---- call ResetBreakIntoDebugger()... ok\n"]
+          } else {
+            tputs $::test_channel [appendArgs \
+                "---- call ResetBreakIntoDebugger()... error: " \
+                \n\t $result \n]
           }
         }
 
