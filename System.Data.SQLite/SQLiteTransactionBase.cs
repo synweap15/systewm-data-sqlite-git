@@ -61,7 +61,7 @@ namespace System.Data.SQLite
         {
             get { CheckDisposed(); return _level; }
         }
- 
+
         ///////////////////////////////////////////////////////////////////////////////////////////////
 
         #region IDisposable "Pattern" Members
