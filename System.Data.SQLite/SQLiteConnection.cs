@@ -2907,24 +2907,31 @@ namespace System.Data.SQLite
 #if !PLATFORM_COMPACTFRAMEWORK
         lock (_enlistmentSyncRoot) /* TRANSACTIONAL */
         {
-          if (_enlistment != null)
+          SQLiteEnlistment enlistment = _enlistment;
+          _enlistment = null;
+
+          if (enlistment != null)
           {
             // If the connection is enlisted in a transaction scope and the scope is still active,
             // we cannot truly shut down this connection until the scope has completed.  Therefore make a
             // hidden connection temporarily to hold open the connection until the scope has completed.
             SQLiteConnection cnn = new SQLiteConnection();
+
             cnn._sql = _sql;
             cnn._transactionLevel = _transactionLevel;
             cnn._transactionSequence = _transactionSequence;
-            cnn._enlistment = _enlistment;
+            cnn._enlistment = enlistment;
             cnn._connectionState = _connectionState;
             cnn._version = _version;
 
-            _enlistment._transaction._cnn = cnn;
-            _enlistment._disposeConnection = true;
+            SQLiteTransaction transaction = enlistment._transaction;
+
+            if (transaction != null)
+                transaction._cnn = cnn;
+
+            enlistment._disposeConnection = true;
 
             _sql = null;
-            _enlistment = null;
           }
         }
 #endif
