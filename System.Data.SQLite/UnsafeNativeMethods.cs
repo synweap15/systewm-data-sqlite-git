@@ -140,6 +140,43 @@ namespace System.Data.SQLite
       /////////////////////////////////////////////////////////////////////////
 
       /// <summary>
+      /// Queries the read counts for the runtime configuration settings.
+      /// These numbers are used for debugging and testing purposes only.
+      /// </summary>
+      /// <param name="viaFile">
+      /// Non-zero if the specified setting is being read from the XML
+      /// configuration file.
+      /// </param>
+      /// <returns>
+      /// A copy of the statistics for the specified runtime configuration
+      /// settings -OR- null if they are not available.
+      /// </returns>
+      public static object GetSettingReadCounts(
+          bool viaFile
+          )
+      {
+          lock (staticSyncRoot)
+          {
+              if (viaFile)
+              {
+                  if (settingFileReadCounts == null)
+                      return null;
+
+                  return new Dictionary<string, int>(settingFileReadCounts);
+              }
+              else
+              {
+                  if (settingReadCounts == null)
+                      return null;
+
+                  return new Dictionary<string, int>(settingReadCounts);
+              }
+          }
+      }
+
+      /////////////////////////////////////////////////////////////////////////
+
+      /// <summary>
       /// Increments the read count for the specified runtime configuration
       /// setting.  These numbers are used for debugging and testing purposes
       /// only.
@@ -334,6 +371,20 @@ namespace System.Data.SQLite
 
       #region Internal Methods
       /// <summary>
+      /// Resets the cached value for the "PreLoadSQLite_BreakIntoDebugger"
+      /// configuration setting.
+      /// </summary>
+      internal static void ResetBreakIntoDebugger()
+      {
+          lock (staticSyncRoot)
+          {
+              debuggerBreak = null;
+          }
+      }
+
+      /////////////////////////////////////////////////////////////////////////
+
+      /// <summary>
       /// If the "PreLoadSQLite_BreakIntoDebugger" configuration setting is
       /// present (e.g. via the environment), give the interactive user an
       /// opportunity to attach a debugger to the current process; otherwise,
@@ -410,6 +461,19 @@ namespace System.Data.SQLite
                   }
 
                   throw;
+              }
+          }
+          else
+          {
+              //
+              // BUGFIX: There is (almost) no point in checking for the
+              //         associated configuration setting repeatedly.
+              //         Prevent that here by setting the cached value
+              //         to false.
+              //
+              lock (staticSyncRoot)
+              {
+                  debuggerBreak = false;
               }
           }
       }
