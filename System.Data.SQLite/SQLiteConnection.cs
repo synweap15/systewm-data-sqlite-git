@@ -2939,7 +2939,11 @@ namespace System.Data.SQLite
             SQLiteConnection cnn = new SQLiteConnection();
 
 #if DEBUG
-            cnn._debugString = _debugString;
+            cnn._debugString = HelperMethods.StringFormat(
+                CultureInfo.InvariantCulture,
+                "closeThreadId = {0}, {1}{2}{2}{3}",
+                HelperMethods.GetThreadId(), _sql,
+                Environment.NewLine, _debugString);
 #endif
 
             cnn._sql = _sql;
@@ -4223,7 +4227,7 @@ namespace System.Data.SQLite
 #if DEBUG
           _debugString = HelperMethods.StringFormat(
               CultureInfo.InvariantCulture,
-              "threadId = {0}, connectionString = {1}",
+              "openThreadId = {0}, connectionString = {1}",
               HelperMethods.GetThreadId(), _connectionString);
 #endif
         }

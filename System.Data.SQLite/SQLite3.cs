@@ -210,6 +210,17 @@ namespace System.Data.SQLite
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
 
+#if DEBUG
+    public override string ToString()
+    {
+        return HelperMethods.StringFormat(
+            CultureInfo.InvariantCulture, "fileName = {0}, flags = {1}",
+            _fileName, _flags);
+    }
+#endif
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+
 #if INTEROP_VIRTUAL_TABLE
     /// <summary>
     /// This method attempts to dispose of all the <see cref="SQLiteModule" /> derived
