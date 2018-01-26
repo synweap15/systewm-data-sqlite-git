@@ -276,6 +276,8 @@ namespace System.Data.SQLite
                     if (!Object.ReferenceEquals(cnn, _transaction.Connection))
                         continue;
 
+                    cnn._enlistment = null;
+
                     _transaction.Rollback();
 
                     break;
