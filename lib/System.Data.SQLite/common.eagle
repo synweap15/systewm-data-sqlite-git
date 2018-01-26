@@ -2541,7 +2541,7 @@ namespace eval ::Eagle {
       #       only used for debugging.
       #
       if {[info exists ::test_file]} then {
-        append result {TestFile=${::test_file};}
+        append result TestFile= $::test_file \;
       }
 
       #
@@ -2549,7 +2549,7 @@ namespace eval ::Eagle {
       #       used for debugging.
       #
       if {[info exists ::eagle_tests(CurrentName)]} then {
-        append result {TestName=${::eagle_tests(CurrentName)};}
+        append result TestName= $::eagle_tests(CurrentName) \;
       }
 
       return $result
