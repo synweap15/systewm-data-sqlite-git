@@ -83,7 +83,7 @@ runTest {test tkt-85b824b736-1.1 {SQLiteValue.GetString return value} -setup {
           StringList result = new StringList();
 
           using (SQLiteConnection connection = new SQLiteConnection(
-              "Data Source=${dataSource};[getFlagsProperty]"))
+              "Data Source=${dataSource};[getTestProperties]"))
           {
             connection.Open();
 
@@ -202,7 +202,7 @@ runTest {test tkt-85b824b736-1.2 {SQLiteValue.GetBlob return value} -setup {
           ByteList result = new ByteList();
 
           using (SQLiteConnection connection = new SQLiteConnection(
-              "Data Source=${dataSource};[getFlagsProperty]"))
+              "Data Source=${dataSource};[getTestProperties]"))
           {
             connection.Open();
 

@@ -545,6 +545,23 @@ namespace System.Data.SQLite
       /////////////////////////////////////////////////////////////////////////
 
       /// <summary>
+      /// Determines the ID of the current thread.  Only used for debugging.
+      /// </summary>
+      /// <returns>
+      /// The ID of the current thread -OR- zero if it cannot be determined.
+      /// </returns>
+      internal static int GetThreadId()
+      {
+#if !PLATFORM_COMPACTFRAMEWORK
+          return AppDomain.GetCurrentThreadId();
+#else
+          return 0;
+#endif
+      }
+
+      /////////////////////////////////////////////////////////////////////////
+
+      /// <summary>
       /// Determines if preparing a query should be logged.
       /// </summary>
       /// <param name="flags">

@@ -147,7 +147,7 @@ for {set i 0} {$i < [llength $params(pages)]} {incr i} {
             )
           {
             using (SQLiteConnection destination = new SQLiteConnection(
-                "Data Source=${dataSource};[getFlagsProperty]"))
+                "Data Source=${dataSource};[getTestProperties]"))
             {
               destination.Open();
 

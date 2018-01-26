@@ -62,7 +62,7 @@ runTest {test tkt-e30b820248-1.1 {disposal ordering} -setup {
             Trace.WriteLine("---- START TRACE \\"${name}\\"");
 
             using (SQLiteConnection connection = new SQLiteConnection(
-                "Data Source=${dataSource};[getFlagsProperty]"))
+                "Data Source=${dataSource};[getTestProperties]"))
             {
               connection.Open();
               connection.LogMessage(0, "Connection opened.");
@@ -158,7 +158,7 @@ for {set i 2} {$i < 5} {incr i} {
           public static void OpenConnection()
           {
             connection = new SQLiteConnection(
-                "Data Source=${dataSource};[getFlagsProperty]");
+                "Data Source=${dataSource};[getTestProperties]");
 
             connection.Open();
             connection.LogMessage(0, "Connection opened.");
