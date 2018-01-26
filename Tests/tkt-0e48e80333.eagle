@@ -194,7 +194,7 @@ runTest {test tkt-0e48e80333-1.2 {delegate MDA on pooled close} -setup {
           {
             SQLiteConnection connection = new SQLiteConnection(
                 "Data Source=${dataSource};Journal Mode=Wal;Pooling=true;" +
-                "[getFlagsProperty AllowNestedTransactions]");
+                "[getTestProperties AllowNestedTransactions]");
 
             connection.Open();
             connection.Trace += handler;

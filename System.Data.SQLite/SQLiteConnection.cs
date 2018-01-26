@@ -1442,6 +1442,14 @@ namespace System.Data.SQLite
     private string _connectionString;
 
     /// <summary>
+    /// This string will contain enough information to identify this connection,
+    /// e.g. the database file name, original thread, etc.  It is not currently
+    /// exposed via the public interface as it is intended for use only when
+    /// debugging this library.
+    /// </summary>
+    private string _debugString;
+
+    /// <summary>
     /// Nesting level of the transactions open on the connection
     /// </summary>
     internal int _transactionLevel;
@@ -2650,7 +2658,7 @@ namespace System.Data.SQLite
                 System.Diagnostics.Trace.WriteLine(HelperMethods.StringFormat(
                     CultureInfo.CurrentCulture,
                     "WARNING: Disposing of connection \"{0}\" with the no-dispose flag set.",
-                    _connectionString));
+                    _debugString));
             }
         }
 #endif
@@ -4194,6 +4202,11 @@ namespace System.Data.SQLite
           OnChanged(this, new ConnectionEventArgs(
               SQLiteConnectionEventType.Opened, eventArgs, null, null, null,
               null, _connectionString, new object[] { opts }));
+
+          _debugString = HelperMethods.StringFormat(
+              CultureInfo.InvariantCulture,
+              "threadId = {0}, connectionString = {1}",
+              HelperMethods.GetThreadId(), _connectionString);
         }
         catch
         {

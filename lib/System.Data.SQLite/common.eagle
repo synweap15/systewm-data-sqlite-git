@@ -2530,6 +2530,31 @@ namespace eval ::Eagle {
       return ""
     }
 
+    proc getTestProperties { {flags ""} {quiet false} } {
+      #
+      # NOTE: Start with "Flags" property for the new connection, if any.
+      #
+      set result [getFlagsProperty $flags $quiet]
+
+      #
+      # NOTE: Add the name of the current test file, if available.  This is
+      #       only used for debugging.
+      #
+      if {[info exists ::test_file]} then {
+        append result {TestFile=${::test_file};}
+      }
+
+      #
+      # NOTE: Add the name of the current test, if available.  This is only
+      #       used for debugging.
+      #
+      if {[info exists ::eagle_tests(CurrentName)]} then {
+        append result {TestName=${::eagle_tests(CurrentName)};}
+      }
+
+      return $result
+    }
+
     proc enableSharedCache { channel enable {quiet false} } {
       if {[catch {
         object invoke -flags +NonPublic \
@@ -2659,6 +2684,22 @@ namespace eval ::Eagle {
       #
       if {[string length $extra] > 0} then {
         append connection \; $extra
+      }
+
+      #
+      # NOTE: Add the name of the current test file, if available.  This is
+      #       only used for debugging.
+      #
+      if {[info exists ::test_file]} then {
+        append connection {;TestFile=${::test_file}}
+      }
+
+      #
+      # NOTE: Add the name of the current test, if available.  This is only
+      #       used for debugging.
+      #
+      if {[info exists ::eagle_tests(CurrentName)]} then {
+        append connection {;TestName=${::eagle_tests(CurrentName)}}
       }
 
       #
@@ -4955,7 +4996,7 @@ namespace eval ::Eagle {
         #       "test context" information is per-thread.
         #
         if {![info exists ::test_constraints]} then {
-          set ::test_constraints $::eagle_tests(constraints)
+          set ::test_constraints $::eagle_tests(Constraints)
         }
 
         #

@@ -80,7 +80,7 @@ runTest {test tkt-47c6fa04d3-1.1 {loading DataTable with JOIN} -setup {
           DataTable dataTable;
 
           using (SQLiteConnection connection = new SQLiteConnection(
-              "Data Source=${dataSource};[getFlagsProperty]"))
+              "Data Source=${dataSource};[getTestProperties]"))
           {
             connection.Open();
 

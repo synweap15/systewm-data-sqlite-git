@@ -86,7 +86,7 @@ runTest {test vtab-1.1 {basic virtual table support} -setup {
         public static void Main()
         {
           using (SQLiteConnection connection = new SQLiteConnection(
-              "Data Source=${dataSource};[getFlagsProperty]"))
+              "Data Source=${dataSource};[getTestProperties]"))
           {
             connection.Open();
             connection.CreateModule(new SQLiteModuleTest${id}("mod${id}"));
@@ -155,7 +155,7 @@ runTest {test vtab-1.2.1 {IEnumerable virtual table} -setup {
           StringList result = new StringList();
 
           using (SQLiteConnection connection = new SQLiteConnection(
-              "Data Source=${dataSource};[getFlagsProperty]"))
+              "Data Source=${dataSource};[getTestProperties]"))
           {
             connection.Open();
 
@@ -263,7 +263,7 @@ runTest {test vtab-1.2.2 {IEnumerable virtual table} -setup {
           StringList result = new StringList();
 
           using (SQLiteConnection connection = new SQLiteConnection(
-              "Data Source=${dataSource};[getFlagsProperty]"))
+              "Data Source=${dataSource};[getTestProperties]"))
           {
             connection.Open();
 
@@ -375,7 +375,7 @@ runTest {test vtab-1.3.1 {IEnumerable<T> virtual table} -setup {
           StringList result = new StringList();
 
           using (SQLiteConnection connection = new SQLiteConnection(
-              "Data Source=${dataSource};[getFlagsProperty]"))
+              "Data Source=${dataSource};[getTestProperties]"))
           {
             connection.Open();
 
@@ -483,7 +483,7 @@ runTest {test vtab-1.3.2 {IEnumerable<T> virtual table} -setup {
           StringList result = new StringList();
 
           using (SQLiteConnection connection = new SQLiteConnection(
-              "Data Source=${dataSource};[getFlagsProperty]"))
+              "Data Source=${dataSource};[getTestProperties]"))
           {
             connection.Open();
 
@@ -719,7 +719,7 @@ runTest {test vtab-1.4 {virtual table function support} -setup {
           StringList result = new StringList();
 
           using (SQLiteConnection connection = new SQLiteConnection(
-              "Data Source=${dataSource};[getFlagsProperty NoBindFunctions]"))
+              "Data Source=${dataSource};[getTestProperties NoBindFunctions]"))
           {
             connection.Open();
             connection.CreateModule(new SQLiteModuleTest${id}("mod${id}"));
@@ -972,7 +972,7 @@ runTest {test vtab-1.5 {virtual table function support} -setup {
           StringList result = new StringList();
 
           using (SQLiteConnection connection = new SQLiteConnection(
-              "Data Source=${dataSource};[getFlagsProperty]"))
+              "Data Source=${dataSource};[getTestProperties]"))
           {
             connection.Open();
             connection.CreateModule(new SQLiteModuleTest${id}("mod${id}"));
@@ -1141,7 +1141,7 @@ runTest {test vtab-1.6 {virtual table rename support} -setup {
           StringList result = new StringList();
 
           using (SQLiteConnection connection = new SQLiteConnection(
-              "Data Source=${dataSource};[getFlagsProperty]"))
+              "Data Source=${dataSource};[getTestProperties]"))
           {
             connection.Open();
             connection.CreateModule(new SQLiteModuleTest${id}("mod${id}"));
@@ -1318,7 +1318,7 @@ runTest {test vtab-1.7 {virtual table xBestIndex marshalling (1)} -setup {
           StringList result = new StringList();
 
           using (SQLiteConnection connection = new SQLiteConnection(
-              "Data Source=${dataSource};[getFlagsProperty]"))
+              "Data Source=${dataSource};[getTestProperties]"))
           {
             connection.Open();
 
@@ -1463,7 +1463,7 @@ runTest {test vtab-1.8 {virtual table xBestIndex marshalling (2)} -setup {
           StringList result = new StringList();
 
           using (SQLiteConnection connection = new SQLiteConnection(
-              "Data Source=${dataSource};[getFlagsProperty]"))
+              "Data Source=${dataSource};[getTestProperties]"))
           {
             connection.Open();
 
@@ -1557,7 +1557,7 @@ runTest {test vtab-1.9 {IEnumerable virtual table w/large byte array} -setup {
         public static object GetSum()
         {
           using (SQLiteConnection connection = new SQLiteConnection(
-              "Data Source=${dataSource};[getFlagsProperty]"))
+              "Data Source=${dataSource};[getTestProperties]"))
           {
             connection.Open();
 
@@ -1639,7 +1639,7 @@ runTest {test vtab-1.10 {virtual table xRowId uniqueness} -setup {
           StringList result = new StringList();
 
           using (SQLiteConnection connection = new SQLiteConnection(
-              "Data Source=${dataSource};[getFlagsProperty]"))
+              "Data Source=${dataSource};[getTestProperties]"))
           {
             connection.Open();
 
@@ -1737,7 +1737,7 @@ runTest {test vtab-1.11 {IEnumerable virtual table w/object identity} -setup {
           StringList result = new StringList();
 
           using (SQLiteConnection connection = new SQLiteConnection(
-              "Data Source=${dataSource};[getFlagsProperty]"))
+              "Data Source=${dataSource};[getTestProperties]"))
           {
             connection.Open();
 
