@@ -4184,7 +4184,8 @@ namespace System.Data.SQLite
               SQLiteConnectionEventType.Opened, eventArgs, null, null, null,
               null, _connectionString, new object[] { opts }));
 
-          _debugString = String.Format(
+          _debugString = HelperMethods.StringFormat(
+              CultureInfo.InvariantCulture,
               "threadId = {0}, connectionString = {1}",
               HelperMethods.GetThreadId(), _connectionString);
         }
