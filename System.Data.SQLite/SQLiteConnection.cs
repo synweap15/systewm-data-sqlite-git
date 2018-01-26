@@ -1441,6 +1441,7 @@ namespace System.Data.SQLite
     /// </summary>
     private string _connectionString;
 
+#if DEBUG
     /// <summary>
     /// This string will contain enough information to identify this connection,
     /// e.g. the database file name, original thread, etc.  It is not currently
@@ -1448,6 +1449,7 @@ namespace System.Data.SQLite
     /// debugging this library.
     /// </summary>
     private string _debugString;
+#endif
 
     /// <summary>
     /// Nesting level of the transactions open on the connection
@@ -1667,6 +1669,13 @@ namespace System.Data.SQLite
             ConnectionState.Open : ConnectionState.Closed;
 
         _connectionString = null; /* unknown */
+
+#if DEBUG
+        _debugString = HelperMethods.StringFormat(
+            CultureInfo.InvariantCulture,
+            "db = {0}, fileName = {1}, ownHandle = {2}",
+            db, fileName, ownHandle);
+#endif
     }
 #endif
 
@@ -1748,6 +1757,10 @@ namespace System.Data.SQLite
     public SQLiteConnection(SQLiteConnection connection)
       : this(connection.ConnectionString, connection.ParseViaFramework)
     {
+#if DEBUG
+      _debugString = connection._debugString;
+#endif
+
       if (connection.State == ConnectionState.Open)
       {
         Open();
@@ -2658,7 +2671,7 @@ namespace System.Data.SQLite
                 System.Diagnostics.Trace.WriteLine(HelperMethods.StringFormat(
                     CultureInfo.CurrentCulture,
                     "WARNING: Disposing of connection \"{0}\" with the no-dispose flag set.",
-                    _debugString));
+                    _connectionString));
             }
         }
 #endif
@@ -2924,6 +2937,10 @@ namespace System.Data.SQLite
             // we cannot truly shut down this connection until the scope has completed.  Therefore make a
             // hidden connection temporarily to hold open the connection until the scope has completed.
             SQLiteConnection cnn = new SQLiteConnection();
+
+#if DEBUG
+            cnn._debugString = _debugString;
+#endif
 
             cnn._sql = _sql;
             cnn._transactionLevel = _transactionLevel;
@@ -4203,10 +4220,12 @@ namespace System.Data.SQLite
               SQLiteConnectionEventType.Opened, eventArgs, null, null, null,
               null, _connectionString, new object[] { opts }));
 
+#if DEBUG
           _debugString = HelperMethods.StringFormat(
               CultureInfo.InvariantCulture,
               "threadId = {0}, connectionString = {1}",
               HelperMethods.GetThreadId(), _connectionString);
+#endif
         }
         catch
         {
