@@ -3460,6 +3460,8 @@ namespace System.Data.SQLite
         int timeoutMilliseconds
         )
     {
+        CheckDisposed();
+
         if (timeoutMilliseconds < 0)
             throw new ArgumentException("timeout cannot be negative");
 
