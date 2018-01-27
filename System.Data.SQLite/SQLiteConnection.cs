@@ -3538,8 +3538,13 @@ namespace System.Data.SQLite
             //
             // NOTE: Are we done wait?
             //
-            if (elapsed.TotalMilliseconds >= (double)timeoutMilliseconds)
+            double totalMilliseconds = elapsed.TotalMilliseconds;
+
+            if ((totalMilliseconds < 0) || /* Time went backward? */
+                (totalMilliseconds >= (double)timeoutMilliseconds))
+            {
                 return false;
+            }
 
             //
             // NOTE: Sleep for a bit and then try again.
