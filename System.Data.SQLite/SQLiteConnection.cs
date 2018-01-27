@@ -18,6 +18,7 @@ namespace System.Data.SQLite
   using System.Runtime.InteropServices;
   using System.IO;
   using System.Text;
+  using System.Threading;
 
   /////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -2039,7 +2040,7 @@ namespace System.Data.SQLite
                 //       this thread forever.
                 //
                 if (retry && (retryMilliseconds >= 0))
-                    System.Threading.Thread.Sleep(retryMilliseconds);
+                    Thread.Sleep(retryMilliseconds);
 
                 //
                 // NOTE: There is no point in calling the native API to copy
@@ -3436,6 +3437,114 @@ namespace System.Data.SQLite
             OnChanged(this, new ConnectionEventArgs(
                 SQLiteConnectionEventType.EnlistTransaction, null, null, null, null,
                 null, null, new object[] { _enlistment }));
+        }
+    }
+
+    /// <summary>
+    /// <![CDATA[<b>]]>EXPERIMENTAL<![CDATA[</b>]]>
+    /// Waits for the enlistment associated with this connection to be reset.
+    /// </summary>
+    /// <param name="timeoutMilliseconds">
+    /// The approximate maximum number of milliseconds to wait before timing
+    /// out the wait operation.
+    /// </param>
+    /// <returns>
+    /// Non-zero if the enlistment assciated with this connection was reset;
+    /// otherwise, zero.  It should be noted that this method returning a
+    /// non-zero value does not necessarily guarantee that the connection
+    /// can enlist in a new transaction (i.e. due to potentical race with
+    /// other threads); therefore, callers should generally use try/catch
+    /// when calling the <see cref="EnlistTransaction" /> method.
+    /// </returns>
+    public bool WaitForEnlistmentReset(
+        int timeoutMilliseconds
+        )
+    {
+        if (timeoutMilliseconds < 0)
+            throw new ArgumentException("timeout cannot be negative");
+
+        const int defaultMilliseconds = 100;
+        int sleepMilliseconds;
+
+        if (timeoutMilliseconds == 0)
+        {
+            sleepMilliseconds = 0;
+        }
+        else
+        {
+            sleepMilliseconds = Math.Min(
+                timeoutMilliseconds / 10, defaultMilliseconds);
+
+            if (sleepMilliseconds == 0)
+                sleepMilliseconds = defaultMilliseconds;
+        }
+
+        DateTime start = DateTime.UtcNow;
+
+        while (true)
+        {
+            //
+            // NOTE: Attempt to acquire the necessary lock without blocking.
+            //       This method will treat a failure to obtain the lock the
+            //       same as the enlistment not being reset yet.  Both will
+            //       advance toward the timeout.
+            //
+            bool locked = Monitor.TryEnter(_enlistmentSyncRoot);
+
+            try
+            {
+                if (locked)
+                {
+                    //
+                    // NOTE: Is there still an enlistment?  If not, we are
+                    //       done.  There is a potential race condition in
+                    //       the caller if another thread is able to setup
+                    //       a new enlistment at any point prior to our
+                    //       caller fully dealing with the result of this
+                    //       method.  However, that should generally never
+                    //       happen because this class is not intended to
+                    //       be used by multiple concurrent threads, with
+                    //       the notable exception of an active enlistment
+                    //       being asynchronously committed or rolled back
+                    //       by the .NET Framework.
+                    //
+                    if (_enlistment == null)
+                        return true;
+                }
+            }
+            finally
+            {
+                if (locked)
+                {
+                    Monitor.Exit(_enlistmentSyncRoot);
+                    locked = false;
+                }
+            }
+
+            //
+            // NOTE: A timeout value of zero is special.  It means never
+            //       sleep.
+            //
+            if (sleepMilliseconds == 0)
+                return false;
+
+            //
+            // NOTE: How much time has elapsed since we first starting
+            //       waiting?
+            //
+            DateTime now = DateTime.UtcNow;
+            TimeSpan elapsed = now.Subtract(start);
+
+            //
+            // NOTE: Are we done wait?
+            //
+            if (elapsed.TotalMilliseconds >= (double)timeoutMilliseconds)
+                return false;
+
+            //
+            // NOTE: Sleep for a bit and then try again.
+            //
+            Thread.Sleep(sleepMilliseconds);
         }
     }
 #endif
