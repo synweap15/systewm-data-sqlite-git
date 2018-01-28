@@ -106,7 +106,7 @@ namespace System.Data.SQLite
 
     private void Cleanup(SQLiteConnection cnn)
     {
-        if (_disposeConnection)
+        if (_disposeConnection && (cnn != null))
             cnn.Dispose();
 
         _transaction = null;
@@ -184,23 +184,47 @@ namespace System.Data.SQLite
     #region IEnlistmentNotification Members
     public void Commit(Enlistment enlistment)
     {
-      CheckDisposed();
+        CheckDisposed();
 
-      SQLiteConnection cnn = _transaction.Connection;
-      cnn._enlistment = null;
+        SQLiteConnection cnn = null;
 
-      try
-      {
-        _transaction.IsValid(true);
-        _transaction.Connection._transactionLevel = 1;
-        _transaction.Commit();
+        try
+        {
+            while (true)
+            {
+                cnn = _transaction.Connection;
 
-        enlistment.Done();
-      }
-      finally
-      {
-        Cleanup(cnn);
-      }
+                if (cnn == null)
+                    break;
+
+                lock (cnn._enlistmentSyncRoot) /* TRANSACTIONAL */
+                {
+                    //
+                    // NOTE: This check is necessary to detect the case where
+                    //       the SQLiteConnection.Close() method changes the
+                    //       connection associated with our transaction (i.e.
+                    //       to avoid a race (condition) between grabbing the
+                    //       Connection property and locking its enlistment).
+                    //
+                    if (!Object.ReferenceEquals(cnn, _transaction.Connection))
+                        continue;
+
+                    cnn._enlistment = null;
+
+                    _transaction.IsValid(true); /* throw */
+                    cnn._transactionLevel = 1;
+                    _transaction.Commit();
+
+                    break;
+                }
+            }
+
+            enlistment.Done();
+        }
+        finally
+        {
+            Cleanup(cnn);
+        }
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -227,20 +251,45 @@ namespace System.Data.SQLite
 
     public void Rollback(Enlistment enlistment)
     {
-      CheckDisposed();
+        CheckDisposed();
 
-      SQLiteConnection cnn = _transaction.Connection;
-      cnn._enlistment = null;
+        SQLiteConnection cnn = null;
 
-      try
-      {
-        _transaction.Rollback();
-        enlistment.Done();
-      }
-      finally
-      {
-        Cleanup(cnn);
-      }
+        try
+        {
+            while (true)
+            {
+                cnn = _transaction.Connection;
+
+                if (cnn == null)
+                    break;
+
+                lock (cnn._enlistmentSyncRoot) /* TRANSACTIONAL */
+                {
+                    //
+                    // NOTE: This check is necessary to detect the case where
+                    //       the SQLiteConnection.Close() method changes the
+                    //       connection associated with our transaction (i.e.
+                    //       to avoid a race (condition) between grabbing the
+                    //       Connection property and locking its enlistment).
+                    //
+                    if (!Object.ReferenceEquals(cnn, _transaction.Connection))
+                        continue;
+
+                    cnn._enlistment = null;
+
+                    _transaction.Rollback();
+
+                    break;
+                }
+            }
+
+            enlistment.Done();
+        }
+        finally
+        {
+            Cleanup(cnn);
+        }
     }
     #endregion
   }

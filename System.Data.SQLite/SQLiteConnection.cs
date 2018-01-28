@@ -18,6 +18,7 @@ namespace System.Data.SQLite
   using System.Runtime.InteropServices;
   using System.IO;
   using System.Text;
+  using System.Threading;
 
   /////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -1481,6 +1482,12 @@ namespace System.Data.SQLite
 
 #if !PLATFORM_COMPACTFRAMEWORK
     /// <summary>
+    /// This object is used with lock statements to synchronize access to the
+    /// <see cref="_enlistment" /> field, below.
+    /// </summary>
+    internal readonly object _enlistmentSyncRoot = new object();
+
+    /// <summary>
     /// Whether or not the connection is enlisted in a distrubuted transaction
     /// </summary>
     internal SQLiteEnlistment _enlistment;
@@ -2033,7 +2040,7 @@ namespace System.Data.SQLite
                 //       this thread forever.
                 //
                 if (retry && (retryMilliseconds >= 0))
-                    System.Threading.Thread.Sleep(retryMilliseconds);
+                    Thread.Sleep(retryMilliseconds);
 
                 //
                 // NOTE: There is no point in calling the native API to copy
@@ -2920,33 +2927,42 @@ namespace System.Data.SQLite
       if (_sql != null)
       {
 #if !PLATFORM_COMPACTFRAMEWORK
-        if (_enlistment != null)
+        lock (_enlistmentSyncRoot) /* TRANSACTIONAL */
         {
-          // If the connection is enlisted in a transaction scope and the scope is still active,
-          // we cannot truly shut down this connection until the scope has completed.  Therefore make a
-          // hidden connection temporarily to hold open the connection until the scope has completed.
-          SQLiteConnection cnn = new SQLiteConnection();
+          SQLiteEnlistment enlistment = _enlistment;
+          _enlistment = null;
+
+          if (enlistment != null)
+          {
+            // If the connection is enlisted in a transaction scope and the scope is still active,
+            // we cannot truly shut down this connection until the scope has completed.  Therefore make a
+            // hidden connection temporarily to hold open the connection until the scope has completed.
+            SQLiteConnection cnn = new SQLiteConnection();
 
 #if DEBUG
-          cnn._debugString = HelperMethods.StringFormat(
-              CultureInfo.InvariantCulture,
-              "closeThreadId = {0}, {1}{2}{2}{3}",
-              HelperMethods.GetThreadId(), _sql,
-              Environment.NewLine, _debugString);
+            cnn._debugString = HelperMethods.StringFormat(
+                CultureInfo.InvariantCulture,
+                "closeThreadId = {0}, {1}{2}{2}{3}",
+                HelperMethods.GetThreadId(), _sql,
+                Environment.NewLine, _debugString);
 #endif
 
-          cnn._sql = _sql;
-          cnn._transactionLevel = _transactionLevel;
-          cnn._transactionSequence = _transactionSequence;
-          cnn._enlistment = _enlistment;
-          cnn._connectionState = _connectionState;
-          cnn._version = _version;
+            cnn._sql = _sql;
+            cnn._transactionLevel = _transactionLevel;
+            cnn._transactionSequence = _transactionSequence;
+            cnn._enlistment = enlistment;
+            cnn._connectionState = _connectionState;
+            cnn._version = _version;
 
-          cnn._enlistment._transaction._cnn = cnn;
-          cnn._enlistment._disposeConnection = true;
+            SQLiteTransaction transaction = enlistment._transaction;
 
-          _sql = null;
-          _enlistment = null;
+            if (transaction != null)
+                transaction._cnn = cnn;
+
+            enlistment._disposeConnection = true;
+
+            _sql = null;
+          }
         }
 #endif
         if (_sql != null)
@@ -3397,28 +3413,146 @@ namespace System.Data.SQLite
     /// <param name="transaction">The distributed transaction to enlist in</param>
     public override void EnlistTransaction(System.Transactions.Transaction transaction)
     {
-      CheckDisposed();
+        CheckDisposed();
 
-      if (_enlistment != null && transaction == _enlistment._scope)
-        return;
-      else if (_enlistment != null)
-        throw new ArgumentException("Already enlisted in a transaction");
+        lock (_enlistmentSyncRoot) /* TRANSACTIONAL */
+        {
+            if (_enlistment != null && transaction == _enlistment._scope)
+                return;
+            else if (_enlistment != null)
+                throw new ArgumentException("Already enlisted in a transaction");
 
-      if (_transactionLevel > 0 && transaction != null)
-        throw new ArgumentException("Unable to enlist in transaction, a local transaction already exists");
-      else if (transaction == null)
-        throw new ArgumentNullException("Unable to enlist in transaction, it is null");
+            if (_transactionLevel > 0 && transaction != null)
+                throw new ArgumentException("Unable to enlist in transaction, a local transaction already exists");
+            else if (transaction == null)
+                throw new ArgumentNullException("Unable to enlist in transaction, it is null");
 
-      bool strictEnlistment = ((_flags & SQLiteConnectionFlags.StrictEnlistment) ==
-          SQLiteConnectionFlags.StrictEnlistment);
+            bool strictEnlistment = ((_flags & SQLiteConnectionFlags.StrictEnlistment) ==
+                SQLiteConnectionFlags.StrictEnlistment);
 
-      _enlistment = new SQLiteEnlistment(this, transaction,
-          GetFallbackDefaultIsolationLevel(), strictEnlistment,
-          strictEnlistment);
+            _enlistment = new SQLiteEnlistment(this, transaction,
+                GetFallbackDefaultIsolationLevel(), strictEnlistment,
+                strictEnlistment);
 
-      OnChanged(this, new ConnectionEventArgs(
-          SQLiteConnectionEventType.EnlistTransaction, null, null, null, null,
-          null, null, new object[] { _enlistment }));
+            OnChanged(this, new ConnectionEventArgs(
+                SQLiteConnectionEventType.EnlistTransaction, null, null, null, null,
+                null, null, new object[] { _enlistment }));
+        }
+    }
+
+    /// <summary>
+    /// <![CDATA[<b>]]>EXPERIMENTAL<![CDATA[</b>]]>
+    /// Waits for the enlistment associated with this connection to be reset.
+    /// </summary>
+    /// <param name="timeoutMilliseconds">
+    /// The approximate maximum number of milliseconds to wait before timing
+    /// out the wait operation.
+    /// </param>
+    /// <returns>
+    /// Non-zero if the enlistment assciated with this connection was reset;
+    /// otherwise, zero.  It should be noted that this method returning a
+    /// non-zero value does not necessarily guarantee that the connection
+    /// can enlist in a new transaction (i.e. due to potentical race with
+    /// other threads); therefore, callers should generally use try/catch
+    /// when calling the <see cref="EnlistTransaction" /> method.
+    /// </returns>
+    public bool WaitForEnlistmentReset(
+        int timeoutMilliseconds
+        )
+    {
+        CheckDisposed();
+
+        if (timeoutMilliseconds < 0)
+            throw new ArgumentException("timeout cannot be negative");
+
+        const int defaultMilliseconds = 100;
+        int sleepMilliseconds;
+
+        if (timeoutMilliseconds == 0)
+        {
+            sleepMilliseconds = 0;
+        }
+        else
+        {
+            sleepMilliseconds = Math.Min(
+                timeoutMilliseconds / 10, defaultMilliseconds);
+
+            if (sleepMilliseconds == 0)
+                sleepMilliseconds = defaultMilliseconds;
+        }
+
+        DateTime start = DateTime.UtcNow;
+
+        while (true)
+        {
+            //
+            // NOTE: Attempt to acquire the necessary lock without blocking.
+            //       This method will treat a failure to obtain the lock the
+            //       same as the enlistment not being reset yet.  Both will
+            //       advance toward the timeout.
+            //
+            bool locked = Monitor.TryEnter(_enlistmentSyncRoot);
+
+            try
+            {
+                if (locked)
+                {
+                    //
+                    // NOTE: Is there still an enlistment?  If not, we are
+                    //       done.  There is a potential race condition in
+                    //       the caller if another thread is able to setup
+                    //       a new enlistment at any point prior to our
+                    //       caller fully dealing with the result of this
+                    //       method.  However, that should generally never
+                    //       happen because this class is not intended to
+                    //       be used by multiple concurrent threads, with
+                    //       the notable exception of an active enlistment
+                    //       being asynchronously committed or rolled back
+                    //       by the .NET Framework.
+                    //
+                    if (_enlistment == null)
+                        return true;
+                }
+            }
+            finally
+            {
+                if (locked)
+                {
+                    Monitor.Exit(_enlistmentSyncRoot);
+                    locked = false;
+                }
+            }
+
+            //
+            // NOTE: A timeout value of zero is special.  It means never
+            //       sleep.
+            //
+            if (sleepMilliseconds == 0)
+                return false;
+
+            //
+            // NOTE: How much time has elapsed since we first starting
+            //       waiting?
+            //
+            DateTime now = DateTime.UtcNow;
+            TimeSpan elapsed = now.Subtract(start);
+
+            //
+            // NOTE: Are we done wait?
+            //
+            double totalMilliseconds = elapsed.TotalMilliseconds;
+
+            if ((totalMilliseconds < 0) || /* Time went backward? */
+                (totalMilliseconds >= (double)timeoutMilliseconds))
+            {
+                return false;
+            }
+
+            //
+            // NOTE: Sleep for a bit and then try again.
+            //
+            Thread.Sleep(sleepMilliseconds);
+        }
     }
 #endif
 
