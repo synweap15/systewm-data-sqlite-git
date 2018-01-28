@@ -213,6 +213,8 @@ released versions of System.Data.SQLite.
 <ul>
     <li>Updated to <a href="https://www.sqlite.org/draft/releaselog/3_22_0.html">SQLite 3.22.0</a>.</li>
     <li>Improve performance of type name lookups by removing superfluous locking and string creation.</li>
+    <li>Support asynchronous completion of distributed transactions. Fix for [5cee5409f8].</li>
+    <li>Add experimental WaitForEnlistmentReset method to the SQLiteConnection class. Pursuant to [7e1dd697dc].</li>
     <li>Fix some internal memory accounting present only in the debug build.</li>
     <li>Make sure inbound native delegates are unhooked before adding a connection to the pool. Fix for [0e48e80333].</li>
     <li>Add preliminary support for the .NET Framework 4.7.1.</li>
