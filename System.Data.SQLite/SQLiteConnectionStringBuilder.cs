@@ -273,6 +273,31 @@ namespace System.Data.SQLite
     }
 
     /// <summary>
+    /// <b>EXPERIMENTAL</b> --
+    /// The wait timeout to use with
+    /// <see cref="SQLiteConnection.WaitForEnlistmentReset" /> method.
+    /// This is only used when waiting for the enlistment to be reset
+    /// prior to enlisting in a transaction, and then only when the
+    /// appropriate connection flag is set.
+    /// </summary>
+    [DisplayName("Wait Timeout")]
+    [Browsable(true)]
+    [DefaultValue(30000)]
+    public int WaitTimeout
+    {
+      get
+      {
+        object value;
+        TryGetValue("waittimeout", out value);
+        return Convert.ToInt32(value, CultureInfo.CurrentCulture);
+      }
+      set
+      {
+        this["waittimeout"] = value;
+      }
+    }
+
+    /// <summary>
     /// Gets/sets the maximum number of retries when preparing SQL to be executed.
     /// This normally only applies to preparation errors resulting from the database
     /// schema being changed.

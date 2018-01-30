@@ -1272,6 +1272,15 @@ namespace System.Data.SQLite
       GetInvariantDecimal = 0x80000000000,
 
       /// <summary>
+      /// <b>EXPERIMENTAL</b> --
+      /// Enable waiting for the enlistment to be reset prior to attempting
+      /// to create a new enlistment.  This may be necessary due to the
+      /// semantics used by distributed transactions, which complete
+      /// asynchronously.
+      /// </summary>
+      WaitForEnlistmentReset = 0x100000000000,
+
+      /// <summary>
       /// When binding parameter values or returning column values, always
       /// treat them as though they were plain text (i.e. no numeric,
       /// date/time, or other conversions should be attempted).

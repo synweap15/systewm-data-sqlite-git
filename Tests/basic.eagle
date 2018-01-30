@@ -1007,7 +1007,7 @@ runTest {test data-1.17 {SQLiteConnectionStringBuilder properties} -body {
                    "Foreign Keys" Flags SetDefaults ToFullPath HexPassword \
                    DefaultDbType DefaultTypeName NoSharedFlags PrepareRetries \
                    ZipVfsVersion VfsName BusyTimeout ProgressOps \
-                   NoDefaultFlags "Recursive Triggers"]
+                   NoDefaultFlags "Recursive Triggers" WaitTimeout]
 
     set values [list null 3 Normal True False \
                      True test.db test.db file:test.db 60 \
@@ -1016,7 +1016,7 @@ runTest {test data-1.17 {SQLiteConnectionStringBuilder properties} -body {
                      UnixEpoch Utc yyyy-MM-dd sqlite_schema \
                      Memory Serializable False \
                      Default False False 736563726574 String \
-                     TEXT True 20 v2 test 1000 2000 True True]
+                     TEXT True 20 v2 test 1000 2000 True True 30000]
 
     set propertyNames [list null Version SyncMode UseUTF16Encoding Pooling \
                             BinaryGUID DataSource Uri FullUri DefaultTimeout \
@@ -1028,7 +1028,7 @@ runTest {test data-1.17 {SQLiteConnectionStringBuilder properties} -body {
                             HexPassword DefaultDbType DefaultTypeName \
                             NoSharedFlags PrepareRetries ZipVfsVersion \
                             VfsName BusyTimeout ProgressOps NoDefaultFlags \
-                            RecursiveTriggers]
+                            RecursiveTriggers WaitTimeout]
 
     foreach key $keys value $values propertyName $propertyNames {
       set code [catch {
@@ -1065,7 +1065,7 @@ Flags=(?:Default|LogCallbackException)\} 0 \{False, SetDefaults=False\} 0\
 NoSharedFlags=True\} 0 \{20, PrepareRetries=20\} 0 \{v2, ZipVfsVersion=v2\} 0\
 \{test, VfsName=test\} 0 \{1000, BusyTimeout=1000\} 0 \{2000,\
 ProgressOps=2000\} 0 \{True, NoDefaultFlags=True\} 0 \{True, Recursive\
-Triggers=True\}$}}
+Triggers=True\} 0 \{30000, WaitTimeout=30000\}$}}
 
 ###############################################################################
 

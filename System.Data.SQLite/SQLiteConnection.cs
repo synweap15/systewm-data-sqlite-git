@@ -1203,6 +1203,16 @@ namespace System.Data.SQLite
   /// <description>0</description>
   /// </item>
   /// <item>
+  /// <description>WaitTimeout</description>
+  /// <description>{time in milliseconds}<br/>
+  /// <b>EXPERIMENTAL</b> -- The wait timeout to use with
+  /// <see cref="WaitForEnlistmentReset" /> method.  This is only used when
+  /// waiting for the enlistment to be reset prior to enlisting in a transaction,
+  /// and then only when the appropriate connection flag is set.</description>
+  /// <description>N</description>
+  /// <description>30000</description>
+  /// </item>
+  /// <item>
   /// <description>Journal Mode</description>
   /// <description>
   /// <b>Delete</b> - Delete the journal file after a commit.
@@ -1355,6 +1365,7 @@ namespace System.Data.SQLite
     private const int DefaultMaxPoolSize = 100;
     private const int DefaultConnectionTimeout = 30;
     private const int DefaultBusyTimeout = 0;
+    private const int DefaultWaitTimeout = 30000;
     private const bool DefaultNoDefaultFlags = false;
     private const bool DefaultNoSharedFlags = false;
     private const bool DefaultFailIfMissing = false;
@@ -1570,6 +1581,14 @@ namespace System.Data.SQLite
     /// only used when opening a connection.
     /// </summary>
     private int _busyTimeout = DefaultBusyTimeout;
+
+    /// <summary>
+    /// The default wait timeout to use with <see cref="WaitForEnlistmentReset" />
+    /// method.  This is only used when waiting for the enlistment to be reset
+    /// prior to enlisting in a transaction, and then only when the appropriate
+    /// connection flag is set.
+    /// </summary>
+    private int _waitTimeout = DefaultWaitTimeout;
 
     /// <summary>
     /// The maximum number of retries when preparing SQL to be executed.  This
@@ -3415,6 +3434,21 @@ namespace System.Data.SQLite
     {
         CheckDisposed();
 
+        bool waitForEnlistmentReset;
+        int waitTimeout;
+
+        lock (_enlistmentSyncRoot) /* TRANSACTIONAL */
+        {
+            waitForEnlistmentReset = ((_flags & SQLiteConnectionFlags.WaitForEnlistmentReset) ==
+                SQLiteConnectionFlags.WaitForEnlistmentReset);
+
+            waitTimeout = _waitTimeout;
+        }
+
+        if (waitForEnlistmentReset)
+            /* IGNORED */
+            WaitForEnlistmentReset(waitTimeout);
+
         lock (_enlistmentSyncRoot) /* TRANSACTIONAL */
         {
             if (_enlistment != null && transaction == _enlistment._scope)
@@ -3441,7 +3475,7 @@ namespace System.Data.SQLite
     }
 
     /// <summary>
-    /// <![CDATA[<b>]]>EXPERIMENTAL<![CDATA[</b>]]>
+    /// <b>EXPERIMENTAL</b> --
     /// Waits for the enlistment associated with this connection to be reset.
     /// </summary>
     /// <param name="timeoutMilliseconds">
@@ -4114,6 +4148,7 @@ namespace System.Data.SQLite
 
         _defaultTimeout = Convert.ToInt32(FindKey(opts, "Default Timeout", SQLiteConvert.ToString(DefaultConnectionTimeout)), CultureInfo.InvariantCulture);
         _busyTimeout = Convert.ToInt32(FindKey(opts, "BusyTimeout", SQLiteConvert.ToString(DefaultBusyTimeout)), CultureInfo.InvariantCulture);
+        _waitTimeout = Convert.ToInt32(FindKey(opts, "WaitTimeout", SQLiteConvert.ToString(DefaultWaitTimeout)), CultureInfo.InvariantCulture);
         _prepareRetries = Convert.ToInt32(FindKey(opts, "PrepareRetries", SQLiteConvert.ToString(DefaultPrepareRetries)), CultureInfo.InvariantCulture);
         _progressOps = Convert.ToInt32(FindKey(opts, "ProgressOps", SQLiteConvert.ToString(DefaultProgressOps)), CultureInfo.InvariantCulture);
 
@@ -4388,6 +4423,19 @@ namespace System.Data.SQLite
     {
         get { CheckDisposed(); return _busyTimeout; }
         set { CheckDisposed(); _busyTimeout = value; }
+    }
+
+    /// <summary>
+    /// <b>EXPERIMENTAL</b> --
+    /// The wait timeout to use with <see cref="WaitForEnlistmentReset" /> method.
+    /// This is only used when waiting for the enlistment to be reset prior to
+    /// enlisting in a transaction, and then only when the appropriate connection
+    /// flag is set.
+    /// </summary>
+    public int WaitTimeout
+    {
+        get { CheckDisposed(); return _waitTimeout; }
+        set { CheckDisposed(); _waitTimeout = value; }
     }
 
     /// <summary>
