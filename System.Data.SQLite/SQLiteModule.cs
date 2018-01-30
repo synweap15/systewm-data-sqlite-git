@@ -4351,7 +4351,13 @@ namespace System.Data.SQLite
                 SQLiteLog.LogMessage(SQLiteErrorCode.Warning,
                     HelperMethods.StringFormat(CultureInfo.CurrentCulture,
                     "{0}: pointer {1} and offset {2} not aligned to {3}: {4}",
-                    type, savedPointer, offset, size, Environment.StackTrace));
+                    type, savedPointer, offset, size,
+#if !PLATFORM_COMPACTFRAMEWORK
+                    Environment.StackTrace
+#else
+                    null
+#endif
+                    ));
             }
         }
 #endif
