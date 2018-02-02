@@ -8,6 +8,12 @@
 -->
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <!--
+  ******************************************************************************
+  **                             Define Constants                             **
+  ******************************************************************************
+  -->
+
+  <!--
       NOTE: Only use functionality available in the .NET Framework 2.0?  By
             default, this is disabled.  This must be enabled to successfully
             build the project using Visual Studio 2005 and/or the .NET
