@@ -7016,6 +7016,11 @@ namespace System.Data.SQLite
 #if !PLATFORM_COMPACTFRAMEWORK
   [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 #endif
+  internal delegate void SQLiteTraceCallback2(SQLiteTraceFlags type, IntPtr puser, IntPtr pCtx1, IntPtr pCtx2);
+
+#if !PLATFORM_COMPACTFRAMEWORK
+  [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+#endif
   internal delegate void SQLiteRollbackCallback(IntPtr puser);
 
   /// <summary>

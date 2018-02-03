@@ -2953,6 +2953,11 @@ namespace System.Data.SQLite
       UnsafeNativeMethods.sqlite3_trace(_sql, func, IntPtr.Zero);
     }
 
+    internal override void SetTraceCallback2(SQLiteTraceFlags mask, SQLiteTraceCallback2 func)
+    {
+        UnsafeNativeMethods.sqlite3_trace_v2(_sql, mask, func, IntPtr.Zero);
+    }
+
     internal override void SetRollbackHook(SQLiteRollbackCallback func)
     {
       UnsafeNativeMethods.sqlite3_rollback_hook(_sql, func, IntPtr.Zero);
@@ -3081,7 +3086,16 @@ namespace System.Data.SQLite
         #region Trace Callback (Per-Connection)
         try
         {
-            SetTraceCallback(null); /* throw */
+            //
+            // NOTE: When using version 3.14 (or later) of the SQLite core
+            //       library, use the newer sqlite3_trace_v2() API in order
+            //       to unhook the trace callback, just in case the older
+            //       API is not available (e.g. SQLITE_OMIT_DEPRECATED).
+            //
+            if (UnsafeNativeMethods.sqlite3_libversion_number() >= 3014000)
+                SetTraceCallback2(SQLiteTraceFlags.SQLITE_TRACE_NONE, null); /* throw */
+            else
+                SetTraceCallback(null); /* throw */
         }
 #if !NET_COMPACT_20 && TRACE_CONNECTION
         catch (Exception e)

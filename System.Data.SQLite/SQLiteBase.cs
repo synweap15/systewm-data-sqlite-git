@@ -444,6 +444,7 @@ namespace System.Data.SQLite
     internal abstract void SetUpdateHook(SQLiteUpdateCallback func);
     internal abstract void SetCommitHook(SQLiteCommitCallback func);
     internal abstract void SetTraceCallback(SQLiteTraceCallback func);
+    internal abstract void SetTraceCallback2(SQLiteTraceFlags mask, SQLiteTraceCallback2 func);
     internal abstract void SetRollbackHook(SQLiteRollbackCallback func);
     internal abstract SQLiteErrorCode SetLogCallback(SQLiteLogCallback func);
 
@@ -1427,5 +1428,19 @@ namespace System.Data.SQLite
     SQLITE_CONFIG_WIN32_HEAPSIZE = 23, // int nByte
     SQLITE_CONFIG_PCACHE_HDRSZ = 24, // int *psz
     SQLITE_CONFIG_PMASZ = 25 // unsigned int szPma
+  }
+
+  /// <summary>
+  /// These constants are used with the sqlite3_trace_v2() API and the
+  /// callbacks registered by it.
+  /// </summary>
+  [Flags()]
+  internal enum SQLiteTraceFlags
+  {
+      SQLITE_TRACE_NONE = 0x0, // nil
+      SQLITE_TRACE_STMT = 0x1, // pStmt, zSql
+      SQLITE_TRACE_PROFILE = 0x2, // pStmt, piNsec64
+      SQLITE_TRACE_ROW = 0x4, // pStmt
+      SQLITE_TRACE_CLOSE = 0x8 // pDb
   }
 }

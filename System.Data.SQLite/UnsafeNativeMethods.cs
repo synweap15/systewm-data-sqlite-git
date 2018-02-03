@@ -3811,6 +3811,13 @@ namespace System.Data.SQLite
 #endif
     internal static extern IntPtr sqlite3_trace(IntPtr db, SQLiteTraceCallback func, IntPtr pvUser);
 
+#if !PLATFORM_COMPACTFRAMEWORK
+    [DllImport(SQLITE_DLL, CallingConvention = CallingConvention.Cdecl)]
+#else
+    [DllImport(SQLITE_DLL)]
+#endif
+    internal static extern IntPtr sqlite3_trace_v2(IntPtr db, SQLiteTraceFlags mask, SQLiteTraceCallback2 func, IntPtr pvUser);
+
     // Since sqlite3_config() takes a variable argument list, we have to overload declarations
     // for all possible calls that we want to use.
 #if !PLATFORM_COMPACTFRAMEWORK
