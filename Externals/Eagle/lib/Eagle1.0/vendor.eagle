@@ -446,6 +446,13 @@ namespace eval ::Eagle {
     set no(core) 1
 
     #
+    # HACK: Prevent the Eagle core test suite infrastructure from checking
+    #       for a usable instance of Excel because it can be quite slow to
+    #       do so.
+    #
+    set no(excelUsable) 1
+
+    #
     # NOTE: Make the per-test connection flag output a little less noisy.
     #
     set no(emitLocalFlagsIfNone) 1
