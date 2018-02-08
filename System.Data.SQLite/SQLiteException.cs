@@ -217,39 +217,6 @@ namespace System.Data.SQLite
     ///////////////////////////////////////////////////////////////////////////
 
     #region System.Object Overrides
-    public override bool Equals(object obj)
-    {
-        SQLiteException exception = obj as SQLiteException;
-
-        if (exception == null)
-            return false;
-
-        if (_errorCode != exception._errorCode)
-            return false;
-
-        if (String.Compare(
-                Message, exception.Message,
-                StringComparison.Ordinal) != 0)
-        {
-            return false;
-        }
-
-        return true;
-    }
-
-    ///////////////////////////////////////////////////////////////////////////
-
-    public override int GetHashCode()
-    {
-        int result = base.GetHashCode();
-
-        result ^= _errorCode.GetHashCode();
-
-        return result;
-    }
-
-    ///////////////////////////////////////////////////////////////////////////
-
     public override string ToString()
     {
         return HelperMethods.StringFormat(
