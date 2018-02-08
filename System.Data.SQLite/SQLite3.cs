@@ -1169,6 +1169,8 @@ namespace System.Data.SQLite
     /// Returns the error message for the specified SQLite return code using
     /// the sqlite3_errstr() function, falling back to the internal lookup
     /// table if necessary.
+    ///
+    /// WARNING: Do not remove this method, it is used via reflection.
     /// </summary>
     /// <param name="rc">The SQLite return code.</param>
     /// <returns>The error message or null if it cannot be found.</returns>
