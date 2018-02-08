@@ -1155,6 +1155,24 @@ SQLITE_API int WINAPI sqlite3_cursor_rowid_interop(sqlite3_stmt *pstmt, int curs
 SQLITE_EXTENSION_INIT1
 
 /*
+** The interopError() SQL function treats its first argument as an integer
+** error code to return.
+*/
+SQLITE_PRIVATE void interopErrorFunc(
+  sqlite3_context *context,
+  int argc,
+  sqlite3_value **argv
+){
+  int rc;
+  if( argc!=1 ){
+    sqlite3_result_error(context, "need exactly one argument", -1);
+    return;
+  }
+  rc = sqlite3_value_int(argv[0]);
+  sqlite3_result_error_code(context, rc);
+}
+
+/*
 ** The interopTest() SQL function returns its first argument or raises an
 ** error if there are not enough arguments.
 */
@@ -1219,8 +1237,12 @@ SQLITE_API int interop_test_extension_init(
 ){
   int rc;
   SQLITE_EXTENSION_INIT2(pApi)
-  rc = sqlite3_create_function(db, "interopTest", -1, SQLITE_ANY, 0,
-      interopTestFunc, 0, 0);
+  rc = sqlite3_create_function(db, "interopError", -1, SQLITE_ANY, 0,
+      interopErrorFunc, 0, 0);
+  if( rc==SQLITE_OK ){
+    rc = sqlite3_create_function(db, "interopTest", -1, SQLITE_ANY, 0,
+        interopTestFunc, 0, 0);
+  }
   if( rc==SQLITE_OK ){
     rc = sqlite3_create_function(db, "interopSleep", 1, SQLITE_ANY, 0,
         interopSleepFunc, 0, 0);
