@@ -4840,12 +4840,12 @@ compile.DATA defineConstant.System.Data.SQLite.INTEROP_TEST_EXTENSION\
 command.sql SQLite System.Data.SQLite} -result {{0 {}} {0 {}} {0 {}} Error {SQL\
 logic error ==> SQL logic error} IoErr {disk I/O error ==> disk I/O error}\
 CantOpen {unable to open database file ==> unable to open database file} Notice\
-{notification message ==> unknown error} Warning {warning message ==> unknown\
-error} {0 {}} Ok_Load_Permanently {not an error ==> not an error} Error_Retry\
-{SQL logic error ==> SQL logic error} IoErr_Short_Read {disk I/O error ==> disk\
-I/O error} CantOpen_NoTempDir {unable to open database file ==> unable to open\
-database file} Notice_Recover_Rollback {notification message ==> unknown error}\
-Warning_AutoIndex {warning message ==> unknown error}}}
+{notification message ==> notification message} Warning {warning message ==>\
+warning message} {0 {}} Ok_Load_Permanently {not an error ==> not an error}\
+Error_Retry {SQL logic error ==> SQL logic error} IoErr_Short_Read {disk I/O\
+error ==> disk I/O error} CantOpen_NoTempDir {unable to open database file ==>\
+unable to open database file} Notice_Recover_Rollback {notification message ==>\
+notification message} Warning_AutoIndex {warning message ==> warning message}}}
 
 ###############################################################################
 

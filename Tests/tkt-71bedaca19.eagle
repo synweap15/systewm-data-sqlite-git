@@ -68,6 +68,8 @@ Corrupt_Vtab 267
 Done 101
 Empty 16
 Error 1
+Error_Missing_CollSeq 257
+Error_Retry 513
 Format 24
 Full 13
 Internal 2
@@ -75,9 +77,11 @@ Interrupt 9
 IoErr 10
 IoErr_Access 3338
 IoErr_Auth 7178
+IoErr_Begin_Atomic 7434
 IoErr_Blocked 2826
 IoErr_CheckReservedLock 3594
 IoErr_Close 4106
+IoErr_Commit_Atomic 7690
 IoErr_ConvPath 6666
 IoErr_Delete 2570
 IoErr_Delete_NoEnt 5898
@@ -91,6 +95,7 @@ IoErr_Mmap 6154
 IoErr_NoMem 3082
 IoErr_RdLock 2314
 IoErr_Read 266
+IoErr_Rollback_Atomic 7946
 IoErr_Seek 5642
 IoErr_ShmLock 5130
 IoErr_ShmMap 5386
@@ -118,8 +123,10 @@ Perm 3
 Protocol 15
 Range 25
 ReadOnly 8
+ReadOnly_CantInit 1288
 ReadOnly_CantLock 520
 ReadOnly_DbMoved 1032
+ReadOnly_Directory 1544
 ReadOnly_Recovery 264
 ReadOnly_Rollback 776
 Row 100
