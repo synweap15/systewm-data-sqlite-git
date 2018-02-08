@@ -2172,6 +2172,36 @@ namespace eval ::Eagle {
       }
     }
 
+    proc resetException {} {
+      #
+      # NOTE: Reset exception associated with this interpreter (to null).
+      #       This (private) property is maintained on a per-thread basis.
+      #
+      object invoke -flags +NonPublic Interpreter.GetActive Exception null
+      return ""
+    }
+
+    proc catchAndSetException { script {varName ""} } {
+      #
+      # NOTE: Evaluate the script provided by our caller in their context.
+      #
+      catch {uplevel 1 $script}
+
+      #
+      # NOTE: Grab the (private) exception property from this interpreter,
+      #       for this thread, and add as an opaque object handle in the
+      #       context of our caller.
+      #
+      if {[string length $varName] > 0} then {
+        upvar 1 $varName exception
+      }
+
+      set exception [object invoke \
+          -alias -flags +NonPublic Interpreter.GetActive Exception]
+
+      return ""
+    }
+
     proc compileCSharpWith {
             text memory symbols strict resultsVarName errorsVarName fileNames
             args } {
@@ -2287,6 +2317,11 @@ namespace eval ::Eagle {
       return [list \
           [sql execute -execute scalar $db "PRAGMA page_size;"] \
           [sql execute -execute scalar $db "PRAGMA cache_size;"]]
+    }
+
+    proc normalizeExceptionMessage { value } {
+      if {[string length $value] == 0} then {return $value}
+      return [string map [list \r\n " ==> "] $value]
     }
 
     proc extractSystemDataSQLiteExceptionMessage { value } {

@@ -4760,6 +4760,95 @@ information}}}
 
 ###############################################################################
 
+runTest {test data-1.93 {extended error code messages} -setup {
+  #
+  # HACK: Temporarily disable automatic detection (and use) of the
+  #       native sqlite3_errstr() API.
+  #
+  object invoke -flags +NonPublic \
+      System.Data.SQLite.SQLite3 have_errstr false
+
+  setupDb [set fileName data-1.93.db]
+} -body {
+  set errCodes [list]
+
+  lappend errCodes 256; # SQLITE_OK_LOAD_PERMANENTLY
+  lappend errCodes 513; # SQLITE_ERROR_RETRY
+  lappend errCodes 522; # SQLITE_IOERR_SHORT_READ
+  lappend errCodes 270; # SQLITE_CANTOPEN_NOTEMPDIR
+  lappend errCodes 539; # SQLITE_NOTICE_RECOVER_ROLLBACK
+  lappend errCodes 284; # SQLITE_WARNING_AUTOINDEX
+
+  set connection [getDbConnection]
+
+  lappend result [catchAndReturn {$connection EnableExtensions true}]
+
+  lappend result [catchAndReturn {$connection LoadExtension \
+      [getCoreExtensionBinaryFileName null] interop_test_extension_init}]
+
+  lappend result [catchAndReturn {$connection SetExtendedResultCodes false}]
+
+  foreach errCode $errCodes {
+    #
+    # HACK: Without extended error codes, SQLITE_OK_* cannot be handled via
+    #       the semantics in the System.Data.SQLite.SQLite3.Prepare method;
+    #       it will always assume that more results are available when the
+    #       error code is Ok, thereby looping forever.
+    #
+    if {($errCode & 0xFF) == 0} then {continue}
+
+    resetException; catchAndSetException {
+      sql execute -execute scalar $db \
+          "SELECT interopError(?);" [list param1 Int32 $errCode]
+    } exception
+
+    lappend result [$exception ResultCode] \
+        [normalizeExceptionMessage [$exception Message]]
+  }
+
+  lappend result [catchAndReturn {$connection SetExtendedResultCodes true}]
+
+  foreach errCode $errCodes {
+    resetException; catchAndSetException {
+      sql execute -execute scalar $db \
+          "SELECT interopError(?);" [list param1 Int32 $errCode]
+    } exception
+
+    lappend result [$exception ResultCode] \
+        [normalizeExceptionMessage [$exception Message]]
+  }
+
+  set result
+} -cleanup {
+  cleanupDb $fileName
+
+  freeDbConnection
+
+  catch {
+    #
+    # HACK: Restore automatic detection (and use) of the native
+    #       sqlite3_errstr() API.
+    #
+    object invoke -flags +NonPublic \
+        System.Data.SQLite.SQLite3 have_errstr null
+  }
+
+  unset -nocomplain result exception errCode errCodes
+  unset -nocomplain connection db fileName
+} -constraints {eagle command.object monoBug28\
+compile.DATA defineConstant.System.Data.SQLite.INTEROP_TEST_EXTENSION\
+command.sql SQLite System.Data.SQLite} -result {{0 {}} {0 {}} {0 {}} Error {SQL\
+logic error ==> SQL logic error} IoErr {disk I/O error ==> disk I/O error}\
+CantOpen {unable to open database file ==> unable to open database file} Notice\
+{notification message ==> unknown error} Warning {warning message ==> unknown\
+error} {0 {}} Ok_Load_Permanently {not an error ==> not an error} Error_Retry\
+{SQL logic error ==> SQL logic error} IoErr_Short_Read {disk I/O error ==> disk\
+I/O error} CantOpen_NoTempDir {unable to open database file ==> unable to open\
+database file} Notice_Recover_Rollback {notification message ==> unknown error}\
+Warning_AutoIndex {warning message ==> unknown error}}}
+
+###############################################################################
+
 reportSQLiteResources $test_channel
 
 ###############################################################################

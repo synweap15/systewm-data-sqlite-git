@@ -593,10 +593,10 @@ namespace System.Data.SQLite
 
     private static string[] _errorMessages = {
         /* SQLITE_OK          */ "not an error",
-        /* SQLITE_ERROR       */ "SQL logic error or missing database",
+        /* SQLITE_ERROR       */ "SQL logic error",
         /* SQLITE_INTERNAL    */ "internal logic error",
         /* SQLITE_PERM        */ "access permission denied",
-        /* SQLITE_ABORT       */ "callback requested query abort",
+        /* SQLITE_ABORT       */ "query aborted",
         /* SQLITE_BUSY        */ "database is locked",
         /* SQLITE_LOCKED      */ "database table is locked",
         /* SQLITE_NOMEM       */ "out of memory",
@@ -613,12 +613,12 @@ namespace System.Data.SQLite
         /* SQLITE_TOOBIG      */ "string or blob too big",
         /* SQLITE_CONSTRAINT  */ "constraint failed",
         /* SQLITE_MISMATCH    */ "datatype mismatch",
-        /* SQLITE_MISUSE      */ "library routine called out of sequence",
+        /* SQLITE_MISUSE      */ "bad parameter or other API misuse",
         /* SQLITE_NOLFS       */ "large file support is disabled",
         /* SQLITE_AUTH        */ "authorization denied",
         /* SQLITE_FORMAT      */ "auxiliary database format error",
-        /* SQLITE_RANGE       */ "bind or column index out of range",
-        /* SQLITE_NOTADB      */ "file is encrypted or is not a database",
+        /* SQLITE_RANGE       */ "column index out of range",
+        /* SQLITE_NOTADB      */ "file is not a database",
         /* SQLITE_NOTICE      */ "notification message",
         /* SQLITE_WARNING     */ "warning message"
     };
@@ -633,10 +633,20 @@ namespace System.Data.SQLite
     /// <returns>The error message or null if it cannot be found.</returns>
     protected static string FallbackGetErrorString(SQLiteErrorCode rc)
     {
+        switch (rc)
+        {
+            case SQLiteErrorCode.Abort_Rollback:
+                return "abort due to ROLLBACK";
+            case SQLiteErrorCode.Row:
+                return "another row available";
+            case SQLiteErrorCode.Done:
+                return "no more rows available";
+        }
+
         if (_errorMessages == null)
             return null;
 
-        int index = (int)rc;
+        int index = (int)(rc & SQLiteErrorCode.NonExtendedMask);
 
         if ((index < 0) || (index >= _errorMessages.Length))
             index = (int)SQLiteErrorCode.Error; /* Make into generic error. */
