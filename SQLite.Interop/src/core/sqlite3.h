@@ -123,9 +123,9 @@ extern "C" {
 ** [sqlite3_libversion_number()], [sqlite3_sourceid()],
 ** [sqlite_version()] and [sqlite_source_id()].
 */
-#define SQLITE_VERSION        "3.22.0"
-#define SQLITE_VERSION_NUMBER 3022000
-#define SQLITE_SOURCE_ID      "2018-01-22 18:45:57 0c55d179733b46d8d0ba4d88e01a25e10677046ee3da1d5b1581e86726f2171d"
+#define SQLITE_VERSION        "3.23.0"
+#define SQLITE_VERSION_NUMBER 3023000
+#define SQLITE_SOURCE_ID      "2018-02-08 01:00:11 ad5d3bdc739a0997786f94fb5789b726b9f53ff883226093924338fe5000922b"
 
 /*
 ** CAPI3REF: Run-Time Library Version Numbers
@@ -3659,13 +3659,13 @@ SQLITE_API int sqlite3_limit(sqlite3*, int id, int newVal);
 ** or [GLOB] operator or if the parameter is compared to an indexed column
 ** and the [SQLITE_ENABLE_STAT3] compile-time option is enabled.
 ** </li>
+** </ol>
 **
 ** <p>^sqlite3_prepare_v3() differs from sqlite3_prepare_v2() only in having
 ** the extra prepFlags parameter, which is a bit array consisting of zero or
 ** more of the [SQLITE_PREPARE_PERSISTENT|SQLITE_PREPARE_*] flags.  ^The
 ** sqlite3_prepare_v2() interface works exactly the same as
 ** sqlite3_prepare_v3() with a zero prepFlags parameter.
-** </ol>
 */
 SQLITE_API int sqlite3_prepare(
   sqlite3 *db,            /* Database handle */

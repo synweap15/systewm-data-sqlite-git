@@ -9084,6 +9084,7 @@ static void fts5DataWrite(Fts5Index *p, i64 iRowid, const u8 *pData, int nData){
   sqlite3_bind_blob(p->pWriter, 2, pData, nData, SQLITE_STATIC);
   sqlite3_step(p->pWriter);
   p->rc = sqlite3_reset(p->pWriter);
+  sqlite3_bind_null(p->pWriter, 2);
 }
 
 /*
@@ -10712,6 +10713,7 @@ static void fts5SegIterSeekInit(
     bDlidx = (val & 0x0001);
   }
   p->rc = sqlite3_reset(pIdxSelect);
+  sqlite3_bind_null(pIdxSelect, 2);
 
   if( iPg<pSeg->pgnoFirst ){
     iPg = pSeg->pgnoFirst;
@@ -11924,6 +11926,7 @@ static int fts5AllocateSegid(Fts5Index *p, Fts5Structure *pStruct){
           sqlite3_bind_blob(pIdxSelect, 2, aBlob, 2, SQLITE_STATIC);
           assert( sqlite3_step(pIdxSelect)!=SQLITE_ROW );
           p->rc = sqlite3_reset(pIdxSelect);
+          sqlite3_bind_null(pIdxSelect, 2);
         }
       }
 #endif
@@ -12050,6 +12053,7 @@ static void fts5WriteFlushBtree(Fts5Index *p, Fts5SegWriter *pWriter){
     sqlite3_bind_int64(p->pIdxWriter, 3, bFlag + ((i64)pWriter->iBtPage<<1));
     sqlite3_step(p->pIdxWriter);
     p->rc = sqlite3_reset(p->pIdxWriter);
+    sqlite3_bind_null(p->pIdxWriter, 2);
   }
   pWriter->iBtPage = 0;
 }
@@ -17458,7 +17462,7 @@ static void fts5SourceIdFunc(
 ){
   assert( nArg==0 );
   UNUSED_PARAM2(nArg, apUnused);
-  sqlite3_result_text(pCtx, "fts5: 2018-01-22 18:45:57 0c55d179733b46d8d0ba4d88e01a25e10677046ee3da1d5b1581e86726f2171d", -1, SQLITE_TRANSIENT);
+  sqlite3_result_text(pCtx, "fts5: 2018-02-08 01:00:11 ad5d3bdc739a0997786f94fb5789b726b9f53ff883226093924338fe5000922b", -1, SQLITE_TRANSIENT);
 }
 
 static int fts5Init(sqlite3 *db){
@@ -18035,6 +18039,7 @@ static int fts5StorageInsertDocsize(
       sqlite3_bind_blob(pReplace, 2, pBuf->p, pBuf->n, SQLITE_STATIC);
       sqlite3_step(pReplace);
       rc = sqlite3_reset(pReplace);
+      sqlite3_bind_null(pReplace, 2);
     }
   }
   return rc;
@@ -18695,6 +18700,7 @@ static int sqlite3Fts5StorageConfigValue(
     }
     sqlite3_step(pReplace);
     rc = sqlite3_reset(pReplace);
+    sqlite3_bind_null(pReplace, 1);
   }
   if( rc==SQLITE_OK && pVal ){
     int iNew = p->pConfig->iCookie + 1;
