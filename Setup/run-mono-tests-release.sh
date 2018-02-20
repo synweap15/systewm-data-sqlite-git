@@ -8,7 +8,7 @@ else
   libname=libSQLite.Interop.so
 fi
 
-if [[ ! -z "$SQLITE_NET_YEAR" ]]; then
+if [[ -z "$SQLITE_NET_YEAR" ]]; then
   SQLITE_NET_YEAR=2013
 fi
 
