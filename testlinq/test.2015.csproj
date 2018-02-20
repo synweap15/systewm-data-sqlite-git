@@ -108,7 +108,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Condition="'$(TargetFrameworkVersion)' == 'v3.5'"
-          Include="2008\LINQ\App.Config" />
+          Include="2008\LINQ\App.config" />
     <None Condition="'$(UseEntityFramework6)' == 'false' And
                      ('$(TargetFrameworkVersion)' == 'v4.0' Or
                       '$(TargetFrameworkVersion)' == 'v4.5' Or
@@ -117,7 +117,7 @@
                       '$(TargetFrameworkVersion)' == 'v4.6' Or
                       '$(TargetFrameworkVersion)' == 'v4.6.1' Or
                       '$(TargetFrameworkVersion)' == 'v4.6.2')"
-          Include="2015\LINQ\App.Config" />
+          Include="2015\LINQ\App.config" />
     <None Condition="'$(UseEntityFramework6)' != 'false' And
                      ('$(TargetFrameworkVersion)' == 'v4.0' Or
                       '$(TargetFrameworkVersion)' == 'v4.5' Or
@@ -126,7 +126,7 @@
                       '$(TargetFrameworkVersion)' == 'v4.6' Or
                       '$(TargetFrameworkVersion)' == 'v4.6.1' Or
                       '$(TargetFrameworkVersion)' == 'v4.6.2')"
-          Include="2015\EF6\App.Config" />
+          Include="2015\EF6\App.config" />
     <None Include="northwindEF.db">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
