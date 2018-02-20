@@ -85,6 +85,11 @@ IF NOT DEFINED YEARS (
 
 SET PLATFORMS="Any CPU"
 SET NOUSER=1
+
+REM
+REM TODO: This list of properties must be kept synchronized with the common
+REM       list in the "SQLite.NET.Mono.Settings.targets" file.
+REM
 SET MSBUILD_ARGS=/property:ConfigurationSuffix=MonoOnPosix
 SET MSBUILD_ARGS=%MSBUILD_ARGS% /property:InteropCodec=false
 SET MSBUILD_ARGS=%MSBUILD_ARGS% /property:InteropLog=false
@@ -93,6 +98,10 @@ IF DEFINED MSBUILD_ARGS_MONO (
   SET MSBUILD_ARGS=%MSBUILD_ARGS% %MSBUILD_ARGS_MONO%
 )
 
+REM
+REM TODO: This list of properties must be kept synchronized with the debug
+REM       list in the "SQLite.NET.Mono.Settings.targets" file.
+REM
 SET MSBUILD_ARGS_DEBUG=/property:CheckState=true
 SET MSBUILD_ARGS_DEBUG=%MSBUILD_ARGS_DEBUG% /property:CountHandle=true
 SET MSBUILD_ARGS_DEBUG=%MSBUILD_ARGS_DEBUG% /property:TraceConnection=true

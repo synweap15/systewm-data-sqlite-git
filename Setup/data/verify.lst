@@ -696,6 +696,8 @@ set sds_manifests(source) {
   System.Data.SQLite.Linq/System.Data.SQLite.Linq.2015.csproj
   System.Data.SQLite.Linq/System.Data.SQLite.Linq.2017.csproj
   Targets/
+  Targets/SQLite.NET.Mono.Settings.targets
+  Targets/SQLite.NET.Platform.Settings.targets
   Targets/SQLite.NET.Settings.targets
   Targets/SQLite.NET.Settings.targets.netFx35
   Targets/SQLite.NET.Settings.targets.netFx40
