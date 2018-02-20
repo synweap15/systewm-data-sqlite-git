@@ -37,9 +37,33 @@ namespace eval ::Eagle {
       }
     }
 
+    proc getSQLiteCompileOptionPrefix {} {
+      #
+      # NOTE: See if the compile option prefix setting has been overridden
+      #       by the user (e.g. on the command line).
+      #
+      if {[info exists ::compile_option_prefix] && \
+          [string length $::compile_option_prefix] > 0} then {
+        #
+        # NOTE: Use the specified compile option prefix.
+        #
+        return $::compile_option_prefix
+      } else {
+        #
+        # NOTE: Use the default compile option prefix.
+        #
+        return compileOption.SQLite.
+      }
+    }
+
     proc haveSQLiteDefineConstant { name } {
       return [haveConstraint \
           [appendArgs [getSQLiteDefineConstantPrefix] $name]]
+    }
+
+    proc haveSQLiteCompileOption { name } {
+      return [haveConstraint \
+          [appendArgs [getSQLiteCompileOptionPrefix] $name]]
     }
 
     proc getBuildYear {} {
@@ -1955,6 +1979,54 @@ namespace eval ::Eagle {
           #       assembly was compiled.
           #
           addConstraint [appendArgs [getSQLiteDefineConstantPrefix] $name]
+
+          tputs $channel yes\n
+        } else {
+          tputs $channel no\n
+        }
+      } else {
+        tputs $channel error\n
+      }
+    }
+
+    proc checkForSQLiteCompileOption { channel name } {
+      tputs $channel [appendArgs \
+          "---- checking for SQLite interop assembly compile option \"" \
+          $name "\"... "]
+
+      if {[catch {
+        object invoke -flags +NonPublic \
+            System.Data.SQLite.SQLite3 InteropCompileOptions
+      } compileOptions] == 0} then {
+        if {[lsearch -exact -nocase $compileOptions $name] != -1} then {
+          #
+          # NOTE: Yes, this compile option was enabled when the interop
+          #       assembly was compiled.
+          #
+          addConstraint [appendArgs [getSQLiteCompileOptionPrefix] $name]
+
+          tputs $channel yes\n
+        } else {
+          tputs $channel no\n
+        }
+      } else {
+        tputs $channel error\n
+      }
+
+      tputs $channel [appendArgs \
+          "---- checking for SQLite core library compile option \"" \
+          $name "\"... "]
+
+      if {[catch {
+        object invoke -flags +NonPublic \
+            System.Data.SQLite.SQLite3 SQLiteCompileOptions
+      } compileOptions] == 0} then {
+        if {[lsearch -exact -nocase $compileOptions $name] != -1} then {
+          #
+          # NOTE: Yes, this compile option was enabled when the SQLite
+          #       core library was compiled.
+          #
+          addConstraint [appendArgs [getSQLiteCompileOptionPrefix] $name]
 
           tputs $channel yes\n
         } else {
@@ -4877,15 +4949,46 @@ namespace eval ::Eagle {
         }
 
         #
+        # NOTE: Attempt to determine if various compile-time options needed for
+        #       test constraints were enabled for the interop assembly and/or
+        #       for the SQLite core library.
+        #
+        foreach compileOption [list \
+            CODEC EXTENSION_FUNCTIONS HAS_CODEC INCLUDE_CEROD INCLUDE_EXTRA \
+            INCLUDE_SEE INCLUDE_ZIPVFS JSON1_EXTENSION LEGACY_CLOSE LOG \
+            PERCENTILE_EXTENSION REGEXP_EXTENSION SESSION_EXTENSION \
+            SHA1_EXTENSION TEST_EXTENSION TOTYPE_EXTENSION VIRTUAL_TABLE] {
+          #
+          # NOTE: Check if the compile-time option is listed in the list
+          #       kept track of by the interop assembly and/or the SQLite
+          #       core library.
+          #
+          checkForSQLiteCompileOption $::test_channel $compileOption
+        }
+
+        #
         # NOTE: Check if the System.Data.SQLite provider was compiled with
         #       support for any encrypted databases.
         #
         if {[haveSQLiteDefineConstant INTEROP_CODEC] || \
             [haveSQLiteDefineConstant INTEROP_INCLUDE_SEE]} then {
           #
-          # NOTE: Yes, add generic constraint for use by the test suite.
+          # NOTE: Now check if the interop assembly was also compiled with
+          #       support for encrypted databases.
           #
-          addConstraint System.Data.SQLite.Encryption
+          if {[haveSQLiteCompileOption CODEC] || \
+              [haveSQLiteCompileOption INCLUDE_SEE]} then {
+            #
+            # NOTE: Finally, check if the SQLite core library was compiled
+            #       with support for encrypted databases.
+            #
+            if {[haveSQLiteCompileOption HAS_CODEC]} then {
+              #
+              # NOTE: Yes, add constraint for use by the test suite.
+              #
+              addConstraint System.Data.SQLite.Encryption
+            }
+          }
         }
 
         #
