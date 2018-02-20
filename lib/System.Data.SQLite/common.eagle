@@ -2321,7 +2321,7 @@ namespace eval ::Eagle {
 
     proc normalizeExceptionMessage { value } {
       if {[string length $value] == 0} then {return $value}
-      return [string map [list \r\n " ==> "] $value]
+      return [string map [list \r\n " ==> " \n " ==> "] $value]
     }
 
     proc extractSystemDataSQLiteExceptionMessage { value } {
