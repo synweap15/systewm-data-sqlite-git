@@ -374,19 +374,18 @@ namespace System.Data.SQLite
 #endif
 
     /// <summary>
-    /// Enables or disables a configuration option for the database.
-    /// connection.
+    /// Change a configuration option value for the database.
     /// </summary>
     /// <param name="option">
-    /// The database configuration option to enable or disable.
+    /// The database configuration option to change.
     /// </param>
-    /// <param name="bOnOff">
-    /// True to enable loading of extensions, false to disable.
+    /// <param name="value">
+    /// The new value for the specified configuration option.
     /// </param>
     /// <returns>
     /// A standard SQLite return code.
     /// </returns>
-    internal abstract SQLiteErrorCode SetConfigurationOption(SQLiteConfigDbOpsEnum option, bool bOnOff);
+    internal abstract SQLiteErrorCode SetConfigurationOption(SQLiteConfigDbOpsEnum option, object value);
     /// <summary>
     /// Enables or disables extension loading by SQLite.
     /// </summary>
@@ -1380,8 +1379,20 @@ namespace System.Data.SQLite
     SQLITE_DBCONFIG_NONE = 0, // nil
 
     /// <summary>
-    /// This option is not currently supported by System.Data.SQLite.  It
-    /// may be supported in the future.
+    /// This option is used to change the name of the "main" database
+    /// schema.  The sole argument is a pointer to a constant UTF8 string
+    /// which will become the new schema name in place of "main".
+    /// </summary>
+    SQLITE_DBCONFIG_MAINDBNAME = 1000, // char*
+
+    /// <summary>
+    /// This option is used to configure the lookaside memory allocator.
+    /// The value must be an array with three elements.  The second element
+    /// must be an <see cref="Int32" /> containing the size of each buffer
+    /// slot.  The third element must be an <see cref="Int32" /> containing
+    /// the number of slots.  The first element must be an <see cref="IntPtr" />
+    /// that points to a native memory buffer of bytes equal to or greater
+    /// than the product of the second and third element values.
     /// </summary>
     SQLITE_DBCONFIG_LOOKASIDE = 1001, // void* int int
 
@@ -1406,7 +1417,25 @@ namespace System.Data.SQLite
     /// <summary>
     /// This option is used to enable or disable the loading of extensions.
     /// </summary>
-    SQLITE_DBCONFIG_ENABLE_LOAD_EXTENSION = 1005 // int int*
+    SQLITE_DBCONFIG_ENABLE_LOAD_EXTENSION = 1005, // int int*
+
+    /// <summary>
+    /// This option is used to enable or disable the automatic checkpointing
+    /// when a WAL database is closed.
+    /// </summary>
+    SQLITE_DBCONFIG_NO_CKPT_ON_CLOSE = 1006, // int int*
+
+    /// <summary>
+    /// This option is used to enable or disable the query planner stability
+    /// guarantee (QPSG).
+    /// </summary>
+    SQLITE_DBCONFIG_ENABLE_QPSG = 1007, // int int*
+
+    /// <summary>
+    /// This option is used to enable or disable the extra EXPLAIN QUERY PLAN
+    /// output for trigger programs.
+    /// </summary>
+    SQLITE_DBCONFIG_TRIGGER_EQP = 1008 // int int*
   }
 
   // These are the options to the internal sqlite3_config call.

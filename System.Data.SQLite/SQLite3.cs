@@ -47,6 +47,15 @@ namespace System.Data.SQLite
   {
     private static object syncRoot = new object();
 
+    /// <summary>
+    /// This field is used to refer to memory allocated for the
+    /// SQLITE_DBCONFIG_MAINDBNAME value used with the native
+    /// "sqlite3_db_config" API.  If allocated, the associated
+    /// memeory will be freed when the underlying connection is
+    /// closed.
+    /// </summary>
+    private IntPtr dbName = IntPtr.Zero;
+
     //
     // NOTE: This is the public key for the System.Data.SQLite assembly.  If you change the
     //       SNK file, you will need to change this as well.
@@ -363,6 +372,8 @@ namespace System.Data.SQLite
               }
 
               _sql.Dispose();
+
+              FreeDbName(!disposing);
           }
           _sql = null;
       }
@@ -2760,39 +2771,202 @@ namespace System.Data.SQLite
 #endif
 
     /// <summary>
-    /// Enables or disables a configuration option for the database.
+    /// Builds an error message string fragment containing the
+    /// defined values of the <see cref="SQLiteConfigDbOpsEnum" />
+    /// enumeration.
+    /// </summary>
+    /// <returns>
+    /// The built string fragment.
+    /// </returns>
+    private static string GetConfigDbOpsNames()
+    {
+        StringBuilder builder = new StringBuilder();
+
+#if !PLATFORM_COMPACTFRAMEWORK
+        foreach (string name in Enum.GetNames(
+                typeof(SQLiteConfigDbOpsEnum)))
+        {
+            if (String.IsNullOrEmpty(name))
+                continue;
+
+            if (builder.Length > 0)
+                builder.Append(", ");
+
+            builder.Append(name);
+        }
+#else
+        //
+        // TODO: Update this list if the available values in the
+        //       "SQLiteConfigDbOpsEnum" enumeration change.
+        //
+        builder.AppendFormat(CultureInfo.InvariantCulture,
+            "{0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}",
+            SQLiteConfigDbOpsEnum.SQLITE_DBCONFIG_NONE,
+            SQLiteConfigDbOpsEnum.SQLITE_DBCONFIG_MAINDBNAME,
+            SQLiteConfigDbOpsEnum.SQLITE_DBCONFIG_LOOKASIDE,
+            SQLiteConfigDbOpsEnum.SQLITE_DBCONFIG_ENABLE_FKEY,
+            SQLiteConfigDbOpsEnum.SQLITE_DBCONFIG_ENABLE_TRIGGER,
+            SQLiteConfigDbOpsEnum.SQLITE_DBCONFIG_ENABLE_FTS3_TOKENIZER,
+            SQLiteConfigDbOpsEnum.SQLITE_DBCONFIG_ENABLE_LOAD_EXTENSION,
+            SQLiteConfigDbOpsEnum.SQLITE_DBCONFIG_NO_CKPT_ON_CLOSE,
+            SQLiteConfigDbOpsEnum.SQLITE_DBCONFIG_ENABLE_QPSG,
+            SQLiteConfigDbOpsEnum.SQLITE_DBCONFIG_TRIGGER_EQP);
+#endif
+
+        return builder.ToString();
+    }
+
+    /// <summary>
+    /// Change a configuration option value for the database.
     /// connection.
     /// </summary>
     /// <param name="option">
-    /// The database configuration option to enable or disable.
+    /// The database configuration option to change.
     /// </param>
-    /// <param name="bOnOff">
-    /// True to enable loading of extensions, false to disable.
+    /// <param name="value">
+    /// The new value for the specified configuration option.
     /// </param>
     /// <returns>
     /// A standard SQLite return code.
     /// </returns>
     internal override SQLiteErrorCode SetConfigurationOption(
         SQLiteConfigDbOpsEnum option,
-        bool bOnOff
+        object value
         )
     {
-        if ((option < SQLiteConfigDbOpsEnum.SQLITE_DBCONFIG_ENABLE_FKEY) ||
-            (option > SQLiteConfigDbOpsEnum.SQLITE_DBCONFIG_ENABLE_LOAD_EXTENSION))
+        if (!Enum.IsDefined(typeof(SQLiteConfigDbOpsEnum), option))
         {
             throw new SQLiteException(HelperMethods.StringFormat(
                 CultureInfo.CurrentCulture,
-                "unsupported configuration option, must be: {0}, {1}, {2}, or {3}",
-                SQLiteConfigDbOpsEnum.SQLITE_DBCONFIG_ENABLE_FKEY,
-                SQLiteConfigDbOpsEnum.SQLITE_DBCONFIG_ENABLE_TRIGGER,
-                SQLiteConfigDbOpsEnum.SQLITE_DBCONFIG_ENABLE_FTS3_TOKENIZER,
-                SQLiteConfigDbOpsEnum.SQLITE_DBCONFIG_ENABLE_LOAD_EXTENSION));
+                "unrecognized configuration option, must be: {0}",
+                GetConfigDbOpsNames()));
         }
 
-        int result = 0; /* NOT USED */
+        switch (option)
+        {
+            case SQLiteConfigDbOpsEnum.SQLITE_DBCONFIG_NONE: // nil
+                {
+                    //
+                    // NOTE: Do nothing, return success.
+                    //
+                    return SQLiteErrorCode.Ok;
+                }
+            case SQLiteConfigDbOpsEnum.SQLITE_DBCONFIG_MAINDBNAME: // char*
+                {
+                    if (value == null)
+                        throw new ArgumentNullException("value");
 
-        return UnsafeNativeMethods.sqlite3_db_config_int_refint(
-            _sql, option, (bOnOff ? 1 : 0), ref result);
+                    if (!(value is string))
+                    {
+                        throw new SQLiteException(HelperMethods.StringFormat(
+                            CultureInfo.CurrentCulture,
+                            "configuration value type mismatch, must be of type {0}",
+                            typeof(string)));
+                    }
+
+                    SQLiteErrorCode rc = SQLiteErrorCode.Ok;
+                    IntPtr pDbName = IntPtr.Zero;
+
+                    try
+                    {
+                        pDbName = SQLiteString.Utf8IntPtrFromString(
+                            (string)value);
+
+                        if (pDbName == IntPtr.Zero)
+                        {
+                            throw new SQLiteException(
+                                SQLiteErrorCode.NoMem,
+                                "cannot allocate database name");
+                        }
+
+                        rc = UnsafeNativeMethods.sqlite3_db_config_charptr(
+                            _sql, option, pDbName);
+
+                        if (rc == SQLiteErrorCode.Ok)
+                        {
+                            FreeDbName(true);
+                            dbName = pDbName;
+                        }
+                    }
+                    finally
+                    {
+                        if ((rc != SQLiteErrorCode.Ok) &&
+                            (pDbName != IntPtr.Zero))
+                        {
+                            SQLiteMemory.Free(pDbName);
+                            pDbName = IntPtr.Zero;
+                        }
+                    }
+
+                    return rc;
+                }
+            case SQLiteConfigDbOpsEnum.SQLITE_DBCONFIG_LOOKASIDE: // void* int int
+                {
+                    object[] array = value as object[];
+
+                    if (array == null)
+                    {
+                        throw new SQLiteException(HelperMethods.StringFormat(
+                            CultureInfo.CurrentCulture,
+                            "configuration value type mismatch, must be of type {0}",
+                            typeof(object[])));
+                    }
+
+                    if (!(array[0] is IntPtr))
+                    {
+                        throw new SQLiteException(HelperMethods.StringFormat(
+                            CultureInfo.CurrentCulture,
+                            "configuration element zero (0) type mismatch, must be of type {0}",
+                            typeof(IntPtr)));
+                    }
+
+                    if (!(array[1] is int))
+                    {
+                        throw new SQLiteException(HelperMethods.StringFormat(
+                            CultureInfo.CurrentCulture,
+                            "configuration element one (1) type mismatch, must be of type {0}",
+                            typeof(int)));
+                    }
+
+                    if (!(array[2] is int))
+                    {
+                        throw new SQLiteException(HelperMethods.StringFormat(
+                            CultureInfo.CurrentCulture,
+                            "configuration element two (2) type mismatch, must be of type {0}",
+                            typeof(int)));
+                    }
+
+                    return UnsafeNativeMethods.sqlite3_db_config_intptr_two_ints(
+                        _sql, option, (IntPtr)array[0], (int)array[1], (int)array[2]);
+                }
+            case SQLiteConfigDbOpsEnum.SQLITE_DBCONFIG_ENABLE_FKEY: // int int*
+            case SQLiteConfigDbOpsEnum.SQLITE_DBCONFIG_ENABLE_TRIGGER: // int int*
+            case SQLiteConfigDbOpsEnum.SQLITE_DBCONFIG_ENABLE_FTS3_TOKENIZER: // int int*
+            case SQLiteConfigDbOpsEnum.SQLITE_DBCONFIG_ENABLE_LOAD_EXTENSION: // int int*
+            case SQLiteConfigDbOpsEnum.SQLITE_DBCONFIG_NO_CKPT_ON_CLOSE: // int int*
+            case SQLiteConfigDbOpsEnum.SQLITE_DBCONFIG_ENABLE_QPSG: // int int*
+            case SQLiteConfigDbOpsEnum.SQLITE_DBCONFIG_TRIGGER_EQP: // int int*
+                {
+                    if (!(value is bool))
+                    {
+                        throw new SQLiteException(HelperMethods.StringFormat(
+                            CultureInfo.CurrentCulture,
+                            "configuration value type mismatch, must be of type {0}",
+                            typeof(bool)));
+                    }
+
+                    int result = 0; /* NOT USED */
+
+                    return UnsafeNativeMethods.sqlite3_db_config_int_refint(
+                        _sql, option, ((bool)value ? 1 : 0), ref result);
+                }
+            default:
+                {
+                    throw new SQLiteException(HelperMethods.StringFormat(
+                        CultureInfo.CurrentCulture,
+                        "unsupported configuration option {0}", option));
+                }
+        }
     }
 
     /// <summary>
@@ -3022,6 +3196,7 @@ namespace System.Data.SQLite
     /// connections that are added to the pool; howver, it is good practice to
     /// unconditionally invalidate function pointers that may refer to objects
     /// being disposed.
+    /// </summary>
     /// <param name="includeGlobal">
     /// Non-zero to also invalidate global function pointers (i.e. those that
     /// are not directly associated with this connection on the native side).
@@ -3030,7 +3205,6 @@ namespace System.Data.SQLite
     /// Non-zero if this method is being executed within a context where it can
     /// throw an exception in the event of failure; otherwise, zero.
     /// </param>
-    /// </summary>
     /// <returns>
     /// Non-zero if this method was successful; otherwise, zero.
     /// </returns>
@@ -3319,6 +3493,60 @@ namespace System.Data.SQLite
             throw new SQLiteException(rc, builder.ToString());
 
         return result;
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+
+    /// <summary>
+    /// This method attempts to free the cached database name used with the
+    /// <see cref="SetConfigurationOption" /> method.
+    /// </summary>
+    /// <param name="canThrow">
+    /// Non-zero if this method is being executed within a context where it can
+    /// throw an exception in the event of failure; otherwise, zero.
+    /// </param>
+    /// <returns>
+    /// Non-zero if this method was successful; otherwise, zero.
+    /// </returns>
+    private bool FreeDbName(
+        bool canThrow
+        )
+    {
+        try
+        {
+            if (dbName != IntPtr.Zero)
+            {
+                SQLiteMemory.Free(dbName);
+                dbName = IntPtr.Zero;
+            }
+
+            return true;
+        }
+#if !NET_COMPACT_20 && TRACE_CONNECTION
+        catch (Exception e)
+#else
+        catch (Exception)
+#endif
+        {
+#if !NET_COMPACT_20 && TRACE_CONNECTION
+            try
+            {
+                Trace.WriteLine(HelperMethods.StringFormat(
+                    CultureInfo.CurrentCulture,
+                    "Failed to free database name: {0}",
+                    e)); /* throw */
+            }
+            catch
+            {
+                // do nothing.
+            }
+#endif
+
+            if (canThrow)
+                throw;
+        }
+
+        return false;
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////

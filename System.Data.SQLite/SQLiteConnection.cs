@@ -1582,6 +1582,7 @@ namespace System.Data.SQLite
     /// </summary>
     private int _busyTimeout = DefaultBusyTimeout;
 
+#if !PLATFORM_COMPACTFRAMEWORK
     /// <summary>
     /// The default wait timeout to use with <see cref="WaitForEnlistmentReset" />
     /// method.  This is only used when waiting for the enlistment to be reset
@@ -1589,6 +1590,7 @@ namespace System.Data.SQLite
     /// connection flag is set.
     /// </summary>
     private int _waitTimeout = DefaultWaitTimeout;
+#endif
 
     /// <summary>
     /// The maximum number of retries when preparing SQL to be executed.  This
@@ -3473,10 +3475,14 @@ namespace System.Data.SQLite
                 null, null, new object[] { _enlistment }));
         }
     }
+#endif
 
+#if !PLATFORM_COMPACTFRAMEWORK
     /// <summary>
     /// <b>EXPERIMENTAL</b> --
     /// Waits for the enlistment associated with this connection to be reset.
+    /// This method always throws <see cref="NotImplementedException" /> when
+    /// running on the .NET Compact Framework.
     /// </summary>
     /// <param name="timeoutMilliseconds">
     /// The approximate maximum number of milliseconds to wait before timing
@@ -3490,12 +3496,33 @@ namespace System.Data.SQLite
     /// other threads); therefore, callers should generally use try/catch
     /// when calling the <see cref="EnlistTransaction" /> method.
     /// </returns>
+#else
+    /// <summary>
+    /// <b>EXPERIMENTAL</b> --
+    /// Waits for the enlistment associated with this connection to be reset.
+    /// This method always throws <see cref="NotImplementedException" /> when
+    /// running on the .NET Compact Framework.
+    /// </summary>
+    /// <param name="timeoutMilliseconds">
+    /// The approximate maximum number of milliseconds to wait before timing
+    /// out the wait operation.
+    /// </param>
+    /// <returns>
+    /// Non-zero if the enlistment assciated with this connection was reset;
+    /// otherwise, zero.  It should be noted that this method returning a
+    /// non-zero value does not necessarily guarantee that the connection
+    /// can enlist in a new transaction (i.e. due to potentical race with
+    /// other threads); therefore, callers should generally use try/catch
+    /// when calling the EnlistTransaction method.
+    /// </returns>
+#endif
     public bool WaitForEnlistmentReset(
         int timeoutMilliseconds
         )
     {
         CheckDisposed();
 
+#if !PLATFORM_COMPACTFRAMEWORK
         if (timeoutMilliseconds < 0)
             throw new ArgumentException("timeout cannot be negative");
 
@@ -3587,8 +3614,10 @@ namespace System.Data.SQLite
             //
             Thread.Sleep(sleepMilliseconds);
         }
-    }
+#else
+        throw new NotImplementedException();
 #endif
+    }
 
     /// <summary>
     /// Looks for a key in the array of key/values of the parameter string.  If not found, return the specified default value
@@ -3676,27 +3705,25 @@ namespace System.Data.SQLite
     }
 
     /// <summary>
-    /// Enables or disables a configuration option for the database.
+    /// Change a configuration option value for the database.
     /// </summary>
     /// <param name="option">
-    /// The database configuration option to enable or disable.
+    /// The database configuration option to change.
     /// </param>
-    /// <param name="enable">
-    /// True to enable loading of extensions, false to disable.
+    /// <param name="value">
+    /// The new value for the specified configuration option.
     /// </param>
     public void SetConfigurationOption(
         SQLiteConfigDbOpsEnum option,
-        bool enable
+        object value
         )
     {
         CheckDisposed();
 
         if (_sql == null)
         {
-            throw new InvalidOperationException(HelperMethods.StringFormat(
-                CultureInfo.CurrentCulture,
-                "Database connection not valid for {0} a configuration option.",
-                enable ? "enabling" : "disabling"));
+            throw new InvalidOperationException(
+                "Database connection not valid for changing a configuration option.");
         }
 
         if ((option == SQLiteConfigDbOpsEnum.SQLITE_DBCONFIG_ENABLE_LOAD_EXTENSION) &&
@@ -3705,7 +3732,7 @@ namespace System.Data.SQLite
             throw new SQLiteException("Loading extensions is disabled for this database connection.");
         }
 
-        _sql.SetConfigurationOption(option, enable);
+        _sql.SetConfigurationOption(option, value);
     }
 
     /// <summary>
@@ -4148,7 +4175,11 @@ namespace System.Data.SQLite
 
         _defaultTimeout = Convert.ToInt32(FindKey(opts, "Default Timeout", SQLiteConvert.ToString(DefaultConnectionTimeout)), CultureInfo.InvariantCulture);
         _busyTimeout = Convert.ToInt32(FindKey(opts, "BusyTimeout", SQLiteConvert.ToString(DefaultBusyTimeout)), CultureInfo.InvariantCulture);
+
+#if !PLATFORM_COMPACTFRAMEWORK
         _waitTimeout = Convert.ToInt32(FindKey(opts, "WaitTimeout", SQLiteConvert.ToString(DefaultWaitTimeout)), CultureInfo.InvariantCulture);
+#endif
+
         _prepareRetries = Convert.ToInt32(FindKey(opts, "PrepareRetries", SQLiteConvert.ToString(DefaultPrepareRetries)), CultureInfo.InvariantCulture);
         _progressOps = Convert.ToInt32(FindKey(opts, "ProgressOps", SQLiteConvert.ToString(DefaultProgressOps)), CultureInfo.InvariantCulture);
 
@@ -4425,6 +4456,7 @@ namespace System.Data.SQLite
         set { CheckDisposed(); _busyTimeout = value; }
     }
 
+#if !PLATFORM_COMPACTFRAMEWORK
     /// <summary>
     /// <b>EXPERIMENTAL</b> --
     /// The wait timeout to use with <see cref="WaitForEnlistmentReset" /> method.
@@ -4437,6 +4469,7 @@ namespace System.Data.SQLite
         get { CheckDisposed(); return _waitTimeout; }
         set { CheckDisposed(); _waitTimeout = value; }
     }
+#endif
 
     /// <summary>
     /// The maximum number of retries when preparing SQL to be executed.  This
