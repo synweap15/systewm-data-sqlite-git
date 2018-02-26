@@ -4980,18 +4980,29 @@ runTest {test data-1.95 {SetConfigurationOption method} -setup {
     lappend result [$connection SetConfigurationOption $dbConfig $value]
   }
 
+  set current(0) 0; set highwater(0) 0
+
+  lappend result [$connection -flags +NonPublic \
+      _sql.GetStatusParameter SQLITE_DBSTATUS_LOOKASIDE_USED \
+      false current(0) highwater(0)]
+
+  lappend result $current(0) $highwater(0)
+
   sql execute $db {
     CREATE TABLE t1(x);
     INSERT INTO t1 (x) VALUES(RANDOMBLOB(1024));
   }
 
-  set current 0; set highwater 0
+  set current(1) 0; set highwater(1) 0
 
   lappend result [$connection -flags +NonPublic \
       _sql.GetStatusParameter SQLITE_DBSTATUS_LOOKASIDE_USED \
-      false current highwater]
+      false current(1) highwater(1)]
 
-  lappend result $current $highwater
+  lappend result $current(1) $highwater(1)
+
+  lappend result [expr {$current(1) == $current(0)}]
+  lappend result [expr {$highwater(1) > $highwater(0)}]
 } -cleanup {
   cleanupDb $fileName
 
@@ -5006,7 +5017,8 @@ runTest {test data-1.95 {SetConfigurationOption method} -setup {
   unset -nocomplain result dbConfig dbConfigs
   unset -nocomplain connection db fileName
 } -constraints {eagle monoBug28 command.sql compile.DATA SQLite\
-System.Data.SQLite} -result {{} {} {} {} {} {} {} {} {} {} Ok 48 100}}
+System.Data.SQLite} -match regexp -result {^\{\} \{\} \{\} \{\} \{\} \{\} \{\}\
+\{\} \{\} \{\} Ok \d+ \d+ Ok \d+ \d+ True True$}}
 
 ###############################################################################
 
