@@ -3732,7 +3732,10 @@ namespace System.Data.SQLite
             throw new SQLiteException("Loading extensions is disabled for this database connection.");
         }
 
-        _sql.SetConfigurationOption(option, value);
+        SQLiteErrorCode rc = _sql.SetConfigurationOption(option, value);
+
+        if (rc != SQLiteErrorCode.Ok)
+            throw new SQLiteException(rc, null);
     }
 
     /// <summary>
