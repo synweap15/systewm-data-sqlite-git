@@ -1900,6 +1900,15 @@ namespace eval ::Eagle {
         #
         addConstraint SQLite
 
+        #
+        # NOTE: Record version of the SQLite core library for later use
+        #       by test constraint expressions, etc.  If this value has
+        #       already been set (or overridden), skip setting it.
+        #
+        if {![info exists ::core_library_version]} then {
+          set ::core_library_version $version
+        }
+
         tputs $channel [appendArgs "yes (" $version " " $sourceId ")\n"]
       } else {
         tputs $channel no\n
