@@ -4119,6 +4119,56 @@ namespace eval ::Eagle {
       return $result
     }
 
+    proc resetSQLiteDirectories { channel native } {
+      #
+      # NOTE: Attempt to use the native API (via the managed assembly)?
+      #
+      if {$native} then {
+        #
+        # NOTE: Now make sure the database and temporary directories are
+        #       reset their default values, which should be null for both.
+        #       Since the sqlite3_win32_set_directory function is available,
+        #       use it.
+        #
+        for {set index 1} {$index < 3} {incr index} {
+          if {[catch {
+            object invoke -flags +NonPublic \
+                System.Data.SQLite.UnsafeNativeMethods \
+                sqlite3_win32_set_directory $index null
+          } result] == 0} then {
+            tputs $channel [appendArgs \
+                "---- call sqlite3_win32_set_directory(" $index \
+                ", null)... ok: " $result \n]
+          } else {
+            tputs $channel [appendArgs \
+                "---- call sqlite3_win32_set_directory(" $index \
+                ", null)... error: " \n\t $result \n]
+          }
+        }
+      } else {
+        #
+        # NOTE: Now make sure the database and temporary directories are
+        #       reset their default values, which should be null for both.
+        #       Since the sqlite3_win32_set_directory function does not
+        #       appear to be available, use the associated PRAGMA commands
+        #       instead.
+        #
+        foreach directory [list data_store_directory temp_store_directory] {
+          set sql [appendArgs "PRAGMA " $directory " = \"\";"]
+
+          if {[catch {executeSql $sql} result] == 0} then {
+            tputs $channel [appendArgs \
+                "---- execute PRAGMA " $directory "... ok: \"" \
+                $result \"\n]
+          } else {
+            tputs $channel [appendArgs \
+                "---- execute PRAGMA " $directory "... error: " \
+                \n\t $result \n]
+          }
+        }
+      }
+    }
+
     proc checkForSQLiteDirectories { channel {reset false} } {
       #
       # NOTE: Check if the sqlite3_win32_set_directory function is available.
@@ -4152,27 +4202,7 @@ namespace eval ::Eagle {
         # NOTE: Does our caller want to reset the directories?
         #
         if {$reset} then {
-          #
-          # NOTE: Now make sure the database and temporary directories are
-          #       reset their default values, which should be null for both.
-          #       Since the sqlite3_win32_set_directory function is available,
-          #       use it.
-          #
-          for {set index 1} {$index < 3} {incr index} {
-            if {[catch {
-              object invoke -flags +NonPublic \
-                  System.Data.SQLite.UnsafeNativeMethods \
-                  sqlite3_win32_set_directory $index null
-            } result] == 0} then {
-              tputs $channel [appendArgs \
-                  "---- call sqlite3_win32_set_directory(" $index \
-                  ", null)... ok: " $result \n]
-            } else {
-              tputs $channel [appendArgs \
-                  "---- call sqlite3_win32_set_directory(" $index \
-                  ", null)... error: " \n\t $result \n]
-            }
-          }
+          resetSQLiteDirectories $channel true
         }
       } else {
         tputs $channel no\n
@@ -4183,26 +4213,7 @@ namespace eval ::Eagle {
         #       suite.
         #
         if {$reset && [isSQLiteReady]} then {
-          #
-          # NOTE: Now make sure the database and temporary directories are
-          #       reset their default values, which should be null for both.
-          #       Since the sqlite3_win32_set_directory function does not
-          #       appear to be available, use the associated PRAGMA commands
-          #       instead.
-          #
-          foreach directory [list data_store_directory temp_store_directory] {
-            set sql [appendArgs "PRAGMA " $directory " = \"\";"]
-
-            if {[catch {executeSql $sql} result] == 0} then {
-              tputs $channel [appendArgs \
-                  "---- execute PRAGMA " $directory "... ok: \"" \
-                  $result \"\n]
-            } else {
-              tputs $channel [appendArgs \
-                  "---- execute PRAGMA " $directory "... error: " \
-                  \n\t $result \n]
-            }
-          }
+          resetSQLiteDirectories $channel false
         }
       }
 

@@ -4929,7 +4929,7 @@ unknown error}}}
 ###############################################################################
 
 runTest {test data-1.95 {SetConfigurationOption method} -setup {
-  setupDb [set fileName data-1.95.db]
+  setupDb [set fileName data-1.95.db] "" "" "" NoExtensionFunctions
 } -body {
   set dbConfigs [list]
 
@@ -4960,11 +4960,14 @@ runTest {test data-1.95 {SetConfigurationOption method} -setup {
           error "pointer value should not exist yet"
         }
 
-        set ptr [object invoke -create -flags +NonPublic \
-            System.Data.SQLite.SQLiteMemory Allocate 20000]
+        set size 100; set count 100
 
-        set ints(0) [object invoke -create Int32 Parse 10000]
-        set ints(1) [object invoke -create Int32 Parse 2]
+        set ptr [object invoke -create \
+            System.Runtime.InteropServices.Marshal \
+            AllocCoTaskMem [expr {$size * $count}]]
+
+        set ints(0) [object invoke -create Int32 Parse $size]
+        set ints(1) [object invoke -create Int32 Parse $count]
 
         set value [object create -alias Object\[\] 3]
 
@@ -4988,10 +4991,7 @@ runTest {test data-1.95 {SetConfigurationOption method} -setup {
 
   lappend result $current(0) $highwater(0)
 
-  sql execute $db {
-    CREATE TABLE t1(x);
-    INSERT INTO t1 (x) VALUES(RANDOMBLOB(1024));
-  }
+  sql execute $db {CREATE TABLE t1(x);}; # use some lookaside memory?
 
   set current(1) 0; set highwater(1) 0
 
@@ -5001,24 +5001,24 @@ runTest {test data-1.95 {SetConfigurationOption method} -setup {
 
   lappend result $current(1) $highwater(1)
 
-  lappend result [expr {$current(1) == $current(0)}]
-  lappend result [expr {$highwater(1) > $highwater(0)}]
+  lappend result [expr {$highwater(1) > 0}]
+  lappend result [expr {$highwater(1) >= $current(1)}]
 } -cleanup {
   cleanupDb $fileName
 
   freeDbConnection
 
   if {[info exists ptr]} then {
-    object invoke -flags +NonPublic \
-        System.Data.SQLite.SQLiteMemory Free $ptr
+    object invoke System.Runtime.InteropServices.Marshal \
+        FreeCoTaskMem $ptr
   }
 
-  unset -nocomplain current highwater ints ptr value
+  unset -nocomplain current highwater ints count size ptr value
   unset -nocomplain result dbConfig dbConfigs
   unset -nocomplain connection db fileName
 } -constraints {eagle monoBug28 command.sql compile.DATA SQLite\
 System.Data.SQLite} -match regexp -result {^\{\} \{\} \{\} \{\} \{\} \{\} \{\}\
-\{\} \{\} \{\} Ok \d+ \d+ Ok \d+ \d+ True True$}}
+\{\} \{\} \{\} Ok 0 0 Ok \d+ \d+ True True$}}
 
 ###############################################################################
 
