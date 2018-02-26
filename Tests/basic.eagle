@@ -4928,6 +4928,88 @@ unknown error}}}
 
 ###############################################################################
 
+runTest {test data-1.95 {SetConfigurationOption method} -setup {
+  setupDb [set fileName data-1.95.db]
+} -body {
+  set dbConfigs [list]
+
+  lappend dbConfigs SQLITE_DBCONFIG_NONE; # nil
+  lappend dbConfigs SQLITE_DBCONFIG_MAINDBNAME; # char*
+  lappend dbConfigs SQLITE_DBCONFIG_LOOKASIDE; # void* int int
+
+  lappend dbConfigs SQLITE_DBCONFIG_ENABLE_FKEY; # int int*
+  lappend dbConfigs SQLITE_DBCONFIG_ENABLE_TRIGGER; # int int*
+  lappend dbConfigs SQLITE_DBCONFIG_ENABLE_FTS3_TOKENIZER; # int int*
+  lappend dbConfigs SQLITE_DBCONFIG_ENABLE_LOAD_EXTENSION; # int int*
+  lappend dbConfigs SQLITE_DBCONFIG_NO_CKPT_ON_CLOSE; # int int*
+  lappend dbConfigs SQLITE_DBCONFIG_ENABLE_QPSG; # int int*
+  lappend dbConfigs SQLITE_DBCONFIG_TRIGGER_EQP; # int int*
+
+  set connection [getDbConnection]
+
+  foreach dbConfig $dbConfigs {
+    switch -exact -- $dbConfig {
+      SQLITE_DBCONFIG_NONE {
+        set value null
+      }
+      SQLITE_DBCONFIG_MAINDBNAME {
+        set value [object create String test]
+      }
+      SQLITE_DBCONFIG_LOOKASIDE {
+        if {[info exists ptr]} then {
+          error "pointer value should not exist yet"
+        }
+
+        set ptr [object invoke -create -flags +NonPublic \
+            System.Data.SQLite.SQLiteMemory Allocate 20000]
+
+        set ints(0) [object invoke -create Int32 Parse 10000]
+        set ints(1) [object invoke -create Int32 Parse 2]
+
+        set value [object create -alias Object\[\] 3]
+
+        $value SetValue $ptr 0
+        $value SetValue $ints(0) 1
+        $value SetValue $ints(1) 2
+      }
+      default {
+        set value [object invoke -create System.Boolean Parse true]
+      }
+    }
+
+    lappend result [$connection SetConfigurationOption $dbConfig $value]
+  }
+
+  sql execute $db {
+    CREATE TABLE t1(x);
+    INSERT INTO t1 (x) VALUES(RANDOMBLOB(1024));
+  }
+
+  set current 0; set highwater 0
+
+  lappend result [$connection -flags +NonPublic \
+      _sql.GetStatusParameter SQLITE_DBSTATUS_LOOKASIDE_USED \
+      false current highwater]
+
+  lappend result $current $highwater
+} -cleanup {
+  cleanupDb $fileName
+
+  freeDbConnection
+
+  if {[info exists ptr]} then {
+    object invoke -flags +NonPublic \
+        System.Data.SQLite.SQLiteMemory Free $ptr
+  }
+
+  unset -nocomplain current highwater ints ptr value
+  unset -nocomplain result dbConfig dbConfigs
+  unset -nocomplain connection db fileName
+} -constraints {eagle monoBug28 command.sql compile.DATA SQLite\
+System.Data.SQLite} -result {{} {} {} {} {} {} {} {} {} {} Ok 48 100}}
+
+###############################################################################
+
 reportSQLiteResources $test_channel
 
 ###############################################################################

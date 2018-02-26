@@ -2772,6 +2772,54 @@ namespace System.Data.SQLite
 
     /// <summary>
     /// Builds an error message string fragment containing the
+    /// defined values of the <see cref="SQLiteStatusOpsEnum" />
+    /// enumeration.
+    /// </summary>
+    /// <returns>
+    /// The built string fragment.
+    /// </returns>
+    private static string GetStatusDbOpsNames()
+    {
+        StringBuilder builder = new StringBuilder();
+
+#if !PLATFORM_COMPACTFRAMEWORK
+        foreach (string name in Enum.GetNames(
+                typeof(SQLiteStatusOpsEnum)))
+        {
+            if (String.IsNullOrEmpty(name))
+                continue;
+
+            if (builder.Length > 0)
+                builder.Append(", ");
+
+            builder.Append(name);
+        }
+#else
+        //
+        // TODO: Update this list if the available values in the
+        //       "SQLiteConfigDbOpsEnum" enumeration change.
+        //
+        builder.AppendFormat(CultureInfo.InvariantCulture,
+            "{0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}, {11}",
+            SQLiteStatusOpsEnum.SQLITE_DBSTATUS_LOOKASIDE_USED,
+            SQLiteStatusOpsEnum.SQLITE_DBSTATUS_CACHE_USED,
+            SQLiteStatusOpsEnum.SQLITE_DBSTATUS_SCHEMA_USED,
+            SQLiteStatusOpsEnum.SQLITE_DBSTATUS_STMT_USED,
+            SQLiteStatusOpsEnum.SQLITE_DBSTATUS_LOOKASIDE_HIT,
+            SQLiteStatusOpsEnum.SQLITE_DBSTATUS_LOOKASIDE_MISS_SIZE,
+            SQLiteStatusOpsEnum.SQLITE_DBSTATUS_LOOKASIDE_MISS_FULL,
+            SQLiteStatusOpsEnum.SQLITE_DBSTATUS_CACHE_HIT,
+            SQLiteStatusOpsEnum.SQLITE_DBSTATUS_CACHE_MISS,
+            SQLiteStatusOpsEnum.SQLITE_DBSTATUS_CACHE_WRITE,
+            SQLiteStatusOpsEnum.SQLITE_DBSTATUS_DEFERRED_FKS,
+            SQLiteStatusOpsEnum.SQLITE_DBSTATUS_CACHE_USED_SHARED);
+#endif
+
+        return builder.ToString();
+    }
+
+    /// <summary>
+    /// Builds an error message string fragment containing the
     /// defined values of the <see cref="SQLiteConfigDbOpsEnum" />
     /// enumeration.
     /// </summary>
@@ -2814,6 +2862,44 @@ namespace System.Data.SQLite
 #endif
 
         return builder.ToString();
+    }
+
+    /// <summary>
+    /// Returns the current and/or highwater values for the specified
+    /// database status parameter.
+    /// </summary>
+    /// <param name="option">
+    /// The database status parameter to query.
+    /// </param>
+    /// <param name="reset">
+    /// Non-zero to reset the highwater value to the current value.
+    /// </param>
+    /// <param name="current">
+    /// If applicable, receives the current value.
+    /// </param>
+    /// <param name="highwater">
+    /// If applicable, receives the highwater value.
+    /// </param>
+    /// <returns>
+    /// A standard SQLite return code.
+    /// </returns>
+    internal override SQLiteErrorCode GetStatusParameter(
+        SQLiteStatusOpsEnum option,
+        bool reset,
+        ref int current,
+        ref int highwater
+        )
+    {
+        if (!Enum.IsDefined(typeof(SQLiteStatusOpsEnum), option))
+        {
+            throw new SQLiteException(HelperMethods.StringFormat(
+                CultureInfo.CurrentCulture,
+                "unrecognized status option, must be: {0}",
+                GetStatusDbOpsNames()));
+        }
+
+        return UnsafeNativeMethods.sqlite3_db_status(
+            _sql, option, ref current, ref highwater, reset ? 1 : 0);
     }
 
     /// <summary>
