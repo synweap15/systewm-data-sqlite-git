@@ -21,8 +21,8 @@
   -->
   <Import Condition="'$(MSBuildThisFileDirectory)' != '' And
                      HasTrailingSlash('$(MSBuildThisFileDirectory)') And
-                     Exists('$(MSBuildThisFileDirectory)\System.Data.SQLite.Core.targets.user')"
-          Project="$(MSBuildThisFileDirectory)\System.Data.SQLite.Core.targets.user" />
+                     Exists('$(MSBuildThisFileDirectory)System.Data.SQLite.Core.targets.user')"
+          Project="$(MSBuildThisFileDirectory)System.Data.SQLite.Core.targets.user" />
 
   <!--
   ******************************************************************************
