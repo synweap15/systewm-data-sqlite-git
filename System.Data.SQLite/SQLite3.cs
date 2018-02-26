@@ -2864,7 +2864,7 @@ namespace System.Data.SQLite
                             typeof(string)));
                     }
 
-                    SQLiteErrorCode rc = SQLiteErrorCode.Ok;
+                    SQLiteErrorCode rc = SQLiteErrorCode.Error;
                     IntPtr pDbName = IntPtr.Zero;
 
                     try
@@ -2885,7 +2885,9 @@ namespace System.Data.SQLite
                         if (rc == SQLiteErrorCode.Ok)
                         {
                             FreeDbName(true);
+
                             dbName = pDbName;
+                            pDbName = IntPtr.Zero;
                         }
                     }
                     finally
