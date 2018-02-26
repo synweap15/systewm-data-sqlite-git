@@ -48,6 +48,8 @@
       <li>Updated to <a href="https://www.sqlite.org/src/timeline?r=trunk">SQLite 3.23.0</a>.</li>
       <li>Support extended result codes when messages are looked up without the SQLite core library.</li>
       <li>Override System.Object members for the SQLiteException class to improve its ToString return value. Pursuant to <a href="https://system.data.sqlite.org/index.html/info/53962f9eff">[53962f9eff]</a>.</li>
+      <li>More database connection configuration options for the <a href="https://www.sqlite.org/c3ref/db_config.html">sqlite3_db_config()</a> interface.&nbsp;<b>** Potentially Incompatible Change **</b></li>
+      <li>Set HResult property of SQLiteException based on the SQLite core library error code.&nbsp;<b>** Potentially Incompatible Change **</b></li>
     </ul>
     <p><b>1.0.107.0 - January 30, 2018</b></p>
     <ul>
