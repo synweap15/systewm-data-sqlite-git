@@ -2403,7 +2403,8 @@ namespace eval ::Eagle {
       #       portion itself.
       #
       set patterns [list \
-      {System\.Data\.SQLite\.SQLiteException \(0x80004005\): (.+?)  (?: )?at} \
+      {System\.Data\.SQLite\.SQLiteException \(0x(?:0|8)[0-9A-Fa-f]{7}\):\
+          (.+?)  (?: )?at} \
       {System\.Data\.SQLite\.SQLiteException: (.+?)  (?: )?at} \
       {Eagle\._Components\.Public\.ScriptException: (.+?)  (?: )?at}]
 

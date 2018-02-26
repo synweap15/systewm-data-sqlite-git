@@ -27,6 +27,16 @@ namespace System.Data.SQLite
   public sealed class SQLiteException : Exception
 #endif
   {
+    #region Private Constants
+    /// <summary>
+    /// This value was copied from the "WinError.h" file included with the
+    /// Platform SDK for Windows 10.
+    /// </summary>
+    private const int FACILITY_SQLITE = 1967;
+    #endregion
+
+    ///////////////////////////////////////////////////////////////////////////
+
     private SQLiteErrorCode _errorCode;
 
     ///////////////////////////////////////////////////////////////////////////
@@ -45,6 +55,8 @@ namespace System.Data.SQLite
       : base(info, context)
     {
       _errorCode = (SQLiteErrorCode)info.GetInt32("errorCode");
+
+      Initialize();
     }
 #endif
 
@@ -64,6 +76,8 @@ namespace System.Data.SQLite
       : base(GetStockErrorMessage(errorCode, message))
     {
       _errorCode = errorCode;
+
+      Initialize();
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -76,6 +90,7 @@ namespace System.Data.SQLite
     public SQLiteException(string message)
       : this(SQLiteErrorCode.Unknown, message)
     {
+        // do nothing.
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -84,7 +99,9 @@ namespace System.Data.SQLite
     /// Public constructor that uses the default base class constructor.
     /// </summary>
     public SQLiteException()
+        : base()
     {
+        Initialize();
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -98,6 +115,7 @@ namespace System.Data.SQLite
     public SQLiteException(string message, Exception innerException)
       : base(message, innerException)
     {
+        Initialize();
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -156,6 +174,203 @@ namespace System.Data.SQLite
 #endif
     {
       get { return (int)_errorCode; }
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+
+    /// <summary>
+    /// This method performs extra initialization tasks.  It may be called by
+    /// any of the constructors of this class.  It must not throw exceptions.
+    /// </summary>
+    private void Initialize()
+    {
+        if (HResult == unchecked((int)0x80004005)) /* E_FAIL */
+        {
+            int? localHResult = GetHResultForErrorCode(ResultCode);
+
+            if (localHResult != null)
+                HResult = (int)localHResult;
+        }
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+
+    /// <summary>
+    /// Maps a Win32 error code to an HRESULT.
+    /// </summary>
+    /// <param name="errorCode">
+    /// The specified Win32 error code.  It must be within the range of zero
+    /// (0) to 0xFFFF (65535).
+    /// </param>
+    /// <param name="success">
+    /// Non-zero if the HRESULT should indicate success; otherwise, zero.
+    /// </param>
+    /// <returns>
+    /// The integer value of the HRESULT.
+    /// </returns>
+    private static int MakeHResult(
+        int errorCode,
+        bool success
+        )
+    {
+        return (errorCode & 0xFFFF) | FACILITY_SQLITE |
+            (success ? 0 : unchecked((int)0x80000000));
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+
+    /// <summary>
+    /// Attempts to map the specified <see cref="SQLiteErrorCode" /> onto an
+    /// existing HRESULT -OR- a Win32 error code wrapped in an HRESULT.  The
+    /// mappings may not have perfectly matching semantics; however, they do
+    /// have the benefit of being unique within the context of this exception
+    /// type.
+    /// </summary>
+    /// <param name="errorCode">
+    /// The <see cref="SQLiteErrorCode" /> to map.
+    /// </param>
+    /// <returns>
+    /// The integer HRESULT value -OR- null if there is no known mapping.
+    /// </returns>
+    private static int? GetHResultForErrorCode(
+        SQLiteErrorCode errorCode
+        )
+    {
+        switch (errorCode & SQLiteErrorCode.NonExtendedMask)
+        {
+            case SQLiteErrorCode.Ok:
+                {
+                    return 0; /* S_OK */
+                }
+            case SQLiteErrorCode.Error:
+                {
+                    return MakeHResult(0x0057, false); /* E_INVALIDARG */
+                }
+            case SQLiteErrorCode.Internal:
+                {
+                    return unchecked((int)0x8000FFFF); /* E_UNEXPECTED */
+                }
+            case SQLiteErrorCode.Perm:
+                {
+                    return MakeHResult(0x0005, false); /* E_ACCESSDENIED */
+                }
+            case SQLiteErrorCode.Abort:
+                {
+                    return unchecked((int)0x80004004); /* E_ABORT */
+                }
+            case SQLiteErrorCode.Busy:
+                {
+                    return MakeHResult(0x00AA, false); /* ERROR_BUSY */
+                }
+            case SQLiteErrorCode.Locked:
+                {
+                    return MakeHResult(0x00D4, false); /* ERROR_LOCKED */
+                }
+            case SQLiteErrorCode.NoMem:
+                {
+                    return MakeHResult(0x000E, false); /* E_OUTOFMEMORY */
+                }
+            case SQLiteErrorCode.ReadOnly:
+                {
+                    return MakeHResult(0x1779, false); /* ERROR_FILE_READ_ONLY */
+                }
+            case SQLiteErrorCode.Interrupt:
+                {
+                    return MakeHResult(0x04C7, false); /* ERROR_CANCELLED */
+                }
+            case SQLiteErrorCode.IoErr:
+                {
+                    return MakeHResult(0x045D, false); /* ERROR_IO_DEVICE */
+                }
+            case SQLiteErrorCode.Corrupt:
+                {
+                    return MakeHResult(0x054E, false); /* ERROR_INTERNAL_DB_CORRUPTION */
+                }
+            case SQLiteErrorCode.NotFound:
+                {
+                    return MakeHResult(0x0032, false); /* ERROR_NOT_SUPPORTED */
+                }
+            case SQLiteErrorCode.Full:
+                {
+                    return MakeHResult(0x0070, false); /* ERROR_DISK_FULL */
+                }
+            case SQLiteErrorCode.CantOpen:
+                {
+                    return MakeHResult(0x03F3, false); /* ERROR_CANTOPEN */
+                }
+            case SQLiteErrorCode.Protocol:
+                {
+                    return MakeHResult(0x05B4, false); /* ERROR_TIMEOUT */
+                }
+            case SQLiteErrorCode.Empty:
+                {
+                    return MakeHResult(0x10D2, false); /* ERROR_EMPTY */
+                }
+            case SQLiteErrorCode.Schema:
+                {
+                    return MakeHResult(0x078B, false); /* ERROR_CONTEXT_EXPIRED */
+                }
+            case SQLiteErrorCode.TooBig:
+                {
+                    return unchecked((int)0x800288C5); /* TYPE_E_SIZETOOBIG */
+                }
+            case SQLiteErrorCode.Constraint:
+                {
+                    return MakeHResult(0x202F, false); /* ERROR_DS_CONSTRAINT_VIOLATION */
+                }
+            case SQLiteErrorCode.Mismatch:
+                {
+                    return MakeHResult(0x065D, false); /* ERROR_DATATYPE_MISMATCH */
+                }
+            case SQLiteErrorCode.Misuse:
+                {
+                    return MakeHResult(0x0649, false); /* ERROR_INVALID_HANDLE_STATE */
+                }
+            case SQLiteErrorCode.NoLfs:
+                {
+                    return MakeHResult(0x0646, false); /* ERROR_UNKNOWN_FEATURE */
+                }
+            case SQLiteErrorCode.Auth:
+                {
+                    return MakeHResult(0x078F, false); /* ERROR_AUTHENTICATION_FIREWALL_FAILED */
+                }
+            case SQLiteErrorCode.Format:
+                {
+                    return MakeHResult(0x000B, false); /* ERROR_BAD_FORMAT */
+                }
+            case SQLiteErrorCode.Range:
+                {
+                    return unchecked((int)0x80028CA1); /* TYPE_E_OUTOFBOUNDS */
+                }
+            case SQLiteErrorCode.NotADb:
+                {
+                    return MakeHResult(0x0570, false); /* ERROR_FILE_CORRUPT */
+                }
+            case SQLiteErrorCode.Notice:
+            case SQLiteErrorCode.Warning:
+            case SQLiteErrorCode.Row:
+            case SQLiteErrorCode.Done:
+                {
+                    //
+                    // NOTE: These result codes are not errors, per se;
+                    //       therefore, mask off all HRESULT bits that
+                    //       are not part of the "code" portion (e.g.
+                    //       the severity, facility, etc).  This will
+                    //       have the effect of creating an HRESULT
+                    //       that indicates success, while (hopefully)
+                    //       preserving the specified result code.  At
+                    //       the time this method was written (2018-02),
+                    //       no SQLite result codes were outside of the
+                    //       supported range for HRESULT codes (e.g.
+                    //       0x0000 to 0xFFFF, inclusive), which made
+                    //       the following masking operation a harmless
+                    //       NOOP.
+                    //
+                    return MakeHResult((int)errorCode, true);
+                }
+        }
+
+        return null;
     }
 
     ///////////////////////////////////////////////////////////////////////////

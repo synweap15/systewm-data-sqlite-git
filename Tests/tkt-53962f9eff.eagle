@@ -32,8 +32,8 @@ runTest {test tkt-53962f9eff-1.1 {SQLiteException ToString IoErr} -body {
   unset -nocomplain exception errCode
 } -constraints {eagle command.object SQLite System.Data.SQLite} -match \
 regexp -result {^code = IoErr_Delete_NoEnt \(5898\), message =\
-System\.Data\.SQLite\.SQLiteException(?: \(0x80004005\))?: disk I/O error\
-==> ioerr message\.$}}
+System\.Data\.SQLite\.SQLiteException(?: \(0x8[0-9A-Fa-f]{7}\))?: disk I/O\
+error ==> ioerr message\.$}}
 
 ###############################################################################
 
@@ -49,8 +49,8 @@ runTest {test tkt-53962f9eff-1.2 {SQLiteException ToString Ok} -body {
   unset -nocomplain exception errCode
 } -constraints {eagle command.object SQLite System.Data.SQLite} -match \
 regexp -result {^code = Ok_Load_Permanently \(256\), message =\
-System\.Data\.SQLite\.SQLiteException(?: \(0x80004005\))?: not an error\
-==> ok message.$}}
+System\.Data\.SQLite\.SQLiteException(?: \(0x0[0-9A-Fa-f]{7}\))?: not an\
+error ==> ok message.$}}
 
 ###############################################################################
 
@@ -66,8 +66,8 @@ runTest {test tkt-53962f9eff-1.3 {SQLiteException ToString unknown} -body {
   unset -nocomplain exception errCode
 } -constraints {eagle command.object SQLite System.Data.SQLite} -match \
 regexp -result {^code = 999 \(999\), message =\
-System\.Data\.SQLite\.SQLiteException(?: \(0x80004005\))?: unknown error\
-==> unknown message\.$}}
+System\.Data\.SQLite\.SQLiteException(?: \(0x8[0-9A-Fa-f]{7}\))?: unknown\
+error ==> unknown message\.$}}
 
 ###############################################################################
 
