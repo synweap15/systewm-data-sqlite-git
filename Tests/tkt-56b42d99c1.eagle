@@ -99,7 +99,7 @@ runTest {test tkt-56b42d99c1-1.1 {enlisted transaction isolation} -setup {
   cleanupDb $fileName
 
   unset -nocomplain result results errors code dataSource id db fileName
-} -constraints {eagle command.object monoBug211 monoBug58 command.sql\
+} -constraints {eagle command.object monoBug211 monoBug510 command.sql\
 compile.DATA SQLite System.Data.SQLite compileCSharp} -match regexp -result \
 {^Ok System#CodeDom#Compiler#CompilerResults#\d+ \{\} 0 True$}}
 
@@ -176,7 +176,7 @@ runTest {test tkt-56b42d99c1-1.2 {enlisted transaction isolation} -setup {
   cleanupDb $fileName
 
   unset -nocomplain result results errors code sql dataSource id db fileName
-} -constraints {eagle command.object monoBug211 monoBug58 command.sql\
+} -constraints {eagle command.object monoBug211 monoBug510 command.sql\
 compile.DATA SQLite System.Data.SQLite compileCSharp} -match regexp -result \
 {^Ok System#CodeDom#Compiler#CompilerResults#\d+ \{\} 0 0$}}
 
@@ -407,7 +407,7 @@ runTest {test tkt-56b42d99c1-1.5 {enlisted transaction isolation} -setup {
   cleanupDb $fileName
 
   unset -nocomplain result results errors code sql dataSource id db fileName
-} -constraints {eagle command.object monoBug211 monoBug58 command.sql\
+} -constraints {eagle command.object monoBug211 monoBug510 command.sql\
 compile.DATA SQLite System.Data.SQLite compileCSharp} -match regexp -result \
 {^Ok System#CodeDom#Compiler#CompilerResults#\d+ \{\} 0 1$}}
 
@@ -496,7 +496,7 @@ runTest {test tkt-56b42d99c1-1.6 {enlisted transaction isolation} -setup {
   cleanupDb $fileName
 
   unset -nocomplain result results errors code dataSource id db fileName
-} -constraints {eagle command.object monoBug28 monoBug211 monoBug58 command.sql\
+} -constraints {eagle command.object monoBug28 monoBug211 monoBug510 command.sql\
 compile.DATA SQLite System.Data.SQLite compileCSharp} -match regexp -result \
 {^Ok System#CodeDom#Compiler#CompilerResults#\d+ \{\} 0 True$}}
 
@@ -573,9 +573,9 @@ runTest {test tkt-56b42d99c1-1.7 {enlisted transaction isolation} -setup {
   cleanupDb $fileName
 
   unset -nocomplain result results errors code sql dataSource id db fileName
-} -constraints {eagle command.object monoBug28 monoBug211 monoBug58 command.sql\
-compile.DATA SQLite System.Data.SQLite compileCSharp} -match regexp -result \
-{^Ok System#CodeDom#Compiler#CompilerResults#\d+ \{\} 0 0$}}
+} -constraints {eagle command.object monoBug28 monoBug211 monoBug510\
+command.sql compile.DATA SQLite System.Data.SQLite compileCSharp} -match \
+regexp -result {^Ok System#CodeDom#Compiler#CompilerResults#\d+ \{\} 0 0$}}
 
 ###############################################################################
 
@@ -804,9 +804,9 @@ runTest {test tkt-56b42d99c1-1.10 {enlisted transaction isolation} -setup {
   cleanupDb $fileName
 
   unset -nocomplain result results errors code sql dataSource id db fileName
-} -constraints {eagle command.object monoBug28 monoBug211 monoBug58 command.sql\
-compile.DATA SQLite System.Data.SQLite compileCSharp} -match regexp -result \
-{^Ok System#CodeDom#Compiler#CompilerResults#\d+ \{\} 0 1$}}
+} -constraints {eagle command.object monoBug28 monoBug211 monoBug510\
+command.sql compile.DATA SQLite System.Data.SQLite compileCSharp} -match \
+regexp -result {^Ok System#CodeDom#Compiler#CompilerResults#\d+ \{\} 0 1$}}
 
 ###############################################################################
 
