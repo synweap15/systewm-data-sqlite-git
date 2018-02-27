@@ -156,7 +156,7 @@ runTest {test tkt-5cee5409f8-1.1 {asynchronous transaction handling} -setup {
 
           for (int iteration = 0; iteration < 1000; iteration++)
           {
-            if (connection.WaitForEnlistmentReset(1))
+            if (connection.WaitForEnlistmentReset(1, false))
               Interlocked.Increment(ref resetCount);
             else
               Interlocked.Increment(ref timeoutCount);

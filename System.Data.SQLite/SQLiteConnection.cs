@@ -3449,7 +3449,7 @@ namespace System.Data.SQLite
 
         if (waitForEnlistmentReset)
             /* IGNORED */
-            WaitForEnlistmentReset(waitTimeout);
+            WaitForEnlistmentReset(waitTimeout, null);
 
         lock (_enlistmentSyncRoot) /* TRANSACTIONAL */
         {
@@ -3488,6 +3488,11 @@ namespace System.Data.SQLite
     /// The approximate maximum number of milliseconds to wait before timing
     /// out the wait operation.
     /// </param>
+    /// <param name="returnOnDisposed">
+    /// The return value to use if the connection has been disposed; if this
+    /// value is null, <see cref="ObjectDisposedException" /> will be raised
+    /// if the connection has been disposed.
+    /// </param>
     /// <returns>
     /// Non-zero if the enlistment assciated with this connection was reset;
     /// otherwise, zero.  It should be noted that this method returning a
@@ -3507,6 +3512,11 @@ namespace System.Data.SQLite
     /// The approximate maximum number of milliseconds to wait before timing
     /// out the wait operation.
     /// </param>
+    /// <param name="returnOnDisposed">
+    /// The return value to use if the connection has been disposed; if this
+    /// value is null, <see cref="ObjectDisposedException" /> will be raised
+    /// if the connection has been disposed.
+    /// </param>
     /// <returns>
     /// Non-zero if the enlistment assciated with this connection was reset;
     /// otherwise, zero.  It should be noted that this method returning a
@@ -3517,10 +3527,14 @@ namespace System.Data.SQLite
     /// </returns>
 #endif
     public bool WaitForEnlistmentReset(
-        int timeoutMilliseconds
+        int timeoutMilliseconds,
+        bool? returnOnDisposed
         )
     {
-        CheckDisposed();
+        if (returnOnDisposed == null)
+            CheckDisposed();
+        else if(disposed)
+            return (bool)returnOnDisposed;
 
 #if !PLATFORM_COMPACTFRAMEWORK
         if (timeoutMilliseconds < 0)
