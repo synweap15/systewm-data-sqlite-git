@@ -4931,7 +4931,8 @@ unknown error}}}
 ###############################################################################
 
 runTest {test data-1.95 {SetConfigurationOption method} -setup {
-  setupDb [set fileName data-1.95.db] "" "" "" NoExtensionFunctions
+  setupDb [set fileName data-1.95.db] "" "" "" \
+      "NoExtensionFunctions NoBindFunctions"
 } -body {
   set dbConfigs [list]
 
