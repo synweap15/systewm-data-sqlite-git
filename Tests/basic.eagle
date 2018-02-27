@@ -3677,8 +3677,8 @@ runTest {test data-1.74 {bind functions using delegate} -setup {
       }
       Compare {
         lappend ::compareResults [object invoke -create \
-            Int32 Parse [string compare -nocase [lindex \
-            $args 1] [lindex $args 2]]]
+            Int32 Parse [string compare [lindex $args 1] \
+            [lindex $args 2]]]
 
         return [lindex $::compareResults end]
       }
@@ -4838,11 +4838,12 @@ runTest {test data-1.93 {extended error code messages} -setup {
   unset -nocomplain connection db fileName
 } -constraints {eagle command.object monoBug28\
 compile.DATA defineConstant.System.Data.SQLite.INTEROP_TEST_EXTENSION\
-command.sql SQLite System.Data.SQLite} -result {{0 {}} {0 {}} {0 {}} Error {SQL\
-logic error ==> SQL logic error} IoErr {disk I/O error ==> disk I/O error}\
-CantOpen {unable to open database file ==> unable to open database file} Notice\
-{notification message ==> notification message} Warning {warning message ==>\
-warning message} 231 {SQL logic error ==> unknown error} {0 {}}\
+command.sql SQLite System.Data.SQLite} -constraintExpression \
+{[package vcompare $core_library_version 3.23] >= 0} -result {{0 {}} {0 {}} {0\
+{}} Error {SQL logic error ==> SQL logic error} IoErr {disk I/O error ==> disk\
+I/O error} CantOpen {unable to open database file ==> unable to open database\
+file} Notice {notification message ==> notification message} Warning {warning\
+message ==> warning message} 231 {SQL logic error ==> unknown error} {0 {}}\
 Ok_Load_Permanently {not an error ==> not an error} Error_Retry {SQL logic\
 error ==> SQL logic error} IoErr_Short_Read {disk I/O error ==> disk I/O error}\
 CantOpen_NoTempDir {unable to open database file ==> unable to open database\
@@ -4914,11 +4915,12 @@ runTest {test data-1.94 {extended error code messages} -setup {
   unset -nocomplain connection db fileName
 } -constraints {eagle command.object monoBug28\
 compile.DATA defineConstant.System.Data.SQLite.INTEROP_TEST_EXTENSION\
-command.sql SQLite System.Data.SQLite} -result {{0 {}} {0 {}} {0 {}} Error {SQL\
-logic error ==> SQL logic error} IoErr {disk I/O error ==> disk I/O error}\
-CantOpen {unable to open database file ==> unable to open database file} Notice\
-{notification message ==> notification message} Warning {warning message ==>\
-warning message} 231 {unknown error ==> unknown error} {0 {}}\
+command.sql SQLite System.Data.SQLite} -constraintExpression \
+{[package vcompare $core_library_version 3.23] >= 0} -result {{0 {}} {0 {}} {0\
+{}} Error {SQL logic error ==> SQL logic error} IoErr {disk I/O error ==> disk\
+I/O error} CantOpen {unable to open database file ==> unable to open database\
+file} Notice {notification message ==> notification message} Warning {warning\
+message ==> warning message} 231 {unknown error ==> unknown error} {0 {}}\
 Ok_Load_Permanently {not an error ==> not an error} Error_Retry {SQL logic\
 error ==> SQL logic error} IoErr_Short_Read {disk I/O error ==> disk I/O error}\
 CantOpen_NoTempDir {unable to open database file ==> unable to open database\
