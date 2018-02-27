@@ -244,7 +244,7 @@ namespace System.Data.SQLite
                 }
             case SQLiteErrorCode.Error:
                 {
-                    return MakeHResult(0x0057, false); /* E_INVALIDARG */
+                    return MakeHResult(0x001F, false); /* ERROR_GEN_FAILURE */
                 }
             case SQLiteErrorCode.Internal:
                 {
@@ -252,7 +252,7 @@ namespace System.Data.SQLite
                 }
             case SQLiteErrorCode.Perm:
                 {
-                    return MakeHResult(0x0005, false); /* E_ACCESSDENIED */
+                    return MakeHResult(0x0005, false); /* ERROR_ACCESS_DENIED */
                 }
             case SQLiteErrorCode.Abort:
                 {
@@ -268,7 +268,7 @@ namespace System.Data.SQLite
                 }
             case SQLiteErrorCode.NoMem:
                 {
-                    return MakeHResult(0x000E, false); /* E_OUTOFMEMORY */
+                    return MakeHResult(0x000E, false); /* ERROR_OUTOFMEMORY */
                 }
             case SQLiteErrorCode.ReadOnly:
                 {
