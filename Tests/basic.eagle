@@ -4994,7 +4994,7 @@ runTest {test data-1.95 {SetConfigurationOption method} -setup {
 
   lappend result $current(0) $highwater(0)
 
-  sql execute $db {CREATE TABLE t1(x);}; # use some lookaside memory?
+  sql execute $db {CREATE TABLE test.t1(x);}; # use some lookaside memory?
 
   set current(1) 0; set highwater(1) 0
 
