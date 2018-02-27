@@ -4839,7 +4839,8 @@ runTest {test data-1.93 {extended error code messages} -setup {
 } -constraints {eagle command.object monoBug28\
 compile.DATA defineConstant.System.Data.SQLite.INTEROP_TEST_EXTENSION\
 command.sql SQLite System.Data.SQLite} -constraintExpression \
-{[package vcompare $core_library_version 3.23] >= 0} -result {{0 {}} {0 {}} {0\
+{[info exists core_library_version] && \
+[package vcompare $core_library_version 3.23] >= 0} -result {{0 {}} {0 {}} {0\
 {}} Error {SQL logic error ==> SQL logic error} IoErr {disk I/O error ==> disk\
 I/O error} CantOpen {unable to open database file ==> unable to open database\
 file} Notice {notification message ==> notification message} Warning {warning\
@@ -4916,7 +4917,8 @@ runTest {test data-1.94 {extended error code messages} -setup {
 } -constraints {eagle command.object monoBug28\
 compile.DATA defineConstant.System.Data.SQLite.INTEROP_TEST_EXTENSION\
 command.sql SQLite System.Data.SQLite} -constraintExpression \
-{[package vcompare $core_library_version 3.23] >= 0} -result {{0 {}} {0 {}} {0\
+{[info exists core_library_version] && \
+[package vcompare $core_library_version 3.23] >= 0} -result {{0 {}} {0 {}} {0\
 {}} Error {SQL logic error ==> SQL logic error} IoErr {disk I/O error ==> disk\
 I/O error} CantOpen {unable to open database file ==> unable to open database\
 file} Notice {notification message ==> notification message} Warning {warning\

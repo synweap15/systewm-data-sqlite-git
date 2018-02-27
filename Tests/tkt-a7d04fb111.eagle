@@ -42,36 +42,63 @@ set iso8601Value(2) [$instanceValue(2) ToString [getDateTimeFormat false]]
 
 ###############################################################################
 
-set julianDayValue(0) [object invoke System.Data.SQLite.SQLiteConvert \
-    ToJulianDay $instanceValue(0)]
+if {[haveConstraint System.Data.SQLite]} then {
+  set julianDayValue(0) [object invoke \
+      System.Data.SQLite.SQLiteConvert \
+      ToJulianDay $instanceValue(0)]
 
-set julianDayValue(1) [object invoke System.Data.SQLite.SQLiteConvert \
-    ToJulianDay $instanceValue(1)]
+  set julianDayValue(1) [object invoke \
+      System.Data.SQLite.SQLiteConvert \
+      ToJulianDay $instanceValue(1)]
 
-set julianDayValue(2) [object invoke System.Data.SQLite.SQLiteConvert \
-    ToJulianDay $instanceValue(2)]
-
-###############################################################################
-
-set unixEpochValue(0) [object invoke System.Data.SQLite.SQLiteConvert \
-    ToUnixEpoch $instanceValue(0)]
-
-set unixEpochValue(1) [object invoke System.Data.SQLite.SQLiteConvert \
-    ToUnixEpoch $instanceValue(1)]
-
-set unixEpochValue(2) [object invoke System.Data.SQLite.SQLiteConvert \
-    ToUnixEpoch $instanceValue(2)]
+  set julianDayValue(2) [object invoke \
+      System.Data.SQLite.SQLiteConvert \
+      ToJulianDay $instanceValue(2)]
+} else {
+  set julianDayValue(0) 0
+  set julianDayValue(1) 0
+  set julianDayValue(2) 0
+}
 
 ###############################################################################
 
-set invariantCultureValue(0) [object invoke System.Data.SQLite.SQLiteConvert \
-    ToString $instanceValue(0) InvariantCulture Unspecified null]
+if {[haveConstraint System.Data.SQLite]} then {
+  set unixEpochValue(0) [object invoke \
+      System.Data.SQLite.SQLiteConvert \
+      ToUnixEpoch $instanceValue(0)]
 
-set invariantCultureValue(1) [object invoke System.Data.SQLite.SQLiteConvert \
-    ToString $instanceValue(1) InvariantCulture Utc null]
+  set unixEpochValue(1) [object invoke \
+      System.Data.SQLite.SQLiteConvert \
+      ToUnixEpoch $instanceValue(1)]
 
-set invariantCultureValue(2) [object invoke System.Data.SQLite.SQLiteConvert \
-    ToString $instanceValue(2) InvariantCulture Local null]
+  set unixEpochValue(2) [object invoke \
+      System.Data.SQLite.SQLiteConvert \
+      ToUnixEpoch $instanceValue(2)]
+} else {
+  set unixEpochValue(0) 0
+  set unixEpochValue(1) 0
+  set unixEpochValue(2) 0
+}
+
+###############################################################################
+
+if {[haveConstraint System.Data.SQLite]} then {
+  set invariantCultureValue(0) [object invoke \
+      System.Data.SQLite.SQLiteConvert \
+      ToString $instanceValue(0) InvariantCulture Unspecified null]
+
+  set invariantCultureValue(1) [object invoke \
+      System.Data.SQLite.SQLiteConvert \
+      ToString $instanceValue(1) InvariantCulture Utc null]
+
+  set invariantCultureValue(2) [object invoke \
+      System.Data.SQLite.SQLiteConvert \
+      ToString $instanceValue(2) InvariantCulture Local null]
+} else {
+  set invariantCultureValue(0) 0
+  set invariantCultureValue(1) 0
+  set invariantCultureValue(2) 0
+}
 
 ###############################################################################
 
