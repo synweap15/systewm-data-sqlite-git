@@ -1485,6 +1485,21 @@ namespace System.Data.SQLite
         // If we have a table-bound column, extract the extra information from it
         if (String.IsNullOrEmpty(strColumn) == false)
         {
+          string baseCatalogName = String.Empty;
+
+          if (row[SchemaTableOptionalColumn.BaseCatalogName] != DBNull.Value)
+              baseCatalogName = (string)row[SchemaTableOptionalColumn.BaseCatalogName];
+
+          string baseTableName = String.Empty;
+
+          if (row[SchemaTableColumn.BaseTableName] != DBNull.Value)
+              baseTableName = (string)row[SchemaTableColumn.BaseTableName];
+
+          string baseColumnName = String.Empty;
+
+          if (row[SchemaTableColumn.BaseColumnName] != DBNull.Value)
+              baseColumnName = (string)row[SchemaTableColumn.BaseColumnName];
+
           string collSeq = null;
           bool bNotNull = false;
           bool bPrimaryKey = false;
@@ -1493,12 +1508,13 @@ namespace System.Data.SQLite
 
           // Get the column meta data
           _command.Connection._sql.ColumnMetaData(
-            (string)row[SchemaTableOptionalColumn.BaseCatalogName],
-            (string)row[SchemaTableColumn.BaseTableName],
+            baseCatalogName,
+            baseTableName,
             strColumn,
             ref dataType, ref collSeq, ref bNotNull, ref bPrimaryKey, ref bAutoIncrement);
 
           if (bNotNull || bPrimaryKey) row[SchemaTableColumn.AllowDBNull] = false;
+          bool allowDbNull = (bool)row[SchemaTableColumn.AllowDBNull];
 
           row[SchemaTableColumn.IsKey] = bPrimaryKey && CountParents(parentToColumns) <= 1;
           row[SchemaTableOptionalColumn.IsAutoIncrement] = bAutoIncrement;
@@ -1530,15 +1546,15 @@ namespace System.Data.SQLite
           {
             // Determine the default value for the column, which sucks because we have to query the schema for each column
             using (SQLiteCommand cmdTable = new SQLiteCommand(HelperMethods.StringFormat(CultureInfo.InvariantCulture, "PRAGMA [{0}].TABLE_INFO([{1}])",
-              row[SchemaTableOptionalColumn.BaseCatalogName],
-              row[SchemaTableColumn.BaseTableName]
+              baseCatalogName,
+              baseTableName
               ), _command.Connection))
             using (DbDataReader rdTable = cmdTable.ExecuteReader())
             {
               // Find the matching column
               while (rdTable.Read())
               {
-                if (String.Compare((string)row[SchemaTableColumn.BaseColumnName], rdTable.GetString(1), StringComparison.OrdinalIgnoreCase) == 0)
+                if (String.Compare(baseColumnName, rdTable.GetString(1), StringComparison.OrdinalIgnoreCase) == 0)
                 {
                   if (rdTable.IsDBNull(4) == false)
                     row[SchemaTableOptionalColumn.DefaultValue] = rdTable[4];
@@ -1552,25 +1568,25 @@ namespace System.Data.SQLite
           // Determine IsUnique properly, which is a pain in the butt!
           if (wantUniqueInfo)
           {
-            if ((string)row[SchemaTableOptionalColumn.BaseCatalogName] != strCatalog
-              || (string)row[SchemaTableColumn.BaseTableName] != strTable)
+            if (baseCatalogName != strCatalog
+              || baseTableName != strTable)
             {
-              strCatalog = (string)row[SchemaTableOptionalColumn.BaseCatalogName];
-              strTable = (string)row[SchemaTableColumn.BaseTableName];
+              strCatalog = baseCatalogName;
+              strTable = baseTableName;
 
               tblIndexes = _command.Connection.GetSchema("Indexes", new string[] {
-                (string)row[SchemaTableOptionalColumn.BaseCatalogName],
+                baseCatalogName,
                 null,
-                (string)row[SchemaTableColumn.BaseTableName],
+                baseTableName,
                 null });
             }
 
             foreach (DataRow rowIndexes in tblIndexes.Rows)
             {
               tblIndexColumns = _command.Connection.GetSchema("IndexColumns", new string[] {
-                (string)row[SchemaTableOptionalColumn.BaseCatalogName],
+                baseCatalogName,
                 null,
-                (string)row[SchemaTableColumn.BaseTableName],
+                baseTableName,
                 (string)rowIndexes["INDEX_NAME"],
                 null
                 });
@@ -1584,7 +1600,7 @@ namespace System.Data.SQLite
                   //         construct (i.e. a join) because in that case we must
                   //         allow duplicate values (refer to ticket [7e3fa93744]).
                   //
-                  if (parentToColumns.Count == 1 && tblIndexColumns.Rows.Count == 1 && (bool)row[SchemaTableColumn.AllowDBNull] == false)
+                  if (parentToColumns.Count == 1 && tblIndexColumns.Rows.Count == 1 && allowDbNull == false)
                     row[SchemaTableColumn.IsUnique] = rowIndexes["UNIQUE"];
 
                   // If its an integer primary key and the only primary key in the table, then its a rowid alias and is autoincrement

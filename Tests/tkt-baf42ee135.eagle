@@ -1,0 +1,54 @@
+###############################################################################
+#
+# tkt-baf42ee135.eagle --
+#
+# Written by Joe Mistachkin.
+# Released to the public domain, use at your own risk!
+#
+###############################################################################
+
+package require Eagle
+package require Eagle.Library
+package require Eagle.Test
+
+runTestPrologue
+
+###############################################################################
+
+package require System.Data.SQLite.Test
+runSQLiteTestPrologue
+
+###############################################################################
+
+runTest {test tkt-baf42ee135-1.1 {base catalog/table name not set} -setup {
+  setupDb [set fileName tkt-baf42ee135-1.1.db]
+} -body {
+  sql execute $db {
+    CREATE TABLE ""(x);
+  }
+
+  set dataReader [sql execute -execute reader -format datareader \
+      -alias $db "SELECT x FROM \"\";"]
+
+  set dataTable [$dataReader -alias GetSchemaTable]
+
+  getRowsFromDataTable $dataTable
+} -cleanup {
+  unset -nocomplain dataTable dataReader
+
+  cleanupDb $fileName
+
+  unset -nocomplain db fileName
+} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
+System.Data.SQLite} -result {{{ColumnName x} {ColumnOrdinal 0} {ColumnSize\
+2147483647} NumericPrecision NumericScale {IsUnique False} {IsKey False}\
+BaseServerName {BaseCatalogName main} {BaseColumnName x} {BaseSchemaName\
+sqlite_default_schema} BaseTableName {DataType System.Object} {AllowDBNull\
+True} {ProviderType 13} {IsAliased False} {IsExpression False} {IsAutoIncrement\
+False} {IsRowVersion False} {IsHidden False} {IsLong False} {IsReadOnly False}\
+ProviderSpecificDataType DefaultValue DataTypeName {CollationType BINARY}}}}
+
+###############################################################################
+
+runSQLiteTestEpilogue
+runTestEpilogue
