@@ -1485,12 +1485,12 @@ namespace System.Data.SQLite
         // If we have a table-bound column, extract the extra information from it
         if (String.IsNullOrEmpty(strColumn) == false)
         {
-          string baseCatalogName = null;
+          string baseCatalogName = String.Empty;
 
           if (row[SchemaTableOptionalColumn.BaseCatalogName] != DBNull.Value)
               baseCatalogName = (string)row[SchemaTableOptionalColumn.BaseCatalogName];
 
-          string baseTableName = null;
+          string baseTableName = String.Empty;
 
           if (row[SchemaTableColumn.BaseTableName] != DBNull.Value)
               baseTableName = (string)row[SchemaTableColumn.BaseTableName];
