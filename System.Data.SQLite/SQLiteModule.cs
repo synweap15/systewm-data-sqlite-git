@@ -3271,7 +3271,7 @@ namespace System.Data.SQLite
         /// The total number of outstanding memory bytes allocated by this
         /// class using the SQLite core library.
         /// </summary>
-        private static int bytesAllocated;
+        private static ulong bytesAllocated;
 
         ///////////////////////////////////////////////////////////////////////
 
@@ -3279,8 +3279,151 @@ namespace System.Data.SQLite
         /// The maximum number of outstanding memory bytes ever allocated by
         /// this class using the SQLite core library.
         /// </summary>
-        private static int maximumBytesAllocated;
+        private static ulong maximumBytesAllocated;
 #endif
+        #endregion
+
+        ///////////////////////////////////////////////////////////////////////
+
+        #region Memory Tracking Helper Methods
+#if TRACK_MEMORY_BYTES
+        /// <summary>
+        /// Attempts to determine the size of the specified memory block.  If
+        /// the <see cref="Size64" /> method can be used, the returned value
+        /// may be larger than <see cref="Int32.MaxValue" />.  A message may
+        /// be sent to the logging subsystem if an error is encountered.
+        /// </summary>
+        /// <param name="pMemory">
+        /// The native pointer to the memory block previously obtained from
+        /// the <see cref="Allocate" />, <see cref="Allocate64" />,
+        /// <see cref="AllocateUntracked" />, or
+        /// <see cref="Allocate64Untracked" /> methods or directly from the
+        /// SQLite core library.
+        /// </param>
+        /// <returns>
+        /// The size of the specified memory block -OR- zero if the 32-bit
+        /// signed value reported from the native API was less than zero.
+        /// </returns>
+        private static ulong GetBlockSize(
+            IntPtr pMemory
+            )
+        {
+            ulong ulongSize = 0;
+
+            if (CanUseSize64())
+            {
+                ulongSize = Size64(pMemory);
+            }
+            else
+            {
+                int intSize = Size(pMemory);
+
+                if (intSize > 0)
+                {
+                    ulongSize = (ulong)intSize;
+                }
+#if DEBUG
+                else if (intSize < 0)
+                {
+                    SQLiteLog.LogMessage(SQLiteErrorCode.Warning,
+                        HelperMethods.StringFormat(CultureInfo.CurrentCulture,
+                        "pointer {0} size {1} appears to be negative: {2}",
+                        pMemory, intSize,
+#if !PLATFORM_COMPACTFRAMEWORK
+                        Environment.StackTrace
+#else
+                        null
+#endif
+                    ));
+                }
+#endif
+            }
+
+            return ulongSize;
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+
+        /// <summary>
+        /// Adjusts the total number of (tracked) bytes that are currently
+        /// considered to be allocated by this class.  The total number is
+        /// increased by the total size of the memory block pointed to by
+        /// <paramref name="pMemory" />.  If the new total number exceeds
+        /// the previously seen maximum, the maximum will be reset.
+        /// </summary>
+        /// <param name="pMemory">
+        /// A native pointer to newly allocated memory.
+        /// </param>
+        private static void MemoryWasAllocated(
+            IntPtr pMemory
+            )
+        {
+            if (pMemory != IntPtr.Zero)
+            {
+                ulong blockSize = GetBlockSize(pMemory);
+
+                if (blockSize > 0)
+                {
+                    lock (syncRoot)
+                    {
+                        bytesAllocated += blockSize;
+
+                        if (bytesAllocated > maximumBytesAllocated)
+                            maximumBytesAllocated = bytesAllocated;
+                    }
+                }
+            }
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+
+        /// <summary>
+        /// Adjusts the total number of (tracked) bytes that are currently
+        /// considered to be allocated by this class.  The total number is
+        /// decreased by the total size of the memory block pointed to by
+        /// <paramref name="pMemory" />.
+        /// </summary>
+        /// <param name="pMemory">
+        /// A native pointer to allocated memory that is going to be freed.
+        /// </param>
+        private static void MemoryIsBeingFreed(
+            IntPtr pMemory
+            )
+        {
+            if (pMemory != IntPtr.Zero)
+            {
+                ulong blockSize = GetBlockSize(pMemory);
+
+                if (blockSize > 0)
+                {
+                    lock (syncRoot)
+                    {
+                        bytesAllocated -= blockSize;
+                    }
+                }
+            }
+        }
+#endif
+        #endregion
+
+        ///////////////////////////////////////////////////////////////////////
+
+        #region Memory Version Helper Methods
+        /// <summary>
+        /// Determines if the native sqlite3_msize() API can be used, based on
+        /// the available version of the SQLite core library.
+        /// </summary>
+        /// <returns>
+        /// Non-zero if the native sqlite3_msize() API property is supported
+        /// by the SQLite core library.
+        /// </returns>
+        private static bool CanUseSize64()
+        {
+            if (UnsafeNativeMethods.sqlite3_libversion_number() >= 3008007)
+                return true;
+
+            return false;
+        }
         #endregion
 
         ///////////////////////////////////////////////////////////////////////
@@ -3306,21 +3449,35 @@ namespace System.Data.SQLite
             IntPtr pMemory = UnsafeNativeMethods.sqlite3_malloc(size);
 
 #if TRACK_MEMORY_BYTES
-            if (pMemory != IntPtr.Zero)
-            {
-                int blockSize = Size(pMemory);
+            MemoryWasAllocated(pMemory);
+#endif
 
-                if (blockSize > 0)
-                {
-                    lock (syncRoot)
-                    {
-                        bytesAllocated += blockSize;
+            return pMemory;
+        }
 
-                        if (bytesAllocated > maximumBytesAllocated)
-                            maximumBytesAllocated = bytesAllocated;
-                    }
-                }
-            }
+        ///////////////////////////////////////////////////////////////////////
+
+        /// <summary>
+        /// Allocates at least the specified number of bytes of native memory
+        /// via the SQLite core library sqlite3_malloc64() function and returns
+        /// the resulting native pointer.  If the TRACK_MEMORY_BYTES option
+        /// was enabled at compile-time, adjusts the number of bytes currently
+        /// allocated by this class.
+        /// </summary>
+        /// <param name="size">
+        /// The number of bytes to allocate.
+        /// </param>
+        /// <returns>
+        /// The native pointer that points to a block of memory of at least the
+        /// specified size -OR- <see cref="IntPtr.Zero" /> if the memory could
+        /// not be allocated.
+        /// </returns>
+        public static IntPtr Allocate64(ulong size)
+        {
+            IntPtr pMemory = UnsafeNativeMethods.sqlite3_malloc64(size);
+
+#if TRACK_MEMORY_BYTES
+            MemoryWasAllocated(pMemory);
 #endif
 
             return pMemory;
@@ -3352,15 +3509,41 @@ namespace System.Data.SQLite
         ///////////////////////////////////////////////////////////////////////
 
         /// <summary>
+        /// Allocates at least the specified number of bytes of native memory
+        /// via the SQLite core library sqlite3_malloc64() function and returns
+        /// the resulting native pointer without adjusting the number of
+        /// allocated bytes currently tracked by this class.  This is useful
+        /// when dealing with blocks of memory that will be freed directly by
+        /// the SQLite core library.
+        /// </summary>
+        /// <param name="size">
+        /// The number of bytes to allocate.
+        /// </param>
+        /// <returns>
+        /// The native pointer that points to a block of memory of at least the
+        /// specified size -OR- <see cref="IntPtr.Zero" /> if the memory could
+        /// not be allocated.
+        /// </returns>
+        public static IntPtr Allocate64Untracked(ulong size)
+        {
+            return UnsafeNativeMethods.sqlite3_malloc64(size);
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+
+        /// <summary>
         /// Gets and returns the actual size of the specified memory block
-        /// that was previously obtained from the <see cref="Allocate" /> or
-        /// <see cref="AllocateUntracked" /> methods or directly from the
+        /// that was previously obtained from the <see cref="Allocate" />,
+        /// <see cref="Allocate64" />, <see cref="AllocateUntracked" />, or
+        /// <see cref="Allocate64Untracked" /> methods or directly from the
         /// SQLite core library.
         /// </summary>
         /// <param name="pMemory">
-        /// The native pointer to the memory block previously obtained from the
-        /// <see cref="Allocate" /> or <see cref="AllocateUntracked" /> methods
-        /// or directly from the SQLite core library.
+        /// The native pointer to the memory block previously obtained from
+        /// the <see cref="Allocate" />, <see cref="Allocate64" />,
+        /// <see cref="AllocateUntracked" />, or
+        /// <see cref="Allocate64Untracked" /> methods or directly from the
+        /// SQLite core library.
         /// </param>
         /// <returns>
         /// The actual size, in bytes, of the memory block specified via the
@@ -3388,14 +3571,43 @@ namespace System.Data.SQLite
         ///////////////////////////////////////////////////////////////////////
 
         /// <summary>
+        /// Gets and returns the actual size of the specified memory block
+        /// that was previously obtained from the <see cref="Allocate" />,
+        /// <see cref="Allocate64" />, <see cref="AllocateUntracked" />, or
+        /// <see cref="Allocate64Untracked" /> methods or directly from the
+        /// SQLite core library.
+        /// </summary>
+        /// <param name="pMemory">
+        /// The native pointer to the memory block previously obtained from
+        /// the <see cref="Allocate" />, <see cref="Allocate64" />,
+        /// <see cref="AllocateUntracked" />, or
+        /// <see cref="Allocate64Untracked" /> methods or directly from the
+        /// SQLite core library.
+        /// </param>
+        /// <returns>
+        /// The actual size, in bytes, of the memory block specified via the
+        /// native pointer.
+        /// </returns>
+        public static ulong Size64(IntPtr pMemory)
+        {
+#if DEBUG
+            SQLiteMarshal.CheckAlignment("Size64", pMemory, 0, IntPtr.Size);
+#endif
+
+            return UnsafeNativeMethods.sqlite3_msize(pMemory);
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+
+        /// <summary>
         /// Frees a memory block previously obtained from the
-        /// <see cref="Allocate" /> method.  If the TRACK_MEMORY_BYTES option
-        /// was enabled at compile-time, adjusts the number of bytes currently
-        /// allocated by this class.
+        /// <see cref="Allocate" /> or <see cref="Allocate64" /> methods.  If
+        /// the TRACK_MEMORY_BYTES option was enabled at compile-time, adjusts
+        /// the number of bytes currently allocated by this class.
         /// </summary>
         /// <param name="pMemory">
         /// The native pointer to the memory block previously obtained from the
-        /// <see cref="Allocate" /> method.
+        /// <see cref="Allocate" /> or <see cref="Allocate64" /> methods.
         /// </param>
         public static void Free(IntPtr pMemory)
         {
@@ -3404,18 +3616,7 @@ namespace System.Data.SQLite
 #endif
 
 #if TRACK_MEMORY_BYTES
-            if (pMemory != IntPtr.Zero)
-            {
-                int blockSize = Size(pMemory);
-
-                if (blockSize > 0)
-                {
-                    lock (syncRoot)
-                    {
-                        bytesAllocated -= blockSize;
-                    }
-                }
-            }
+            MemoryIsBeingFreed(pMemory);
 #endif
 
             UnsafeNativeMethods.sqlite3_free(pMemory);
@@ -4334,6 +4535,26 @@ namespace System.Data.SQLite
 
         #region Private Methods
 #if DEBUG
+        /// <summary>
+        /// Attempts to verify that the specified native pointer is properly
+        /// aligned for the size of the data value.  If that is not the case,
+        /// a message will be sent to the logging subsystem.
+        /// </summary>
+        /// <param name="type">
+        /// The type of operation being performed by the caller.  This value
+        /// may be used within diagnostic messages.
+        /// </param>
+        /// <param name="pointer">
+        /// The <see cref="IntPtr" /> object instance representing the base
+        /// memory location.
+        /// </param>
+        /// <param name="offset">
+        /// The integer offset from the base memory location where the data
+        /// value to be read or written.
+        /// </param>
+        /// <param name="size">
+        /// The size, in bytes, of the data value.
+        /// </param>
         internal static void CheckAlignment(
             string type,
             IntPtr pointer,

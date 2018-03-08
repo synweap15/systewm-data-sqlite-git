@@ -3366,7 +3366,28 @@ namespace System.Data.SQLite
 #else
     [DllImport(SQLITE_DLL)]
 #endif
+    internal static extern IntPtr sqlite3_malloc64(ulong n);
+
+#if !PLATFORM_COMPACTFRAMEWORK
+    [DllImport(SQLITE_DLL, CallingConvention = CallingConvention.Cdecl)]
+#else
+    [DllImport(SQLITE_DLL)]
+#endif
     internal static extern IntPtr sqlite3_realloc(IntPtr p, int n);
+
+#if !PLATFORM_COMPACTFRAMEWORK
+    [DllImport(SQLITE_DLL, CallingConvention = CallingConvention.Cdecl)]
+#else
+    [DllImport(SQLITE_DLL)]
+#endif
+    internal static extern IntPtr sqlite3_realloc64(IntPtr p, ulong n);
+
+#if !PLATFORM_COMPACTFRAMEWORK
+    [DllImport(SQLITE_DLL, CallingConvention = CallingConvention.Cdecl)]
+#else
+    [DllImport(SQLITE_DLL)]
+#endif
+    internal static extern ulong sqlite3_msize(IntPtr p);
 
 #if !PLATFORM_COMPACTFRAMEWORK
     [DllImport(SQLITE_DLL, CallingConvention = CallingConvention.Cdecl)]
@@ -4068,6 +4089,8 @@ namespace System.Data.SQLite
 #endif
     internal static extern IntPtr sqlite3_mprintf(IntPtr format, __arglist);
     #endregion
+
+    ///////////////////////////////////////////////////////////////////////////
 
     // SQLite API calls that are provided by "well-known" extensions that may be statically
     // linked with the SQLite core native library currently in use.
