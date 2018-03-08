@@ -1495,6 +1495,11 @@ namespace System.Data.SQLite
           if (row[SchemaTableColumn.BaseTableName] != DBNull.Value)
               baseTableName = (string)row[SchemaTableColumn.BaseTableName];
 
+          string baseColumnName = String.Empty;
+
+          if (row[SchemaTableColumn.BaseColumnName] != DBNull.Value)
+              baseColumnName = (string)row[SchemaTableColumn.BaseColumnName];
+
           string collSeq = null;
           bool bNotNull = false;
           bool bPrimaryKey = false;
@@ -1509,6 +1514,7 @@ namespace System.Data.SQLite
             ref dataType, ref collSeq, ref bNotNull, ref bPrimaryKey, ref bAutoIncrement);
 
           if (bNotNull || bPrimaryKey) row[SchemaTableColumn.AllowDBNull] = false;
+          bool allowDbNull = (bool)row[SchemaTableColumn.AllowDBNull];
 
           row[SchemaTableColumn.IsKey] = bPrimaryKey && CountParents(parentToColumns) <= 1;
           row[SchemaTableOptionalColumn.IsAutoIncrement] = bAutoIncrement;
@@ -1548,7 +1554,7 @@ namespace System.Data.SQLite
               // Find the matching column
               while (rdTable.Read())
               {
-                if (String.Compare((string)row[SchemaTableColumn.BaseColumnName], rdTable.GetString(1), StringComparison.OrdinalIgnoreCase) == 0)
+                if (String.Compare(baseColumnName, rdTable.GetString(1), StringComparison.OrdinalIgnoreCase) == 0)
                 {
                   if (rdTable.IsDBNull(4) == false)
                     row[SchemaTableOptionalColumn.DefaultValue] = rdTable[4];
@@ -1594,7 +1600,7 @@ namespace System.Data.SQLite
                   //         construct (i.e. a join) because in that case we must
                   //         allow duplicate values (refer to ticket [7e3fa93744]).
                   //
-                  if (parentToColumns.Count == 1 && tblIndexColumns.Rows.Count == 1 && (bool)row[SchemaTableColumn.AllowDBNull] == false)
+                  if (parentToColumns.Count == 1 && tblIndexColumns.Rows.Count == 1 && allowDbNull == false)
                     row[SchemaTableColumn.IsUnique] = rowIndexes["UNIQUE"];
 
                   // If its an integer primary key and the only primary key in the table, then its a rowid alias and is autoincrement
