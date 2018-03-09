@@ -1634,6 +1634,15 @@ namespace System.Data.SQLite
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
 
+    private static string GetMasterTableName(
+        bool temporary
+        )
+    {
+        return temporary ? _tempmasterdb : _masterdb;
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+
     /// <summary>
     /// This event is raised whenever the database is opened or closed.
     /// </summary>
@@ -5749,7 +5758,7 @@ namespace System.Data.SQLite
 
       if (String.IsNullOrEmpty(strCatalog)) strCatalog = "main";
 
-      string master = (String.Compare(strCatalog, "temp", StringComparison.OrdinalIgnoreCase) == 0) ? _tempmasterdb : _masterdb;
+      string master = GetMasterTableName(String.Compare(strCatalog, "temp", StringComparison.OrdinalIgnoreCase) == 0);
 
       using (SQLiteCommand cmdTables = new SQLiteCommand(HelperMethods.StringFormat(CultureInfo.InvariantCulture, "SELECT * FROM [{0}].[{1}] WHERE [type] LIKE 'table' OR [type] LIKE 'view'", strCatalog, master), this))
       using (SQLiteDataReader rdTables = cmdTables.ExecuteReader())
@@ -5852,7 +5861,7 @@ namespace System.Data.SQLite
 
       if (String.IsNullOrEmpty(strCatalog)) strCatalog = "main";
 
-      string master = (String.Compare(strCatalog, "temp", StringComparison.OrdinalIgnoreCase) == 0) ? _tempmasterdb : _masterdb;
+      string master = GetMasterTableName(String.Compare(strCatalog, "temp", StringComparison.OrdinalIgnoreCase) == 0);
 
       using (SQLiteCommand cmdTables = new SQLiteCommand(HelperMethods.StringFormat(CultureInfo.InvariantCulture, "SELECT * FROM [{0}].[{1}] WHERE [type] LIKE 'table'", strCatalog, master), this))
       using (SQLiteDataReader rdTables = cmdTables.ExecuteReader())
@@ -5998,7 +6007,7 @@ namespace System.Data.SQLite
 
       if (String.IsNullOrEmpty(table)) table = null;
       if (String.IsNullOrEmpty(catalog)) catalog = "main";
-      string master = (String.Compare(catalog, "temp", StringComparison.OrdinalIgnoreCase) == 0) ? _tempmasterdb : _masterdb;
+      string master = GetMasterTableName(String.Compare(catalog, "temp", StringComparison.OrdinalIgnoreCase) == 0);
 
       using (SQLiteCommand cmd = new SQLiteCommand(HelperMethods.StringFormat(CultureInfo.InvariantCulture, "SELECT [type], [name], [tbl_name], [rootpage], [sql], [rowid] FROM [{0}].[{1}] WHERE [type] LIKE 'trigger'", catalog, master), this))
       using (SQLiteDataReader rd = (SQLiteDataReader)cmd.ExecuteReader())
@@ -6053,7 +6062,7 @@ namespace System.Data.SQLite
 
       if (String.IsNullOrEmpty(strCatalog)) strCatalog = "main";
 
-      string master = (String.Compare(strCatalog, "temp", StringComparison.OrdinalIgnoreCase) == 0) ? _tempmasterdb : _masterdb;
+      string master = GetMasterTableName(String.Compare(strCatalog, "temp", StringComparison.OrdinalIgnoreCase) == 0);
 
       using (SQLiteCommand cmd = new SQLiteCommand(HelperMethods.StringFormat(CultureInfo.InvariantCulture, "SELECT [type], [name], [tbl_name], [rootpage], [sql], [rowid] FROM [{0}].[{1}] WHERE [type] LIKE 'table'", strCatalog, master), this))
       using (SQLiteDataReader rd = (SQLiteDataReader)cmd.ExecuteReader())
@@ -6119,7 +6128,7 @@ namespace System.Data.SQLite
 
       if (String.IsNullOrEmpty(strCatalog)) strCatalog = "main";
 
-      string master = (String.Compare(strCatalog, "temp", StringComparison.OrdinalIgnoreCase) == 0) ? _tempmasterdb : _masterdb;
+      string master = GetMasterTableName(String.Compare(strCatalog, "temp", StringComparison.OrdinalIgnoreCase) == 0);
 
       using (SQLiteCommand cmd = new SQLiteCommand(HelperMethods.StringFormat(CultureInfo.InvariantCulture, "SELECT * FROM [{0}].[{1}] WHERE [type] LIKE 'view'", strCatalog, master), this))
       using (SQLiteDataReader rd = (SQLiteDataReader)cmd.ExecuteReader())
@@ -6266,7 +6275,7 @@ namespace System.Data.SQLite
 
       if (String.IsNullOrEmpty(strCatalog)) strCatalog = "main";
 
-      string master = (String.Compare(strCatalog, "temp", StringComparison.OrdinalIgnoreCase) == 0) ? _tempmasterdb : _masterdb;
+      string master = GetMasterTableName(String.Compare(strCatalog, "temp", StringComparison.OrdinalIgnoreCase) == 0);
 
       tbl.BeginLoadData();
 
@@ -6428,7 +6437,7 @@ namespace System.Data.SQLite
 
       if (String.IsNullOrEmpty(strCatalog)) strCatalog = "main";
 
-      string master = (String.Compare(strCatalog, "temp", StringComparison.OrdinalIgnoreCase) == 0) ? _tempmasterdb : _masterdb;
+      string master = GetMasterTableName(String.Compare(strCatalog, "temp", StringComparison.OrdinalIgnoreCase) == 0);
 
       tbl.BeginLoadData();
 
@@ -6533,7 +6542,7 @@ namespace System.Data.SQLite
 
       if (String.IsNullOrEmpty(strCatalog)) strCatalog = "main";
 
-      string master = (String.Compare(strCatalog, "temp", StringComparison.OrdinalIgnoreCase) == 0) ? _tempmasterdb : _masterdb;
+      string master = GetMasterTableName(String.Compare(strCatalog, "temp", StringComparison.OrdinalIgnoreCase) == 0);
 
       tbl.BeginLoadData();
 
