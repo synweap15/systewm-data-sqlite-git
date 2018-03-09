@@ -2075,7 +2075,24 @@ namespace System.Data.SQLite
 #endif
     }
 
-    internal override void ColumnMetaData(string dataBase, string table, string column, ref string dataType, ref string collateSequence, ref bool notNull, ref bool primaryKey, ref bool autoIncrement)
+    internal override bool DoesTableExist(
+        string dataBase,
+        string table
+        )
+    {
+        string dataType = null; /* NOT USED */
+        string collateSequence = null; /* NOT USED */
+        bool notNull = false; /* NOT USED */
+        bool primaryKey = false; /* NOT USED */
+        bool autoIncrement = false; /* NOT USED */
+
+        return ColumnMetaData(
+            dataBase, table, null, false, ref dataType,
+            ref collateSequence, ref notNull, ref primaryKey,
+            ref autoIncrement);
+    }
+
+    internal override bool ColumnMetaData(string dataBase, string table, string column, bool canThrow, ref string dataType, ref string collateSequence, ref bool notNull, ref bool primaryKey, ref bool autoIncrement)
     {
       IntPtr dataTypePtr = IntPtr.Zero;
       IntPtr collSeqPtr = IntPtr.Zero;
@@ -2096,7 +2113,7 @@ namespace System.Data.SQLite
 
       n = UnsafeNativeMethods.sqlite3_table_column_metadata(_sql, ToUTF8(dataBase), ToUTF8(table), ToUTF8(column), ref dataTypePtr, ref collSeqPtr, ref nnotNull, ref nprimaryKey, ref nautoInc);
 #endif
-      if (n != SQLiteErrorCode.Ok) throw new SQLiteException(n, GetLastError());
+      if (canThrow && (n != SQLiteErrorCode.Ok)) throw new SQLiteException(n, GetLastError());
 
       dataType = UTF8ToString(dataTypePtr, dtLen);
       collateSequence = UTF8ToString(collSeqPtr, csLen);
@@ -2104,6 +2121,8 @@ namespace System.Data.SQLite
       notNull = (nnotNull == 1);
       primaryKey = (nprimaryKey == 1);
       autoIncrement = (nautoInc == 1);
+
+      return (n == SQLiteErrorCode.Ok);
     }
 
     internal override object GetObject(SQLiteStatement stmt, int index)

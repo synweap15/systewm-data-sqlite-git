@@ -1383,262 +1383,268 @@ namespace System.Data.SQLite
 
     internal DataTable GetSchemaTable(bool wantUniqueInfo, bool wantDefaultValue)
     {
-      CheckClosed();
-      if (_throwOnDisposed) SQLiteCommand.Check(_command);
+        CheckClosed();
+        if (_throwOnDisposed) SQLiteCommand.Check(_command);
 
-      //
-      // BUGFIX: We need to quickly scan all the fields in the current
-      //         "result set" to see how many distinct tables are actually
-      //         involved.  This information is necessary so that some
-      //         intelligent decisions can be made when constructing the
-      //         metadata below.  For example, we need to be very careful
-      //         about flagging a particular column as "unique" just
-      //         because it was in its original underlying database table
-      //         if there are now multiple tables involved in the
-      //         "result set".  See ticket [7e3fa93744] for more detailed
-      //         information.
-      //
-      Dictionary<ColumnParent, List<int>> parentToColumns = null;
-      Dictionary<int, ColumnParent> columnToParent = null;
+        //
+        // BUGFIX: We need to quickly scan all the fields in the current
+        //         "result set" to see how many distinct tables are actually
+        //         involved.  This information is necessary so that some
+        //         intelligent decisions can be made when constructing the
+        //         metadata below.  For example, we need to be very careful
+        //         about flagging a particular column as "unique" just
+        //         because it was in its original underlying database table
+        //         if there are now multiple tables involved in the
+        //         "result set".  See ticket [7e3fa93744] for more detailed
+        //         information.
+        //
+        Dictionary<ColumnParent, List<int>> parentToColumns = null;
+        Dictionary<int, ColumnParent> columnToParent = null;
+        SQLiteBase sql = _command.Connection._sql;
 
-      GetStatementColumnParents(
-          _command.Connection._sql, _activeStatement, _fieldCount,
-          ref parentToColumns, ref columnToParent);
+        GetStatementColumnParents(
+            sql, _activeStatement, _fieldCount,
+            ref parentToColumns, ref columnToParent);
 
-      DataTable tbl = new DataTable("SchemaTable");
-      DataTable tblIndexes = null;
-      DataTable tblIndexColumns;
-      DataRow row;
-      string temp;
-      string strCatalog = String.Empty;
-      string strTable = String.Empty;
-      string strColumn = String.Empty;
+        DataTable tbl = new DataTable("SchemaTable");
+        DataTable tblIndexes = null;
+        DataTable tblIndexColumns;
+        DataRow row;
+        string temp;
+        string strCatalog = String.Empty;
+        string strTable = String.Empty;
+        string strColumn = String.Empty;
 
-      tbl.Locale = CultureInfo.InvariantCulture;
-      tbl.Columns.Add(SchemaTableColumn.ColumnName, typeof(String));
-      tbl.Columns.Add(SchemaTableColumn.ColumnOrdinal, typeof(int));
-      tbl.Columns.Add(SchemaTableColumn.ColumnSize, typeof(int));
-      tbl.Columns.Add(SchemaTableColumn.NumericPrecision, typeof(int));
-      tbl.Columns.Add(SchemaTableColumn.NumericScale, typeof(int));
-      tbl.Columns.Add(SchemaTableColumn.IsUnique, typeof(Boolean));
-      tbl.Columns.Add(SchemaTableColumn.IsKey, typeof(Boolean));
-      tbl.Columns.Add(SchemaTableOptionalColumn.BaseServerName, typeof(string));
-      tbl.Columns.Add(SchemaTableOptionalColumn.BaseCatalogName, typeof(String));
-      tbl.Columns.Add(SchemaTableColumn.BaseColumnName, typeof(String));
-      tbl.Columns.Add(SchemaTableColumn.BaseSchemaName, typeof(String));
-      tbl.Columns.Add(SchemaTableColumn.BaseTableName, typeof(String));
-      tbl.Columns.Add(SchemaTableColumn.DataType, typeof(Type));
-      tbl.Columns.Add(SchemaTableColumn.AllowDBNull, typeof(Boolean));
-      tbl.Columns.Add(SchemaTableColumn.ProviderType, typeof(int));
-      tbl.Columns.Add(SchemaTableColumn.IsAliased, typeof(Boolean));
-      tbl.Columns.Add(SchemaTableColumn.IsExpression, typeof(Boolean));
-      tbl.Columns.Add(SchemaTableOptionalColumn.IsAutoIncrement, typeof(Boolean));
-      tbl.Columns.Add(SchemaTableOptionalColumn.IsRowVersion, typeof(Boolean));
-      tbl.Columns.Add(SchemaTableOptionalColumn.IsHidden, typeof(Boolean));
-      tbl.Columns.Add(SchemaTableColumn.IsLong, typeof(Boolean));
-      tbl.Columns.Add(SchemaTableOptionalColumn.IsReadOnly, typeof(Boolean));
-      tbl.Columns.Add(SchemaTableOptionalColumn.ProviderSpecificDataType, typeof(Type));
-      tbl.Columns.Add(SchemaTableOptionalColumn.DefaultValue, typeof(object));
-      tbl.Columns.Add("DataTypeName", typeof(string));
-      tbl.Columns.Add("CollationType", typeof(string));
-      tbl.BeginLoadData();
+        tbl.Locale = CultureInfo.InvariantCulture;
+        tbl.Columns.Add(SchemaTableColumn.ColumnName, typeof(String));
+        tbl.Columns.Add(SchemaTableColumn.ColumnOrdinal, typeof(int));
+        tbl.Columns.Add(SchemaTableColumn.ColumnSize, typeof(int));
+        tbl.Columns.Add(SchemaTableColumn.NumericPrecision, typeof(int));
+        tbl.Columns.Add(SchemaTableColumn.NumericScale, typeof(int));
+        tbl.Columns.Add(SchemaTableColumn.IsUnique, typeof(Boolean));
+        tbl.Columns.Add(SchemaTableColumn.IsKey, typeof(Boolean));
+        tbl.Columns.Add(SchemaTableOptionalColumn.BaseServerName, typeof(string));
+        tbl.Columns.Add(SchemaTableOptionalColumn.BaseCatalogName, typeof(String));
+        tbl.Columns.Add(SchemaTableColumn.BaseColumnName, typeof(String));
+        tbl.Columns.Add(SchemaTableColumn.BaseSchemaName, typeof(String));
+        tbl.Columns.Add(SchemaTableColumn.BaseTableName, typeof(String));
+        tbl.Columns.Add(SchemaTableColumn.DataType, typeof(Type));
+        tbl.Columns.Add(SchemaTableColumn.AllowDBNull, typeof(Boolean));
+        tbl.Columns.Add(SchemaTableColumn.ProviderType, typeof(int));
+        tbl.Columns.Add(SchemaTableColumn.IsAliased, typeof(Boolean));
+        tbl.Columns.Add(SchemaTableColumn.IsExpression, typeof(Boolean));
+        tbl.Columns.Add(SchemaTableOptionalColumn.IsAutoIncrement, typeof(Boolean));
+        tbl.Columns.Add(SchemaTableOptionalColumn.IsRowVersion, typeof(Boolean));
+        tbl.Columns.Add(SchemaTableOptionalColumn.IsHidden, typeof(Boolean));
+        tbl.Columns.Add(SchemaTableColumn.IsLong, typeof(Boolean));
+        tbl.Columns.Add(SchemaTableOptionalColumn.IsReadOnly, typeof(Boolean));
+        tbl.Columns.Add(SchemaTableOptionalColumn.ProviderSpecificDataType, typeof(Type));
+        tbl.Columns.Add(SchemaTableOptionalColumn.DefaultValue, typeof(object));
+        tbl.Columns.Add("DataTypeName", typeof(string));
+        tbl.Columns.Add("CollationType", typeof(string));
+        tbl.BeginLoadData();
 
-      for (int n = 0; n < _fieldCount; n++)
-      {
-        SQLiteType sqlType = GetSQLiteType(_flags, n);
-
-        row = tbl.NewRow();
-
-        DbType typ = sqlType.Type;
-
-        // Default settings for the column
-        row[SchemaTableColumn.ColumnName] = GetName(n);
-        row[SchemaTableColumn.ColumnOrdinal] = n;
-        row[SchemaTableColumn.ColumnSize] = SQLiteConvert.DbTypeToColumnSize(typ);
-        row[SchemaTableColumn.NumericPrecision] = SQLiteConvert.DbTypeToNumericPrecision(typ);
-        row[SchemaTableColumn.NumericScale] = SQLiteConvert.DbTypeToNumericScale(typ);
-        row[SchemaTableColumn.ProviderType] = sqlType.Type;
-        row[SchemaTableColumn.IsLong] = false;
-        row[SchemaTableColumn.AllowDBNull] = true;
-        row[SchemaTableOptionalColumn.IsReadOnly] = false;
-        row[SchemaTableOptionalColumn.IsRowVersion] = false;
-        row[SchemaTableColumn.IsUnique] = false;
-        row[SchemaTableColumn.IsKey] = false;
-        row[SchemaTableOptionalColumn.IsAutoIncrement] = false;
-        row[SchemaTableColumn.DataType] = GetFieldType(n);
-        row[SchemaTableOptionalColumn.IsHidden] = false;
-        row[SchemaTableColumn.BaseSchemaName] = _baseSchemaName;
-
-        strColumn = columnToParent[n].ColumnName;
-        if (String.IsNullOrEmpty(strColumn) == false) row[SchemaTableColumn.BaseColumnName] = strColumn;
-
-        row[SchemaTableColumn.IsExpression] = String.IsNullOrEmpty(strColumn);
-        row[SchemaTableColumn.IsAliased] = (String.Compare(GetName(n), strColumn, StringComparison.OrdinalIgnoreCase) != 0);
-
-        temp = columnToParent[n].TableName;
-        if (String.IsNullOrEmpty(temp) == false) row[SchemaTableColumn.BaseTableName] = temp;
-
-        temp = columnToParent[n].DatabaseName;
-        if (String.IsNullOrEmpty(temp) == false) row[SchemaTableOptionalColumn.BaseCatalogName] = temp;
-
-        string dataType = null;
-        // If we have a table-bound column, extract the extra information from it
-        if (String.IsNullOrEmpty(strColumn) == false)
+        for (int n = 0; n < _fieldCount; n++)
         {
-          string baseCatalogName = String.Empty;
+            SQLiteType sqlType = GetSQLiteType(_flags, n);
 
-          if (row[SchemaTableOptionalColumn.BaseCatalogName] != DBNull.Value)
-              baseCatalogName = (string)row[SchemaTableOptionalColumn.BaseCatalogName];
+            row = tbl.NewRow();
 
-          string baseTableName = String.Empty;
+            DbType typ = sqlType.Type;
 
-          if (row[SchemaTableColumn.BaseTableName] != DBNull.Value)
-              baseTableName = (string)row[SchemaTableColumn.BaseTableName];
+            // Default settings for the column
+            row[SchemaTableColumn.ColumnName] = GetName(n);
+            row[SchemaTableColumn.ColumnOrdinal] = n;
+            row[SchemaTableColumn.ColumnSize] = SQLiteConvert.DbTypeToColumnSize(typ);
+            row[SchemaTableColumn.NumericPrecision] = SQLiteConvert.DbTypeToNumericPrecision(typ);
+            row[SchemaTableColumn.NumericScale] = SQLiteConvert.DbTypeToNumericScale(typ);
+            row[SchemaTableColumn.ProviderType] = sqlType.Type;
+            row[SchemaTableColumn.IsLong] = false;
+            row[SchemaTableColumn.AllowDBNull] = true;
+            row[SchemaTableOptionalColumn.IsReadOnly] = false;
+            row[SchemaTableOptionalColumn.IsRowVersion] = false;
+            row[SchemaTableColumn.IsUnique] = false;
+            row[SchemaTableColumn.IsKey] = false;
+            row[SchemaTableOptionalColumn.IsAutoIncrement] = false;
+            row[SchemaTableColumn.DataType] = GetFieldType(n);
+            row[SchemaTableOptionalColumn.IsHidden] = false;
+            row[SchemaTableColumn.BaseSchemaName] = _baseSchemaName;
 
-          string baseColumnName = String.Empty;
+            strColumn = columnToParent[n].ColumnName;
+            if (String.IsNullOrEmpty(strColumn) == false) row[SchemaTableColumn.BaseColumnName] = strColumn;
 
-          if (row[SchemaTableColumn.BaseColumnName] != DBNull.Value)
-              baseColumnName = (string)row[SchemaTableColumn.BaseColumnName];
+            row[SchemaTableColumn.IsExpression] = String.IsNullOrEmpty(strColumn);
+            row[SchemaTableColumn.IsAliased] = (String.Compare(GetName(n), strColumn, StringComparison.OrdinalIgnoreCase) != 0);
 
-          string collSeq = null;
-          bool bNotNull = false;
-          bool bPrimaryKey = false;
-          bool bAutoIncrement = false;
-          string[] arSize;
+            temp = columnToParent[n].TableName;
+            if (String.IsNullOrEmpty(temp) == false) row[SchemaTableColumn.BaseTableName] = temp;
 
-          // Get the column meta data
-          _command.Connection._sql.ColumnMetaData(
-            baseCatalogName,
-            baseTableName,
-            strColumn,
-            ref dataType, ref collSeq, ref bNotNull, ref bPrimaryKey, ref bAutoIncrement);
+            temp = columnToParent[n].DatabaseName;
+            if (String.IsNullOrEmpty(temp) == false) row[SchemaTableOptionalColumn.BaseCatalogName] = temp;
 
-          if (bNotNull || bPrimaryKey) row[SchemaTableColumn.AllowDBNull] = false;
-          bool allowDbNull = (bool)row[SchemaTableColumn.AllowDBNull];
-
-          row[SchemaTableColumn.IsKey] = bPrimaryKey && CountParents(parentToColumns) <= 1;
-          row[SchemaTableOptionalColumn.IsAutoIncrement] = bAutoIncrement;
-          row["CollationType"] = collSeq;
-
-          // For types like varchar(50) and such, extract the size
-          arSize = dataType.Split('(');
-          if (arSize.Length > 1)
-          {
-            dataType = arSize[0];
-            arSize = arSize[1].Split(')');
-            if (arSize.Length > 1)
+            string dataType = null;
+            // If we have a table-bound column, extract the extra information from it
+            if (String.IsNullOrEmpty(strColumn) == false)
             {
-              arSize = arSize[0].Split(',', '.');
-              if (sqlType.Type == DbType.Binary || SQLiteConvert.IsStringDbType(sqlType.Type))
-              {
-                row[SchemaTableColumn.ColumnSize] = Convert.ToInt32(arSize[0], CultureInfo.InvariantCulture);
-              }
-              else
-              {
-                row[SchemaTableColumn.NumericPrecision] = Convert.ToInt32(arSize[0], CultureInfo.InvariantCulture);
-                if (arSize.Length > 1)
-                  row[SchemaTableColumn.NumericScale] = Convert.ToInt32(arSize[1], CultureInfo.InvariantCulture);
-              }
-            }
-          }
+                string baseCatalogName = String.Empty;
 
-          if (wantDefaultValue)
-          {
-            // Determine the default value for the column, which sucks because we have to query the schema for each column
-            using (SQLiteCommand cmdTable = new SQLiteCommand(HelperMethods.StringFormat(CultureInfo.InvariantCulture, "PRAGMA [{0}].TABLE_INFO([{1}])",
-              baseCatalogName,
-              baseTableName
-              ), _command.Connection))
-            using (DbDataReader rdTable = cmdTable.ExecuteReader())
-            {
-              // Find the matching column
-              while (rdTable.Read())
-              {
-                if (String.Compare(baseColumnName, rdTable.GetString(1), StringComparison.OrdinalIgnoreCase) == 0)
+                if (row[SchemaTableOptionalColumn.BaseCatalogName] != DBNull.Value)
+                    baseCatalogName = (string)row[SchemaTableOptionalColumn.BaseCatalogName];
+
+                string baseTableName = String.Empty;
+
+                if (row[SchemaTableColumn.BaseTableName] != DBNull.Value)
+                    baseTableName = (string)row[SchemaTableColumn.BaseTableName];
+
+                if (sql.DoesTableExist(baseCatalogName, baseTableName))
                 {
-                  if (rdTable.IsDBNull(4) == false)
-                    row[SchemaTableOptionalColumn.DefaultValue] = rdTable[4];
+                    string baseColumnName = String.Empty;
 
-                  break;
+                    if (row[SchemaTableColumn.BaseColumnName] != DBNull.Value)
+                        baseColumnName = (string)row[SchemaTableColumn.BaseColumnName];
+
+                    string collSeq = null;
+                    bool bNotNull = false;
+                    bool bPrimaryKey = false;
+                    bool bAutoIncrement = false;
+                    string[] arSize;
+
+                    // Get the column meta data
+                    _command.Connection._sql.ColumnMetaData(
+                        baseCatalogName,
+                        baseTableName,
+                        strColumn,
+                        true,
+                        ref dataType, ref collSeq, ref bNotNull, ref bPrimaryKey, ref bAutoIncrement);
+
+                    if (bNotNull || bPrimaryKey) row[SchemaTableColumn.AllowDBNull] = false;
+                    bool allowDbNull = (bool)row[SchemaTableColumn.AllowDBNull];
+
+                    row[SchemaTableColumn.IsKey] = bPrimaryKey && CountParents(parentToColumns) <= 1;
+                    row[SchemaTableOptionalColumn.IsAutoIncrement] = bAutoIncrement;
+                    row["CollationType"] = collSeq;
+
+                    // For types like varchar(50) and such, extract the size
+                    arSize = dataType.Split('(');
+                    if (arSize.Length > 1)
+                    {
+                        dataType = arSize[0];
+                        arSize = arSize[1].Split(')');
+                        if (arSize.Length > 1)
+                        {
+                            arSize = arSize[0].Split(',', '.');
+                            if (sqlType.Type == DbType.Binary || SQLiteConvert.IsStringDbType(sqlType.Type))
+                            {
+                                row[SchemaTableColumn.ColumnSize] = Convert.ToInt32(arSize[0], CultureInfo.InvariantCulture);
+                            }
+                            else
+                            {
+                                row[SchemaTableColumn.NumericPrecision] = Convert.ToInt32(arSize[0], CultureInfo.InvariantCulture);
+                                if (arSize.Length > 1)
+                                    row[SchemaTableColumn.NumericScale] = Convert.ToInt32(arSize[1], CultureInfo.InvariantCulture);
+                            }
+                        }
+                    }
+
+                    if (wantDefaultValue)
+                    {
+                        // Determine the default value for the column, which sucks because we have to query the schema for each column
+                        using (SQLiteCommand cmdTable = new SQLiteCommand(HelperMethods.StringFormat(CultureInfo.InvariantCulture, "PRAGMA [{0}].TABLE_INFO([{1}])",
+                            baseCatalogName,
+                            baseTableName
+                        ), _command.Connection))
+                        using (DbDataReader rdTable = cmdTable.ExecuteReader())
+                        {
+                            // Find the matching column
+                            while (rdTable.Read())
+                            {
+                                if (String.Compare(baseColumnName, rdTable.GetString(1), StringComparison.OrdinalIgnoreCase) == 0)
+                                {
+                                    if (rdTable.IsDBNull(4) == false)
+                                        row[SchemaTableOptionalColumn.DefaultValue] = rdTable[4];
+
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    // Determine IsUnique properly, which is a pain in the butt!
+                    if (wantUniqueInfo)
+                    {
+                        if (baseCatalogName != strCatalog || baseTableName != strTable)
+                        {
+                            strCatalog = baseCatalogName;
+                            strTable = baseTableName;
+
+                            tblIndexes = _command.Connection.GetSchema("Indexes", new string[] {
+                                baseCatalogName,
+                                null,
+                                baseTableName,
+                                null
+                            });
+                        }
+
+                        foreach (DataRow rowIndexes in tblIndexes.Rows)
+                        {
+                            tblIndexColumns = _command.Connection.GetSchema("IndexColumns", new string[] {
+                                baseCatalogName,
+                                null,
+                                baseTableName,
+                                (string)rowIndexes["INDEX_NAME"],
+                                null
+                            });
+                            foreach (DataRow rowColumnIndex in tblIndexColumns.Rows)
+                            {
+                                if (String.Compare(SQLiteConvert.GetStringOrNull(rowColumnIndex["COLUMN_NAME"]), strColumn, StringComparison.OrdinalIgnoreCase) == 0)
+                                {
+                                    //
+                                    // BUGFIX: Make sure that we only flag this column as "unique"
+                                    //         if we are not processing of some kind of multi-table
+                                    //         construct (i.e. a join) because in that case we must
+                                    //         allow duplicate values (refer to ticket [7e3fa93744]).
+                                    //
+                                    if (parentToColumns.Count == 1 && tblIndexColumns.Rows.Count == 1 && allowDbNull == false)
+                                        row[SchemaTableColumn.IsUnique] = rowIndexes["UNIQUE"];
+
+                                    // If its an integer primary key and the only primary key in the table, then its a rowid alias and is autoincrement
+                                    // NOTE:  Currently commented out because this is not always the desired behavior.  For example, a 1:1 relationship with
+                                    //        another table, where the other table is autoincrement, but this one is not, and uses the rowid from the other.
+                                    //        It is safer to only set Autoincrement on tables where we're SURE the user specified AUTOINCREMENT, even if its a rowid column.
+
+                                    //if (tblIndexColumns.Rows.Count == 1 && (bool)rowIndexes["PRIMARY_KEY"] == true && String.IsNullOrEmpty(dataType) == false &&
+                                    //  String.Compare(dataType, "integer", StringComparison.OrdinalIgnoreCase) == 0)
+                                    //{
+                                    //    //  row[SchemaTableOptionalColumn.IsAutoIncrement] = true;
+                                    //}
+
+                                    break;
+                                }
+                            }
+                        }
+                    }
                 }
-              }
-            }
-          }
 
-          // Determine IsUnique properly, which is a pain in the butt!
-          if (wantUniqueInfo)
-          {
-            if (baseCatalogName != strCatalog
-              || baseTableName != strTable)
-            {
-              strCatalog = baseCatalogName;
-              strTable = baseTableName;
-
-              tblIndexes = _command.Connection.GetSchema("Indexes", new string[] {
-                baseCatalogName,
-                null,
-                baseTableName,
-                null });
-            }
-
-            foreach (DataRow rowIndexes in tblIndexes.Rows)
-            {
-              tblIndexColumns = _command.Connection.GetSchema("IndexColumns", new string[] {
-                baseCatalogName,
-                null,
-                baseTableName,
-                (string)rowIndexes["INDEX_NAME"],
-                null
-                });
-              foreach (DataRow rowColumnIndex in tblIndexColumns.Rows)
-              {
-                if (String.Compare(SQLiteConvert.GetStringOrNull(rowColumnIndex["COLUMN_NAME"]), strColumn, StringComparison.OrdinalIgnoreCase) == 0)
+                if (String.IsNullOrEmpty(dataType))
                 {
-                  //
-                  // BUGFIX: Make sure that we only flag this column as "unique"
-                  //         if we are not processing of some kind of multi-table
-                  //         construct (i.e. a join) because in that case we must
-                  //         allow duplicate values (refer to ticket [7e3fa93744]).
-                  //
-                  if (parentToColumns.Count == 1 && tblIndexColumns.Rows.Count == 1 && allowDbNull == false)
-                    row[SchemaTableColumn.IsUnique] = rowIndexes["UNIQUE"];
-
-                  // If its an integer primary key and the only primary key in the table, then its a rowid alias and is autoincrement
-                  // NOTE:  Currently commented out because this is not always the desired behavior.  For example, a 1:1 relationship with
-                  //        another table, where the other table is autoincrement, but this one is not, and uses the rowid from the other.
-                  //        It is safer to only set Autoincrement on tables where we're SURE the user specified AUTOINCREMENT, even if its a rowid column.
-
-                  if (tblIndexColumns.Rows.Count == 1 && (bool)rowIndexes["PRIMARY_KEY"] == true && String.IsNullOrEmpty(dataType) == false &&
-                    String.Compare(dataType, "integer", StringComparison.OrdinalIgnoreCase) == 0)
-                  {
-                    //  row[SchemaTableOptionalColumn.IsAutoIncrement] = true;
-                  }
-
-                  break;
+                    TypeAffinity affin = TypeAffinity.Uninitialized;
+                    dataType = _activeStatement._sql.ColumnType(_activeStatement, n, ref affin);
                 }
-              }
+
+                if (String.IsNullOrEmpty(dataType) == false)
+                    row["DataTypeName"] = dataType;
             }
-          }
 
-          if (String.IsNullOrEmpty(dataType))
-          {
-            TypeAffinity affin = TypeAffinity.Uninitialized;
-            dataType = _activeStatement._sql.ColumnType(_activeStatement, n, ref affin);
-          }
-
-          if (String.IsNullOrEmpty(dataType) == false)
-            row["DataTypeName"] = dataType;
+            tbl.Rows.Add(row);
         }
-        tbl.Rows.Add(row);
-      }
 
-      if (_keyInfo != null)
-        _keyInfo.AppendSchemaTable(tbl);
+        if (_keyInfo != null)
+            _keyInfo.AppendSchemaTable(tbl);
 
-      tbl.AcceptChanges();
-      tbl.EndLoadData();
+        tbl.AcceptChanges();
+        tbl.EndLoadData();
 
-      return tbl;
+        return tbl;
     }
 
     /// <summary>
