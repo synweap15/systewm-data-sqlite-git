@@ -530,6 +530,16 @@ namespace System.Data.SQLite
       else return typeof(Int64);
     }
 
+    internal string GetDatabaseName(int i)
+    {
+        return _keyInfo[i].databaseName;
+    }
+
+    internal string GetTableName(int i)
+    {
+        return _keyInfo[i].tableName;
+    }
+
     internal string GetName(int i)
     {
       return _keyInfo[i].columnName;

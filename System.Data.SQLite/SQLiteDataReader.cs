@@ -1131,7 +1131,7 @@ namespace System.Data.SQLite
         CheckDisposed();
 
         if (i >= PrivateVisibleFieldCount && _keyInfo != null)
-            return _keyInfo.GetName(i - PrivateVisibleFieldCount);
+            return _keyInfo.GetDatabaseName(i - PrivateVisibleFieldCount);
 
         return _activeStatement._sql.ColumnDatabaseName(_activeStatement, i);
     }
@@ -1146,7 +1146,7 @@ namespace System.Data.SQLite
         CheckDisposed();
 
         if (i >= PrivateVisibleFieldCount && _keyInfo != null)
-            return _keyInfo.GetName(i - PrivateVisibleFieldCount);
+            return _keyInfo.GetTableName(i - PrivateVisibleFieldCount);
 
         return _activeStatement._sql.ColumnTableName(_activeStatement, i);
     }
