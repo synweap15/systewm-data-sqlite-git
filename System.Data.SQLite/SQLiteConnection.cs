@@ -1395,8 +1395,12 @@ namespace System.Data.SQLite
     private const int SQLITE_FCNTL_WIN32_AV_RETRY = 9;
 
     private const string _dataDirectory = "|DataDirectory|";
-    private const string _masterdb = "sqlite_master";
-    private const string _tempmasterdb = "sqlite_temp_master";
+
+    private static string _defaultCatalogName = "main";
+    private static string _defaultMasterTableName = "sqlite_master";
+
+    private static string _temporaryCatalogName = "temp";
+    private static string _temporaryMasterTableName = "sqlite_temp_master";
     #endregion
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -1634,11 +1638,45 @@ namespace System.Data.SQLite
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
 
+    private static string GetDefaultCatalogName()
+    {
+        return _defaultCatalogName;
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+
+    private static bool IsDefaultCatalogName(
+        string catalogName
+        )
+    {
+        return String.Compare(catalogName, GetDefaultCatalogName(),
+            StringComparison.OrdinalIgnoreCase) == 0;
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+
+    private static string GetTemporaryCatalogName()
+    {
+        return _temporaryCatalogName;
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+
+    private static bool IsTemporaryCatalogName(
+        string catalogName
+        )
+    {
+        return String.Compare(catalogName, GetTemporaryCatalogName(),
+            StringComparison.OrdinalIgnoreCase) == 0;
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+
     private static string GetMasterTableName(
         bool temporary
         )
     {
-        return temporary ? _tempmasterdb : _masterdb;
+        return temporary ? _temporaryMasterTableName : _defaultMasterTableName;
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -1802,8 +1840,8 @@ namespace System.Data.SQLite
           foreach (DataRow row in tbl.Rows)
           {
             string str = row[0].ToString();
-            if (String.Compare(str, "main", StringComparison.OrdinalIgnoreCase) != 0
-              && String.Compare(str, "temp", StringComparison.OrdinalIgnoreCase) != 0)
+
+            if (!IsDefaultCatalogName(str) && !IsTemporaryCatalogName(str))
             {
               using (SQLiteCommand cmd = CreateCommand())
               {
@@ -3206,7 +3244,7 @@ namespace System.Data.SQLite
                 throw new InvalidOperationException(
                     "Database connection not valid for getting file name.");
 
-            return _sql.GetFileName("main");
+            return _sql.GetFileName(GetDefaultCatalogName());
         }
     }
 
@@ -3221,7 +3259,7 @@ namespace System.Data.SQLite
       get
       {
         CheckDisposed();
-        return "main";
+        return GetDefaultCatalogName();
       }
     }
 
@@ -5756,9 +5794,9 @@ namespace System.Data.SQLite
 
       tbl.BeginLoadData();
 
-      if (String.IsNullOrEmpty(strCatalog)) strCatalog = "main";
+      if (String.IsNullOrEmpty(strCatalog)) strCatalog = GetDefaultCatalogName();
 
-      string master = GetMasterTableName(String.Compare(strCatalog, "temp", StringComparison.OrdinalIgnoreCase) == 0);
+      string master = GetMasterTableName(IsTemporaryCatalogName(strCatalog));
 
       using (SQLiteCommand cmdTables = new SQLiteCommand(HelperMethods.StringFormat(CultureInfo.InvariantCulture, "SELECT * FROM [{0}].[{1}] WHERE [type] LIKE 'table' OR [type] LIKE 'view'", strCatalog, master), this))
       using (SQLiteDataReader rdTables = cmdTables.ExecuteReader())
@@ -5859,9 +5897,9 @@ namespace System.Data.SQLite
 
       tbl.BeginLoadData();
 
-      if (String.IsNullOrEmpty(strCatalog)) strCatalog = "main";
+      if (String.IsNullOrEmpty(strCatalog)) strCatalog = GetDefaultCatalogName();
 
-      string master = GetMasterTableName(String.Compare(strCatalog, "temp", StringComparison.OrdinalIgnoreCase) == 0);
+      string master = GetMasterTableName(IsTemporaryCatalogName(strCatalog));
 
       using (SQLiteCommand cmdTables = new SQLiteCommand(HelperMethods.StringFormat(CultureInfo.InvariantCulture, "SELECT * FROM [{0}].[{1}] WHERE [type] LIKE 'table'", strCatalog, master), this))
       using (SQLiteDataReader rdTables = cmdTables.ExecuteReader())
@@ -6006,8 +6044,8 @@ namespace System.Data.SQLite
       tbl.BeginLoadData();
 
       if (String.IsNullOrEmpty(table)) table = null;
-      if (String.IsNullOrEmpty(catalog)) catalog = "main";
-      string master = GetMasterTableName(String.Compare(catalog, "temp", StringComparison.OrdinalIgnoreCase) == 0);
+      if (String.IsNullOrEmpty(catalog)) catalog = GetDefaultCatalogName();
+      string master = GetMasterTableName(IsTemporaryCatalogName(catalog));
 
       using (SQLiteCommand cmd = new SQLiteCommand(HelperMethods.StringFormat(CultureInfo.InvariantCulture, "SELECT [type], [name], [tbl_name], [rootpage], [sql], [rowid] FROM [{0}].[{1}] WHERE [type] LIKE 'trigger'", catalog, master), this))
       using (SQLiteDataReader rd = (SQLiteDataReader)cmd.ExecuteReader())
@@ -6060,9 +6098,9 @@ namespace System.Data.SQLite
       tbl.Columns.Add("TABLE_DEFINITION", typeof(string));
       tbl.BeginLoadData();
 
-      if (String.IsNullOrEmpty(strCatalog)) strCatalog = "main";
+      if (String.IsNullOrEmpty(strCatalog)) strCatalog = GetDefaultCatalogName();
 
-      string master = GetMasterTableName(String.Compare(strCatalog, "temp", StringComparison.OrdinalIgnoreCase) == 0);
+      string master = GetMasterTableName(IsTemporaryCatalogName(strCatalog));
 
       using (SQLiteCommand cmd = new SQLiteCommand(HelperMethods.StringFormat(CultureInfo.InvariantCulture, "SELECT [type], [name], [tbl_name], [rootpage], [sql], [rowid] FROM [{0}].[{1}] WHERE [type] LIKE 'table'", strCatalog, master), this))
       using (SQLiteDataReader rd = (SQLiteDataReader)cmd.ExecuteReader())
@@ -6126,9 +6164,9 @@ namespace System.Data.SQLite
 
       tbl.BeginLoadData();
 
-      if (String.IsNullOrEmpty(strCatalog)) strCatalog = "main";
+      if (String.IsNullOrEmpty(strCatalog)) strCatalog = GetDefaultCatalogName();
 
-      string master = GetMasterTableName(String.Compare(strCatalog, "temp", StringComparison.OrdinalIgnoreCase) == 0);
+      string master = GetMasterTableName(IsTemporaryCatalogName(strCatalog));
 
       using (SQLiteCommand cmd = new SQLiteCommand(HelperMethods.StringFormat(CultureInfo.InvariantCulture, "SELECT * FROM [{0}].[{1}] WHERE [type] LIKE 'view'", strCatalog, master), this))
       using (SQLiteDataReader rd = (SQLiteDataReader)cmd.ExecuteReader())
@@ -6273,9 +6311,9 @@ namespace System.Data.SQLite
       tbl.Columns.Add("SORT_MODE", typeof(string));
       tbl.Columns.Add("CONFLICT_OPTION", typeof(int));
 
-      if (String.IsNullOrEmpty(strCatalog)) strCatalog = "main";
+      if (String.IsNullOrEmpty(strCatalog)) strCatalog = GetDefaultCatalogName();
 
-      string master = GetMasterTableName(String.Compare(strCatalog, "temp", StringComparison.OrdinalIgnoreCase) == 0);
+      string master = GetMasterTableName(IsTemporaryCatalogName(strCatalog));
 
       tbl.BeginLoadData();
 
@@ -6435,9 +6473,9 @@ namespace System.Data.SQLite
       tbl.Columns.Add("AUTOINCREMENT", typeof(bool));
       tbl.Columns.Add("UNIQUE", typeof(bool));
 
-      if (String.IsNullOrEmpty(strCatalog)) strCatalog = "main";
+      if (String.IsNullOrEmpty(strCatalog)) strCatalog = GetDefaultCatalogName();
 
-      string master = GetMasterTableName(String.Compare(strCatalog, "temp", StringComparison.OrdinalIgnoreCase) == 0);
+      string master = GetMasterTableName(IsTemporaryCatalogName(strCatalog));
 
       tbl.BeginLoadData();
 
@@ -6540,9 +6578,9 @@ namespace System.Data.SQLite
       tbl.Columns.Add("FKEY_ON_DELETE", typeof(string));
       tbl.Columns.Add("FKEY_MATCH", typeof(string));
 
-      if (String.IsNullOrEmpty(strCatalog)) strCatalog = "main";
+      if (String.IsNullOrEmpty(strCatalog)) strCatalog = GetDefaultCatalogName();
 
-      string master = GetMasterTableName(String.Compare(strCatalog, "temp", StringComparison.OrdinalIgnoreCase) == 0);
+      string master = GetMasterTableName(IsTemporaryCatalogName(strCatalog));
 
       tbl.BeginLoadData();
 
