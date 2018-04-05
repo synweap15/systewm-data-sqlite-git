@@ -20,6 +20,13 @@
     <licenseUrl>https://www.sqlite.org/copyright.html</licenseUrl>
     <tags>sqlite database ado.net provider interop</tags>
     <copyright>Public Domain</copyright>
+    <dependencies>
+      <group targetFramework="net20" />
+      <group targetFramework="net40" />
+      <group targetFramework="net45" />
+      <group targetFramework="net451" />
+      <group targetFramework="net46" />
+    </dependencies>
   </metadata>
   <files>
     <file src="..\bin\2008\Release\bin\System.Data.SQLite.Linq.dll" target="lib\net20" />
