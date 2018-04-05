@@ -291,6 +291,44 @@ namespace eval ::Eagle {
     return $result
   }
 
+  proc testArrayGet2 { varName {pattern ""} {integer false} } {
+    #
+    # NOTE: Returns the results of [array get] in a well-defined order.
+    #
+    if {[string length $varName] == 0} then {
+      return [list]
+    }
+
+    #
+    # NOTE: Refer to the array in the context of the caller.
+    #
+    upvar 1 $varName array
+
+    #
+    # NOTE: Build the command that will sort the array names into order.
+    #
+    set command [list lsort]
+    if {$integer} then {lappend command -integer}
+
+    #
+    # NOTE: If there is a pattern, use it; otherwise, all elements are
+    #       returned.
+    #
+    if {[string length $pattern] > 0} then {
+      lappend command [array names array $pattern]
+    } else {
+      lappend command [array names array]
+    }
+
+    set result [list]
+
+    foreach name [eval $command] {
+      lappend result $name $array($name)
+    }
+
+    return $result
+  }
+
   proc testResultGet { script } {
     set code [catch {uplevel 1 $script} result]
     return [expr {$code == 0 ? $result : "<error>"}]
@@ -718,17 +756,48 @@ namespace eval ::Eagle {
     return $result
   }
 
-  proc getTclShellFileName { automatic kits } {
+  proc getTclShellFileName { automatic kits machine } {
     #
     # NOTE: Start out with an empty list of candiate Tcl shells.
     #
     set shells [list]
 
     #
-    # NOTE: Check all environment variables we know about that
+    # NOTE: Figure out the environment variables to be checked.  If
+    #       there was a machine specified, it will be used to check
+    #       for machine-specific Tcl shells.
+    #
+    set names [list]
+
+    foreach name [list Eagle_Tcl_Shell Tcl_Shell EAGLE_TCLSH TCLSH] {
+      if {[string length $machine] > 0} then {
+        set platform [machineToPlatform $machine true]
+
+        if {[string length $platform] > 0} then {
+          lappend names [appendArgs $name _ $platform]
+        }
+
+        set platform [machineToPlatform $machine false]
+
+        if {[string length $platform] > 0} then {
+          lappend names [appendArgs $name _ $platform]
+        }
+
+        lappend names [appendArgs $name _ $machine]
+      }
+
+      lappend names $name
+    }
+
+    #
+    # NOTE: Check all environment variables (we know about) that
     #       may contain the path where the Tcl shell is located.
     #
-    foreach name [list Eagle_Tcl_Shell Tcl_Shell EAGLE_TCLSH TCLSH] {
+    foreach name $names {
+      #
+      # NOTE: Grab the value of the environment variable.  This
+      #       will be an empty string if it was not set.
+      #
       set value [getEnvironmentVariable $name]
 
       #
@@ -1315,12 +1384,22 @@ namespace eval ::Eagle {
       #       this variable (i.e. by default, it does not exist).
       #
       return $::test_suffix
-    } elseif {[info exists ::eagle_platform(text)]} then {
+    } elseif {[info exists ::eagle_platform(text)] && \
+        [string length $::eagle_platform(text)] > 0} then {
       #
-      # NOTE: Use the build text of Eagle itself.  This value will
-      #       typically be "NetFx20" or "NetFx40".
+      # NOTE: Use the build "text" of Eagle itself.  This value
+      #       will typically be "NetFx20", "NetFx40", etc.  The
+      #       default value of this element is an empty string.
       #
       return $::eagle_platform(text)
+    } elseif {[info exists ::eagle_platform(suffix)] && \
+        [string length $::eagle_platform(suffix)] > 0} then {
+      #
+      # NOTE: Use the build suffix of Eagle itself.  This value
+      #       will typically be "NetFx20", "NetFx40", etc.  The
+      #       default value of this element is an empty string.
+      #
+      return $::eagle_platform(suffix)
     } else {
       #
       # NOTE: We are missing the suffix, return nothing.
@@ -1336,6 +1415,59 @@ namespace eval ::Eagle {
     }
 
     return [list]
+  }
+
+  proc getRuntimeAssemblyName {} {
+    if {[isEagle]} then {
+      if {[isDotNetCore]} then {
+        if {[llength [info commands object]] > 0} then {
+          #
+          # HACK: The core runtime assembly (i.e. the one containing
+          #       System.Object, et al) must have already been loaded
+          #       (?), so just abuse the [object load] sub-command to
+          #       return its assembly name.
+          #
+          return [lindex [object load System.Private.CoreLib] 0]
+        } else {
+          #
+          # HACK: The [object] command is unavailable, just fake it.
+          #
+          return "System.Private.CoreLib, Version=4.0.0.0,\
+              Culture=neutral, PublicKeyToken=7cec85d7bea7798e"
+        }
+      } else {
+        if {[llength [info commands object]] > 0} then {
+          #
+          # HACK: The core runtime assembly (i.e. the one containing
+          #       System.Object, et al) must have already been loaded
+          #       (?), so just abuse the [object load] sub-command to
+          #       return its assembly name.
+          #
+          return [lindex [object load mscorlib] 0]
+        } else {
+          #
+          # HACK: The [object] command is unavailable, just fake it.
+          #
+          if {[info exists ::eagle_platform(runtimeVersion)] && \
+              [string index $::eagle_platform(runtimeVersion) 0] >= 4} then {
+            #
+            # BUGBUG: Does not handle a major CLR version greater than
+            #         four (4).
+            #
+            return "mscorlib, Version=4.0.0.0, Culture=neutral,\
+                PublicKeyToken=b77a5c561934e089"
+          } else {
+            return "mscorlib, Version=2.0.0.0, Culture=neutral,\
+                PublicKeyToken=b77a5c561934e089"
+          }
+        }
+      }
+    } else {
+      #
+      # HACK: Native Tcl has no runtime assembly name as it is native.
+      #
+      return ""
+    }
   }
 
   proc getTestAssemblyName {} {
@@ -1402,7 +1534,16 @@ namespace eval ::Eagle {
       lappend command mono \
           [appendArgs \" [file nativename $commandName] \"]
     } else {
-      lappend command $commandName
+      #
+      # HACK: When running on .NET Core, need to insert "dotnet exec"
+      #       command line arguments before command to execute.
+      #
+      if {[isDotNetCore]} then {
+        lappend command dotnet exec \
+            [appendArgs \" [file nativename $commandName] \"]
+      } else {
+        lappend command $commandName
+      }
     }
 
     if {[llength $args] > 0} then {eval lappend command $args}
@@ -1601,8 +1742,32 @@ namespace eval ::Eagle {
     set error [expr {$code == 0 ? false : true}]
 
     if {[isEagle]} then {
+      #
+      # NOTE: Initially, the call to [tresult] (i.e. [host result]) will
+      #       use the actual return code from the test command; however,
+      #       if that return code was 3 (i.e. break), that indicates the
+      #       test results should be highlighted in yellow -AND- that the
+      #       test should still be considered successful even though the
+      #       test was skipped.  If the return code was 4 (i.e. continue),
+      #       that indicates the test results should be highlighted in
+      #       dark yellow -AND- that the test should still be considered
+      #       successful because failures are being ignored for it.
+      #
+      set tresultCode $code
+
+      if {$code == 3} then {
+        set code 0; set error false
+      } elseif {$code == 4} then {
+        set code 0
+      }
+
+      #
+      # NOTE: If the return code from the test command indicates success
+      #       and the test results contain a clear indication of failure,
+      #       reset both return codes to indicate that failure.
+      #
       if {$code == 0 && [regexp -- {\s==== (.*?) FAILED\s} $result]} then {
-        set code 1
+        set code 1; set tresultCode $code
       }
 
       #
@@ -1610,7 +1775,7 @@ namespace eval ::Eagle {
       #       completed.
       #
       if {[shouldWriteTestData $code]} then {
-        tresult $code $result
+        tresult $tresultCode $result
       } else {
         tlog $result
       }
@@ -2035,6 +2200,20 @@ namespace eval ::Eagle {
     return [string map $map [expr {$list ? [list $path] : $path}]]
   }
 
+  proc assemblyNameToRegexp { assemblyName {list false} } {
+    #
+    # NOTE: This procedure needs to escape all characters that
+    #       have any special meaning to the regular expression
+    #       engine -AND- that can actually appear in a legal
+    #       assembly name.  Normally, this would only include
+    #       the period character.
+    #
+    # HACK: For now, just abuse the [pathToRegexp] procedure
+    #       for this.
+    #
+    return [pathToRegexp $assemblyName $list]
+  }
+
   proc inverseLsearchGlob { noCase patterns element } {
     #
     # NOTE: Perform the inverse of [lsearch -glob], attempt
@@ -2127,7 +2306,7 @@ namespace eval ::Eagle {
   }
 
   proc reportTestPercent {
-          channel percent totalFiles failedFiles leakedFiles } {
+          channel percent doneFiles totalFiles failedFiles leakedFiles } {
     if {[isEagle]} then {
       set totalTests $::eagle_tests(Total)
       set failedTests $::eagle_tests(Failed)
@@ -2141,8 +2320,9 @@ namespace eval ::Eagle {
     set status [appendArgs \
         "---- test suite running, about " $percent "% complete (" \
         $totalTests " tests total, " $failedTests " tests failed, " \
-        $skippedTests " tests skipped, " $totalFiles " files total, " \
-        $failedFiles " files failed, " $leakedFiles " files leaked)..."]
+        $skippedTests " tests skipped, " $doneFiles " files done, " \
+        $totalFiles " files total, " $failedFiles " files failed, " \
+        $leakedFiles " files leaked)..."]
 
     tputs $channel [appendArgs $status \n]
 
@@ -2257,7 +2437,7 @@ namespace eval ::Eagle {
     #
     # NOTE: Process each file name we have been given by the caller...
     #
-    set total 0; set lastPercent -1
+    set total [llength $fileNames]; set lastPercent -1
 
     foreach fileName $fileNames {
       #
@@ -2272,12 +2452,12 @@ namespace eval ::Eagle {
       # NOTE: In terms of files, not tests, what percent done are we now?
       #
       set percent [formatDecimal \
-          [expr {$total != 0 ? 100.0 * ($count / double($total)) : 100}]]
+          [expr {$total != 0 ? 100.0 * ($count / double($total)) : 0}]]
 
       if {$percent != $lastPercent} then {
         if {![info exists ::no(runPercent)]} then {
           reportTestPercent $channel $percent \
-              $total [llength $failed] [llength $leaked]
+              $count $total [llength $failed] [llength $leaked]
         }
 
         set lastPercent $percent
@@ -2447,17 +2627,6 @@ namespace eval ::Eagle {
             }
 
             #
-            # NOTE: At this point, we know that another test file was
-            #       processed successfully.
-            #
-            incr total
-
-            if {![info exists ::no(runPercent)]} then {
-              reportTestPercent $channel $percent \
-                  $total [llength $failed] [llength $leaked]
-            }
-
-            #
             # NOTE: Are we being prevented from waiting after the file?
             #
             if {![info exists ::no(postWait)]} then {
@@ -2528,11 +2697,6 @@ namespace eval ::Eagle {
           }
 
           #
-          # NOTE: We evaluated another test file.
-          #
-          incr count
-
-          #
           # NOTE: Record failed test count after this file.
           #
           if {[isEagle]} then {
@@ -2552,12 +2716,12 @@ namespace eval ::Eagle {
           # NOTE: In terms of files, not tests, what percent done are we now?
           #
           set percent [formatDecimal \
-              [expr {$total != 0 ? 100.0 * ($count / double($total)) : 100}]]
+              [expr {$total != 0 ? 100.0 * ($count / double($total)) : 0}]]
 
           if {$percent != $lastPercent} then {
             if {![info exists ::no(runPercent)]} then {
               reportTestPercent $channel $percent \
-                  $total [llength $failed] [llength $leaked]
+                  $count $total [llength $failed] [llength $leaked]
             }
 
             set lastPercent $percent
@@ -2598,15 +2762,21 @@ namespace eval ::Eagle {
         }
 
         #
+        # NOTE: Another file of some kind was processed.  It may have been
+        #       skipped; however, that does not matter.
+        #
+        incr count
+
+        #
         # NOTE: In terms of files, not tests, what percent done are we now?
         #
         set percent [formatDecimal \
-            [expr {$total != 0 ? 100.0 * ($count / double($total)) : 100}]]
+            [expr {$total != 0 ? 100.0 * ($count / double($total)) : 0}]]
 
         if {$percent != $lastPercent} then {
           if {![info exists ::no(runPercent)]} then {
             reportTestPercent $channel $percent \
-                $total [llength $failed] [llength $leaked]
+                $count $total [llength $failed] [llength $leaked]
           }
 
           set lastPercent $percent
@@ -2628,18 +2798,23 @@ namespace eval ::Eagle {
         if {![info exists ::no(runSkippedFile)]} then {
           tputs $channel [appendArgs "==== \"" $fileName "\" SKIPPED\n"]
         }
+
+        #
+        # NOTE: This file was skipped.
+        #
+        incr count
       }
 
       #
       # NOTE: In terms of files, not tests, what percent done are we now?
       #
       set percent [formatDecimal \
-          [expr {$total != 0 ? 100.0 * ($count / double($total)) : 100}]]
+          [expr {$total != 0 ? 100.0 * ($count / double($total)) : 0}]]
 
       if {$percent != $lastPercent} then {
         if {![info exists ::no(runPercent)]} then {
           reportTestPercent $channel $percent \
-              $total [llength $failed] [llength $leaked]
+              $count $total [llength $failed] [llength $leaked]
         }
 
         set lastPercent $percent
@@ -3318,6 +3493,46 @@ namespace eval ::Eagle {
       return 0; # no tests were run, etc.
     }
 
+    proc createThread { script {parameterized false} {maxStackSize ""} } {
+      if {[isDotNetCore]} then {
+        #
+        # HACK: This seems to make .NET Core happier for reasons
+        #       that are not entirely clear.
+        #
+        set typeName "System.Threading.Thread, mscorlib"
+      } else {
+        set typeName System.Threading.Thread
+      }
+
+      if {$parameterized} then {
+        if {[string length $maxStackSize] > 0} then {
+          return [object create -alias -objectflags +NoReturnReference \
+              -parametertypes System.Threading.ParameterizedThreadStart \
+              $typeName $script $maxStackSize]
+        } else {
+          return [object create -alias -objectflags +NoReturnReference \
+              -parametertypes System.Threading.ParameterizedThreadStart \
+              $typeName $script]
+        }
+      } else {
+        if {[string length $maxStackSize] > 0} then {
+          return [object create -alias -objectflags +NoReturnReference \
+              $typeName $script $maxStackSize]
+        } else {
+          return [object create -alias -objectflags +NoReturnReference \
+              $typeName $script]
+        }
+      }
+    }
+
+    proc startThread { thread {parameterized false} {parameter null} } {
+      if {$parameterized} then {
+        $thread Start $parameter
+      } else {
+        $thread Start
+      }
+    }
+
     proc cleanupThread { thread {timeout 2000} } {
       if {[$thread IsAlive]} then {
         if {[catch {$thread Interrupt} error]} then {
@@ -3948,12 +4163,13 @@ namespace eval ::Eagle {
         getTemporaryPath getFiles getTestFiles getTestRunId getTestLogId \
         getDefaultTestLog getTestLog getLastTestLog getTestSuite \
         getTestMachine getTestPlatform getTestConfiguration getTestSuffix \
-        getTestUncountedLeaks getTestAssemblyName canTestExec testExec \
-        testClrExec execTestShell isRandomOrder isBreakOnDemand isBreakOnLeak \
-        isStopOnFailure isStopOnLeak isExitOnComplete returnInfoScript \
-        runTestPrologue runTestEpilogue hookPuts unhookPuts runTest \
-        testDebugBreak testArrayGet testShim tsource recordTestStatistics \
-        reportTestStatistics formatList formatListAsDict pathToRegexp \
+        getTestUncountedLeaks getRuntimeAssemblyName getTestAssemblyName \
+        canTestExec testExec testClrExec execTestShell isRandomOrder \
+        isBreakOnDemand isBreakOnLeak isStopOnFailure isStopOnLeak \
+        isExitOnComplete returnInfoScript runTestPrologue runTestEpilogue \
+        hookPuts unhookPuts runTest testDebugBreak testArrayGet testShim \
+        tsource recordTestStatistics reportTestStatistics formatList \
+        formatListAsDict pathToRegexp assemblyNameToRegexp \
         inverseLsearchGlob removePathFromFileNames formatDecimal \
         clearTestPercent reportTestPercent runAllTests isTestSuiteRunning \
         getTestChannelOrDefault tryVerifyTestPath checkForAndSetTestPath \

@@ -133,7 +133,7 @@ namespace eval ::Eagle {
       return ""
     }
 
-    set type [object invoke -create -alias Type GetType $typeName]
+    set type [object invoke -create -alias Utility GetType $typeName]
 
     if {[string length $type] == 0} then {
       return ""
@@ -279,11 +279,25 @@ namespace eval ::Eagle {
     #       the core marshaller will handle the lack of a callback correctly.
     #       The context argument will be added to this script prior to it
     #       being evaluated; however, it is not actually used by this script.
+    #       The -identifier option is NOT actually processed by the library;
+    #       however, it is necessary here to avoid having multiple calls to
+    #       this procedure collide with each other when attempting to remove
+    #       their callbacks during cleanup.
     #
     if {[string length $doneScript] > 0} then {
-      set callback [list -callbackflags {+ResetCancel FireAndForget} \
-          -- apply [list [list script context] {uplevel 1 $script}] \
-          $doneScript]
+      #
+      # NOTE: If the core library was compiled without dynamic delegates,
+      #       this procedure cannot be used when there is a callback, due
+      #       to the AsynchronousCallback delegate type being unsupported.
+      #
+      if {[lsearch -exact -- \
+          $::eagle_platform(compileOptions) EMIT] == -1} then {
+        error "cannot eval async: library missing EMIT compile-option"
+      }
+
+      set callback [list -identifier [expr {random()}] -callbackflags \
+          {+ResetCancel FireAndForget} -- apply [list [list script context] \
+          {uplevel 1 $script}] $doneScript]
     } else {
       set callback null
     }

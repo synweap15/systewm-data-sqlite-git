@@ -174,7 +174,8 @@ if {![info exists no([file tail [info script]])]} then {
   #
   # NOTE: Set the location of the [non-script] library directory
   #       (i.e. the directory where the plugins are located), if
-  #       necessary.
+  #       necessary.  This variant is based on where the process
+  #       executable is located.
   #
   if {![info exists lib_path]} then {
     #
@@ -184,6 +185,56 @@ if {![info exists no([file tail [info script]])]} then {
     #       beneath that.
     #
     set lib_path [file normalize [file join [file dirname $bin_path] lib]]
+  }
+
+  #
+  # NOTE: Set the location of the [non-script] library directory
+  #       (i.e. the directory where the plugins are located), if
+  #       necessary.  This variant is based on where the Eagle
+  #       core library -OR- Tcl core library assembly is located.
+  #
+  if {![info exists core_lib_path]} then {
+    #
+    # NOTE: Attempt to obtain the information for the Eagle core
+    #       library assembly.  This will not work for native Tcl.
+    #
+    if {[catch {info assembly} lib_dir] == 0} then {
+      #
+      # NOTE: Grab the directory for the core library assembly.
+      #
+      set core_lib_path [file dirname [lindex $lib_dir end]]
+
+      #
+      # NOTE: Perform a check for the .NET Core output directories
+      #       (e.g. "netcoreapp2.0", etc), which must be removed
+      #       if present, prior to further checks.
+      #
+      if {![info exists no(dotNetCoreLibPath)] && \
+          [string match net* [file tail $core_lib_path]]} then {
+        #
+        # NOTE: Remove the .NET Core output directory name.
+        #
+        set core_lib_path [file dirname $core_lib_path]
+      }
+
+      #
+      # NOTE: Go up one level, to remove the "bin" directory and
+      #       then append the "lib" directory.  This gives us the
+      #       final path we need.
+      #
+      set core_lib_path [file normalize \
+          [file join [file dirname $core_lib_path] lib]]
+    } else {
+      #
+      # NOTE: This is native Tcl.  There is no way to query the
+      #       path for the Tcl core library itself (e.g. "tcl*.dll",
+      #       "libtcl*.so", etc); however, using [info library] is
+      #       close enough.
+      #
+      set core_lib_path [file normalize [file dirname [info library]]]
+    }
+
+    unset lib_dir
   }
 
   #
@@ -625,7 +676,8 @@ if {![info exists no([file tail [info script]])]} then {
 
             set test_tclsh [getTclShellFileName \
                 [expr {![info exists no(automaticTclShell)]}] \
-                [expr {![info exists no(tclKit)]}]]
+                [expr {![info exists no(tclKit)]}] \
+                [expr {[info exists test_machine] ? $test_machine : ""}]]
           } else {
             #
             # NOTE: Skip detection and use the fallback default.
@@ -950,6 +1002,9 @@ if {![info exists no([file tail [info script]])]} then {
   tputs $test_channel [appendArgs "---- library path: \"" \
       $lib_path \"\n]
 
+  tputs $test_channel [appendArgs "---- core library path: \"" \
+      $core_lib_path \"\n]
+
   tputs $test_channel [appendArgs "---- test suite files located in: \"" \
       $test_all_path \"\n]
 
@@ -1050,7 +1105,7 @@ if {![info exists no([file tail [info script]])]} then {
     #       does not control or change any hacks for Mono that may
     #       be present in the library itself.
     #
-    # if {[isTestMono]} then {
+    # if {[isMono]} then {
     #   set no(mono) true
     # }
 
@@ -1351,13 +1406,6 @@ if {![info exists no([file tail [info script]])]} then {
     }
 
     #
-    # NOTE: Has testing using the C# compiler been disabled?
-    #
-    if {![info exists no(checkForCompileCSharp)]} then {
-      checkForCompileCSharp $test_channel
-    }
-
-    #
     # NOTE: Has compile/runtime option testing support been disabled?
     #
     if {![info exists no(compileOptions)]} then {
@@ -1388,6 +1436,17 @@ if {![info exists no([file tail [info script]])]} then {
           # NOTE: For tests "load-1.6" and "load-1.7".
           #
           checkForCompileOption $test_channel CAS_POLICY
+        }
+
+        #
+        # NOTE: Has configuration support been enabled (at compile-time)?
+        #
+        if {![info exists no(compileConfiguration)]} then {
+          #
+          # NOTE: For tests "debug-1.3", "object-99.1", "object-11.4",
+          #       and "garuda-1.2".
+          #
+          checkForCompileOption $test_channel CONFIGURATION
         }
 
         #
@@ -1492,6 +1551,42 @@ if {![info exists no([file tail [info script]])]} then {
           # NOTE: For test "object-4.8".
           #
           checkForCompileOption $test_channel APPROVED_VERBS
+        }
+
+        #
+        # NOTE: Has embedded library support been enabled (at
+        #       compile-time)?
+        #
+        if {![info exists no(compileEmbeddedLibrary)]} then {
+          #
+          # NOTE: For test "interp-1.400".
+          #
+          checkForCompileOption $test_channel EMBEDDED_LIBRARY
+        }
+
+        #
+        # NOTE: Has System.Reflection.Emit support been enabled (at
+        #       compile-time)?
+        #
+        if {![info exists no(compileEmit)]} then {
+          #
+          # NOTE: For tests "commands-1.1.*", "debug-9.1", "library-*",
+          #       "object-4.10", "object-4.11", "object-4.12",
+          #       "object-8.1??", and "perf-101.0".
+          #
+          checkForCompileOption $test_channel EMIT
+        }
+
+        #
+        # NOTE: Has .NET Standard 2.0 support been enabled (at
+        #       compile-time)?
+        #
+        if {![info exists no(compileNetStandard20)]} then {
+          #
+          # NOTE: For tests "basic-1.29.*", "basic-1.30.*", "host-1.1",
+          #       "interp-1.601", "redefine-6.2", and "sql-1.17".
+          #
+          checkForCompileOption $test_channel NET_STANDARD_20
         }
 
         #
@@ -1621,6 +1716,27 @@ if {![info exists no([file tail [info script]])]} then {
         }
 
         #
+        # NOTE: Has remoting support been enabled (at compile-time)?
+        #
+        if {![info exists no(compileRemoting)]} then {
+          #
+          # NOTE: For tests "remotingServer-1.*".
+          #
+          checkForCompileOption $test_channel REMOTING
+        }
+
+        #
+        # NOTE: Has result size limit support been enabled (at
+        #       compile-time)?
+        #
+        if {![info exists no(compileResultLimits)]} then {
+          #
+          # NOTE: For tests "interp-1.500" and "interp-1.501".
+          #
+          checkForCompileOption $test_channel RESULT_LIMITS
+        }
+
+        #
         # NOTE: Has dedicated test support been enabled (at compile-time)?
         #
         if {![info exists no(compileTest)]} then {
@@ -1672,13 +1788,6 @@ if {![info exists no([file tail [info script]])]} then {
         }
 
         #
-        # NOTE: Has WinForms support been enabled (at compile-time)?
-        #
-        if {![info exists no(compileWinForms)]} then {
-          checkForCompileOption $test_channel WINFORMS
-        }
-
-        #
         # NOTE: Has runtime license checking support been disabled (at
         #       compile-time)?  This only applies to third-party plugins
         #       and applications.
@@ -1714,6 +1823,13 @@ if {![info exists no([file tail [info script]])]} then {
           checkForCompileOption $test_channel DEMO_EDITION
         }
       }
+    }
+
+    #
+    # NOTE: Has testing using the C# compiler been disabled?
+    #
+    if {![info exists no(checkForCompileCSharp)]} then {
+      checkForCompileCSharp $test_channel
     }
 
     #
@@ -1941,6 +2057,9 @@ if {![info exists no([file tail [info script]])]} then {
             *TestCallDynamicCallback3*
 
         checkForObjectMember $test_channel Eagle._Tests.Default \
+            *TestCallDynamicCallback4*
+
+        checkForObjectMember $test_channel Eagle._Tests.Default \
             *TestGetDynamicCallbacks*
 
         checkForObjectMember $test_channel Eagle._Tests.Default \
@@ -1954,6 +2073,9 @@ if {![info exists no([file tail [info script]])]} then {
 
         checkForObjectMember $test_channel Eagle._Tests.Default \
             *TestCallStaticDynamicCallback3*
+
+        checkForObjectMember $test_channel Eagle._Tests.Default \
+            *TestCallStaticDynamicCallback4*
 
         checkForObjectMember $test_channel Eagle._Tests.Default \
             *TestGetStaticDynamicCallbacks*
@@ -2089,6 +2211,17 @@ if {![info exists no([file tail [info script]])]} then {
       }
 
       #
+      # NOTE: Has special variable testing support been disabled?
+      #
+      if {![info exists no(testSetVariable)]} then {
+        #
+        # NOTE: For test "basic-1.107".
+        #
+        checkForObjectMember $test_channel Eagle._Tests.Default \
+            *TestSetVariableWithTypedValue*
+      }
+
+      #
       # NOTE: Has enumerable variable testing support been disabled?
       #
       if {![info exists no(testEnumerableVariables)]} then {
@@ -2191,13 +2324,13 @@ if {![info exists no([file tail [info script]])]} then {
             *TestRestoreObjects*
 
         #
-        # NOTE: For test "basic-1.29".
+        # NOTE: For test "basic-1.29.*".
         #
         checkForObjectMember $test_channel Eagle._Tests.Default \
             *TestExecuteStaticDelegates*
 
         #
-        # NOTE: For tests "basic-1.30" and "basic-1.31".
+        # NOTE: For tests "basic-1.30.*" and "basic-1.31".
         #
         checkForObjectMember $test_channel Eagle._Tests.Default \
             *TestExecuteDelegateCommands*
@@ -2442,6 +2575,30 @@ if {![info exists no([file tail [info script]])]} then {
         checkForObjectMember $test_channel Eagle._Tests.Default+Listener \
             * Eagle._Tests.Default.Listener
       }
+
+      #
+      # NOTE: Has script event thread testing support been disabled?
+      #
+      if {![info exists no(testScriptEventThread)]} then {
+        #
+        # NOTE: For test "interp-1.801".
+        #
+        checkForObjectMember $test_channel \
+            Eagle._Tests.Default+ScriptEventState \
+            *ToString* Eagle._Tests.Default.ScriptEventState.ToString
+
+        checkForObjectMember $test_channel \
+            Eagle._Tests.Default+ScriptEventThread \
+            *ToString* Eagle._Tests.Default.ScriptEventThread.ToString
+
+        checkForObjectMember $test_channel \
+            Eagle._Tests.Default+ScriptThreadClientData \
+            *ToString* Eagle._Tests.Default.ScriptThreadClientData.ToString
+
+        checkForObjectMember $test_channel \
+            Eagle._Tests.Default+ScriptTimeoutThread \
+            *ToString* Eagle._Tests.Default.ScriptTimeoutThread.ToString
+      }
     }
 
     #
@@ -2467,6 +2624,16 @@ if {![info exists no([file tail [info script]])]} then {
       # NOTE: For tests "excel-*.*".
       #
       checkForAssembly $test_channel Microsoft.Office.Interop.Excel
+
+      #
+      # NOTE: Has Excel usability testing been disabled?
+      #
+      if {![info exists no(excelUsable)]} then {
+        #
+        # NOTE: For tests "excel-*.*".
+        #
+        checkForExcelUsable $test_channel
+      }
     }
 
     #
@@ -3031,7 +3198,9 @@ if {![info exists no([file tail [info script]])]} then {
     # NOTE: For tests "load-1.1.*".
     #
     if {![info exists no(Plugin.dll)]} then {
-      checkForFile $test_channel [file join $lib_path Plugin1.0 Plugin.dll]
+      checkForFile $test_channel [file join \
+          $core_lib_path Plugin1.0 [getDotNetCoreLibPathDirectoryNameOnly \
+          Plugin1.0] Plugin.dll]
     }
 
     #

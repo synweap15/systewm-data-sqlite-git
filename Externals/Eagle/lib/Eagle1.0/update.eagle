@@ -25,8 +25,17 @@ namespace eval ::Eagle {
   #       matches the one in use by the Eagle script engine.
   #
   proc matchEnginePublicKeyToken { publicKeyToken } {
-    return [expr {[string length $publicKeyToken] == 0 || \
-        $publicKeyToken eq [info engine PublicKeyToken]}]
+    if {[string length $publicKeyToken] == 0} then {
+      return true
+    }
+
+    set enginePublicKeyToken [info engine PublicKeyToken]
+
+    if {[string length $enginePublicKeyToken] == 0} then {
+      return true
+    }
+
+    return [expr {$publicKeyToken eq $enginePublicKeyToken}]
   }
 
   #
@@ -164,7 +173,7 @@ namespace eval ::Eagle {
       set trusted true
 
       if {[lindex [uri softwareupdates] end] eq "untrusted"} then {
-        uri softwareupdates true
+        catch {uri softwareupdates true}
       } else {
         set trusted false; # NOTE: Already trusted.
       }
@@ -180,7 +189,7 @@ namespace eval ::Eagle {
           #
           # NOTE: Stop trusting ONLY our self-signed SSL certificate.
           #
-          uri softwareupdates false
+          catch {uri softwareupdates false}
         }
       }
 
@@ -201,10 +210,51 @@ namespace eval ::Eagle {
   proc runUpdateAndExit { {automatic false} } {
     global tcl_platform
 
-    set directory [file dirname [info nameofexecutable]]
+    #
+    # NOTE: Determine the fully qualified file name for the updater.  If
+    #       it is not available, we cannot continue.
+    #
+    set fileName [file join [file normalize \
+        [file dirname [info nameofexecutable]]] Hippogriff.exe]
 
-    set command [list exec -shell -- \
-        [file join $directory Hippogriff.exe] -delay 2000]
+    if {![file exists $fileName]} then {
+      error [appendArgs \
+          "updater executable \"" $fileName "\" is not available"]
+    }
+
+    #
+    # NOTE: For .NET Core, updating via the updater tool is unsupported.
+    #
+    if {[isDotNetCore]} then {
+      error [appendArgs \
+          "updater executable \"" $fileName "\" unsupported on .NET Core"]
+    }
+
+    #
+    # NOTE: Start out with just the base [exec] command, -shell option,
+    #       and the end-of-options marker.
+    #
+    set command [list exec -shell --]
+
+    #
+    # NOTE: Check for native Tcl and Mono because this impacts how the
+    #       shell executable name is determined.
+    #
+    if {[isEagle] && [isMono]} then {
+      #
+      # HACK: Assume that Mono is somewhere along the PATH.
+      #
+      lappend command mono \
+          [appendArgs \" [file nativename $fileName] \"]
+    } else {
+      lappend command $fileName
+    }
+
+    #
+    # NOTE: Add the base options to the updater executable.  Typically,
+    #       this only includes the initial (mutex checking) delay.
+    #
+    lappend command -delay 2000
 
     #
     # HACK: The native StrongNameSignatureVerificationEx() function does
@@ -313,7 +363,7 @@ namespace eval ::Eagle {
     set trusted true
 
     if {[lindex [uri softwareupdates] end] eq "untrusted"} then {
-      uri softwareupdates true
+      catch {uri softwareupdates true}
     } else {
       set trusted false; # NOTE: Already trusted.
     }
@@ -329,7 +379,7 @@ namespace eval ::Eagle {
         #
         # NOTE: Stop trusting ONLY our own self-signed SSL certificate.
         #
-        uri softwareupdates false
+        catch {uri softwareupdates false}
       }
     }
   }
@@ -345,7 +395,7 @@ namespace eval ::Eagle {
     set trusted true
 
     if {[lindex [uri softwareupdates] end] eq "untrusted"} then {
-      uri softwareupdates true
+      catch {uri softwareupdates true}
     } else {
       set trusted false; # NOTE: Already trusted.
     }
@@ -361,7 +411,7 @@ namespace eval ::Eagle {
         #
         # NOTE: Stop trusting ONLY our own self-signed SSL certificate.
         #
-        uri softwareupdates false
+        catch {uri softwareupdates false}
       }
     }
   }

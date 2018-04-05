@@ -38,7 +38,6 @@ namespace eval ::Eagle {
 
     if {$force || ![info exists baseUri]} then {
       if {[isEagle]} then {
-        package require Eagle.Update
         set baseUri [getAuxiliaryBaseUri]
       } else {
         set baseUri https://urn.to/r
@@ -148,7 +147,7 @@ namespace eval ::Eagle {
   #       extraction directory.  The actual temporary extraction directory is
   #       returned.
   #
-  proc extractZipArchive { archiveFileName extractRootDirectory } {
+  proc extractZipArchive { archiveFileName extractRootDirectory rootOnly } {
     setupUnzipVars false
 
     variable baseUri
@@ -159,8 +158,12 @@ namespace eval ::Eagle {
 
     set fileName [file nativename $archiveFileName]
 
-    set extractDirectory [file join $extractRootDirectory \
-        [appendArgs ea-uz-xa- [pid] - [string trim [clock seconds] -]]]
+    if {$rootOnly} then {
+      set extractDirectory $extractRootDirectory
+    } else {
+      set extractDirectory [file join $extractRootDirectory \
+          [appendArgs ea-uz-xa- [pid] - [string trim [clock seconds] -]]]
+    }
 
     set directory [file nativename $extractDirectory]
 
