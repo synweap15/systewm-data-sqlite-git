@@ -642,6 +642,7 @@ set sds_manifests(source) {
   System.Data.SQLite/System.Data.SQLite.Module.2013.csproj
   System.Data.SQLite/System.Data.SQLite.Module.2015.csproj
   System.Data.SQLite/System.Data.SQLite.Module.2017.csproj
+  System.Data.SQLite/System.Data.SQLite.NetStandard20.csproj
   System.Data.SQLite/Targets/
   System.Data.SQLite/Targets/System.Data.SQLite.Files.targets
   System.Data.SQLite/Targets/System.Data.SQLite.Properties.targets
