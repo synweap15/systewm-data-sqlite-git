@@ -1,7 +1,7 @@
 @ECHO OFF
 
 ::
-:: set_netCore20.bat --
+:: set_netStandard20.bat --
 ::
 :: Written by Joe Mistachkin.
 :: Released to the public domain, use at your own risk!
@@ -32,7 +32,7 @@ IF NOT DEFINED YEAR (
 )
 
 IF NOT DEFINED FRAMEWORK (
-  SET FRAMEWORK=netCore20
+  SET FRAMEWORK=netStandard20
 )
 
 :end_of_file

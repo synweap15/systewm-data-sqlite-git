@@ -329,7 +329,6 @@ set sds_manifests(source) {
   Setup/set_DebugNativeOnly_x86_2015.bat
   Setup/set_DebugNativeOnly_x86_2017.bat
   Setup/set_DebugNativeOnly_x86_NetStandard20.bat
-  Setup/set_netCore20.bat
   Setup/set_netFx20.bat
   Setup/set_netFx35.bat
   Setup/set_netFx40.bat
@@ -341,6 +340,7 @@ set sds_manifests(source) {
   Setup/set_netFx462.bat
   Setup/set_netFx47.bat
   Setup/set_netFx471.bat
+  Setup/set_netStandard20.bat
   Setup/set_Release.bat
   Setup/set_Release_ARMV7.bat
   "Setup/set_Release_CEPC DevPlatform.bat"
