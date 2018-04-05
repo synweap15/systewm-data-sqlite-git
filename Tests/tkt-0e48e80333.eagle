@@ -20,6 +20,11 @@ runSQLiteTestPrologue
 
 ###############################################################################
 
+#
+# HACK: This test is non-portable (e.g. to Mono) due to its use of Managed
+#       Debugging Assistants (MDAs), which are only implemented by the full
+#       .NET Framework.
+#
 runTest {test tkt-0e48e80333-1.1 {unhook delegates on pooled close} -setup {
   moveEagleShellMdaConfig false
 
