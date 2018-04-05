@@ -420,6 +420,11 @@
     <IsCompactFramework Condition="'$(IsCompactFramework)' == ''">false</IsCompactFramework>
 
     <!--
+        NOTE: Is the project being built to support .NET Standard 2.0?
+    -->
+    <IsDotNetStandard Condition="'$(IsDotNetStandard)' == ''">false</IsDotNetStandard>
+
+    <!--
         NOTE: Emit an AssemblyFlags attribute that includes the Retargetable
               flag from the AssemblyNameFlags enumeration?
     -->
@@ -862,7 +867,7 @@
   ******************************************************************************
   -->
 
-  <PropertyGroup Condition="'$(SQLiteNetDir)' != ''">
+  <PropertyGroup Condition="'$(SQLiteNetDir)' != '' And '$(IsDotNetStandard)' == 'false'">
     <!--
         NOTE: Keep all the intermediate files in one place.  The Visual Studio
               IDE seems to have a nasty habit of ignoring this setting.  The

@@ -644,7 +644,7 @@ namespace System.Data.SQLite
     /// Using reflection, enumerate all assemblies in the current appdomain looking for classes that
     /// have a SQLiteFunctionAttribute attribute, and registering them accordingly.
     /// </summary>
-#if !PLATFORM_COMPACTFRAMEWORK
+#if !PLATFORM_COMPACTFRAMEWORK && !NET_STANDARD_20
     [Security.Permissions.FileIOPermission(Security.Permissions.SecurityAction.Assert, AllFiles = Security.Permissions.FileIOPermissionAccess.PathDiscovery)]
 #endif
     static SQLiteFunction()

@@ -134,6 +134,12 @@ IF NOT DEFINED MSBUILD (
 
 %_VECHO% MsBuild = '%MSBUILD%'
 
+IF NOT DEFINED DOTNET (
+  SET DOTNET=dotnet.exe
+)
+
+%_VECHO% DotNet = '%DOTNET%'
+
 IF NOT DEFINED CSC (
   SET CSC=csc.exe
 )
@@ -144,6 +150,17 @@ REM
 REM TODO: When the next version of Visual Studio is released, this section
 REM       may need updating.
 REM
+IF DEFINED NETCORE20ONLY (
+  %_AECHO% Forcing the use of the .NET Core 2.0...
+  IF NOT DEFINED YEAR (
+    SET YEAR=NetStandard20
+  )
+  CALL :fn_VerifyDotNetCore
+  SET NOBUILDTOOLDIR=1
+  SET USEDOTNET=1
+  GOTO setup_buildToolDir
+)
+
 IF DEFINED NETFX20ONLY (
   %_AECHO% Forcing the use of the .NET Framework 2.0...
   SET YEAR=2005
@@ -298,11 +315,16 @@ IF NOT DEFINED FRAMEWORKDIR (
 
 :setup_buildToolDir
 
-IF DEFINED BUILDTOOLDIR (
-  %_AECHO% Forcing the use of build tool directory "%BUILDTOOLDIR%"...
-) ELSE (
-  CALL :fn_CheckBuildToolDir
-  CALL :fn_VerifyBuildToolDir
+%_VECHO% NoBuildToolDir = '%NOBUILDTOOLDIR%'
+%_VECHO% UseDotNet = '%USEDOTNET%'
+
+IF NOT DEFINED NOBUILDTOOLDIR (
+  IF DEFINED BUILDTOOLDIR (
+    %_AECHO% Forcing the use of build tool directory "%BUILDTOOLDIR%"...
+  ) ELSE (
+    CALL :fn_CheckBuildToolDir
+    CALL :fn_VerifyBuildToolDir
+  )
 )
 
 %_VECHO% Year = '%YEAR%'
@@ -311,14 +333,16 @@ IF DEFINED BUILDTOOLDIR (
 %_VECHO% VisualStudioMsBuildDir = '%VISUALSTUDIOMSBUILDDIR%'
 %_VECHO% BuildToolDir = '%BUILDTOOLDIR%'
 
-IF NOT DEFINED BUILDTOOLDIR (
-  ECHO.
-  ECHO No directory containing MSBuild could be found.
-  ECHO.
-  ECHO Please install the .NET Framework or set the "FRAMEWORKDIR"
-  ECHO environment variable to the location where it is installed.
-  ECHO.
-  GOTO errors
+IF NOT DEFINED NOBUILDTOOLDIR (
+  IF NOT DEFINED BUILDTOOLDIR (
+    ECHO.
+    ECHO No directory containing MSBuild could be found.
+    ECHO.
+    ECHO Please install the .NET Framework or set the "FRAMEWORKDIR"
+    ECHO environment variable to the location where it is installed.
+    ECHO.
+    GOTO errors
+  )
 )
 
 CALL :fn_ResetErrorLevel
@@ -330,7 +354,9 @@ IF ERRORLEVEL 1 (
   GOTO errors
 )
 
-CALL :fn_PrependToPath BUILDTOOLDIR
+IF NOT DEFINED NOBUILDTOOLDIR (
+  CALL :fn_PrependToPath BUILDTOOLDIR
+)
 
 %_VECHO% Path = '%PATH%'
 
@@ -407,6 +433,16 @@ IF NOT DEFINED TEMP (
 
 %_VECHO% Temp = '%TEMP%'
 
+IF NOT DEFINED LOGASM (
+  IF DEFINED USEDOTNET (
+    SET LOGASM=Microsoft.Build
+  ) ELSE (
+    SET LOGASM=Microsoft.Build.Engine
+  )
+)
+
+%_VECHO% LogAsm = '%LOGASM%'
+
 IF NOT DEFINED LOGDIR (
   SET LOGDIR=%TEMP%
 )
@@ -428,7 +464,9 @@ IF NOT DEFINED LOGSUFFIX (
 IF DEFINED LOGGING GOTO skip_setLogging
 IF DEFINED NOLOG GOTO skip_setLogging
 
-SET LOGGING="/logger:FileLogger,Microsoft.Build.Engine;Logfile=%LOGDIR%\%LOGPREFIX%_%CONFIGURATION%_%PLATFORM%_%YEAR%_%LOGSUFFIX%.log;Verbosity=diagnostic"
+SET LOGGING="/logger:FileLogger,%LOGASM%;Logfile=%LOGDIR%\%LOGPREFIX%_%CONFIGURATION%_%PLATFORM%_%YEAR%_%LOGSUFFIX%.log;Verbosity=diagnostic"
+
+%_VECHO% Logging = '%LOGGING%'
 
 :skip_setLogging
 
@@ -481,13 +519,20 @@ IF NOT DEFINED NOTAG (
 
 CALL :fn_CopyVariable MSBUILD_ARGS_%BASE_CONFIGURATION% MSBUILD_ARGS_CFG
 
-%_VECHO% Logging = '%LOGGING%'
+IF DEFINED USEDOTNET (
+  SET MSBUILD=%DOTNET%
+  SET SUBCOMMANDS=build
+) ELSE (
+  CALL :fn_UnsetVariable SUBCOMMANDS
+)
+
+%_VECHO% SubCommands = '%SUBCOMMANDS%'
 %_VECHO% BuildArgs = '%BUILD_ARGS%'
 %_VECHO% MsBuildArgs = '%MSBUILD_ARGS%'
 %_VECHO% MsBuildArgsCfg = '%MSBUILD_ARGS_CFG%'
 
 IF NOT DEFINED NOBUILD (
-  %__ECHO% "%MSBUILD%" "%SOLUTION%" "/target:%TARGET%" "/property:Configuration=%MSBUILD_CONFIGURATION%" "/property:Platform=%PLATFORM%" %LOGGING% %BUILD_ARGS% %MSBUILD_ARGS% %MSBUILD_ARGS_CFG%
+  %__ECHO% "%MSBUILD%" %SUBCOMMANDS% "%SOLUTION%" "/target:%TARGET%" "/property:Configuration=%MSBUILD_CONFIGURATION%" "/property:Platform=%PLATFORM%" %LOGGING% %BUILD_ARGS% %MSBUILD_ARGS% %MSBUILD_ARGS_CFG%
 
   IF ERRORLEVEL 1 (
     ECHO Build failed.
@@ -705,6 +750,16 @@ GOTO no_errors
     GOTO :EOF
   )
   %_AECHO% Build tool directory "%BUILDTOOLDIR%" verified.
+  GOTO :EOF
+
+:fn_VerifyDotNetCore
+  FOR %%T IN (%DOTNET%) DO (
+    SET %%T_PATH=%%~dp$PATH:T
+  )
+  IF NOT DEFINED %DOTNET%_PATH (
+    ECHO The .NET Core executable "%DOTNET%" is required to be in the PATH.
+    GOTO errors
+  )
   GOTO :EOF
 
 :fn_UnquoteVariable

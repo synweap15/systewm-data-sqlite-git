@@ -7,6 +7,7 @@
 :: Released to the public domain, use at your own risk!
 ::
 
+SET NETCORE20ONLY=
 SET NETFX20ONLY=
 SET NETFX35ONLY=1
 SET NETFX40ONLY=

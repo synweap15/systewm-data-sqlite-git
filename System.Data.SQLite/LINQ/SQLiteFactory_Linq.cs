@@ -78,7 +78,9 @@ namespace System.Data.SQLite
       return null;
     }
 
+#if !NET_STANDARD_20
     [ReflectionPermission(SecurityAction.Assert, MemberAccess = true)]
+#endif
     private object GetSQLiteProviderServicesInstance()
     {
         if (_sqliteServices == null)

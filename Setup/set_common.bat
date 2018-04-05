@@ -135,4 +135,8 @@ IF NOT DEFINED NOVS2017 (
   )
 )
 
+IF NOT DEFINED NONETSTANDARD20 (
+  SET YEARS=%YEARS% NetStandard20
+)
+
 :end_of_file
