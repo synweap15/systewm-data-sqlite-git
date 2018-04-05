@@ -1,7 +1,7 @@
 @ECHO OFF
 
 ::
-:: set_2008.bat --
+:: set_year_2008.bat --
 ::
 :: Written by Joe Mistachkin.
 :: Released to the public domain, use at your own risk!

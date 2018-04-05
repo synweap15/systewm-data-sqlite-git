@@ -286,13 +286,6 @@ set sds_manifests(source) {
   Setup/release_static.bat
   Setup/run-mono-tests-debug.sh
   Setup/run-mono-tests-release.sh
-  Setup/set_2005.bat
-  Setup/set_2008.bat
-  Setup/set_2010.bat
-  Setup/set_2012.bat
-  Setup/set_2013.bat
-  Setup/set_2015.bat
-  Setup/set_2017.bat
   Setup/set_common.bat
   Setup/set_Debug.bat
   Setup/set_Debug_ARMV7.bat
@@ -348,7 +341,6 @@ set sds_manifests(source) {
   Setup/set_netFx462.bat
   Setup/set_netFx47.bat
   Setup/set_netFx471.bat
-  Setup/set_NetStandard20.bat
   Setup/set_Release.bat
   Setup/set_Release_ARMV7.bat
   "Setup/set_Release_CEPC DevPlatform.bat"
@@ -406,6 +398,14 @@ set sds_manifests(source) {
   Setup/set_x86_2015.bat
   Setup/set_x86_2017.bat
   Setup/set_x86_NetStandard20.bat
+  Setup/set_year_2005.bat
+  Setup/set_year_2008.bat
+  Setup/set_year_2010.bat
+  Setup/set_year_2012.bat
+  Setup/set_year_2013.bat
+  Setup/set_year_2015.bat
+  Setup/set_year_2017.bat
+  Setup/set_year_NetStandard20.bat
   Setup/sourceTag.eagle
   Setup/test.bat
   Setup/test_all.bat

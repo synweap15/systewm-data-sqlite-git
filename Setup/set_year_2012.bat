@@ -1,7 +1,7 @@
 @ECHO OFF
 
 ::
-:: set_2013.bat --
+:: set_year_2012.bat --
 ::
 :: Written by Joe Mistachkin.
 :: Released to the public domain, use at your own risk!
@@ -11,8 +11,8 @@ SET NETCORE20ONLY=
 SET NETFX20ONLY=
 SET NETFX35ONLY=
 SET NETFX40ONLY=
-SET NETFX45ONLY=
-SET NETFX451ONLY=1
+SET NETFX45ONLY=1
+SET NETFX451ONLY=
 SET NETFX452ONLY=
 SET NETFX46ONLY=
 SET NETFX461ONLY=
@@ -21,9 +21,9 @@ SET NETFX47ONLY=
 SET NETFX471ONLY=
 
 REM
-REM HACK: Evidently, using MSBuild with Visual Studio 2013 requires some
-REM       extra magic to make it recognize the "v120" platform toolset.
+REM HACK: Evidently, installing Visual Studio 2013 breaks using MSBuild to
+REM       build native projects that specify a platform toolset of "v110".
 REM
-SET BUILD_ARGS=/property:VisualStudioVersion=12.0
+SET BUILD_ARGS=/property:VisualStudioVersion=11.0
 
 VERIFY > NUL
