@@ -732,10 +732,16 @@ namespace eval ::Eagle {
       # NOTE: Figure out and then return the fully qualified path to the build
       #       directory based on all the arguments provided by our caller.
       #
-      if {$native} then {
-        return [file join $path bin $year $platform $configuration]
+      if {[isDotNetCore]} then {
+        set extra netstandard2.0
       } else {
-        return [file join $path bin $year $configuration bin]
+        set extra ""
+      }
+
+      if {$native} then {
+        return [file join $path bin $year $platform $configuration $extra]
+      } else {
+        return [file join $path bin $year $configuration bin $extra]
       }
     }
 
@@ -4838,7 +4844,7 @@ namespace eval ::Eagle {
         #       and report on the System.Data.SQLite related ones.
         #
         if {[haveSQLiteObjectCommand]} then {
-          set assemblies [object invoke AppDomain.CurrentDomain GetAssemblies]
+          set assemblies [object invoke Utility GetAssemblies]
 
           object foreach assembly $assemblies {
             if {[string match \{System.Data.SQLite* $assembly]} then {

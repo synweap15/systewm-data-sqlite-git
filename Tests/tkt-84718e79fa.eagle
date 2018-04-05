@@ -30,21 +30,19 @@ runTest {test tkt-84718e79fa-1.1 {SQLiteConvert thread safety} -setup {
         "SELECT x FROM t1;"]
   }
 
-  object import System.Threading
-
   setupDb [set fileName tkt-84718e79fa-1.1.db]
 } -body {
   sql execute $db "CREATE TABLE t1(x INTEGER PRIMARY KEY ASC);"
   sql execute $db "INSERT INTO t1 (x) VALUES(1);"
 
   for {set i 0} {$i < $c} {incr i} {
-    set t($i) [object create -alias Thread threadStart 1048576]
+    set t($i) [createThread threadStart 1048576]
   }
 
   set results [list]
 
   for {set i 0} {$i < $c} {incr i} {
-    $t($i) Start
+    startThread $t($i)
   }
 
   after 4000; # wait for other threads to do something...
@@ -56,8 +54,6 @@ runTest {test tkt-84718e79fa-1.1 {SQLiteConvert thread safety} -setup {
   set results
 } -cleanup {
   cleanupDb $fileName
-
-  object unimport -importpattern System.Threading
 
   for {set i 0} {$i < $c} {incr i} {
     if {[info exists t($i)] && [cleanupThread $t($i)]} then {

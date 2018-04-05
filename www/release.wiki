@@ -257,7 +257,7 @@
     included from upstream (e.g. from the SQLite core library, etc):
     <br />
     <br />
-    <b>..\Externals\Eagle\bin\EagleShell.exe -file sync.eagle --verbose</b>
+    <b>..\Externals\Eagle\bin\netFramework40\EagleShell.exe -file sync.eagle --verbose</b>
   </li>
 
   <li>
@@ -508,7 +508,7 @@
     Enter the following command to build all the source release packages:
     <br />
     <br />
-    <b>..\Externals\Eagle\bin\EagleShell.exe -file verify.eagle Output true</b>
+    <b>..\Externals\Eagle\bin\netFramework40\EagleShell.exe -file verify.eagle Output true</b>
     <br />
     <br />
     <i>This assumes that the <a href="https://www.fossil-scm.org/">Fossil</a>,

@@ -35,7 +35,7 @@ SET TOOLS=%TOOLS:~0,-1%
 
 %_VECHO% Tools = '%TOOLS%'
 
-SET EAGLEBINDIR=%ROOT%\Externals\Eagle\bin
+SET EAGLEBINDIR=%ROOT%\Externals\Eagle\bin\netFramework40
 
 CALL :fn_PrependToPath EAGLEBINDIR
 

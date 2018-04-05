@@ -1,6 +1,7 @@
 *.done
 *.exp
 *.ilk
+*.json
 *.lib
 *.manifest
 *.map
