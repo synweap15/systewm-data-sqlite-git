@@ -1825,7 +1825,7 @@ runTest {test data-1.37 {sqlite3_win32_set_directory function} -setup {
   set found(data) [expr \
       {[llength [file list $directory(data) $fileName]] == 1}]
 
-  set t [createThread]
+  set t [createThread threadStart]
   sql execute $db "BEGIN TRANSACTION;"; startThread $t
 
   for {set i 1} {$i < 1000} {incr i} {
