@@ -9,7 +9,7 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <!--
   ******************************************************************************
-  **                            Core Files (Common)                           **
+  **                    Project Source Code Files (Common)                    **
   ******************************************************************************
   -->
 
@@ -59,18 +59,27 @@
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
     </Compile>
+    <None Include="Configurations\System.Data.SQLite.dll.config" />
+  </ItemGroup>
+
+  <!--
+  ******************************************************************************
+  **                     Project Embedded Resource Files                      **
+  ******************************************************************************
+  -->
+
+  <ItemGroup Condition="'$(IsDotNetStandard)' == 'false'">
     <EmbeddedResource Include="Resources\SR.resx">
       <SubType>Designer</SubType>
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>SR.Designer.cs</LastGenOutput>
       <LogicalName>System.Data.SQLite.SR.resources</LogicalName>
     </EmbeddedResource>
-    <None Include="Configurations\System.Data.SQLite.dll.config" />
   </ItemGroup>
 
   <!--
   ******************************************************************************
-  **                        Core Files (Full Framework)                       **
+  **                Project Source Code Files (Full Framework)                **
   ******************************************************************************
   -->
 
@@ -109,7 +118,7 @@
 
   <!--
   ******************************************************************************
-  **                           Virtual Table Files                            **
+  **                     Virtual Table Source Code Files                      **
   ******************************************************************************
   -->
 
@@ -123,7 +132,7 @@
 
   <!--
   ******************************************************************************
-  **                         Session Extension Files                          **
+  **                   Session Extension Source Code Files                    **
   ******************************************************************************
   -->
 

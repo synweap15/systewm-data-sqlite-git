@@ -54,6 +54,27 @@
 
   <!--
   ******************************************************************************
+  **                    .NET Standard 2.0 Specific Targets                    **
+  ******************************************************************************
+  -->
+
+
+  <Target Name="GenerateResourcesForNetStandard20"
+          Condition="'$(GenerateResourcesForNetStandard20)' != 'false' And
+                     '$(BuildTool)' == 'DotNetCore' And
+                     '$(OperatingSystem)' == 'Windows' And
+                     '$(MSBuildProjectDirectory)' != '' And
+                     !HasTrailingSlash('$(MSBuildProjectDirectory)') And
+                     Exists('$(MSBuildProjectDirectory)\..\Externals\ResGen\ResGen.exe')"
+          Inputs="Resources\SR.resx"
+          Outputs="Generated\SR.resources">
+    <MakeDir Directories="Generated" />
+
+    <Exec Command="&quot;$(MSBuildProjectDirectory)\..\Externals\ResGen\ResGen.exe&quot; Resources\SR.resx Generated\SR.resources &quot;$(MSBuildProjectDirectory)\Resources&quot;" />
+  </Target>
+
+  <!--
+  ******************************************************************************
   **                     Import Project Default Settings                      **
   ******************************************************************************
   -->
@@ -129,6 +150,18 @@
 
   <!--
   ******************************************************************************
+  **                     Project Embedded Resource Files                      **
+  ******************************************************************************
+  -->
+
+  <ItemGroup>
+    <EmbeddedResource Include="Generated\SR.resources">
+      <LogicalName>System.Data.SQLite.SR.resources</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <!--
+  ******************************************************************************
   **                       Import .NET Core SDK Targets                       **
   ******************************************************************************
   -->
@@ -148,6 +181,9 @@
 
   <PropertyGroup>
     <BuildDependsOn>
+      DetectBuildTool;
+      DetectOperatingSystem;
+      GenerateResourcesForNetStandard20;
       $(BuildDependsOn);
       CopyConfigurations;
     </BuildDependsOn>
