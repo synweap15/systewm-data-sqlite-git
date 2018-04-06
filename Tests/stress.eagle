@@ -358,9 +358,11 @@ runTest {test stress-1.1 {multithreaded stress testing} -setup {
     #
     # NOTE: Copy the trace listener log file to the main test log file.
     #
-    tlog "---- BEGIN TRACE LISTENER OUTPUT\n"
-    tlog [readFile $fileName]
-    tlog "\n---- END TRACE LISTENER OUTPUT\n"
+    if {[file exists $fileName]} then {
+      tlog "---- BEGIN TRACE LISTENER OUTPUT\n"
+      tlog [readFile $fileName]
+      tlog "\n---- END TRACE LISTENER OUTPUT\n"
+    }
 
     #
     # NOTE: Delete the trace listener log file because its contents have
@@ -1679,8 +1681,8 @@ runTest {test stress-1.1 {multithreaded stress testing} -setup {
           apply $workload($index(1)) $fileName(1) $fileName(2) t1 $count(1) \
           $count(3) $count(4) $count(5) $count(6) $count(7) $count(8)]
 
-      set thread($index(1)) [object create -alias System.Threading.Thread \
-          $workloadCallbacks($index(1)) 1048576]
+      set thread($index(1)) [createThread $workloadCallbacks($index(1)) \
+          1048576]
 
       $thread($index(1)) Name [appendArgs \
           [file rootname [file tail $fileName(2)]] " #" $index(1)]
@@ -1691,7 +1693,7 @@ runTest {test stress-1.1 {multithreaded stress testing} -setup {
     }
 
     foreach index(1) [array names thread] {
-      $thread($index(1)) Start
+      startThread $thread($index(1))
     }
 
     $event Set; # GO
