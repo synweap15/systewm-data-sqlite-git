@@ -356,7 +356,7 @@ unset -nocomplain savedDateTimeKind
 ###############################################################################
 
 unset -nocomplain i readArgs params typeName methodName isArray propertyName \
-    isRequired expectedResults expectedResult
+    isRequired value expectedResults expectedResult
 
 ###############################################################################
 
