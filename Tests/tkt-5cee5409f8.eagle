@@ -20,6 +20,10 @@ runSQLiteTestPrologue
 
 ###############################################################################
 
+#
+# NOTE: This test is disabled for .NET Core due to its lack of support for
+#       distributed transactions.
+#
 runTest {test tkt-5cee5409f8-1.1 {asynchronous transaction handling} -setup {
   setupDb [set fileName tkt-5cee5409f8-1.1.db]
 } -body {
@@ -209,9 +213,10 @@ runTest {test tkt-5cee5409f8-1.1 {asynchronous transaction handling} -setup {
   cleanupDb $fileName
 
   unset -nocomplain result results errors code dataSource id db fileName
-} -constraints {eagle command.object monoBug211 monoBug510 command.sql\
-compile.DATA SQLite System.Data.SQLite compileCSharp} -match regexp -result \
-{^Ok System#CodeDom#Compiler#CompilerResults#\d+ \{\} 0 True True$}}
+} -constraints [fixConstraints {eagle command.object monoBug211 monoBug510\
+command.sql compile.DATA SQLite System.Data.SQLite compileCSharp !dotNetCore}] \
+-match regexp -result {^Ok System#CodeDom#Compiler#CompilerResults#\d+ \{\} 0\
+True True$}}
 
 ###############################################################################
 
