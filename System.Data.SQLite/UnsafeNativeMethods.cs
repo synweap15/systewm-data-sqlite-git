@@ -1450,6 +1450,7 @@ namespace System.Data.SQLite
                   //       the supported processor architectures.
                   //
                   processorArchitecturePlatforms.Add("x86", "Win32");
+                  processorArchitecturePlatforms.Add("x86_64", "x64");
                   processorArchitecturePlatforms.Add("AMD64", "x64");
                   processorArchitecturePlatforms.Add("IA64", "Itanium");
                   processorArchitecturePlatforms.Add("ARM", "WinCE");
