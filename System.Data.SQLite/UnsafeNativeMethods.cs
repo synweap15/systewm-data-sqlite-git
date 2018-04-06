@@ -2394,7 +2394,7 @@ namespace System.Data.SQLite
           string[] subDirectories = {
               GetProcessorArchitecture(), /* e.g. "x86" */
               GetPlatformName(null),      /* e.g. "Win32" */
-#if NET_STANDARD_20 && !WINDOWS           /* .NET Core on POSIX */
+#if NET_STANDARD_20 && !WINDOWS           // .NET Core on POSIX
               String.Empty,               /* e.g. base directory only */
 #endif
           };
