@@ -953,7 +953,12 @@ namespace System.Data.SQLite
       /// <returns>
       /// The native module handle upon success -OR- IntPtr.Zero on failure.
       /// </returns>
-      [DllImport("__Internal", EntryPoint = "dlopen",
+#if NET_STANDARD_20
+      [DllImport("libdl",
+#else
+      [DllImport("__Internal",
+#endif
+          EntryPoint = "dlopen",
           CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi,
           BestFitMapping = false, ThrowOnUnmappableChar = true,
           SetLastError = true)]
