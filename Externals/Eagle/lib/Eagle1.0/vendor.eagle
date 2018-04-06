@@ -358,7 +358,7 @@ namespace eval ::Eagle {
         datetime_format define_constant_prefix execute_on_setup \
         interop_assembly_file_names native_library_file_names \
         release_version scratch_directory temporary_directory test_clr \
-        test_clr_v2 test_clr_v4 test_configuration _configurations \
+        test_clr_v2 test_clr_v4 test_configuration test_configurations \
         test_constraints test_extra test_extras test_machine \
         test_native_year test_net_fx test_net_fx_2005 test_net_fx_2008 \
         test_net_fx_2010 test_net_fx_2012 test_net_fx_2013 \
