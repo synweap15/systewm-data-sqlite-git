@@ -526,6 +526,7 @@ IF DEFINED USEDOTNET (
   CALL :fn_UnsetVariable SUBCOMMANDS
 )
 
+%_VECHO% MsBuild = '%MSBUILD%'
 %_VECHO% SubCommands = '%SUBCOMMANDS%'
 %_VECHO% BuildArgs = '%BUILD_ARGS%'
 %_VECHO% MsBuildArgs = '%MSBUILD_ARGS%'
