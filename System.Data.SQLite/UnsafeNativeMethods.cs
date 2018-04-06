@@ -937,6 +937,74 @@ namespace System.Data.SQLite
   [SuppressUnmanagedCodeSecurity]
   internal static class UnsafeNativeMethodsPosix
   {
+      /// <summary>
+      /// This structure is used when running on POSIX operating systems
+      /// to store information about the current machine, including the
+      /// human readable name of the operating system as well as that of
+      /// the underlying hardware.
+      /// </summary>
+      internal struct utsname
+      {
+          public string sysname;  /* Name of this implementation of
+                                   * the operating system. */
+          public string nodename; /* Name of this node within the
+                                   * communications network to which
+                                   * this node is attached, if any. */
+          public string release;  /* Current release level of this
+                                   * implementation. */
+          public string version;  /* Current version level of this
+                                   * release. */
+          public string machine;  /* Name of the hardware type on
+                                   * which the system is running. */
+      }
+
+      /////////////////////////////////////////////////////////////////////////
+
+      /// <summary>
+      /// This structure is passed directly to the P/Invoke method to
+      /// obtain the information about the current machine, including
+      /// the human readable name of the operating system as well as
+      /// that of the underlying hardware.
+      /// </summary>
+      [StructLayout(LayoutKind.Sequential)]
+      private struct utsname_interop
+      {
+          //
+          // NOTE: The following string fields should be present in
+          //       this buffer, all of which will be zero-terminated:
+          //
+          //                      sysname
+          //                      nodename
+          //                      release
+          //                      version
+          //                      machine
+          //
+          [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4096)]
+          public byte[] buffer;
+      }
+
+      /////////////////////////////////////////////////////////////////////////
+
+      /// <summary>
+      /// This is the P/Invoke method that wraps the native Unix uname
+      /// function.  See the POSIX documentation for full details on what it
+      /// does.
+      /// </summary>
+      /// <param name="name">
+      /// Structure containing a preallocated byte buffer to fill with the
+      /// requested information.
+      /// </param>
+      /// <returns>
+      /// Zero for success and less than zero upon failure.
+      /// </returns>
+#if NET_STANDARD_20
+      [DllImport("libc",
+#else
+      [DllImport("__Internal",
+#endif
+          CallingConvention = CallingConvention.Cdecl)]
+      private static extern int uname(out utsname_interop name);
+
       /////////////////////////////////////////////////////////////////////////
       /// <summary>
       /// This is the P/Invoke method that wraps the native Unix dlopen
@@ -965,6 +1033,8 @@ namespace System.Data.SQLite
       internal static extern IntPtr dlopen(string fileName, int mode);
 
       /////////////////////////////////////////////////////////////////////////
+
+      #region Private Constants
       /// <summary>
       /// For use with dlopen(), bind function calls lazily.
       /// </summary>
@@ -992,7 +1062,91 @@ namespace System.Data.SQLite
       /// <summary>
       /// For use with dlopen(), the defaults used by this class.
       /// </summary>
-      internal  const int RTLD_DEFAULT = RTLD_NOW | RTLD_GLOBAL;
+      internal const int RTLD_DEFAULT = RTLD_NOW | RTLD_GLOBAL;
+      #endregion
+
+      /////////////////////////////////////////////////////////////////////////
+
+      #region Private Data
+      /// <summary>
+      /// These are the characters used to separate the string fields within
+      /// the raw buffer returned by the <see cref="uname" /> P/Invoke method.
+      /// </summary>
+      private static readonly char[] utsNameSeparators = { '\0' };
+      #endregion
+
+      /////////////////////////////////////////////////////////////////////////
+
+      #region Private Methods
+      /// <summary>
+      /// This method is a wrapper around the <see cref="uname" /> P/Invoke
+      /// method that extracts and returns the human readable strings from
+      /// the raw buffer.
+      /// </summary>
+      /// <param name="utsName">
+      /// This structure, which contains strings, will be filled based on the
+      /// data placed in the raw buffer returned by the <see cref="uname" />
+      /// P/Invoke method.
+      /// </param>
+      /// <returns>
+      /// Non-zero upon success; otherwise, zero.
+      /// </returns>
+      internal static bool GetOsVersionInfo(
+          ref utsname utsName
+          )
+      {
+          try
+          {
+              utsname_interop utfNameInterop;
+
+              if (uname(out utfNameInterop) < 0)
+                  return false;
+
+              if (utfNameInterop.buffer == null)
+                  return false;
+
+              string bufferAsString = Encoding.UTF8.GetString(
+                  utfNameInterop.buffer);
+
+              if ((bufferAsString == null) || (utsNameSeparators == null))
+                  return false;
+
+              bufferAsString = bufferAsString.Trim(utsNameSeparators);
+
+              string[] parts = bufferAsString.Split(
+                  utsNameSeparators, StringSplitOptions.RemoveEmptyEntries);
+
+              if (parts == null)
+                  return false;
+
+              utsname localUtsName = new utsname();
+
+              if (parts.Length >= 1)
+                  localUtsName.sysname = parts[0];
+
+              if (parts.Length >= 2)
+                  localUtsName.nodename = parts[1];
+
+              if (parts.Length >= 3)
+                  localUtsName.release = parts[2];
+
+              if (parts.Length >= 4)
+                  localUtsName.version = parts[3];
+
+              if (parts.Length >= 5)
+                  localUtsName.machine = parts[4];
+
+              utsName = localUtsName;
+              return true;
+          }
+          catch
+          {
+              // do nothing.
+          }
+
+          return false;
+      }
+      #endregion
   }
 #endif
   #endregion
@@ -1169,6 +1323,14 @@ namespace System.Data.SQLite
       /// _SQLiteNativeModuleHandle, and processorArchitecturePlatforms fields.
       /// </summary>
       private static readonly object staticSyncRoot = new object();
+
+      /////////////////////////////////////////////////////////////////////////
+      /// <summary>
+      /// This structure is used to cache the human readable strings extracted
+      /// from the raw buffer passed to the uname P/Invoke method.  It is only
+      /// used on POSIX operating systems.
+      /// </summary>
+      private static UnsafeNativeMethodsPosix.utsname utsName;
 
       /////////////////////////////////////////////////////////////////////////
       /// <summary>
@@ -2609,6 +2771,22 @@ namespace System.Data.SQLite
                   // do nothing.
               }
 #endif
+          }
+
+          //
+          // NOTE: When running on POSIX (non-Windows), attempt to query the
+          //       machine from the operating system via uname().
+          //
+          if ((processorArchitecture == null) && !HelperMethods.IsWindows())
+          {
+              lock (staticSyncRoot)
+              {
+                  if ((utsName.machine != null) ||
+                      UnsafeNativeMethodsPosix.GetOsVersionInfo(ref utsName))
+                  {
+                      processorArchitecture = utsName.machine;
+                  }
+              }
           }
 #else
           if (processorArchitecture == null)
