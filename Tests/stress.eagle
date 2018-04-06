@@ -283,7 +283,7 @@ runTest {test stress-1.1 {multithreaded stress testing} -setup {
   #############################################################################
 
   proc useMem { ptr size } {
-    if {[isWindows] && ![isMono]} then {
+    if {[isWindows] && ![isMono] && ![isDotNetCore]} then {
       #
       # HACK: The type signature of the ZeroMemory method changed as of the
       #       .NET Framework 4.5.  The second argument went from being of
