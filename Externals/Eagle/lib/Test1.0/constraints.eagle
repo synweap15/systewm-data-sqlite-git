@@ -2940,7 +2940,7 @@ namespace eval ::Eagle {
     proc checkForCompileCSharp { channel } {
       tputs $channel "---- checking for test use of C# compiler... "
 
-      if {![info exists ::no(compileCSharp)] && ![isTestDotNetCore]} then {
+      if {![info exists ::no(compileCSharp)]} then {
         addConstraint compileCSharp
 
         tputs $channel yes\n
@@ -3203,35 +3203,35 @@ namespace eval ::Eagle {
             addConstraint matchFramework
             addConstraint [appendArgs matchFramework $version(1)]
 
-            addConstraint dotnetMatchFramework
-            addConstraint [appendArgs dotnetMatchFramework $version(1)]
+            addConstraint dotNetMatchFramework
+            addConstraint [appendArgs dotNetMatchFramework $version(1)]
 
             addConstraint monoMatchFramework
             addConstraint [appendArgs monoMatchFramework $version(1)]
 
-            addConstraint dotnetCoreMatchFramework
-            addConstraint [appendArgs dotnetCoreMatchFramework $version(1)]
+            addConstraint dotNetCoreMatchFramework
+            addConstraint [appendArgs dotNetCoreMatchFramework $version(1)]
 
             tputs $channel yes\n
           } else {
             if {[isTestDotNetCore]} then {
-              addConstraint dotnetMatchFramework
-              addConstraint [appendArgs dotnetMatchFramework $version(1)]
+              addConstraint dotNetMatchFramework
+              addConstraint [appendArgs dotNetMatchFramework $version(1)]
 
               addConstraint monoMatchFramework
               addConstraint [appendArgs monoMatchFramework $version(1)]
             } elseif {[isTestMono]} then {
-              addConstraint dotnetMatchFramework
-              addConstraint [appendArgs dotnetMatchFramework $version(1)]
+              addConstraint dotNetMatchFramework
+              addConstraint [appendArgs dotNetMatchFramework $version(1)]
 
-              addConstraint dotnetCoreMatchFramework
-              addConstraint [appendArgs dotnetCoreMatchFramework $version(1)]
+              addConstraint dotNetCoreMatchFramework
+              addConstraint [appendArgs dotNetCoreMatchFramework $version(1)]
             } else {
               addConstraint monoMatchFramework
               addConstraint [appendArgs monoMatchFramework $version(1)]
 
-              addConstraint dotnetCoreMatchFramework
-              addConstraint [appendArgs dotnetCoreMatchFramework $version(1)]
+              addConstraint dotNetCoreMatchFramework
+              addConstraint [appendArgs dotNetCoreMatchFramework $version(1)]
             }
 
             tputs $channel no\n
