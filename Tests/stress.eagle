@@ -1678,11 +1678,12 @@ runTest {test stress-1.1 {multithreaded stress testing} -setup {
 
     foreach index(1) [lsort -integer $workloadNames(enabled)] {
       set workloadCallbacks($index(1)) [list \
-          apply $workload($index(1)) $fileName(1) $fileName(2) t1 $count(1) \
-          $count(3) $count(4) $count(5) $count(6) $count(7) $count(8)]
+          apply $workload($index(1)) $fileName(1) $fileName(2) t1 \
+          $count(1) $count(3) $count(4) $count(5) $count(6) $count(7) \
+          $count(8)]
 
       set thread($index(1)) [createThread $workloadCallbacks($index(1)) \
-          1048576]
+          false 1048576]
 
       $thread($index(1)) Name [appendArgs \
           [file rootname [file tail $fileName(2)]] " #" $index(1)]
