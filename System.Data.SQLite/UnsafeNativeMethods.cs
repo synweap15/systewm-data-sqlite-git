@@ -357,7 +357,7 @@ namespace System.Data.SQLite
       #region Private Data
       /// <summary>
       /// This lock is used to protect the static <see cref="isMono" /> and
-      /// <see cref="isDotNetCore" /> field.
+      /// <see cref="isDotNetCore" /> fields.
       /// </summary>
       private static readonly object staticSyncRoot = new object();
 
@@ -3027,13 +3027,29 @@ namespace System.Data.SQLite
 
           //
           // NOTE: If the native SQLite library exists in the base directory
-          //       itself, stop now.
+          //       itself, possibly stop now.
           //
           string fileName = FixUpDllFileName(MaybeCombinePath(baseDirectory,
               fileNameOnly));
 
-          if (!allowBaseDirectoryOnly && File.Exists(fileName))
-              return false;
+          if (File.Exists(fileName))
+          {
+              //
+              // NOTE: If the caller is allowing the base directory itself
+              //       to be used, also make sure a processor architecture
+              //       was not specified; if either condition is false just
+              //       stop now and return failure.
+              //
+              if (allowBaseDirectoryOnly &&
+                  String.IsNullOrEmpty(processorArchitecture))
+              {
+                  goto baseDirOnly;
+              }
+              else
+              {
+                  return false;
+              }
+          }
 
           //
           // NOTE: If the specified processor architecture is null, use the
@@ -3086,6 +3102,8 @@ namespace System.Data.SQLite
               if (!File.Exists(fileName))
                   return false;
           }
+
+      baseDirOnly:
 
           try
           {
