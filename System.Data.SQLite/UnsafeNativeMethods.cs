@@ -956,7 +956,11 @@ namespace System.Data.SQLite
       /// <param name="fileName">
       /// The file name of the native library that was successfully loaded.
       /// </param>
-      private static void MaybeUpdateLdLibraryPath(
+      /// <returns>
+      /// Non-zero if the POSIX shared library path was updated; otherwise,
+      /// zero.
+      /// </returns>
+      private static bool MaybeUpdateLdLibraryPath(
           string fileName
           )
       {
@@ -980,8 +984,11 @@ namespace System.Data.SQLite
                   }
 
                   Environment.SetEnvironmentVariable(LdLibraryPath, path);
+                  return true;
               }
           }
+
+          return false;
       }
 
       /////////////////////////////////////////////////////////////////////////
@@ -1004,7 +1011,13 @@ namespace System.Data.SQLite
               fileName, UnsafeNativeMethodsPosix.RTLD_DEFAULT);
 
           if (nativeModuleHandle != IntPtr.Zero)
-              MaybeUpdateLdLibraryPath(fileName);
+          {
+              if (MaybeUpdateLdLibraryPath(fileName))
+              {
+                  UnsafeNativeMethodsPosix.dlclose(nativeModuleHandle);
+                  nativeModuleHandle = IntPtr.Zero;
+              }
+          }
 
           return nativeModuleHandle;
       }
@@ -1144,6 +1157,27 @@ namespace System.Data.SQLite
           BestFitMapping = false, ThrowOnUnmappableChar = true,
           SetLastError = true)]
       internal static extern IntPtr dlopen(string fileName, int mode);
+
+      /////////////////////////////////////////////////////////////////////////
+      /// <summary>
+      /// This is the P/Invoke method that wraps the native Unix dlclose
+      /// function.  See the POSIX documentation for full details on what it
+      /// does.
+      /// </summary>
+      /// <param name="module">
+      /// The handle to the loaded native library.
+      /// </param>
+      /// <returns>
+      /// Zero upon success -OR- non-zero on failure.
+      /// </returns>
+#if NET_STANDARD_20
+      [DllImport("libdl",
+#else
+      [DllImport("__Internal",
+#endif
+          EntryPoint = "dlclose",
+          CallingConvention = CallingConvention.Cdecl, SetLastError = true)]
+      internal static extern int dlclose(IntPtr module);
 
       /////////////////////////////////////////////////////////////////////////
 
