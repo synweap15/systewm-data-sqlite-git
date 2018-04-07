@@ -115,8 +115,10 @@ runTest {test speed-1.1 {SQLiteDataReader speed testing} -setup {
   unset -nocomplain time sql result char db fileName
 } -time true -constraints {eagle monoBug28 command.sql compile.DATA SQLite\
 System.Data.SQLite} -match regexp -result "^\\\{-9223372036854775808 0\
-9223372036854775807\\\} \\\{-(?:Infinity|\u221E) 0 (?:Infinity|\u221E)\\\}\
-\\\{1 1\\.1 1048576\\\} \\\{1 \\\{1 35 69 103 137\\\} 1048576\\\}$"}
+9223372036854775807\\\}\
+\\\{-(?:Infinity|\u221E|-1\\.7976931348623157(?:E|e)\\+308) 0\
+(?:Infinity|\u221E|1\\.7976931348623157(?:E|e)\\+308)\\\} \\\{1 1\\.1\
+1048576\\\} \\\{1 \\\{1 35 69 103 137\\\} 1048576\\\}$"}
 
 ###############################################################################
 
