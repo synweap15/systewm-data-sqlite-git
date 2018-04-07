@@ -97,7 +97,7 @@
 
   <PropertyGroup Condition="'$(BinaryOutputPath)' != ''">
     <OutputPath>$(BinaryOutputPath)</OutputPath>
-    <DocumentationFile>$(BinaryOutputPath)System.Data.SQLite.xml</DocumentationFile>
+    <DocumentationFile>$(BinaryOutputPath)netstandard2.0\System.Data.SQLite.xml</DocumentationFile>
   </PropertyGroup>
 
   <!--
