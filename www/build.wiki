@@ -423,7 +423,7 @@
 
     <li>
       Make sure everything succeeds with no errors; the log file
-      &quot;%TEMP%\System.Data.SQLite.Build_ReleaseManagedOnly_Win32_&lt;year&gt;_Unknown.log&quot;
+      &quot;%TEMP%\System.Data.SQLite.Build_ReleaseManagedOnly_Any CPU_&lt;year&gt;_Unknown.log&quot;
       may be checked if any errors should occur.
     </li>
   </ol>
