@@ -371,7 +371,7 @@ SQLITE_API int WINAPI sqlite3_config_log_interop()
       sqlite3InteropDebug("sqlite3_config_log_interop(): sqlite3_config(SQLITE_CONFIG_LOG) returned %d.\n", ret);
     }
   }else{
-    ret = SQLITE_OK;
+    ret = SQLITE_DONE;
   }
   return ret;
 }

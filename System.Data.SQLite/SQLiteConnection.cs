@@ -1793,10 +1793,12 @@ namespace System.Data.SQLite
 #endif
 
 #if USE_INTEROP_DLL && INTEROP_LOG
-      if (UnsafeNativeMethods.sqlite3_config_log_interop() == SQLiteErrorCode.Ok)
+      SQLiteErrorCode rc = UnsafeNativeMethods.sqlite3_config_log_interop();
+
+      if (rc == SQLiteErrorCode.Ok)
       {
           UnsafeNativeMethods.sqlite3_log(
-              SQLiteErrorCode.Ok, SQLiteConvert.ToUTF8("logging initialized."));
+              rc, SQLiteConvert.ToUTF8("logging initialized via SQLiteConnection."));
       }
 #endif
 
