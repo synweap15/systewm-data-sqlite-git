@@ -838,26 +838,6 @@ namespace System.Data.SQLite
   /// </summary>
   internal static class NativeLibraryHelper
   {
-      #region Private Constants
-#if !PLATFORM_COMPACTFRAMEWORK
-      /// <summary>
-      /// The list of characters used as path delimiters for this platform.
-      /// </summary>
-      private static readonly char[] PathSeparators = { Path.PathSeparator };
-
-      /////////////////////////////////////////////////////////////////////////
-
-      /// <summary>
-      /// This is the name of the environment variable containing the POSIX
-      /// shared library search path.  The value is assumed to be a list of
-      /// directories, delimited by <see cref="Path.PathSeparator" />.
-      /// </summary>
-      private static readonly string LdLibraryPath = "LD_LIBRARY_PATH";
-#endif
-      #endregion
-
-      /////////////////////////////////////////////////////////////////////////
-
       #region Private Delegates
       /// <summary>
       /// This delegate is used to wrap the concept of loading a native
@@ -899,101 +879,6 @@ namespace System.Data.SQLite
 
 #if !PLATFORM_COMPACTFRAMEWORK
       /// <summary>
-      /// Attempts to determine if a directory exists in a search path.
-      /// </summary>
-      /// <param name="directory">
-      /// The directory to search for.  This is case-sensitive.
-      /// </param>
-      /// <param name="path">
-      /// The search path to inspect.  This is case-sensitive.
-      /// </param>
-      /// <returns>
-      /// Non-zero if the directory exists in the search path; otherwise,
-      /// zero.
-      /// </returns>
-      private static bool IsDirectoryInPath(
-          string directory,
-          string path
-          )
-      {
-          //
-          // NOTE: Nothing meaningful can be done if either of the parameters
-          //       are null (or an empty string).  Therefore, return false in
-          //       that case.
-          //
-          if (String.IsNullOrEmpty(directory) || String.IsNullOrEmpty(path))
-              return false;
-
-          string[] pathDirectories = path.Split(
-              PathSeparators, StringSplitOptions.RemoveEmptyEntries);
-
-          //
-          // NOTE: No search can be performed if the list of path directories
-          //       is invalid (or empty).  Therefore, just return false.
-          //
-          if ((pathDirectories == null) || (pathDirectories.Length == 0))
-              return false;
-
-          foreach (string pathDirectory in pathDirectories)
-          {
-              if (String.Equals(
-                    pathDirectory, directory, StringComparison.Ordinal))
-              {
-                  return true;
-              }
-          }
-
-          return false;
-      }
-
-      /////////////////////////////////////////////////////////////////////////
-
-      /// <summary>
-      /// Ensures that the directory containing the specified file is included
-      /// in the POSIX shared library search path via the environment variable
-      /// LD_LIBRARY_PATH.
-      /// </summary>
-      /// <param name="fileName">
-      /// The file name of the native library that was successfully loaded.
-      /// </param>
-      /// <returns>
-      /// Non-zero if the POSIX shared library path was updated; otherwise,
-      /// zero.
-      /// </returns>
-      private static bool MaybeUpdateLdLibraryPath(
-          string fileName
-          )
-      {
-          string directory = Path.GetDirectoryName(fileName);
-
-          if (!String.IsNullOrEmpty(directory))
-          {
-              string path = Environment.GetEnvironmentVariable(LdLibraryPath);
-
-              if (!IsDirectoryInPath(directory, path))
-              {
-                  if (!String.IsNullOrEmpty(path))
-                  {
-                      path = HelperMethods.StringFormat(
-                          CultureInfo.InvariantCulture, "{0}{1}{2}",
-                          directory, Path.PathSeparator, path);
-                  }
-                  else
-                  {
-                      path = directory;
-                  }
-
-                  Environment.SetEnvironmentVariable(LdLibraryPath, path);
-                  return true;
-              }
-          }
-
-          return false;
-      }
-
-      /////////////////////////////////////////////////////////////////////////
-
-      /// <summary>
       /// Attempts to load the specified native library file using the POSIX
       /// API.
       /// </summary>
@@ -1007,19 +892,8 @@ namespace System.Data.SQLite
           string fileName
           )
       {
-          IntPtr nativeModuleHandle = UnsafeNativeMethodsPosix.dlopen(
+          return UnsafeNativeMethodsPosix.dlopen(
               fileName, UnsafeNativeMethodsPosix.RTLD_DEFAULT);
-
-          if (nativeModuleHandle != IntPtr.Zero)
-          {
-              if (MaybeUpdateLdLibraryPath(fileName))
-              {
-                  UnsafeNativeMethodsPosix.dlclose(nativeModuleHandle);
-                  nativeModuleHandle = IntPtr.Zero;
-              }
-          }
-
-          return nativeModuleHandle;
       }
 #endif
       #endregion
