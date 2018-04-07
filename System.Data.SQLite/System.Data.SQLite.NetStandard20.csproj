@@ -58,7 +58,6 @@
   ******************************************************************************
   -->
 
-
   <Target Name="GenerateResourcesForNetStandard20"
           Condition="'$(GenerateResourcesForNetStandard20)' != 'false' And
                      '$(BuildTool)' == 'DotNetCore' And

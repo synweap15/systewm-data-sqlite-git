@@ -188,6 +188,12 @@
           configuration file from having any effect.</td>
         </tr>
         <tr valign="top">
+          <td>PreLoadSQLite_AllowBaseDirectoryOnly</td>
+          <td>If this environment variable is set [to anything], the base
+          directory itself is considered valid for pre-loading the native
+          SQLite library.</td>
+        </tr>
+        <tr valign="top">
           <td>PreLoadSQLite_BaseDirectory</td>
           <td>If this environment variable is set [to anything], it will be
           used instead of the application base directory by the native
@@ -198,7 +204,7 @@
         </tr>
         <tr valign="top">
           <td>PreLoadSQLite_BreakIntoDebugger</td>
-          <td>If this configuration variable is set [to anything], the native
+          <td>If this environment variable is set [to anything], the native
           library pre-loader subsystem will attempt to give the interactive
           user an opportunity to attach a debugger to the current process.</td>
         </tr>

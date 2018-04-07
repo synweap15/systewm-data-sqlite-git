@@ -356,7 +356,8 @@ namespace System.Data.SQLite
 
       #region Private Data
       /// <summary>
-      /// This lock is used to protect the static <see cref="isMono" /> field.
+      /// This lock is used to protect the static <see cref="isMono" /> and
+      /// <see cref="isDotNetCore" /> field.
       /// </summary>
       private static readonly object staticSyncRoot = new object();
 
@@ -368,11 +369,26 @@ namespace System.Data.SQLite
 
       /////////////////////////////////////////////////////////////////////////
       /// <summary>
+      /// This type is only present when running on .NET Core.
+      /// </summary>
+      private static readonly string DotNetCoreLibType = "System.CoreLib";
+
+      /////////////////////////////////////////////////////////////////////////
+      /// <summary>
       /// Keeps track of whether we are running on Mono.  Initially null, it is
       /// set by the <see cref="IsMono" /> method on its first call.  Later, it
       /// is returned verbatim by the <see cref="IsMono" /> method.
       /// </summary>
       private static bool? isMono = null;
+
+      /////////////////////////////////////////////////////////////////////////
+      /// <summary>
+      /// Keeps track of whether we are running on .NET Core.  Initially null,
+      /// it is set by the <see cref="IsDotNetCore" /> method on its first
+      /// call.  Later, it is returned verbatim by the
+      /// <see cref="IsDotNetCore" /> method.
+      /// </summary>
+      private static bool? isDotNetCore = null;
 
       /////////////////////////////////////////////////////////////////////////
       /// <summary>
@@ -420,6 +436,37 @@ namespace System.Data.SQLite
                       isMono = (Type.GetType(MonoRuntimeType) != null);
 
                   return (bool)isMono;
+              }
+          }
+          catch
+          {
+              // do nothing.
+          }
+
+          return false;
+      }
+
+      ///////////////////////////////////////////////////////////////////////
+
+      /// <summary>
+      /// Determines whether or not this assembly is running on .NET Core.
+      /// </summary>
+      /// <returns>
+      /// Non-zero if this assembly is running on .NET Core.
+      /// </returns>
+      public static bool IsDotNetCore()
+      {
+          try
+          {
+              lock (staticSyncRoot)
+              {
+                  if (isDotNetCore == null)
+                  {
+                      isDotNetCore = (Type.GetType(
+                          DotNetCoreLibType) != null);
+                  }
+
+                  return (bool)isDotNetCore;
               }
           }
           catch
@@ -1486,10 +1533,12 @@ namespace System.Data.SQLite
               {
                   string baseDirectory = null;
                   string processorArchitecture = null;
+                  bool allowBaseDirectoryOnly = false;
 
                   /* IGNORED */
                   SearchForDirectory(
-                      ref baseDirectory, ref processorArchitecture);
+                      ref baseDirectory, ref processorArchitecture,
+                      ref allowBaseDirectoryOnly);
 
                   //
                   // NOTE: Attempt to pre-load the SQLite core library (or
@@ -1497,8 +1546,8 @@ namespace System.Data.SQLite
                   //       and native module handle for later usage.
                   //
                   /* IGNORED */
-                  PreLoadSQLiteDll(
-                      baseDirectory, processorArchitecture,
+                  PreLoadSQLiteDll(baseDirectory,
+                      processorArchitecture, allowBaseDirectoryOnly,
                       ref _SQLiteNativeModuleFileName,
                       ref _SQLiteNativeModuleHandle);
               }
@@ -2538,13 +2587,19 @@ namespace System.Data.SQLite
       /// of the immediate directory (i.e. the offset from the base directory)
       /// containing the native SQLite library.
       /// </param>
+      /// <param name="allowBaseDirectoryOnly">
+      /// Upon success, this parameter will be modified to non-zero only if
+      /// the base directory itself should be allowed for loading the native
+      /// library.
+      /// </param>
       /// <returns>
       /// Non-zero (success) if the native SQLite library was found; otherwise,
       /// zero (failure).
       /// </returns>
       private static bool SearchForDirectory(
-          ref string baseDirectory,        /* out */
-          ref string processorArchitecture /* out */
+          ref string baseDirectory,         /* out */
+          ref string processorArchitecture, /* out */
+          ref bool allowBaseDirectoryOnly   /* out */
           )
       {
           if (GetSettingValue(
@@ -2575,12 +2630,19 @@ namespace System.Data.SQLite
 #endif
           };
 
+          string extraSubDirectory = null;
+
+          if ((GetSettingValue(
+                  "PreLoadSQLite_AllowBaseDirectoryOnly", null) != null) ||
+              (HelperMethods.IsDotNetCore() && !HelperMethods.IsWindows()))
+          {
+              extraSubDirectory = String.Empty; /* .NET Core on POSIX */
+          }
+
           string[] subDirectories = {
               GetProcessorArchitecture(), /* e.g. "x86" */
               GetPlatformName(null),      /* e.g. "Win32" */
-#if NET_STANDARD_20 && !WINDOWS           // .NET Core on POSIX
-              String.Empty,               /* e.g. base directory only */
-#endif
+              extraSubDirectory           /* base directory only? */
           };
 
           foreach (string directory in directories)
@@ -2623,6 +2685,8 @@ namespace System.Data.SQLite
 
                       baseDirectory = directory;
                       processorArchitecture = subDirectory;
+                      allowBaseDirectoryOnly = (subDirectory.Length == 0);
+
                       return true; /* FOUND */
                   }
               }
@@ -2911,6 +2975,10 @@ namespace System.Data.SQLite
       /// processor architecture of the current process).  This caller should
       /// almost always specify null for this parameter.
       /// </param>
+      /// <param name="allowBaseDirectoryOnly">
+      /// Non-zero indicates that the native SQLite library can be loaded
+      /// from the base directory itself.
+      /// </param>
       /// <param name="nativeModuleFileName">
       /// The candidate native module file name to load will be stored here,
       /// if necessary.
@@ -2927,6 +2995,7 @@ namespace System.Data.SQLite
       private static bool PreLoadSQLiteDll(
           string baseDirectory,            /* in */
           string processorArchitecture,    /* in */
+          bool allowBaseDirectoryOnly,     /* in */
           ref string nativeModuleFileName, /* out */
           ref IntPtr nativeModuleHandle    /* out */
           )
@@ -2960,7 +3029,7 @@ namespace System.Data.SQLite
           string fileName = FixUpDllFileName(MaybeCombinePath(baseDirectory,
               fileNameOnly));
 
-          if (File.Exists(fileName))
+          if (!allowBaseDirectoryOnly && File.Exists(fileName))
               return false;
 
           //
