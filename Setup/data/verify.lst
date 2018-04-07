@@ -264,6 +264,8 @@ set sds_manifests(source) {
   Setup/archive.bat
   Setup/bake.bat
   Setup/bake_all.bat
+  Setup/build-netstandard20-tests-debug.sh
+  Setup/build-netstandard20-tests-release.sh
   Setup/build.bat
   Setup/build_all.bat
   Setup/build_ce_200x.bat
