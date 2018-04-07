@@ -1393,12 +1393,15 @@ namespace System.Data.SQLite
       private static readonly object staticSyncRoot = new object();
 
       /////////////////////////////////////////////////////////////////////////
+
+#if (SQLITE_STANDARD || USE_INTEROP_DLL) && PRELOAD_NATIVE_LIBRARY && !PLATFORM_COMPACTFRAMEWORK
       /// <summary>
       /// This structure is used to cache the human readable strings extracted
       /// from the raw buffer passed to the uname P/Invoke method.  It is only
       /// used on POSIX operating systems.
       /// </summary>
       private static UnsafeNativeMethodsPosix.utsname utsName;
+#endif
 
       /////////////////////////////////////////////////////////////////////////
       /// <summary>
