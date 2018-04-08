@@ -46,6 +46,10 @@ reportSQLiteResources $test_channel
 
 ###############################################################################
 
+#
+# NOTE: This test is disabled for .NET Core due to its lack of support for
+#       performance counters.
+#
 runTest {test memory-1.1 {SQLiteDataReader memory testing} -setup {
   setupMemoryCounters counter
   reportMemoryCounters $test_channel counter initial

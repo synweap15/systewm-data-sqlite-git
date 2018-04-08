@@ -283,6 +283,11 @@ runTest {test stress-1.1 {multithreaded stress testing} -setup {
   #############################################################################
 
   proc useMem { ptr size } {
+    #
+    # NOTE: This procedure does nothing on non-Windows operating systems.  It
+    #       also does nothing when running on Mono or .NET Core, due to their
+    #       lack of the (internal, undocumented) ZeroMemory method.
+    #
     if {[isWindows] && ![isMono] && ![isDotNetCore]} then {
       #
       # HACK: The type signature of the ZeroMemory method changed as of the

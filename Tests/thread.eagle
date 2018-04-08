@@ -65,6 +65,11 @@ if {![info exists count(4)]} then {
 
 ###############################################################################
 
+#
+# NOTE: This test is disabled for .NET Core due to its lack of support for
+#       the Thread.Abort method (i.e. throws PlatformNotSupportedException
+#       when called).
+#
 runTest {test thread-1.1 {Thread.Abort() impact on native resources} -setup {
   setupDb [set fileName thread-1.1.db]
 
