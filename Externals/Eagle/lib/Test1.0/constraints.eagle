@@ -48,7 +48,7 @@ namespace eval ::Eagle {
         MONO_LEGACY NATIVE NATIVE_PACKAGE NATIVE_THREAD_ID NATIVE_UTILITY \
         NATIVE_UTILITY_BSTR NETWORK NET_20 NET_20_FAST_ENUM NET_20_ONLY \
         NET_20_SP1 NET_20_SP2 NET_30 NET_35 NET_40 NET_45 NET_451 NET_452 \
-        NET_46 NET_461 NET_462 NET_47 NET_471 NET_STANDARD_20 \
+        NET_46 NET_461 NET_462 NET_47 NET_471 NET_CORE_20 NET_STANDARD_20 \
         NON_WORKING_CODE NOTIFY NOTIFY_ACTIVE NOTIFY_ARGUMENTS \
         NOTIFY_EXCEPTION NOTIFY_EXECUTE NOTIFY_EXPRESSION NOTIFY_GLOBAL \
         NOTIFY_OBJECT OBSOLETE OBFUSCATION OFFICIAL PARSE_CACHE PATCHLEVEL \
@@ -192,33 +192,39 @@ namespace eval ::Eagle {
     if {[info exists ::core_lib_path] && \
         [string length $::core_lib_path] > 0} then {
       #
-      # NOTE: Grab all directories that are directly beneath the detected
-      #       library path, if any.
+      # NOTE: Make sure the directory actually exists before trying to find
+      #       things within it.
       #
-      foreach directory [glob \
-          -nocomplain -types {d} -- [file join $::core_lib_path *]] {
+      if {[file isdirectory $::core_lib_path]} then {
         #
-        # NOTE: If the caller specified a (plugin) name to match against,
-        #       make sure it matches; otherwise, skip this directory.
+        # NOTE: Grab all directories that are directly beneath the detected
+        #       library path, if any.
         #
-        if {[string length $name] > 0 && \
-            ![string match $name [file tail $directory]]} then {
-          continue
-        }
+        foreach directory [glob \
+            -nocomplain -types {d} -- [file join $::core_lib_path *]] {
+          #
+          # NOTE: If the caller specified a (plugin) name to match against,
+          #       make sure it matches; otherwise, skip this directory.
+          #
+          if {[string length $name] > 0 && \
+              ![string match $name [file tail $directory]]} then {
+            continue
+          }
 
-        #
-        # NOTE: Find directories beneath the current candidate directory
-        #       that are .NET Core output directories.
-        #
-        set directories [glob \
-            -nocomplain -types {d} -- [file join $directory net*]]
+          #
+          # NOTE: Find directories beneath the current candidate directory
+          #       that are .NET Core output directories.
+          #
+          set directories [glob \
+              -nocomplain -types {d} -- [file join $directory net*]]
 
-        #
-        # NOTE: If there is at least one match, we are done.  Return the
-        #       final path segment of the directory name to the caller.
-        #
-        if {[llength $directories] > 0} then {
-          return [file tail [lindex $directories 0]]
+          #
+          # NOTE: If there is at least one match, we are done.  Return the
+          #       final path segment of the directory name to the caller.
+          #
+          if {[llength $directories] > 0} then {
+            return [file tail [lindex $directories 0]]
+          }
         }
       }
     }
@@ -1453,6 +1459,7 @@ namespace eval ::Eagle {
         #
         addConstraint shell
         addConstraint [appendArgs shell. $name]
+        addConstraint dotNetCoreOrShell
 
         tputs $channel "yes (Eagle)\n"
 
@@ -1468,6 +1475,7 @@ namespace eval ::Eagle {
         #
         addConstraint shell
         addConstraint [appendArgs shell. $name]
+        addConstraint dotNetCoreOrShell
 
         tputs $channel "yes (Tcl)\n"
 
@@ -3060,6 +3068,7 @@ namespace eval ::Eagle {
         #
         addConstraint dotNetCore; # running on .NET Core.
         addConstraint dotNetOrDotNetCore
+        addConstraint dotNetCoreOrShell
 
         #
         # NOTE: We do not want to skip Mono bugs on .NET Core.
@@ -5077,8 +5086,9 @@ namespace eval ::Eagle {
     #
     exportAndImportPackageCommands [namespace current] [list \
         getKnownBuildTypes getKnownCompileOptions getKnownMonoVersions \
-        addKnownMonoConstraints lpermute alwaysFullInterpReady canExecComSpec \
-        canExecWhoAmI canExecTclShell canExecFossil canExecVsWhere isTestMono \
+        addKnownMonoConstraints getDotNetCoreLibPathDirectoryNameOnly \
+        lpermute alwaysFullInterpReady canExecComSpec canExecWhoAmI \
+        canExecTclShell canExecFossil canExecVsWhere isTestMono \
         isTestDotNetCore isTestAdministrator canPing cleanConstraintName \
         cleanPackageName haveTclPlatformOsExtraUpdateName \
         checkForTestSuiteFiles checkForPlatform checkForWindowsVersion \
