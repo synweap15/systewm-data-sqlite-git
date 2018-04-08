@@ -4652,8 +4652,8 @@ namespace eval ::Eagle {
           #
           if {![info exists ::no(verifyBuildDirectory)]} then {
             #
-            # NOTE: At this point, the build directory MUST exist as a
-            #       valid directory for the testing process to continue.
+            # NOTE: At this point, the build directories MUST exist for
+            #       the testing process to continue.
             #
             set directory [getBuildDirectory false]
 
@@ -4664,16 +4664,37 @@ namespace eval ::Eagle {
               #       add an error to the test log file.
               #
               tputs $::test_channel [appendArgs \
-                  "---- could not verify build directory \"" $directory \
-                  "\", all testing halted\n"]
+                  "---- could not verify native build directory \"" \
+                  $directory "\", all testing halted\n"]
 
               #
               # NOTE: Raising a script error from this point should halt
               #       the testing process.
               #
               error [appendArgs \
-                  "could not verify build directory \"" $directory \
-                  "\", all testing halted"]
+                  "could not verify native build directory \"" \
+                  $directory "\", all testing halted"]
+            }
+
+            set directory [getBuildDirectory true]
+
+            if {![file exists $directory] || \
+                ![file isdirectory $directory]} then {
+              #
+              # NOTE: Just prior to actually halting the testing process,
+              #       add an error to the test log file.
+              #
+              tputs $::test_channel [appendArgs \
+                  "---- could not verify managed build directory \"" \
+                  $directory "\", all testing halted\n"]
+
+              #
+              # NOTE: Raising a script error from this point should halt
+              #       the testing process.
+              #
+              error [appendArgs \
+                  "could not verify managed build directory \"" \
+                  $directory "\", all testing halted"]
             }
           }
 
