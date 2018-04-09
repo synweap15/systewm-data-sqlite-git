@@ -56,6 +56,16 @@ IF ERRORLEVEL 1 (
 
 CALL :fn_UnsetVariable YEARS
 
+IF NOT DEFINED NOVS2015 (
+  IF DEFINED VS2015SP (
+    SET YEARS=2015
+  ) ELSE (
+    ECHO Could not detect Visual Studio 2015.
+  )
+) ELSE (
+  ECHO Use of Visual Studio 2015 is disallowed.
+)
+
 IF NOT DEFINED NOVS2013 (
   IF DEFINED VS2013SP (
     SET YEARS=2013
