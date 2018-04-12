@@ -915,6 +915,27 @@ namespace System.Data.SQLite
     }
 
     /// <summary>
+    /// Determines and returns the <see cref="TypeAffinity" /> of the
+    /// specified column.
+    /// </summary>
+    /// <param name="i">
+    /// The index of the column.
+    /// </param>
+    /// <returns>
+    /// The <see cref="TypeAffinity" /> associated with the specified
+    /// column, if any.
+    /// </returns>
+    public TypeAffinity GetFieldAffinity(int i)
+    {
+        CheckDisposed();
+
+        if (i >= PrivateVisibleFieldCount && _keyInfo != null)
+            return _keyInfo.GetFieldAffinity(i - PrivateVisibleFieldCount);
+
+        return GetSQLiteType(_flags, i).Affinity;
+    }
+
+    /// <summary>
     /// Returns the .NET type of a given column
     /// </summary>
     /// <param name="i">The index of the column.</param>

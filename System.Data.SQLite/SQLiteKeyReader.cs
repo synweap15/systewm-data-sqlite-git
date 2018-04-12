@@ -523,6 +523,13 @@ namespace System.Data.SQLite
       else return "integer";
     }
 
+    internal TypeAffinity GetFieldAffinity(int i)
+    {
+      Sync();
+      if (_keyInfo[i].query != null) return _keyInfo[i].query._reader.GetFieldAffinity(_keyInfo[i].column);
+      else return TypeAffinity.Uninitialized;
+    }
+
     internal Type GetFieldType(int i)
     {
       Sync();
