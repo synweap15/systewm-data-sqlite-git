@@ -15369,6 +15369,12 @@ static int fts5BestIndexMethod(sqlite3_vtab *pVTab, sqlite3_index_info *pInfo){
   aColMap[1] = nCol;
   aColMap[2] = nCol+1;
 
+  assert( SQLITE_INDEX_CONSTRAINT_EQ<SQLITE_INDEX_CONSTRAINT_MATCH );
+  assert( SQLITE_INDEX_CONSTRAINT_GT<SQLITE_INDEX_CONSTRAINT_MATCH );
+  assert( SQLITE_INDEX_CONSTRAINT_LE<SQLITE_INDEX_CONSTRAINT_MATCH );
+  assert( SQLITE_INDEX_CONSTRAINT_GE<SQLITE_INDEX_CONSTRAINT_MATCH );
+  assert( SQLITE_INDEX_CONSTRAINT_LE<SQLITE_INDEX_CONSTRAINT_MATCH );
+
   /* Set idxFlags flags for all WHERE clause terms that will be used. */
   for(i=0; i<pInfo->nConstraint; i++){
     struct sqlite3_index_constraint *p = &pInfo->aConstraint[i];
@@ -15387,11 +15393,11 @@ static int fts5BestIndexMethod(sqlite3_vtab *pVTab, sqlite3_index_info *pInfo){
         pInfo->estimatedCost = 1e50;
         return SQLITE_OK;
       }
-    }else{
+    }else if( p->op<=SQLITE_INDEX_CONSTRAINT_MATCH ){
       int j;
       for(j=1; j<ArraySize(aConstraint); j++){
         struct Constraint *pC = &aConstraint[j];
-        if( iCol==aColMap[pC->iCol] && p->op & pC->op && p->usable ){
+        if( iCol==aColMap[pC->iCol] && (p->op & pC->op) && p->usable ){
           pC->iConsIndex = i;
           idxFlags |= pC->fts5op;
         }
@@ -17463,7 +17469,7 @@ static void fts5SourceIdFunc(
 ){
   assert( nArg==0 );
   UNUSED_PARAM2(nArg, apUnused);
-  sqlite3_result_text(pCtx, "fts5: 2018-04-02 11:04:16 736b53f57f70b23172c30880186dce7ad9baa3b74e3838cae5847cffb98f5cd2", -1, SQLITE_TRANSIENT);
+  sqlite3_result_text(pCtx, "fts5: 2018-04-10 17:39:29 4bb2294022060e61de7da5c227a69ccd846ba330e31626ebcd59a94efd148b3b", -1, SQLITE_TRANSIENT);
 }
 
 static int fts5Init(sqlite3 *db){
