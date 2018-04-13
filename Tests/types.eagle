@@ -126,7 +126,7 @@ set params [list \
     [list Int16           GetInt16      false   Int16Value      true    0] \
     [list Int32           GetInt32      false   Int32Value      true    0] \
     [list Int64           GetInt64      false   Int64Value      true    0] \
-    [list String          GetString     false   StringValue     false   null] \
+    [list String          GetString     false   StringValue     false   none] \
     [list Object          GetValue      false   Value           false   null] \
     [list SDS.SQLiteBlob  GetBlob       false   BlobValue       false   0]]
 
@@ -163,7 +163,7 @@ set expectedResults [list \
     {0 0 1 0 0 0 0 0} \
     {0 0 1 0 0 0 0 0} \
     {0 0 1 0 0 0 0 0} \
-    "<NUL> <NUL> <NUL> <NUL> three \x04\x05\x06\
+    "none none none none three \x04\x05\x06\
         {2016-06-19 19:50:04.1234567}\
         74f1f402-ddef-4027-a78f-3847fa97b830" \
     {{} 0 1 1.2 three {4 5 6} {2016-06-19\
@@ -316,7 +316,9 @@ for {set i 0} {$i < [llength $params]} {incr i} {
             $dataReader $methodName 0
           }
         } value] == 0} then {
-          if {$value eq "\x00"} then {
+          if {[string length $value] == 0} then {
+            lappend result <EMPTY>
+          } elseif {$value eq "\x00"} then {
             lappend result <NUL>
           } else {
             lappend result [getStringFromObjectHandle $value]
