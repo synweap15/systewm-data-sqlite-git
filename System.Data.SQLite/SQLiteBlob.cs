@@ -74,11 +74,60 @@ namespace System.Data.SQLite
             bool readOnly
             )
         {
-            SQLiteConnection connection = SQLiteDataReader.GetConnection(
-                dataReader);
+            if (dataReader == null)
+                throw new ArgumentNullException("dataReader");
 
+            long? rowId = dataReader.GetRowId(i);
+
+            if (rowId == null)
+                throw new InvalidOperationException("No RowId is available");
+
+            return Create(
+                SQLiteDataReader.GetConnection(dataReader),
+                dataReader.GetDatabaseName(i), dataReader.GetTableName(i),
+                dataReader.GetName(i), (long)rowId, readOnly);
+        }
+
+        ///////////////////////////////////////////////////////////////////////////////////////////////
+
+        /// <summary>
+        /// Creates a <see cref="SQLiteBlob" /> object.  This will not work
+        /// for tables that were created WITHOUT ROWID.
+        /// </summary>
+        /// <param name="connection">
+        /// The connection to use when opening the blob object.
+        /// </param>
+        /// <param name="databaseName">
+        /// The name of the database containing the blob object.
+        /// </param>
+        /// <param name="tableName">
+        /// The name of the table containing the blob object.
+        /// </param>
+        /// <param name="columnName">
+        /// The name of the column containing the blob object.
+        /// </param>
+        /// <param name="rowId">
+        /// The integer identifier for the row associated with the desired
+        /// blob object.
+        /// </param>
+        /// <param name="readOnly">
+        /// Non-zero to open the blob object for read-only access.
+        /// </param>
+        /// <returns>
+        /// The newly created <see cref="SQLiteBlob" /> instance -OR- null
+        /// if an error occurs.
+        /// </returns>
+        public static SQLiteBlob Create(
+            SQLiteConnection connection,
+            string databaseName,
+            string tableName,
+            string columnName,
+            long rowId,
+            bool readOnly
+            )
+        {
             if (connection == null)
-                throw new InvalidOperationException("Connection not available");
+                throw new ArgumentNullException("connection");
 
             SQLite3 sqlite3 = connection._sql as SQLite3;
 
@@ -89,11 +138,6 @@ namespace System.Data.SQLite
 
             if (handle == null)
                 throw new InvalidOperationException("Connection has an invalid handle.");
-
-            long? rowId = dataReader.GetRowId(i);
-
-            if (rowId == null)
-                throw new InvalidOperationException("No RowId is available");
 
             SQLiteBlobHandle blob = null;
 
@@ -106,11 +150,9 @@ namespace System.Data.SQLite
                 IntPtr ptrBlob = IntPtr.Zero;
 
                 SQLiteErrorCode rc = UnsafeNativeMethods.sqlite3_blob_open(
-                    handle, SQLiteConvert.ToUTF8(
-                        dataReader.GetDatabaseName(i)), SQLiteConvert.ToUTF8(
-                    dataReader.GetTableName(i)), SQLiteConvert.ToUTF8(
-                        dataReader.GetName(i)), (long)rowId, readOnly ? 0 : 1,
-                    ref ptrBlob);
+                    handle, SQLiteConvert.ToUTF8(databaseName),
+                    SQLiteConvert.ToUTF8(tableName), SQLiteConvert.ToUTF8(
+                    columnName), rowId, readOnly ? 0 : 1, ref ptrBlob);
 
                 if (rc != SQLiteErrorCode.Ok)
                     throw new SQLiteException(rc, null);
@@ -118,10 +160,10 @@ namespace System.Data.SQLite
                 blob = new SQLiteBlobHandle(handle, ptrBlob);
             }
 
-            SQLiteConnection.OnChanged(null, new ConnectionEventArgs(
-                SQLiteConnectionEventType.NewCriticalHandle, null,
-                null, null, dataReader, blob, null, new object[] {
-                typeof(SQLiteBlob), dataReader, i, readOnly }));
+            SQLiteConnection.OnChanged(connection, new ConnectionEventArgs(
+                SQLiteConnectionEventType.NewCriticalHandle, null, null,
+                null, null, blob, null, new object[] { typeof(SQLiteBlob),
+                databaseName, tableName, columnName, rowId, readOnly }));
 
             return new SQLiteBlob(sqlite3, blob);
         }
