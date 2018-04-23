@@ -4864,24 +4864,27 @@ namespace eval ::Eagle {
         foreach fileNameOnly $nativeFileNames {
           catch {
             tputs $::test_channel [appendArgs \
-                "---- file version of \"" $fileNameOnly "\"... \"" \
-                [file version [getBinaryFileName $fileNameOnly]] \"\n]
+                "---- file version of \"" native/ $fileNameOnly \
+                "\"... \"" [file version [getBinaryFileName \
+                $fileNameOnly]] \"\n]
           }
         }
 
         foreach fileNameOnly $mixedFileNames {
           catch {
             tputs $::test_channel [appendArgs \
-                "---- file version of \"" $fileNameOnly "\"... \"" \
-                [file version [getBinaryFileName $fileNameOnly]] \"\n]
+                "---- file version of \"" mixed/ $fileNameOnly \
+                "\"... \"" [file version [getBinaryFileName \
+                $fileNameOnly]] \"\n]
           }
         }
 
         foreach fileNameOnly $managedFileNames {
           catch {
             tputs $::test_channel [appendArgs \
-                "---- file version of \"" $fileNameOnly "\"... \"" \
-                [file version [getBinaryFileName $fileNameOnly]] \"\n]
+                "---- file version of \"" managed/ $fileNameOnly \
+                "\"... \"" [file version [getBinaryFileName \
+                $fileNameOnly]] \"\n]
           }
         }
 
@@ -4889,18 +4892,20 @@ namespace eval ::Eagle {
           foreach fileNameOnly $nativeFileNames {
             catch {
               tputs $::test_channel [appendArgs \
-                  "---- file version of \"" $platform \
-                  / $fileNameOnly "\"... \"" [file version \
-                  [getBinaryFileName $fileNameOnly $platform]] \"\n]
+                  "---- file version of \"" native/platform/ \
+                  $platform / $fileNameOnly "\"... \"" [file \
+                  version [getBinaryFileName $fileNameOnly \
+                  $platform]] \"\n]
             }
           }
 
           foreach fileNameOnly $mixedFileNames {
             catch {
               tputs $::test_channel [appendArgs \
-                  "---- file version of \"" $platform \
-                  / $fileNameOnly "\"... \"" [file version \
-                  [getBinaryFileName $fileNameOnly $platform]] \"\n]
+                  "---- file version of \"" mixed/platform/ \
+                  $platform / $fileNameOnly "\"... \"" [file \
+                  version [getBinaryFileName $fileNameOnly \
+                  $platform]] \"\n]
             }
           }
         }
@@ -4909,18 +4914,20 @@ namespace eval ::Eagle {
           foreach fileNameOnly $nativeFileNames {
             catch {
               tputs $::test_channel [appendArgs \
-                  "---- file version of \"" $architecture \
-                  / $fileNameOnly "\"... \"" [file version \
-                  [getBinaryFileName $fileNameOnly $architecture]] \"\n]
+                  "---- file version of \"" native/architecture/ \
+                  $architecture / $fileNameOnly "\"... \"" [file \
+                  version [getBinaryFileName $fileNameOnly \
+                  $architecture]] \"\n]
             }
           }
 
           foreach fileNameOnly $mixedFileNames {
             catch {
               tputs $::test_channel [appendArgs \
-                  "---- file version of \"" $architecture \
-                  / $fileNameOnly "\"... \"" [file version \
-                  [getBinaryFileName $fileNameOnly $architecture]] \"\n]
+                  "---- file version of \"" mixed/architecture/ \
+                  $architecture / $fileNameOnly "\"... \"" [file \
+                  version [getBinaryFileName $fileNameOnly \
+                  $architecture]] \"\n]
             }
           }
         }
