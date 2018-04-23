@@ -45,31 +45,132 @@ namespace eval ::Eagle {
   #       procedure should not raise script errors.
   #
   proc getDotNetStandardReferencePath {
-          {packageVersion 2.0.1} {standardVersion netstandard2.0} } {
+          {packageVersion ""} {standardVersion netstandard2.0} } {
     set path [getDotNetCoreSdkPath]
 
     if {[string length $path] > 0} then {
-      return [file normalize [file join \
-          [file dirname $path] NuGetFallbackFolder netstandard.library \
-          $packageVersion build $standardVersion ref]]
+      set libraryDirectory [file normalize [file join \
+          [file dirname $path] NuGetFallbackFolder netstandard.library]]
+
+      set buildReferenceSubDirectory [file join build $standardVersion ref]
+
+      if {[string length $packageVersion] > 0} then {
+        set assemblyDirectory [file normalize [file join \
+            $libraryDirectory $packageVersion $buildReferenceSubDirectory]]
+
+        if {[file exists $assemblyDirectory]} then {
+          return $assemblyDirectory
+        }
+      } else {
+        set globPathPattern [file join $libraryDirectory *]
+
+        set maybeVersions [lsort -decreasing -command [list package vsort] \
+            [lmap directory [glob -nocomplain -types {d} $globPathPattern] \
+            { file tail $directory }]]
+
+        foreach maybeVersion $maybeVersions {
+          set assemblyDirectory [file normalize [file join \
+              $libraryDirectory $maybeVersion $buildReferenceSubDirectory]]
+
+          if {[file exists $assemblyDirectory]} then {
+            return $assemblyDirectory
+          }
+        }
+      }
     }
 
     return ""
   }
 
   #
+  # NOTE: This procedure is used to obtain a test program for use with the
+  #       C# compiler.  Upon success, the return value will be a list with
+  #       two elements.  The first element will be the name of the C# class
+  #       to be compiled.  The second element will be the C# program text.
+  #       Upon failure, the return value will be an empty list.
+  #
+  proc getCSharpTestProgram { {name ""} } {
+    set prefix Test
+    set id [object invoke Interpreter.GetActive NextId]
+
+    set className [appendArgs \
+        $prefix Namespace $id [object invoke Type Delimiter] \
+        $prefix Class $id]
+
+    return [list $className [subst {
+      using System;
+
+      namespace ${prefix}Namespace${id}
+      {
+        public static class ${prefix}Class${id}
+        {
+          public static Int32 Main(String\[\] args)
+          {
+            return 0;
+          }
+        }
+      }
+    }]]
+  }
+
+  #
+  # NOTE: This procedure is used to determine whether the C# compiler appears
+  #       to work when invoked via the interfaces defined in this script file.
+  #       Non-zero is returned to indicate success.  This procedure should not
+  #       raise script errors.
+  #
+  proc doesCompileCSharpWork { {name ""} } {
+    if {[catch {getCSharpTestProgram $name} program]} then {
+      return false
+    }
+
+    if {[llength $program] < 2} then {
+      return false
+    }
+
+    unset -nocomplain results errors
+
+    if {[catch {
+      compileCSharp [lindex $program 1] true true true results errors
+    } code]} then {
+      return false
+    }
+
+    if {$code ne "Ok"} then {
+      return false
+    }
+
+    if {[catch {
+      object invoke [lindex $program 0] Main null
+    } exitCode]} then {
+      return false
+    }
+
+    if {$exitCode ne "0"} then {
+      return false
+    }
+
+    return true
+  }
+
+  #
   # NOTE: This procedure is used to determine the command line arguments that
-  #       are required to invoke the .NET Core SDK compiler for CSharp.  An
-  #       empty list will be returned if the arguments cannot be determined
-  #       for some reason.  This procedure should not raise script errors.
+  #       are required to invoke the .NET Core SDK compiler for C#.  An empty
+  #       list will be returned if the arguments cannot be determined for some
+  #       reason -OR- the C# compiler cannot be found.  This procedure should
+  #       not raise script errors.
   #
   proc getDotNetCoreCSharpCommandArgs {} {
     set path [getDotNetCoreSdkPath]
 
     if {[string length $path] > 0} then {
-      return [list dotnet exec [appendArgs \" \
-          [file nativename [file normalize [file join $path Roslyn bincore \
-          csc.dll]]] \"]]
+      set compilerFileName [file normalize [file join \
+          $path Roslyn bincore csc.dll]]
+
+      if {[file exists $compilerFileName]} then {
+        return [list dotnet exec [appendArgs \
+            \" [file nativename $compilerFileName] \"]]
+      }
     }
 
     return [list]
@@ -107,13 +208,48 @@ namespace eval ::Eagle {
   #       more options to the C# compiler.  This procedure should not raise
   #       script errors.
   #
-  proc compilerParameterToArguments { name {value ""} } {
+  proc compilerParameterToArguments {
+          name {value ""} {outputAssemblyVarName ""} } {
     switch -exact -nocase -- $name {
       WarningLevel {
         set name -warn
       }
       TreatWarningsAsErrors {
         set name -warnaserror
+      }
+      OutputAssembly {
+        if {[string length $outputAssemblyVarName] > 0} then {
+          #
+          # HACK: This compiler parameter is handled by our caller; however,
+          #       we want to honor the value specified via the OutputAssembly
+          #       property.  Therefore, reset the specified variable from the
+          #       caller to the new value.
+          #
+          upvar 1 $outputAssemblyVarName outputAssembly
+
+          #
+          # NOTE: Use the file name value specified by the caller verbatim.
+          #
+          set outputAssembly $value
+
+          #
+          # HACK: Also, make sure that we do not handle this parameter again,
+          #       below.
+          #
+          set name ""; set value ""
+        } else {
+          #
+          # BUGBUG: Translate the compiler parameter; however, this may not
+          #         actually work, depending on how our caller handles its
+          #         output assembly file name.  At the time this block was
+          #         originally written (2018-04-09), the only caller (i.e.
+          #         [compileViaDotNetCoreCSharp]) always passed the output
+          #         assembly variable name, making this a non-issue.  This
+          #         convention should also be followed by future callers of
+          #         this procedure.
+          #
+          set name -out
+        }
       }
       ReferencedAssemblies.Add {
         set name -reference
@@ -249,6 +385,18 @@ namespace eval ::Eagle {
     }
 
     return $result
+  }
+
+  #
+  # NOTE: This procedure is used to execute the C# compiler and returns its
+  #       platform normalized results.
+  #
+  proc runDotNetCSharpCommand { command } {
+    #
+    # NOTE: Evaluate the [exec] command constructed by our caller, in their
+    #       context, and return the results, with line-endings normalized.
+    #
+    return [string map [list \r\n \n] [uplevel 1 $command]]
   }
 
   #
@@ -501,7 +649,7 @@ namespace eval ::Eagle {
       #
       # NOTE: Append to the list of errors.
       #
-      lappend local_errors "cannot compile, CSharp compiler not found"
+      lappend local_errors "cannot compile, C# compiler was not found"
 
       #
       # NOTE: Return the overall result to the caller.
@@ -523,18 +671,23 @@ namespace eval ::Eagle {
     append command " " [getCSharpCompilerOptions "" true true -]
 
     #
-    # NOTE: Process extra compiler settings the caller may have provided.
-    #
-    foreach {name value} $args {
-      eval lappend command [compilerParameterToArguments $name $value]
-    }
-
-    #
     # NOTE: Allocate a couple temporary file names, one to hold the source
     #       code to compile and one to hold the generated assembly.
     #
     set sourceFileName [appendArgs [file tempname] .cs]
     set outputFileName [appendArgs [file tempname] .dll]
+
+    #
+    # NOTE: Process extra compiler settings the caller may have provided.
+    #
+    foreach {name value} $args {
+      set nameValueArguments \
+          [compilerParameterToArguments $name $value outputFileName]
+
+      if {[llength $nameValueArguments] > 0} then {
+        eval lappend command $nameValueArguments
+      }
+    }
 
     try {
       #
@@ -591,7 +744,7 @@ namespace eval ::Eagle {
       #       results are text, normalize line endings before extracting
       #       the compiler errors and/or warnings.
       #
-      set local_results [string map [list \r\n \n] [eval $command]]
+      set local_results [runDotNetCSharpCommand $command]
 
       #
       # NOTE: Extract the compiler errors (which may be empty).

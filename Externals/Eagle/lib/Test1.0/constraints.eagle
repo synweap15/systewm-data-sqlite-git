@@ -2948,7 +2948,8 @@ namespace eval ::Eagle {
     proc checkForCompileCSharp { channel } {
       tputs $channel "---- checking for test use of C# compiler... "
 
-      if {![info exists ::no(compileCSharp)]} then {
+      if {![info exists ::no(compileCSharp)] && \
+          [doesCompileCSharpWork]} then {
         addConstraint compileCSharp
 
         tputs $channel yes\n

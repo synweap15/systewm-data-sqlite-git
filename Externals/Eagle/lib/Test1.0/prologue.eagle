@@ -188,42 +188,20 @@ if {![info exists no([file tail [info script]])]} then {
   }
 
   #
-  # NOTE: Set the location of the [non-script] library directory
-  #       (i.e. the directory where the plugins are located), if
-  #       necessary.  This variant is based on where the Eagle
-  #       core library -OR- Tcl core library assembly is located.
+  # NOTE: Set the location of the Eagle core library -OR- Tcl core
+  #       library file is located.  This may be different than the
+  #       location of the (shell?) executable file.
   #
-  if {![info exists core_lib_path]} then {
+  if {![info exists core_bin_path]} then {
     #
     # NOTE: Attempt to obtain the information for the Eagle core
     #       library assembly.  This will not work for native Tcl.
     #
-    if {[catch {info assembly} lib_dir] == 0} then {
+    if {[catch {info assembly} bin_dir] == 0} then {
       #
       # NOTE: Grab the directory for the core library assembly.
       #
-      set core_lib_path [file dirname [lindex $lib_dir end]]
-
-      #
-      # NOTE: Perform a check for the .NET Core output directories
-      #       (e.g. "netcoreapp2.0", etc), which must be removed
-      #       if present, prior to further checks.
-      #
-      if {![info exists no(dotNetCoreLibPath)] && \
-          [string match net* [file tail $core_lib_path]]} then {
-        #
-        # NOTE: Remove the .NET Core output directory name.
-        #
-        set core_lib_path [file dirname $core_lib_path]
-      }
-
-      #
-      # NOTE: Go up one level, to remove the "bin" directory and
-      #       then append the "lib" directory.  This gives us the
-      #       final path we need.
-      #
-      set core_lib_path [file normalize \
-          [file join [file dirname $core_lib_path] lib]]
+      set core_bin_path [file dirname [lindex $bin_dir end]]
     } else {
       #
       # NOTE: This is native Tcl.  There is no way to query the
@@ -231,10 +209,44 @@ if {![info exists no([file tail [info script]])]} then {
       #       "libtcl*.so", etc); however, using [info library] is
       #       close enough.
       #
-      set core_lib_path [file normalize [file dirname [info library]]]
+      set core_bin_path [file dirname [info library]]
     }
 
-    unset lib_dir
+    unset bin_dir
+  }
+
+  #
+  # NOTE: Set the location of the [non-script] library directory
+  #       (i.e. the directory where the plugins are located), if
+  #       necessary.  This variant is based on where the Eagle
+  #       core library -OR- Tcl core library file is located.
+  #
+  if {![info exists core_lib_path]} then {
+    #
+    # NOTE: Start with the directory for the core library assembly.
+    #
+    set core_lib_path $core_bin_path
+
+    #
+    # NOTE: Perform a check for the .NET Core output directories
+    #       (e.g. "netcoreapp2.0", etc), which must be removed
+    #       if present, prior to further checks.
+    #
+    if {![info exists no(dotNetCoreLibPath)] && \
+        [string match net* [file tail $core_lib_path]]} then {
+      #
+      # NOTE: Remove the .NET Core output directory name.
+      #
+      set core_lib_path [file dirname $core_lib_path]
+    }
+
+    #
+    # NOTE: Go up one level, to remove the "bin" directory and
+    #       then append the "lib" directory.  This gives us the
+    #       final path we need.
+    #
+    set core_lib_path [file normalize \
+        [file join [file dirname $core_lib_path] lib]]
   }
 
   #
@@ -1001,6 +1013,9 @@ if {![info exists no([file tail [info script]])]} then {
 
   tputs $test_channel [appendArgs "---- library path: \"" \
       $lib_path \"\n]
+
+  tputs $test_channel [appendArgs "---- core binary path: \"" \
+      $core_bin_path \"\n]
 
   tputs $test_channel [appendArgs "---- core library path: \"" \
       $core_lib_path \"\n]
@@ -3207,21 +3222,21 @@ if {![info exists no([file tail [info script]])]} then {
     # NOTE: For test "object-6.1".
     #
     if {![info exists no(Sample.exe)]} then {
-      checkForFile $test_channel [file join $bin_path Sample.exe]
+      checkForFile $test_channel [file join $core_bin_path Sample.exe]
     }
 
     #
     # NOTE: For test "object-4.8".
     #
     if {![info exists no(EagleCmdlets.dll)]} then {
-      checkForFile $test_channel [file join $bin_path EagleCmdlets.dll]
+      checkForFile $test_channel [file join $core_bin_path EagleCmdlets.dll]
     }
 
     #
     # NOTE: For test "object-4.10".
     #
     if {![info exists no(EagleExtensions.dll)]} then {
-      checkForFile $test_channel [file join $bin_path EagleExtensions.dll]
+      checkForFile $test_channel [file join $core_bin_path EagleExtensions.dll]
     }
 
     #
@@ -3236,7 +3251,7 @@ if {![info exists no([file tail [info script]])]} then {
     #       "sql-1.8", and "sql-1.9".
     #
     if {![info exists no(sqlite3.dll)]} then {
-      checkForFile $test_channel [file join $bin_path sqlite3.dll]
+      checkForFile $test_channel [file join $core_bin_path sqlite3.dll]
 
       #
       # NOTE: Did we manage to find the native SQLite library?  If not, do we
@@ -3247,8 +3262,8 @@ if {![info exists no([file tail [info script]])]} then {
         # NOTE: Ok, now try to check for the machine specific native SQLite
         #       library.
         #
-        checkForFile $test_channel [file join $bin_path [machineToPlatform \
-            $test_machine true] sqlite3.dll]
+        checkForFile $test_channel [file join $core_bin_path \
+            [machineToPlatform $test_machine true] sqlite3.dll]
 
         #
         # NOTE: Did we manage to find the native SQLite library yet?
@@ -3258,14 +3273,15 @@ if {![info exists no([file tail [info script]])]} then {
           # NOTE: Ok, now try to check for the platform specific native SQLite
           #       library.
           #
-          checkForFile $test_channel [file join $bin_path [machineToPlatform \
-              $test_machine false] sqlite3.dll]
+          checkForFile $test_channel [file join $core_bin_path \
+              [machineToPlatform $test_machine false] sqlite3.dll]
         }
       }
     }
 
     if {![info exists no(System.Data.SQLite.dll)]} then {
-      checkForFile $test_channel [file join $bin_path System.Data.SQLite.dll]
+      checkForFile $test_channel [file join $core_bin_path \
+          System.Data.SQLite.dll]
     }
 
     if {![info exists no(test.sqlite3)]} then {
