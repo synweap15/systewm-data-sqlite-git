@@ -4937,12 +4937,16 @@ namespace eval ::Eagle {
         #       and report on the System.Data.SQLite related ones.
         #
         if {[haveSQLiteObjectCommand]} then {
-          set assemblies [object invoke Utility GetAssemblies]
-
-          object foreach assembly $assemblies {
-            if {[string match \{System.Data.SQLite* $assembly]} then {
-              tputs $::test_channel [appendArgs \
-                  "---- found loaded assembly: " $assembly \n]
+          if {[catch {
+            object invoke Utility GetAssemblies
+          } assemblies] == 0 || [catch {
+            object invoke AppDomain.CurrentDomain GetAssemblies
+          } assemblies] == 0} then {
+            object foreach assembly $assemblies {
+              if {[string match \{System.Data.SQLite* $assembly]} then {
+                tputs $::test_channel [appendArgs \
+                    "---- found loaded assembly: " $assembly \n]
+              }
             }
           }
         }
