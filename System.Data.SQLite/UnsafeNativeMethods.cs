@@ -900,6 +900,17 @@ namespace System.Data.SQLite
       private delegate IntPtr LoadLibraryCallback(
           string fileName
       );
+
+      /////////////////////////////////////////////////////////////////////////
+
+      /// <summary>
+      /// This delegate is used to wrap the concept of querying the machine
+      /// name of the current process.
+      /// </summary>
+      /// <returns>
+      /// The machine name for the current process -OR- null on failure.
+      /// </returns>
+      private delegate string GetMachineCallback();
       #endregion
 
       /////////////////////////////////////////////////////////////////////////
@@ -924,6 +935,45 @@ namespace System.Data.SQLite
 
       /////////////////////////////////////////////////////////////////////////
 
+      /// <summary>
+      /// Attempts to determine the machine name of the current process using
+      /// the Win32 API.
+      /// </summary>
+      /// <returns>
+      /// The machine name for the current process -OR- null on failure.
+      /// </returns>
+      private static string GetMachineWin32()
+      {
+          //
+          // NOTE: When running on Windows, attempt to use the native Win32
+          //       API function (via P/Invoke) that can provide us with the
+          //       processor architecture.
+          //
+          try
+          {
+              UnsafeNativeMethodsWin32.SYSTEM_INFO systemInfo;
+
+              //
+              // NOTE: Query the system information via P/Invoke, thus
+              //       filling the structure.
+              //
+              UnsafeNativeMethodsWin32.GetSystemInfo(out systemInfo);
+
+              //
+              // NOTE: Return the processor architecture value as a string.
+              //
+              return systemInfo.wProcessorArchitecture.ToString();
+          }
+          catch
+          {
+              // do nothing.
+          }
+
+          return null;
+      }
+
+      /////////////////////////////////////////////////////////////////////////
+
 #if !PLATFORM_COMPACTFRAMEWORK
       /// <summary>
       /// Attempts to load the specified native library file using the POSIX
@@ -941,6 +991,39 @@ namespace System.Data.SQLite
       {
           return UnsafeNativeMethodsPosix.dlopen(
               fileName, UnsafeNativeMethodsPosix.RTLD_DEFAULT);
+      }
+
+      /////////////////////////////////////////////////////////////////////////
+
+      /// <summary>
+      /// Attempts to determine the machine name of the current process using
+      /// the POSIX API.
+      /// </summary>
+      /// <returns>
+      /// The machine name for the current process -OR- null on failure.
+      /// </returns>
+      private static string GetMachinePosix()
+      {
+          //
+          // NOTE: When running on POSIX (non-Windows), attempt to query the
+          //       machine from the operating system via uname().
+          //
+          try
+          {
+              UnsafeNativeMethodsPosix.utsname utsName = null;
+
+              if (UnsafeNativeMethodsPosix.GetOsVersionInfo(ref utsName) &&
+                  (utsName != null))
+              {
+                  return utsName.machine;
+              }
+          }
+          catch
+          {
+              // do nothing.
+          }
+
+          return null;
       }
 #endif
       #endregion
@@ -970,6 +1053,26 @@ namespace System.Data.SQLite
 
           return callback(fileName);
       }
+
+      /////////////////////////////////////////////////////////////////////////
+
+      /// <summary>
+      /// Attempts to determine the machine name of the current process.
+      /// </summary>
+      /// <returns>
+      /// The machine name for the current process -OR- null on failure.
+      /// </returns>
+      public static string GetMachine()
+      {
+          GetMachineCallback callback = GetMachineWin32;
+
+#if !PLATFORM_COMPACTFRAMEWORK
+          if (!HelperMethods.IsWindows())
+              callback = GetMachinePosix;
+#endif
+
+          return callback();
+      }
       #endregion
   }
   #endregion
@@ -990,7 +1093,7 @@ namespace System.Data.SQLite
       /// human readable name of the operating system as well as that of
       /// the underlying hardware.
       /// </summary>
-      internal struct utsname
+      internal sealed class utsname
       {
           public string sysname;  /* Name of this implementation of
                                    * the operating system. */
@@ -1247,7 +1350,7 @@ namespace System.Data.SQLite
 #else
       [DllImport("coredll",
 #endif
- CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Auto,
+          CallingConvention = CallingConvention.Winapi, CharSet = CharSet.Auto,
 #if !PLATFORM_COMPACTFRAMEWORK
           BestFitMapping = false, ThrowOnUnmappableChar = true,
 #endif
@@ -1256,7 +1359,6 @@ namespace System.Data.SQLite
 
       /////////////////////////////////////////////////////////////////////////
 
-#if PLATFORM_COMPACTFRAMEWORK
       /// <summary>
       /// This is the P/Invoke method that wraps the native Win32 GetSystemInfo
       /// function.  See the MSDN documentation for full details on what it
@@ -1265,7 +1367,13 @@ namespace System.Data.SQLite
       /// <param name="systemInfo">
       /// The system information structure to be filled in by the function.
       /// </param>
-      [DllImport("coredll", CallingConvention = CallingConvention.Winapi)]
+      ///
+#if !PLATFORM_COMPACTFRAMEWORK
+      [DllImport("kernel32",
+#else
+      [DllImport("coredll",
+#endif
+          CallingConvention = CallingConvention.Winapi)]
       internal static extern void GetSystemInfo(out SYSTEM_INFO systemInfo);
 
       /////////////////////////////////////////////////////////////////////////
@@ -1302,14 +1410,17 @@ namespace System.Data.SQLite
           public uint dwPageSize; /* NOT USED */
           public IntPtr lpMinimumApplicationAddress; /* NOT USED */
           public IntPtr lpMaximumApplicationAddress; /* NOT USED */
+#if PLATFORM_COMPACTFRAMEWORK
           public uint dwActiveProcessorMask; /* NOT USED */
+#else
+          public IntPtr dwActiveProcessorMask; /* NOT USED */
+#endif
           public uint dwNumberOfProcessors; /* NOT USED */
           public uint dwProcessorType; /* NOT USED */
           public uint dwAllocationGranularity; /* NOT USED */
           public ushort wProcessorLevel; /* NOT USED */
           public ushort wProcessorRevision; /* NOT USED */
       }
-#endif
   }
   #endregion
 
@@ -1391,17 +1502,6 @@ namespace System.Data.SQLite
       /// _SQLiteNativeModuleHandle, and processorArchitecturePlatforms fields.
       /// </summary>
       private static readonly object staticSyncRoot = new object();
-
-      /////////////////////////////////////////////////////////////////////////
-
-#if (SQLITE_STANDARD || USE_INTEROP_DLL) && PRELOAD_NATIVE_LIBRARY && !PLATFORM_COMPACTFRAMEWORK
-      /// <summary>
-      /// This structure is used to cache the human readable strings extracted
-      /// from the raw buffer passed to the uname P/Invoke method.  It is only
-      /// used on POSIX operating systems.
-      /// </summary>
-      private static UnsafeNativeMethodsPosix.utsname utsName;
-#endif
 
       /////////////////////////////////////////////////////////////////////////
       /// <summary>
@@ -2861,64 +2961,26 @@ namespace System.Data.SQLite
               }
 #endif
           }
+#endif
 
-          //
-          // NOTE: When running on POSIX (non-Windows), attempt to query the
-          //       machine from the operating system via uname().
-          //
-          if ((processorArchitecture == null) && !HelperMethods.IsWindows())
-          {
-              lock (staticSyncRoot)
-              {
-                  if ((utsName.machine != null) ||
-                      UnsafeNativeMethodsPosix.GetOsVersionInfo(ref utsName))
-                  {
-                      processorArchitecture = utsName.machine;
-                  }
-              }
-          }
-#else
+          /////////////////////////////////////////////////////////////////////
+
           if (processorArchitecture == null)
           {
               //
-              // NOTE: On the .NET Compact Framework, attempt to use the native
-              //       Win32 API function (via P/Invoke) that can provide us
-              //       with the processor architecture.
+              // NOTE: Default to the processor architecture reported by the
+              //       appropriate native operating system API, if any.
               //
-              try
-              {
-                  //
-                  // NOTE: The output of the GetSystemInfo function will be
-                  //       placed here.  Only the processor architecture field
-                  //       is used by this method.
-                  //
-                  UnsafeNativeMethodsWin32.SYSTEM_INFO systemInfo;
-
-                  //
-                  // NOTE: Query the system information via P/Invoke, thus
-                  //       filling the structure.
-                  //
-                  UnsafeNativeMethodsWin32.GetSystemInfo(out systemInfo);
-
-                  //
-                  // NOTE: Return the processor architecture value as a string.
-                  //
-                  processorArchitecture =
-                      systemInfo.wProcessorArchitecture.ToString();
-              }
-              catch
-              {
-                  // do nothing.
-              }
+              processorArchitecture = NativeLibraryHelper.GetMachine();
 
               //
-              // NOTE: Upon failure, return an empty string.  This will prevent
-              //       the calling method from considering this method call a
-              //       "failure".
+              // NOTE: Upon failure, return empty string.  This will prevent
+              //       the calling method from considering this method call
+              //       a "failure".
               //
-              processorArchitecture = String.Empty;
+              if (processorArchitecture == null)
+                  processorArchitecture = String.Empty;
           }
-#endif
 
           /////////////////////////////////////////////////////////////////////
 
