@@ -926,7 +926,8 @@ namespace eval ::Eagle {
       # NOTE: This procedure returns the directory where the external binary
       #       files are located.
       #
-      return [file nativename [file dirname [file dirname [info binary]]]]
+      return [file nativename \
+          [file dirname [file dirname [file dirname [info binary]]]]]
     }
 
     proc getBinaryDirectory {} {
