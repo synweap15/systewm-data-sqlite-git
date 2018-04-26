@@ -283,7 +283,12 @@ runTest {test stress-1.1 {multithreaded stress testing} -setup {
   #############################################################################
 
   proc useMem { ptr size } {
-    if {[isWindows] && ![isMono]} then {
+    #
+    # NOTE: This procedure does nothing on non-Windows operating systems.  It
+    #       also does nothing when running on Mono or .NET Core, due to their
+    #       lack of the (internal, undocumented) ZeroMemory method.
+    #
+    if {[isWindows] && ![isMono] && ![isDotNetCore]} then {
       #
       # HACK: The type signature of the ZeroMemory method changed as of the
       #       .NET Framework 4.5.  The second argument went from being of
@@ -358,9 +363,11 @@ runTest {test stress-1.1 {multithreaded stress testing} -setup {
     #
     # NOTE: Copy the trace listener log file to the main test log file.
     #
-    tlog "---- BEGIN TRACE LISTENER OUTPUT\n"
-    tlog [readFile $fileName]
-    tlog "\n---- END TRACE LISTENER OUTPUT\n"
+    if {[file exists $fileName]} then {
+      tlog "---- BEGIN TRACE LISTENER OUTPUT\n"
+      tlog [readFile $fileName]
+      tlog "\n---- END TRACE LISTENER OUTPUT\n"
+    }
 
     #
     # NOTE: Delete the trace listener log file because its contents have
@@ -1676,11 +1683,12 @@ runTest {test stress-1.1 {multithreaded stress testing} -setup {
 
     foreach index(1) [lsort -integer $workloadNames(enabled)] {
       set workloadCallbacks($index(1)) [list \
-          apply $workload($index(1)) $fileName(1) $fileName(2) t1 $count(1) \
-          $count(3) $count(4) $count(5) $count(6) $count(7) $count(8)]
+          apply $workload($index(1)) $fileName(1) $fileName(2) t1 \
+          $count(1) $count(3) $count(4) $count(5) $count(6) $count(7) \
+          $count(8)]
 
-      set thread($index(1)) [object create -alias System.Threading.Thread \
-          $workloadCallbacks($index(1)) 1048576]
+      set thread($index(1)) [createThread $workloadCallbacks($index(1)) \
+          false 1048576]
 
       $thread($index(1)) Name [appendArgs \
           [file rootname [file tail $fileName(2)]] " #" $index(1)]
@@ -1691,7 +1699,7 @@ runTest {test stress-1.1 {multithreaded stress testing} -setup {
     }
 
     foreach index(1) [array names thread] {
-      $thread($index(1)) Start
+      startThread $thread($index(1))
     }
 
     $event Set; # GO

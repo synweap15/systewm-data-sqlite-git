@@ -75,8 +75,8 @@ IF NOT DEFINED 32BITONLY (
 
 %_VECHO% EagleShell = '%EAGLESHELL%'
 
-%_CECHO% "Externals\Eagle\bin\%EAGLESHELL%" %PREARGS% %* %POSTARGS%
-%__ECHO% "Externals\Eagle\bin\%EAGLESHELL%" %PREARGS% %* %POSTARGS%
+%_CECHO% "Externals\Eagle\bin\netFramework40\%EAGLESHELL%" %PREARGS% %* %POSTARGS%
+%__ECHO% "Externals\Eagle\bin\netFramework40\%EAGLESHELL%" %PREARGS% %* %POSTARGS%
 
 IF ERRORLEVEL 1 (
   ECHO Received non-zero return code from the Eagle Shell.

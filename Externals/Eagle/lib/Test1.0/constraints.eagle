@@ -22,9 +22,10 @@
 namespace eval ::Eagle {
   proc getKnownBuildTypes {} {
     return [list \
-        NetFx20 NetFx35 NetFx40 NetFx45 NetFx451 NetFx452 \
-        NetFx46 NetFx461 NetFx462 NetFx47 NetFx471 Bare \
-        LeanAndMean Database MonoOnUnix Development]
+        NetFx20 NetFx35 NetFx40 NetFx45 NetFx451 \
+        NetFx452 NetFx46 NetFx461 NetFx462 NetFx47 \
+        NetFx471 NetStandard20 Bare LeanAndMean \
+        Database MonoOnUnix Development]
   }
 
   proc getKnownCompileOptions {} {
@@ -35,19 +36,20 @@ namespace eval ::Eagle {
         CACHE_ARGUMENTLIST_TOSTRING CACHE_DICTIONARY CACHE_RESULT_TOSTRING \
         CACHE_STATISTICS CACHE_STRINGLIST_TOSTRING CALLBACK_QUEUE CAS_POLICY \
         CERTIFICATE_PLUGIN CERTIFICATE_POLICY CERTIFICATE_RENEWAL \
-        CODE_ANALYSIS COM_TYPE_CACHE CONSOLE DAEMON DATA DEAD_CODE DEBUG \
-        DEBUGGER DEBUGGER_ARGUMENTS DEBUGGER_ENGINE DEBUGGER_EXECUTE \
-        DEBUGGER_EXPRESSION DEBUGGER_VARIABLE DEBUG_TRACE DEBUG_WRITE \
-        DEMO_EDITION DRAWING DYNAMIC EAGLE EMBEDDED_LIBRARY \
-        EMBED_CERTIFICATES ENTERPRISE_LOCKDOWN EXECUTE_CACHE EXPRESSION_FLAGS \
-        FAST_ERRORCODE FAST_ERRORINFO FOR_TEST_USE_ONLY HAVE_SIZEOF HISTORY \
-        IA64 INTERACTIVE_COMMANDS INTERNALS_VISIBLE_TO ISOLATED_INTERPRETERS \
-        ISOLATED_PLUGINS LIBRARY LICENSING LICENSE_MANAGER LIMITED_EDITION \
-        LIST_CACHE MONO MONO_BUILD MONO_HACKS MONO_LEGACY NATIVE \
-        NATIVE_PACKAGE NATIVE_THREAD_ID NATIVE_UTILITY NATIVE_UTILITY_BSTR \
-        NETWORK NET_20 NET_20_FAST_ENUM NET_20_ONLY NET_20_SP1 NET_20_SP2 \
-        NET_30 NET_35 NET_40 NET_45 NET_451 NET_452 NET_46 NET_461 NET_462 \
-        NET_47 NET_471 NON_WORKING_CODE NOTIFY NOTIFY_ACTIVE NOTIFY_ARGUMENTS \
+        CODE_ANALYSIS COM_TYPE_CACHE CONFIGURATION CONSOLE DAEMON DATA \
+        DEAD_CODE DEBUG DEBUGGER DEBUGGER_ARGUMENTS DEBUGGER_ENGINE \
+        DEBUGGER_EXECUTE DEBUGGER_EXPRESSION DEBUGGER_VARIABLE DEBUG_TRACE \
+        DEBUG_WRITE DEMO_EDITION DRAWING DYNAMIC EAGLE EMBEDDED_LIBRARY \
+        EMBED_CERTIFICATES EMIT ENTERPRISE_LOCKDOWN EXECUTE_CACHE \
+        EXPRESSION_FLAGS FAST_ERRORCODE FAST_ERRORINFO FOR_TEST_USE_ONLY \
+        HAVE_SIZEOF HISTORY IA64 INTERACTIVE_COMMANDS INTERNALS_VISIBLE_TO \
+        ISOLATED_INTERPRETERS ISOLATED_PLUGINS LIBRARY LICENSING \
+        LICENSE_MANAGER LIMITED_EDITION LIST_CACHE MONO MONO_BUILD MONO_HACKS \
+        MONO_LEGACY NATIVE NATIVE_PACKAGE NATIVE_THREAD_ID NATIVE_UTILITY \
+        NATIVE_UTILITY_BSTR NETWORK NET_20 NET_20_FAST_ENUM NET_20_ONLY \
+        NET_20_SP1 NET_20_SP2 NET_30 NET_35 NET_40 NET_45 NET_451 NET_452 \
+        NET_46 NET_461 NET_462 NET_47 NET_471 NET_CORE_20 NET_STANDARD_20 \
+        NON_WORKING_CODE NOTIFY NOTIFY_ACTIVE NOTIFY_ARGUMENTS \
         NOTIFY_EXCEPTION NOTIFY_EXECUTE NOTIFY_EXPRESSION NOTIFY_GLOBAL \
         NOTIFY_OBJECT OBSOLETE OBFUSCATION OFFICIAL PARSE_CACHE PATCHLEVEL \
         PLUGIN_COMMANDS POLICY_TRACE PREVIOUS_RESULT RANDOMIZE_ID REMOTING \
@@ -80,7 +82,7 @@ namespace eval ::Eagle {
           [list 2 11] [list 3 0] [list 3 1] [list 3 2] [list 3 4] [list 3 6] \
           [list 3 8] [list 3 10] [list 3 12] [list 4 0] [list 4 2] [list 4 4] \
           [list 4 6] [list 4 8] [list 5 0] [list 5 2] [list 5 4] [list 5 8] \
-          [list 5 10]]
+          [list 5 10] [list 5 12]]
     } else {
       return [list]
     }
@@ -164,6 +166,73 @@ namespace eval ::Eagle {
     }
 
     return $result
+  }
+
+  proc getDotNetCoreDirectoryNameOnly { path } {
+    #
+    # HACK: Obtain parent directory name that matches "net*", if any (e.g.
+    #       "netcoreapp2.0", "netstandard2.0", etc).
+    #
+    if {[string length $path] > 0} then {
+      set tail [file tail $path]
+
+      if {[string match net* $tail]} then {
+        return $tail
+      }
+    }
+
+    return ""
+  }
+
+  proc getDotNetCoreLibPathDirectoryNameOnly { {name ""} } {
+    #
+    # NOTE: Search for matching directories based on the globally detected
+    #       library path associated with the current core library.
+    #
+    if {[info exists ::core_lib_path] && \
+        [string length $::core_lib_path] > 0} then {
+      #
+      # NOTE: Make sure the directory actually exists before trying to find
+      #       things within it.
+      #
+      if {[file isdirectory $::core_lib_path]} then {
+        #
+        # NOTE: Grab all directories that are directly beneath the detected
+        #       library path, if any.
+        #
+        foreach directory [glob \
+            -nocomplain -types {d} -- [file join $::core_lib_path *]] {
+          #
+          # NOTE: If the caller specified a (plugin) name to match against,
+          #       make sure it matches; otherwise, skip this directory.
+          #
+          if {[string length $name] > 0 && \
+              ![string match $name [file tail $directory]]} then {
+            continue
+          }
+
+          #
+          # NOTE: Find directories beneath the current candidate directory
+          #       that are .NET Core output directories.
+          #
+          set directories [glob \
+              -nocomplain -types {d} -- [file join $directory net*]]
+
+          #
+          # NOTE: If there is at least one match, we are done.  Return the
+          #       final path segment of the directory name to the caller.
+          #
+          if {[llength $directories] > 0} then {
+            return [file tail [lindex $directories 0]]
+          }
+        }
+      }
+    }
+
+    #
+    # NOTE: There was no match, just return something obviously invalid.
+    #
+    return ""
   }
 
   proc getDottedVersion { version } {
@@ -346,6 +415,14 @@ namespace eval ::Eagle {
   #
   proc isTestMono {} {
     return [expr {![info exists ::no(mono)] && [isMono]}]
+  }
+
+  #
+  # NOTE: This procedure should return non-zero if the test suite should be
+  #       considered to be running on .NET Core.
+  #
+  proc isTestDotNetCore {} {
+    return [expr {![info exists ::no(dotNetCore)] && [isDotNetCore]}]
   }
 
   proc isTestAdministrator { {force false} } {
@@ -1382,6 +1459,7 @@ namespace eval ::Eagle {
         #
         addConstraint shell
         addConstraint [appendArgs shell. $name]
+        addConstraint dotNetCoreOrShell
 
         tputs $channel "yes (Eagle)\n"
 
@@ -1397,6 +1475,7 @@ namespace eval ::Eagle {
         #
         addConstraint shell
         addConstraint [appendArgs shell. $name]
+        addConstraint dotNetCoreOrShell
 
         tputs $channel "yes (Tcl)\n"
 
@@ -2745,7 +2824,7 @@ namespace eval ::Eagle {
 
       if {[catch {
         object invoke Interpreter.GetActive GetStrongName
-      } strongName] == 0 && [string length $strongName] > 0} then {
+      } strongName] == 0 && [isNonNullObjectHandle $strongName]} then {
         #
         # NOTE: Yes, it appears that the core library was signed with a
         #       strong name key.
@@ -2841,7 +2920,7 @@ namespace eval ::Eagle {
 
       if {[catch {
         object invoke Interpreter.GetActive GetCertificate
-      } certificate] == 0 && [string length $certificate] > 0} then {
+      } certificate] == 0 && [isNonNullObjectHandle $certificate]} then {
         #
         # NOTE: Yes, it appears that the core library was signed with a
         #       code-signing certificate.
@@ -2869,7 +2948,8 @@ namespace eval ::Eagle {
     proc checkForCompileCSharp { channel } {
       tputs $channel "---- checking for test use of C# compiler... "
 
-      if {![info exists ::no(compileCSharp)]} then {
+      if {![info exists ::no(compileCSharp)] && \
+          [doesCompileCSharpWork]} then {
         addConstraint compileCSharp
 
         tputs $channel yes\n
@@ -2952,7 +3032,7 @@ namespace eval ::Eagle {
 
       if {[catch {
         object invoke AppDomain CurrentDomain
-      } appDomain] == 0 && [string length $appDomain] > 0} then {
+      } appDomain] == 0 && [isNonNullObjectHandle $appDomain]} then {
         if {[catch {
           object invoke $appDomain IsDefaultAppDomain
         } default] || [string length $default] == 0} then {
@@ -2980,22 +3060,41 @@ namespace eval ::Eagle {
       tputs $channel "---- checking for runtime... "
 
       #
-      # NOTE: Are we running inside Mono (regardless of operating system)?
+      # NOTE: Are we running inside Mono -OR- on .NET Core (regardless
+      #       of operating system)?
       #
-      if {[isTestMono]} then {
+      if {[isTestDotNetCore]} then {
+        #
+        # NOTE: Yes, it appears that we are running on .NET Core.
+        #
+        addConstraint dotNetCore; # running on .NET Core.
+        addConstraint dotNetOrDotNetCore
+        addConstraint dotNetCoreOrShell
+
+        #
+        # NOTE: We do not want to skip Mono bugs on .NET Core.
+        #
+        addKnownMonoConstraints true; # running on .NET Core.
+
+        tputs $channel [appendArgs [expr {[info exists \
+            ::eagle_platform(runtime)] ? \
+            $::eagle_platform(runtime) : ".NET Core"}] \n]
+      } elseif {[isTestMono]} then {
         #
         # NOTE: Yes, it appears that we are running inside Mono.
         #
         addConstraint mono; # running on Mono.
+        addConstraint monoOrDotNetCore
 
         tputs $channel [appendArgs [expr {[info exists \
             ::eagle_platform(runtime)] ? \
             $::eagle_platform(runtime) : "Mono"}] \n]
       } else {
         #
-        # NOTE: No, it appears that we are not running inside Mono.
+        # NOTE: It appears that we are running on the full .NET.
         #
         addConstraint dotNet; # running on .NET.
+        addConstraint dotNetOrDotNetCore
 
         #
         # NOTE: We do not want to skip Mono bugs on .NET.
@@ -3114,20 +3213,35 @@ namespace eval ::Eagle {
             addConstraint matchFramework
             addConstraint [appendArgs matchFramework $version(1)]
 
-            addConstraint dotnetMatchFramework
-            addConstraint [appendArgs dotnetMatchFramework $version(1)]
+            addConstraint dotNetMatchFramework
+            addConstraint [appendArgs dotNetMatchFramework $version(1)]
 
             addConstraint monoMatchFramework
             addConstraint [appendArgs monoMatchFramework $version(1)]
 
+            addConstraint dotNetCoreMatchFramework
+            addConstraint [appendArgs dotNetCoreMatchFramework $version(1)]
+
             tputs $channel yes\n
           } else {
-            if {[isMono]} then {
-              addConstraint dotnetMatchFramework
-              addConstraint [appendArgs dotnetMatchFramework $version(1)]
+            if {[isTestDotNetCore]} then {
+              addConstraint dotNetMatchFramework
+              addConstraint [appendArgs dotNetMatchFramework $version(1)]
+
+              addConstraint monoMatchFramework
+              addConstraint [appendArgs monoMatchFramework $version(1)]
+            } elseif {[isTestMono]} then {
+              addConstraint dotNetMatchFramework
+              addConstraint [appendArgs dotNetMatchFramework $version(1)]
+
+              addConstraint dotNetCoreMatchFramework
+              addConstraint [appendArgs dotNetCoreMatchFramework $version(1)]
             } else {
               addConstraint monoMatchFramework
               addConstraint [appendArgs monoMatchFramework $version(1)]
+
+              addConstraint dotNetCoreMatchFramework
+              addConstraint [appendArgs dotNetCoreMatchFramework $version(1)]
             }
 
             tputs $channel no\n
@@ -3157,7 +3271,27 @@ namespace eval ::Eagle {
         #
         set version [string map [list . ""] $dotVersion]
 
-        if {[isTestMono]} then {
+        if {[isTestDotNetCore]} then {
+          #
+          # NOTE: If the runtime version was found, add a test constraint
+          #       for it now.
+          #
+          if {[string length $version] > 0} then {
+            #
+            # NOTE: We are running on the .NET Core.  Keep track of the
+            #       specific version for usage in test constraints.
+            #
+            addConstraint [appendArgs dotNetCore $version]
+            addConstraint [appendArgs dotNetCore $version OrHigher]
+          }
+
+          #
+          # NOTE: We do not want to skip any Mono bugs on .NET Core.  Add
+          #       the necessary constraints for each version of Mono we
+          #       know about.
+          #
+          addKnownMonoConstraints false; # running on .NET.
+        } elseif {[isTestMono]} then {
           #
           # NOTE: If the runtime version was found, add a test constraint
           #       for it now.
@@ -3509,6 +3643,24 @@ namespace eval ::Eagle {
       }
     }
 
+    proc testForDynamicLoading { {fileName ""} } {
+      if {[catch {
+        if {[isWindows] && [string length $fileName] == 0} then {
+          set fileName kernel32; # HACK: Always pre-loaded?
+        }
+
+        set error null
+
+        object invoke -flags +NonPublic \
+            Eagle._Components.Private.NativeOps TestLoadLibrary \
+            $fileName error
+      } code] == 0 && $code eq "Ok"} then {
+        return true
+      }
+
+      return false
+    }
+
     proc checkForDynamicLoading { channel } {
       tputs $channel "---- checking for dynamic loading... "
 
@@ -3517,8 +3669,7 @@ namespace eval ::Eagle {
       #       On some Unix systems, dlopen does not work (e.g. because
       #       Mono is statically linked, etc).
       #
-      if {[isWindows] || ([llength [info commands library]] > 0 && \
-          [catch {library test}] == 0)} then {
+      if {[isWindows] || [testForDynamicLoading]} then {
         #
         # NOTE: Yes, it appears that it is available.
         #
@@ -3715,6 +3866,221 @@ namespace eval ::Eagle {
         tputs $channel yes\n
       } else {
         tputs $channel no\n
+      }
+    }
+
+    proc checkForExcelUsable { channel } {
+      tputs $channel "---- checking for usable instance of Excel... "
+
+      #
+      # NOTE: As of this writing, this check is only supported on Windows.
+      #
+      if {[isWindows]} then {
+        #
+        # NOTE: This constraint check must run after the interop assembly for
+        #       Excel has been detected, because this check makes use of it.
+        #
+        if {[haveConstraint Microsoft.Office.Interop.Excel]} then {
+          #
+          # NOTE: This constraint check requires the (optional) interpreter
+          #       isolation feature of Eagle in order to keep the primary
+          #       interpreter and AppDomain tidy.  It also requires access
+          #       to native Windows support in order to use the [info hwnd]
+          #       sub-command.
+          #
+          if {[haveConstraint compile.ISOLATED_INTERPRETERS] && \
+              [haveConstraint compile.NATIVE] && \
+              [haveConstraint compile.WINDOWS]} then {
+            try {
+              if {[catch {
+                #
+                # NOTE: In an attempt to limit the assemblies loaded into the
+                #       primary AppDomain, create an isolated interpreter.
+                #
+                set interp [interp create -isolated]
+
+                #
+                # NOTE: Give the newly created (isolated) interpreter a means
+                #       to set variables in the parent (this) interpreter.
+                #
+                interp alias $interp pset {} set; # parent set
+
+                #
+                # NOTE: Evaluate all the Excel interop assembly related code
+                #       in the other AppDomain.
+                #
+                interp eval $interp {
+                  #
+                  # NOTE: First, attempt to load the Excel interop assembly.
+                  #       If this fails, we cannot continue and Excel is not
+                  #       considered usable.
+                  #
+                  set assembly [object load -import -declare \
+                      Microsoft.Office.Interop.Excel]
+
+                  #
+                  # NOTE: Next, attempt to run the Excel application using
+                  #       its automation object model.  If this fails, we
+                  #       cannot continue and Excel is not considered usable.
+                  #
+                  set application [object create -alias \
+                      Microsoft.Office.Interop.Excel.ApplicationClass]; # run
+
+                  #
+                  # NOTE: Next, attempt to extract the process ID associated
+                  #       with the Excel application window.  This is used to
+                  #       help make sure the running Excel instance is closed
+                  #       after our testing is complete.  Generally, this will
+                  #       not fail because we know the [info hwnd] sub-command
+                  #       should be available, due to define constant checks.
+                  #
+                  pset pid [getDictionaryValue \
+                      [info hwnd [$application Hwnd]] processId]
+
+                  #
+                  # NOTE: Next, attempt to make sure that the Excel instance
+                  #       is not visible and will not display alerts/prompts.
+                  #       If this fails, Excel is not considered usable.
+                  #
+                  $application Visible false
+                  $application DisplayAlerts false
+
+                  #
+                  # NOTE: Next, create a value of an enumerated type exposed
+                  #       by the Excel automation object model so that we can
+                  #       add a new workbook.  Generally, this does not fail.
+                  #       If this fails, Excel is not considered usable.
+                  #
+                  set enumValue [object invoke -create \
+                      Enum Parse XlWBATemplate xlWBATWorksheet]
+
+                  #
+                  # NOTE: Next, attempt to add a new workbook.  If this fails,
+                  #       Excel is not considered usable.
+                  #
+                  set workbook [object invoke -alias \
+                      $application.Workbooks Add $enumValue]
+
+                  #
+                  # NOTE: The test package is needed in order to make use of
+                  #       the [getTemporaryFileName] procedure.
+                  #
+                  package require Eagle.Test
+
+                  #
+                  # NOTE: Setup a temporary file name that can be used to save
+                  #       the Excel spreadsheet.
+                  #
+                  pset fileName [set fileName [file nativename \
+                      [appendArgs [getTemporaryFileName] .xls]]]
+
+                  #
+                  # NOTE: Next, attempt to save a new workbook.  If this fails,
+                  #       Excel is not considered usable.
+                  #
+                  $workbook SaveAs $fileName
+
+                  #
+                  # NOTE: Next, attempt to close Excel.  If this fails, Excel
+                  #       is not considered usable.
+                  #
+                  $application Quit; # close
+
+                  #
+                  # NOTE: Finally, cleanup our local state just to be tidy.
+                  #
+                  unset workbook enumValue application assembly; # dispose
+                }
+              } result] == 0} then {
+                #
+                # NOTE: It appears the Excel instance is usable.
+                #
+                addConstraint excel.usable
+
+                #
+                # NOTE: Show that a usable Excel instance was found.
+                #
+                tputs $channel yes\n
+              } else {
+                #
+                # NOTE: This is the list of error message patterns that may
+                #       indicate a trial version of Excel is being used.
+                #
+                set patterns [list \
+                    "* 0x800AC472*" "* 0x800A03EC*" \
+                    "* application has expired.*"]
+
+                #
+                # NOTE: Check each error message pattern.  Upon finding any
+                #       match, mark Excel as unusable due to being a trial
+                #       edition and then stop.
+                #
+                foreach pattern $patterns {
+                  #
+                  # TODO: For now, just use [string match] here; eventually,
+                  #       regular expressions may be needed.
+                  #
+                  if {[string match $pattern $result]} then {
+                    #
+                    # NOTE: It appears that Excel is a trial edition.
+                    #
+                    addConstraint excel.trial
+
+                    #
+                    # NOTE: Show that the Excel trial edition was found.
+                    #
+                    tputs $channel "no, trial\n"
+
+                    #
+                    # NOTE: We are done here, return now.
+                    #
+                    return
+                  }
+                }
+
+                #
+                # NOTE: It appears the Excel instance is not usable.
+                #
+                addConstraint excel.unusable
+
+                #
+                # NOTE: Show that a unusable Excel instance was found.
+                #
+                tputs $channel "no, broken\n"
+              }
+            } finally {
+              #
+              # NOTE: Make sure the isolated interpreter is deleted if it was
+              #       actually created.
+              #
+              if {[info exists interp] && [interp exists $interp]} then {
+                catch {interp delete $interp}
+              }
+
+              #
+              # NOTE: Make sure the Excel process is (forcibly) closed if it
+              #       is still running at this point.
+              #
+              if {[info exists pid] && $pid in [getProcesses excel]} then {
+                catch {kill -force $pid}
+              }
+
+              #
+              # NOTE: Make sure the temporary spreadsheet file is deleted if
+              #       it was actually created.
+              #
+              if {[info exists fileName] && [file exists $fileName]} then {
+                catch {file delete $fileName}
+              }
+            }
+          } else {
+            tputs $channel "unknown, missing optional feature\n"
+          }
+        } else {
+          tputs $channel "unknown, no Excel interop assembly\n"
+        }
+      } else {
+        tputs $channel "unknown, not running on Windows\n"
       }
     }
 
@@ -4641,7 +5007,7 @@ namespace eval ::Eagle {
         #
         # NOTE: We do not own this, do not dispose it.
         #
-        if {[string length $debugger] > 0} then {
+        if {[isNonNullObjectHandle $debugger]} then {
           catch {object flags $debugger +NoDispose}
         }
 
@@ -4675,7 +5041,7 @@ namespace eval ::Eagle {
         #
         # NOTE: We do not own this, do not dispose it.
         #
-        if {[string length $debugger] > 0} then {
+        if {[isNonNullObjectHandle $debugger]} then {
           catch {object flags $debugger +NoDispose}
         }
 
@@ -4684,7 +5050,7 @@ namespace eval ::Eagle {
           #
           # NOTE: We do not own this, do not dispose it.
           #
-          if {[string length $interp] > 0} then {
+          if {[isNonNullObjectHandle $interp]} then {
             catch {object flags $interp +NoDispose}
           }
 
@@ -4721,15 +5087,16 @@ namespace eval ::Eagle {
     #
     exportAndImportPackageCommands [namespace current] [list \
         getKnownBuildTypes getKnownCompileOptions getKnownMonoVersions \
-        addKnownMonoConstraints lpermute alwaysFullInterpReady canExecComSpec \
-        canExecWhoAmI canExecTclShell canExecFossil canExecVsWhere isTestMono \
-        isTestAdministrator canPing cleanConstraintName cleanPackageName \
-        haveTclPlatformOsExtraUpdateName checkForTestSuiteFiles \
-        checkForPlatform checkForWindowsVersion checkForOperatingSystemUpdate \
-        checkForScriptLibrary checkForVariable checkForTclOptions \
-        checkForWindowsCommandProcessor checkForPackage checkForFossil \
-        checkForVisualStudioViaVsWhere checkForEagle checkForSymbols \
-        checkForLogFile checkForGaruda checkForShell \
+        addKnownMonoConstraints getDotNetCoreLibPathDirectoryNameOnly \
+        lpermute alwaysFullInterpReady canExecComSpec canExecWhoAmI \
+        canExecTclShell canExecFossil canExecVsWhere isTestMono \
+        isTestDotNetCore isTestAdministrator canPing cleanConstraintName \
+        cleanPackageName haveTclPlatformOsExtraUpdateName \
+        checkForTestSuiteFiles checkForPlatform checkForWindowsVersion \
+        checkForOperatingSystemUpdate checkForScriptLibrary checkForVariable \
+        checkForTclOptions checkForWindowsCommandProcessor checkForPackage \
+        checkForFossil checkForVisualStudioViaVsWhere checkForEagle \
+        checkForSymbols checkForLogFile checkForGaruda checkForShell \
         checkForOfficialStableReleaseInProgress checkForDebug checkForTk \
         checkForVersion checkForCommand checkForSubCommand checkForNamespaces \
         checkForTestExec checkForTestMachine checkForTestPlatform \

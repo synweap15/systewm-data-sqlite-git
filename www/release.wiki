@@ -234,6 +234,32 @@
   </li>
 </ol>
 
+<a name="buildNetStandard20Binaries"></a>
+<h2>Build .NET Standard 2.0 Binaries</h2>
+
+<ol>
+  <li>Open a normal command prompt window with &quot;cmd.exe&quot;.</li>
+
+  <li>Change the current directory to &quot;&lt;root&gt;\Setup&quot;.</li>
+
+  <li>
+    Enter the following command to build all the binaries available for .NET
+    Standard 2.0:
+    <br />
+    <br />
+    <b>SET BUILD_FULL=</b>
+    <br />
+    <b>SET BUILD_DEBUG=1</b>
+    <br />
+    <b>build_net_standard_20.bat</b>
+  </li>
+
+  <li>
+    Make sure everything succeeds with no errors; the console output may be
+    checked if any errors should occur.
+  </li>
+</ol>
+
 <a name="updateDocumentation"></a>
 <h2>Update Documentation</h2>
 
@@ -257,7 +283,7 @@
     included from upstream (e.g. from the SQLite core library, etc):
     <br />
     <br />
-    <b>..\Externals\Eagle\bin\EagleShell.exe -file sync.eagle --verbose</b>
+    <b>..\Externals\Eagle\bin\netFramework40\EagleShell.exe -file sync.eagle --verbose</b>
   </li>
 
   <li>
@@ -436,6 +462,29 @@
   </li>
 </ol>
 
+<a name="buildNetStandard20BinaryPackages"></a>
+<h2>Build .NET Standard 2.0 Release Packages</h2>
+
+<ol>
+  <li>Open a normal command prompt window with &quot;cmd.exe&quot;.</li>
+
+  <li>Change the current directory to &quot;&lt;root&gt;\Setup&quot;.</li>
+
+  <li>
+    Enter the following commands to build all the Mono release packages:
+    <br />
+    <br />
+    <b>SET RELEASE_DEBUG=1</b>
+    <br />
+    <b>release_net_standard_20.bat</b>
+  </li>
+
+  <li>
+    Make sure everything succeeds with no errors; the console output may be
+    checked if any errors should occur.
+  </li>
+</ol>
+
 <a name="buildSourcePackages"></a>
 <h2>Build Source Release Packages</h2>
 
@@ -508,7 +557,7 @@
     Enter the following command to build all the source release packages:
     <br />
     <br />
-    <b>..\Externals\Eagle\bin\EagleShell.exe -file verify.eagle Output true</b>
+    <b>..\Externals\Eagle\bin\netFramework40\EagleShell.exe -file verify.eagle Output true</b>
     <br />
     <br />
     <i>This assumes that the <a href="https://www.fossil-scm.org/">Fossil</a>,

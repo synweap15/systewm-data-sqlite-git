@@ -13,5 +13,5 @@ if [[ -z "$SQLITE_NET_YEAR" ]]; then
 fi
 
 pushd "$scriptdir/.."
-mono Externals/Eagle/bin/EagleShell.exe -preInitialize "set root_path {$scriptdir/..}; set test_configuration Debug; set test_year $SQLITE_NET_YEAR; set build_directory {bin/$SQLITE_NET_YEAR/Debug$SQLITE_NET_CONFIGURATION_SUFFIX/bin}; set interop_assembly_file_names $libname" -initialize -postInitialize "unset no(deleteSqliteImplicitNativeFiles); unset no(copySqliteImplicitNativeFiles)" -file Tests/all.eagle "$@"
+mono Externals/Eagle/bin/netFramework40/EagleShell.exe -preInitialize "set root_path {$scriptdir/..}; set test_configuration Debug; set test_year $SQLITE_NET_YEAR; set build_directory {bin/$SQLITE_NET_YEAR/Debug$SQLITE_NET_CONFIGURATION_SUFFIX/bin}; set interop_assembly_file_names $libname" -initialize -postInitialize "unset no(deleteSqliteImplicitNativeFiles); unset no(copySqliteImplicitNativeFiles)" -file Tests/all.eagle "$@"
 popd

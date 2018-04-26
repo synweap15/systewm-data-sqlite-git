@@ -84,7 +84,7 @@
     built with a separate managed and interop assembly:
     <br />
     <br />
-    <b>Externals\Eagle\bin\EagleShell.exe&nbsp;-file&nbsp;Tests\all.eagle</b>
+    <b>Externals\Eagle\bin\netFramework40\EagleShell.exe&nbsp;-file&nbsp;Tests\all.eagle</b>
   </li>
 
   <li>
@@ -92,15 +92,15 @@
     built with a mixed-mode assembly:
     <br />
     <br />
-    <b>Externals\Eagle\bin\EagleShell.exe&nbsp;-initialize&nbsp;-runtimeOption&nbsp;native&nbsp;-file&nbsp;Tests\all.eagle</b>
+    <b>Externals\Eagle\bin\netFramework40\EagleShell.exe&nbsp;-initialize&nbsp;-runtimeOption&nbsp;native&nbsp;-file&nbsp;Tests\all.eagle</b>
   </li>
 
   <li>
     In order to test binaries built with MSBuild 3.5 or Visual Studio 2008 (i.e.
     because the default is to test binaries built with MSBuild 4.0 or Visual
     Studio 2010) add the following command line argument right after
-    &quot;<b>Externals\Eagle\bin\EagleShell.exe</b>&quot; in any of the above
-    command lines:
+    &quot;<b>Externals\Eagle\bin\netFramework40\EagleShell.exe</b>&quot; in any
+    of the above command lines:
     <br />
     <br />
     <b>-anyInitialize&nbsp;&quot;set&nbsp;test_year&nbsp;2008&quot;</b>
@@ -110,8 +110,9 @@
     In order to test binaries built in the &quot;Debug&quot; build configuration
     (i.e. because the default is to test binaries built in the
     &quot;Release&quot; build configuration) add the following command line
-    argument right after &quot;<b>Externals\Eagle\bin\EagleShell.exe</b>&quot;
-    in any of the above command lines:
+    argument right after
+    &quot;<b>Externals\Eagle\bin\netFramework40\EagleShell.exe</b>&quot; in any
+    of the above command lines:
     <br />
     <br />
     <b>-anyInitialize&nbsp;&quot;set&nbsp;test_configuration&nbsp;Debug&quot;</b>
@@ -120,7 +121,7 @@
   <li>
     In order to test the native library pre-loader, add the following command
     line argument right after
-    &quot;<b>Externals\Eagle\bin\EagleShell.exe</b>&quot;
+    &quot;<b>Externals\Eagle\bin\netFramework40\EagleShell.exe</b>&quot;
     in any of the above command lines:
     <br />
     <br />

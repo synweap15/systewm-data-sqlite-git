@@ -121,6 +121,11 @@ compile.DATA SQLite System.Data.SQLite} -result {0}}
 
 ###############################################################################
 
+#
+# HACK: This test is non-portable (e.g. to Mono) due to its use of Managed
+#       Debugging Assistants (MDAs), which are only implemented by the full
+#       .NET Framework.
+#
 runTest {test tkt-0e48e80333-1.2 {delegate MDA on pooled close} -setup {
   moveEagleShellMdaConfig false
 
@@ -313,8 +318,8 @@ runTest {test tkt-0e48e80333-1.2 {delegate MDA on pooled close} -setup {
   restoreEagleShellEnvironment
 
   moveEagleShellMdaConfig true
-} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
-System.Data.SQLite compileCSharp} -match regexp -result {^0 \{Ok\
+} -constraints {eagle dotNet command.object monoBug28 command.sql compile.DATA\
+SQLite System.Data.SQLite compileCSharp} -match regexp -result {^0 \{Ok\
 System#CodeDom#Compiler#CompilerResults#\d+ \{\} 0 \{\} 0 \d+\}$}}
 
 ###############################################################################

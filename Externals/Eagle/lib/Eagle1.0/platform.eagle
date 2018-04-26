@@ -39,10 +39,10 @@ namespace eval ::Eagle {
 
   #
   # NOTE: This is the procedure that detects whether or not we are running
-  #       in Eagle on Mono (otherwise, we are running in Tcl or in Eagle on
-  #       the .NET Framework).  This procedure must function correctly in
-  #       both Tcl and Eagle and must return non-zero only when running in
-  #       Eagle on Mono.
+  #       in Eagle on Mono (i.e. otherwise, we are running in Tcl or in Eagle
+  #       on the .NET Framework or .NET Core).  This procedure must function
+  #       correctly in both Tcl and Eagle and must return non-zero only when
+  #       running in Eagle on Mono.
   #
   proc isMono {} {
     #
@@ -52,6 +52,23 @@ namespace eval ::Eagle {
     #
     return [expr {[info exists ::eagle_platform(runtime)] && \
         [string compare -nocase mono $::eagle_platform(runtime)] == 0}]
+  }
+
+  #
+  # NOTE: This is the procedure that detects whether or not we are running
+  #       in Eagle on .NET Core (i.e. otherwise, we are running in Tcl or in
+  #       Eagle on the .NET Framework or Mono).  This procedure must function
+  #       correctly in both Tcl and Eagle and must return non-zero only when
+  #       running in Eagle on .NET Core.
+  #
+  proc isDotNetCore {} {
+    #
+    # NOTE: Nothing too fancy or expensive should be done here.  In theory,
+    #       use of this procedure should be rare; however, in practice, this
+    #       procedure is actually used quite a bit (e.g. by the test suite).
+    #
+    return [expr {[info exists ::eagle_platform(runtime)] && \
+        [string compare -nocase ".net core" $::eagle_platform(runtime)] == 0}]
   }
 
   #

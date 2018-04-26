@@ -261,6 +261,63 @@
 
   <!--
   ******************************************************************************
+  -->
+
+  <Target Name="DetectBuildTool"
+          Condition="'$(DetectBuildTool)' != 'false' And
+                     '$(MSBuildBinPath)' != '' And
+                     !HasTrailingSlash('$(MSBuildBinPath)')">
+    <CreateProperty Condition="Exists('$(MSBuildBinPath)\MSBuild.exe')"
+                    Value="MSBuild">
+      <Output TaskParameter="Value" PropertyName="BuildTool" />
+    </CreateProperty>
+
+    <CreateProperty Condition="Exists('$(MSBuildBinPath)\xbuild.exe')"
+                    Value="XBuild">
+      <Output TaskParameter="Value" PropertyName="BuildTool" />
+    </CreateProperty>
+
+    <CreateProperty Condition="Exists('$(MSBuildBinPath)\MSBuild.dll')"
+                    Value="DotNetCore">
+      <Output TaskParameter="Value" PropertyName="BuildTool" />
+    </CreateProperty>
+
+    <CreateProperty Condition="!Exists('$(MSBuildBinPath)\MSBuild.exe') And
+                               !Exists('$(MSBuildBinPath)\xbuild.exe') And
+                               !Exists('$(MSBuildBinPath)\MSBuild.dll')"
+                    Value="Unknown">
+      <Output TaskParameter="Value" PropertyName="BuildTool" />
+    </CreateProperty>
+  </Target>
+
+  <!--
+  ******************************************************************************
+  -->
+
+  <Target Name="DetectOperatingSystem"
+          Condition="'$(DetectOperatingSystem)' != 'false'">
+    <CreateProperty Condition="'$(OS)' == 'Windows_NT'" Value="Windows">
+      <Output TaskParameter="Value" PropertyName="OperatingSystem" />
+    </CreateProperty>
+
+    <CreateProperty Condition="'$(OS)' == 'Unix'" Value="Unix">
+      <Output TaskParameter="Value" PropertyName="OperatingSystem" />
+    </CreateProperty>
+
+    <CreateProperty Condition="'$(OS)' == 'OSX'" Value="MacOSX">
+      <Output TaskParameter="Value" PropertyName="OperatingSystem" />
+    </CreateProperty>
+
+    <CreateProperty Condition="'$(OS)' != 'Windows_NT' And
+                               '$(OS)' != 'Unix' And
+                               '$(OS)' != 'OSX'"
+                    Value="Unknown">
+      <Output TaskParameter="Value" PropertyName="OperatingSystem" />
+    </CreateProperty>
+  </Target>
+
+  <!--
+  ******************************************************************************
   **                        Visual Studio 2017 Targets                        **
   ******************************************************************************
   -->

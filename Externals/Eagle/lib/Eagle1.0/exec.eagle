@@ -54,6 +54,17 @@ namespace eval ::Eagle {
           [appendArgs \" [file nativename [info nameofexecutable]] \"]
     } else {
       lappend command [info nameofexecutable]
+
+      #
+      # HACK: When running on .NET Core, we need to insert the "exec"
+      #       command line argument followed by our assembly name.
+      #
+      if {[isEagle] && [isDotNetCore]} then {
+        lappend command exec
+
+        lappend command [appendArgs \" \
+            [file nativename [lindex [info assembly true] 1]] \"]
+      }
     }
 
     #

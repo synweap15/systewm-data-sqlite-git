@@ -144,6 +144,10 @@ namespace System.Data.SQLite
             "NET_COMPACT_20",
 #endif
 
+#if NET_STANDARD_20
+            "NET_STANDARD_20",
+#endif
+
 #if PLATFORM_COMPACTFRAMEWORK
             "PLATFORM_COMPACTFRAMEWORK",
 #endif

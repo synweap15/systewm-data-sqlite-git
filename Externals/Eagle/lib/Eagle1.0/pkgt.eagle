@@ -38,7 +38,6 @@ namespace eval ::Eagle {
 
     if {$force || ![info exists baseUri]} then {
       if {[isEagle]} then {
-        package require Eagle.Update
         set baseUri [getAuxiliaryBaseUri]
       } else {
         set baseUri https://urn.to/r
@@ -122,6 +121,26 @@ namespace eval ::Eagle {
     if {$force || ![info exists licenseUri]} then {
       set licenseUri {${baseUri}/${urn}}
     }
+
+    #
+    # NOTE: The URN, relative to the base URI, where script evaluation
+    #       requests should be submitted to the "safe" sandbox.
+    #
+    variable sandboxEvalUrn; # DEFAULT: eval_01
+
+    if {$force || ![info exists sandboxEvalUrn]} then {
+      set sandboxEvalUrn eval_01
+    }
+
+    #
+    # NOTE: The URI where script evaluation requests should be submitted
+    #       to the "safe" sandbox.
+    #
+    variable sandboxEvalUri; # DEFAULT: ${baseUri}/${urn}
+
+    if {$force || ![info exists sandboxEvalUri]} then {
+      set sandboxEvalUri {${baseUri}/${urn}}
+    }
   }
 
   #
@@ -143,10 +162,7 @@ namespace eval ::Eagle {
     package require Eagle.Test
     package require Eagle.Unzip
 
-    set extractRootDirectory [getTemporaryPath]
-
-    set directory [file join $extractRootDirectory [appendArgs \
-        ea-pt-di- [pid] - [string trim [clock seconds] -]]]
+    set extractRootDirectory [getPackageInstallPath pkgd ea-pt-di]
 
     set uri [subst $packageToolsetUri]
     set fileName [getTemporaryFileName]
@@ -165,8 +181,176 @@ namespace eval ::Eagle {
       writeFile $fileName $data
     }
 
-    set extractDirectory [extractZipArchive $fileName $extractRootDirectory]
+    set extractDirectory [extractZipArchive \
+        $fileName $extractRootDirectory true]
+
     return [file join $extractDirectory pkgr_an_d client 1.0 neutral]
+  }
+
+  #
+  # NOTE: This procedure attempts to load (via [package require]) the package
+  #       client toolset.  It is designed to be used in conjunction with the
+  #       [downloadAndExtractPackageClientToolset] procedure, above.  Support
+  #       is included for specifying an extra auto-path directory and API key
+  #       to use.  By default, the [package unknown] handler is hooked to add
+  #       the remote package repository lookup functionality.  Eagle supports
+  #       extra script security via signed script certificates, which will be
+  #       enabled by default, unless it is unavailable.
+  #
+  proc loadPackageClientToolset {
+          {directory auto} {apiKeys ""} {hookUnknown true} {enableSecurity true}
+          {strictSecurity false} {debug false} } {
+    #
+    # NOTE: When running in Eagle, namespace support must be available and
+    #       enabled.
+    #
+    if {[isEagle] && ![namespace enable]} then {
+      error "namespace support must be enabled"
+    }
+
+    #
+    # NOTE: Does the caller want automatic discovery of the directory that
+    #       contains the (downloaded?) package client toolset?  Currently,
+    #       this only works on Windows and searches the temporary download
+    #       location, which normally obtains its value from the environment
+    #       variable TEMP.
+    #
+    if {$directory eq "auto"} then {
+      #
+      # NOTE: First, before doing anything else, see if the package client
+      #       toolset is already installed somewhere it can be loaded from.
+      #
+      set needDirectory true
+
+      if {[isEagle]} then {
+        #
+        # NOTE: Force Eagle to find *ALL* available package index files.
+        #       This must be done in the global scope so that the special
+        #       global variable 'dir' set by the package index loading
+        #       subsystem can be accessed.  Use [catch] here just in case
+        #       a package index file raises a script error.
+        #
+        catch {
+          uplevel #0 [list package scan -host -normal -refresh]
+        }
+      } else {
+        #
+        # HACK: Force Tcl to find *ALL* available package index files.
+        #       Without this, checking for the available versions of a
+        #       package using [package versions] likely will not succeed
+        #       unless the package is already loaded.  Use [catch] here
+        #       just in case a package index file raises a script error.
+        #
+        catch {
+          package require [appendArgs \
+              bogus_package_ [string trim [clock seconds] -]]
+        }
+      }
+
+      #
+      # NOTE: Check and see if the package repository client is a known
+      #       package now.  If so, there is no need to search directories
+      #       for it.
+      #
+      if {[llength [package versions Eagle.Package.Repository]] > 0} then {
+        set needDirectory false
+      }
+
+      #
+      # NOTE: Is searching for temporary download directories required at
+      #       this point?
+      #
+      if {$needDirectory} then {
+        if {![isWindows]} then {
+          error "directory discovery not supported on this platform"
+        }
+
+        set extractRootDirectory [getPackageInstallPath]
+
+        foreach directory [findDirectoriesRecursive \
+            [file join $extractRootDirectory pkgr_an_d]] {
+          #
+          # NOTE: Reset directory we just found to include the necessary
+          #       sub-directory components for the actual client files
+          #       and then stop, thereby selecting the first match.
+          #
+          set directory [file join $directory client 1.0 neutral]; break
+        }
+      }
+
+      #
+      # NOTE: If no directory was found, just clear the directory name,
+      #       which will cause auto-path modification(s) to be skipped.
+      #
+      if {$directory eq "auto"} then {
+        set directory ""
+      }
+    }
+
+    #
+    # NOTE: If there is a directory specified by the caller -OR- found
+    #       via automatic directory discovery, add it to the auto-path
+    #       now.
+    #
+    if {[string length $directory] > 0} then {
+      #
+      # NOTE: Only modify the auto-path if the directory is not already
+      #       present.  This prevents needless variable trace execution
+      #       that rescans the various auto-path directories.
+      #
+      if {![info exists ::auto_path] || \
+          [lsearch -exact $::auto_path $directory] == -1} then {
+        lappend ::auto_path $directory
+      }
+    }
+
+    #
+    # NOTE: If the caller wants to enable extra diagnostic information,
+    #       set the appropriate environment variables now.
+    #
+    if {$debug} then {
+      set ::env(DEBUG_PKGR) 1; set ::env(DEBUG_PKGD) 1
+    }
+
+    #
+    # NOTE: If the caller specified API keys, add them to the configured
+    #       list of API keys for the package repository client now.  This
+    #       uses a special global variable.
+    #
+    if {[llength $apiKeys] > 0} then {
+      eval lappend ::pkgr_api_keys $apiKeys
+    }
+
+    #
+    # NOTE: If the caller wants to enable the extra Eagle script security,
+    #       attempt to do that now.  Only treat a failure here as fatal if
+    #       the caller said so.
+    #
+    if {[isEagle] && $enableSecurity} then {
+      if {[catch {
+        uplevel 1 [list source enableSecurity]
+      } error] && $strictSecurity} then {
+        error $error
+      }
+    }
+
+    #
+    # NOTE: In Eagle, to actually enable make use of the [package unknown]
+    #       handler, an interpreter flag must be disabled.  If necessary,
+    #       do that now.
+    #
+    if {[isEagle] && $hookUnknown} then {
+      object invoke -flags +NonPublic -objectflags +AutoFlagsEnum \
+          Interpreter.GetActive interpreterFlags -NoPackageUnknown
+    }
+
+    #
+    # NOTE: Finally, attempt to actually load the package repository client.
+    #       This may fail for a number of reasons.  The most likely failure
+    #       case is when the directory containing the package is not found;
+    #       however, there are other possible failure modes.
+    #
+    package require Eagle.Package.Repository
   }
 
   #
@@ -188,12 +372,11 @@ namespace eval ::Eagle {
     package require Eagle.Test
     package require Eagle.Unzip
 
-    set extractRootDirectory [getTemporaryPath]
-
-    set directory [file join $extractRootDirectory [appendArgs \
-        ea-td-di- [pid] - [string trim [clock seconds] -]]]
-
     set platform [machineToPlatform $::tcl_platform(machine) true]
+
+    set extractRootDirectory [getPackageInstallPath \
+        [appendArgs KitDll_ $platform] ea-td-di]
+
     set urn [subst $tclKitDllUrn]; set uri [subst $tclKitDllUri]
     set fileName [getTemporaryFileName]
 
@@ -211,7 +394,8 @@ namespace eval ::Eagle {
       writeFile $fileName $data
     }
 
-    set extractDirectory [extractZipArchive $fileName $extractRootDirectory]
+    set extractDirectory [extractZipArchive \
+        $fileName $extractRootDirectory true]
 
     return [lindex [glob -nocomplain \
         [file join $extractDirectory lib *[info sharedlibextension]]] 0]
@@ -237,16 +421,15 @@ namespace eval ::Eagle {
     package require Eagle.Test
     package require Eagle.Unzip
 
-    set extractRootDirectory [getTemporaryPath]
-
-    set directory [file join $extractRootDirectory [appendArgs \
-        ea-st-di- [pid] - [string trim [clock seconds] -]]]
-
-    if {[info exists ::eagle_platform(text)]} then {
+    if {[info exists ::eagle_platform(text)] && \
+        [string length $::eagle_platform(text)] > 0} then {
       set platform [string tolower $::eagle_platform(text)]
     } else {
       set platform [string tolower netFx20]; # TODO: Good default?
     }
+
+    set extractRootDirectory [getPackageInstallPath \
+        [appendArgs eee_ $platform] ea-st-di]
 
     set dir [string map [list fx ""] $platform]; # netfx20 -> net20
     set urn [subst $securityToolsetUrn]; set uri [subst $securityToolsetUri]
@@ -266,7 +449,9 @@ namespace eval ::Eagle {
       writeFile $fileName $data
     }
 
-    set extractDirectory [extractZipArchive $fileName $extractRootDirectory]
+    set extractDirectory [extractZipArchive \
+        $fileName $extractRootDirectory true]
+
     return [file join $extractDirectory build $dir lib]
   }
 
@@ -446,6 +631,56 @@ namespace eval ::Eagle {
     file delete $fileName
 
     return $newFileName
+  }
+
+  #
+  # NOTE: This procedure attempts to submit the specified script to a remote
+  #       sandbox for evaluation.  The apiKey parameter is the optional API
+  #       key to use, which MAY enable additional permissions in the remote
+  #       sandbox.  The params parameter contains any optional extra names
+  #       and values to include in the submitted query.  Upon success, this
+  #       procedure returns a Tcl dictionary that includes at least the keys
+  #       "returnCode", "result", and "errorLine".  The "returnCode" value
+  #       will be "Ok", "Error", "Return", "Break", "Continue", or possibly
+  #       a signed integer.  The "result" value will be the textual result
+  #       of the script or an error message.  The "errorLine" value will be
+  #       zero or the line where a script error was raised.  This procedure
+  #       may raise script errors.
+  #
+  proc evaluateInRemoteSandbox {
+          script {apiKey ""} {params ""} {channel stdout} {quiet false} } {
+    setupPackageToolsetVars false
+
+    variable baseUri
+    variable sandboxEvalUri
+    variable sandboxEvalUrn
+
+    set urn [subst $sandboxEvalUrn]
+    set uri [subst $sandboxEvalUri]
+
+    set query [list go 1 raw 1 script $script]
+
+    if {[string length $apiKey] > 0} then {
+      lappend query apiKey $apiKey
+    }
+
+    if {[llength $params] > 0} then {
+      eval lappend query $params
+    }
+
+    if {[isEagle]} then {
+      return [uri upload -inline -data $query $uri]
+    } else {
+      package require http 2.0
+      package require Eagle.Tools.Common
+
+      namespace import \
+          ::Eagle::Tools::Common::getFileViaHttp
+
+      return [getFileViaHttp \
+          $uri 20 $channel $quiet -binary true \
+          -query [eval ::http::formatQuery $query]]
+    }
   }
 
   #

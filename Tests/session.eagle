@@ -862,8 +862,8 @@ runTest {test session-1.5 {table filter} -setup {
   }
 
   unset -nocomplain callbackResult callbackResults db fileName
-} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
-System.Data.SQLite SQLiteInterop\
+} -constraints {eagle command.object monoBug28 command.sql compile.DATA\
+compile.EMIT SQLite System.Data.SQLite SQLiteInterop\
 defineConstant.System.Data.SQLite.INTEROP_SESSION_EXTENSION} -result {IsEmpty\
 True MatchT2 false IsEmpty False MatchT1 true IsEmpty False MatchT2 true\
 IsEmpty False MatchT1 true}}
@@ -928,8 +928,8 @@ runTest {test session-1.6.1 {combine/apply change sets (memory)} -setup {
   }
 
   unset -nocomplain callbackResult callbackResults db fileName
-} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
-System.Data.SQLite SQLiteInterop\
+} -constraints {eagle command.object monoBug28 command.sql compile.DATA\
+compile.EMIT SQLite System.Data.SQLite SQLiteInterop\
 defineConstant.System.Data.SQLite.INTEROP_SESSION_EXTENSION} -result \
 {{{TableName t1 NumberOfColumns 2 OperationCode Delete Indirect False\
 PrimaryKeyColumns {[True, False]} OldValue 0 1 NewValue 0 <nullObject>\
@@ -1011,8 +1011,8 @@ runTest {test session-1.6.2 {combine/apply change sets (stream)} -setup {
   }
 
   unset -nocomplain callbackResult callbackResults db fileName
-} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
-System.Data.SQLite SQLiteInterop\
+} -constraints {eagle command.object monoBug28 command.sql compile.DATA\
+compile.EMIT SQLite System.Data.SQLite SQLiteInterop\
 defineConstant.System.Data.SQLite.INTEROP_SESSION_EXTENSION} -result \
 {{{TableName t1 NumberOfColumns 2 OperationCode Delete Indirect False\
 PrimaryKeyColumns {[True, False]} OldValue 0 1 NewValue 0 <nullObject>\
@@ -1085,8 +1085,8 @@ runTest {test session-1.7.1 {combine/apply patch sets (memory)} -setup {
   }
 
   unset -nocomplain callbackResult callbackResults db fileName
-} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
-System.Data.SQLite SQLiteInterop\
+} -constraints {eagle command.object monoBug28 command.sql compile.DATA\
+compile.EMIT SQLite System.Data.SQLite SQLiteInterop\
 defineConstant.System.Data.SQLite.INTEROP_SESSION_EXTENSION} -result \
 {{{TableName t1 NumberOfColumns 2 OperationCode Delete Indirect False\
 PrimaryKeyColumns {[True, False]} OldValue 0 1 NewValue 0 <nullObject>\
@@ -1168,8 +1168,8 @@ runTest {test session-1.7.2 {combine/apply patch sets (stream)} -setup {
   }
 
   unset -nocomplain callbackResult callbackResults db fileName
-} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
-System.Data.SQLite SQLiteInterop\
+} -constraints {eagle command.object monoBug28 command.sql compile.DATA\
+compile.EMIT SQLite System.Data.SQLite SQLiteInterop\
 defineConstant.System.Data.SQLite.INTEROP_SESSION_EXTENSION} -result \
 {{{TableName t1 NumberOfColumns 2 OperationCode Delete Indirect False\
 PrimaryKeyColumns {[True, False]} OldValue 0 1 NewValue 0 <nullObject>\
@@ -1271,8 +1271,8 @@ runTest {test session-1.9 {apply change set (remote stream)} -setup {
   }
 
   unset -nocomplain callbackResult callbackResults db fileName
-} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
-System.Data.SQLite SQLiteInterop\
+} -constraints {eagle command.object monoBug28 command.sql compile.DATA\
+compile.EMIT SQLite System.Data.SQLite SQLiteInterop\
 defineConstant.System.Data.SQLite.INTEROP_SESSION_EXTENSION} -result \
 {06631bf3545dba83b25db5142afc4d229544ed55}}
 

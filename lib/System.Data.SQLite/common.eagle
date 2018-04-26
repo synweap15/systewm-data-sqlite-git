@@ -148,6 +148,23 @@ namespace eval ::Eagle {
       }
     }
 
+    proc getBuildNativeYear {} {
+      if {[info exists ::test_native_year] && \
+          [string length $::test_native_year] > 0} then {
+        #
+        # NOTE: Use the specified test year for native binaries.  If this
+        #       variable is not set, the value returned by [getBuildYear]
+        #       will be used.
+        #
+        return $::test_native_year
+      } else {
+        #
+        # NOTE: Fallback on the (normal) build year for managed binaries.
+        #
+        return [getBuildYear]
+      }
+    }
+
     #
     # NOTE: This procedure is only used when adding shimmed test constraints.
     #
@@ -213,7 +230,7 @@ namespace eval ::Eagle {
         #
         # NOTE: Use the default list of test years (i.e. all).
         #
-        return [list 2005 2008 2010 2012 2013 2015 2017]
+        return [list 2005 2008 2010 2012 2013 2015 2017 NetStandard20]
       }
     }
 
@@ -266,6 +283,9 @@ namespace eval ::Eagle {
             }
             2017 {
               return netFx47; # TODO: Or "netFx471"?
+            }
+            NetStandard20 {
+              return netStandard20
             }
             default {
               return netFx35; # TODO: Good "fallback" default?
@@ -391,6 +411,53 @@ namespace eval ::Eagle {
         # NOTE: Use the default list of test configurations.
         #
         return [list Debug Release]
+      }
+    }
+
+    proc getBuildExtra {} {
+      if {[info exists ::test_extra] && \
+          [string length $::test_extra] > 0} then {
+        #
+        # NOTE: Use the specified extra output directory.
+        #
+        return $::test_extra
+      } elseif {[isDotNetCore]} then {
+        #
+        # NOTE: Running on .NET Core, use the extra output directory for
+        #       library files.
+        #
+        return netstandard2.0
+      } else {
+        #
+        # NOTE: No extra output directory is required.
+        #
+        return ""
+      }
+    }
+
+    proc getBuildExtras {} {
+      #
+      # NOTE: See if the list of extra output directories has been overridden
+      #       by the user (e.g. on the command line).
+      #
+      if {[info exists ::test_extras] && \
+          [llength $::test_extras] > 0} then {
+        #
+        # NOTE: Use the specified list of extra output directories.
+        #
+        return $::test_extras
+      } elseif {[isDotNetCore]} then {
+        #
+        # NOTE: Running on .NET Core, prioritize its extra output directory
+        #       for library files.
+        #
+        return [list netstandard2.0 ""]
+      } else {
+        #
+        # NOTE: Use default list of extra output directories, which is one
+        #       empty string (no-op).
+        #
+        return [list ""]
       }
     }
 
@@ -636,7 +703,7 @@ namespace eval ::Eagle {
       }
 
       #
-      # NOTE: If the machine name is unavailable, there is nothign else we
+      # NOTE: If the machine name is unavailable, there is nothing else we
       #       can do.
       #
       if {![info exists ::tcl_platform(machine)]} then {
@@ -724,15 +791,15 @@ namespace eval ::Eagle {
       return [isBuildAvailable "" $directory $varName]
     }
 
-    proc joinBuildDirectory { native path year platform configuration } {
+    proc joinBuildDirectory { native path year platform configuration extra } {
       #
       # NOTE: Figure out and then return the fully qualified path to the build
       #       directory based on all the arguments provided by our caller.
       #
       if {$native} then {
-        return [file join $path bin $year $platform $configuration]
+        return [file join $path bin $year $platform $configuration $extra]
       } else {
-        return [file join $path bin $year $configuration bin]
+        return [file join $path bin $year $configuration bin $extra]
       }
     }
 
@@ -805,7 +872,9 @@ namespace eval ::Eagle {
         set native [expr {!$managedOnly && [hasRuntimeOption native]}]
 
         return [joinBuildDirectory $native [getBuildBaseDirectory] \
-            [getBuildYear] [getBuildPlatform $native] [getBuildConfiguration]]
+            [expr {$managedOnly ? [getBuildYear] : [getBuildNativeYear]}] \
+            [getBuildPlatform $native] [getBuildConfiguration] \
+            [expr {$managedOnly ? [getBuildExtra] : ""}]]
       }
     }
 
@@ -1611,7 +1680,7 @@ namespace eval ::Eagle {
       }
 
       #
-      # NOTE: If the machine name is unavailable, there is nothign else we
+      # NOTE: If the machine name is unavailable, there is nothing else we
       #       can do.
       #
       if {![info exists ::tcl_platform(machine)]} then {
@@ -1710,66 +1779,71 @@ namespace eval ::Eagle {
       foreach native [list false true] {
         foreach year [getBuildYears] {
           foreach configuration [getBuildConfigurations] {
-            #
-            # NOTE: Figure out the effective build platform.  This is
-            #       based on whether or not a [primarily] native build
-            #       is being used.  For [primarily] non-native builds,
-            #       this will be an empty string.
-            #
-            set platform [getBuildPlatform $native]
-
-            tputs $channel [appendArgs \
-                "---- checking for System.Data.SQLite build \"" [expr \
-                {$native ? "native/" : ""}] [expr {[string length \
-                $platform] > 0 ? [appendArgs $platform /] : ""}] $year \
-                / $configuration "\"... "]
-
-            #
-            # NOTE: Build the fully qualified directory where the necessary
-            #       components for System.Data.SQLite should be found.
-            #
-            set directory [joinBuildDirectory $native \
-                [getBuildBaseDirectory] $year $platform $configuration]
-
-            #
-            # NOTE: Do the necessary files exist?  Currently, no other steps
-            #       are taken to verify this build is actually viable.
-            #
-            if {[isBuildAvailable $native $directory]} then {
+            foreach extra [getBuildExtras] {
               #
-              # NOTE: When in "select" mode, automatically select the first
-              #       available build of System.Data.SQLite and then return
-              #       immediately.
+              # NOTE: Figure out the effective build platform.  This is
+              #       based on whether or not a [primarily] native build
+              #       is being used.  For [primarily] non-native builds,
+              #       this will be an empty string.
               #
-              if {$select && [matchPlatform $platform]} then {
+              set platform [getBuildPlatform $native]
+
+              tputs $channel [appendArgs \
+                  "---- checking for System.Data.SQLite build \"" [expr \
+                  {$native ? "native/" : ""}] [expr {[string length \
+                  $platform] > 0 ? [appendArgs $platform /] : ""}] $year \
+                  / $configuration "\"... "]
+
+              #
+              # NOTE: Build the fully qualified directory where the necessary
+              #       components for System.Data.SQLite should be found.
+              #
+              set directory [joinBuildDirectory $native \
+                  [getBuildBaseDirectory] $year $platform $configuration \
+                  $extra]
+
+              #
+              # NOTE: Do the necessary files exist?  Currently, no other steps
+              #       are taken to verify this build is actually viable.
+              #
+              if {[isBuildAvailable $native $directory]} then {
                 #
-                # NOTE: Manually override all the build directory selection
-                #       related test settings in order to force this build
-                #       of System.Data.SQLite to be used.
+                # NOTE: When in "select" mode, automatically select the first
+                #       available build of System.Data.SQLite and then return
+                #       immediately.
                 #
-                if {![changeNativeRuntimeOption $native]} then {
+                if {$select && [matchPlatform $platform]} then {
+                  #
+                  # NOTE: Manually override all the build directory selection
+                  #       related test settings in order to force this build
+                  #       of System.Data.SQLite to be used.
+                  #
+                  if {![changeNativeRuntimeOption $native]} then {
+                    tputs $channel [appendArgs \
+                        "no, failed to " [expr {$native ? "add" : "remove"}] \
+                        " the \"native\" runtime option\n"]
+
+                    return false
+                  }
+
+                  set ::test_year $year
+                  set ::test_platform $platform
+                  set ::test_configuration $configuration
+
                   tputs $channel [appendArgs \
-                      "no, failed to " [expr {$native ? "add" : "remove"}] \
-                      " the \"native\" runtime option\n"]
+                      "yes, selected (" [expr {$native ? "native/" : ""}] \
+                      [expr {[string length $platform] > 0 ? [appendArgs \
+                      $platform /] : ""}] $year / $configuration \
+                      [expr {[string length $extra] > 0 ? [appendArgs / \
+                      $extra] : ""}] ")\n"]
 
-                  return false
+                  return true
+                } else {
+                  tputs $channel yes\n
                 }
-
-                set ::test_year $year
-                set ::test_platform $platform
-                set ::test_configuration $configuration
-
-                tputs $channel [appendArgs \
-                    "yes, selected (" [expr {$native ? "native/" : ""}] \
-                    [expr {[string length $platform] > 0 ? [appendArgs \
-                    $platform /] : ""}] $year / $configuration ")\n"]
-
-                return true
               } else {
-                tputs $channel yes\n
+                tputs $channel no\n
               }
-            } else {
-              tputs $channel no\n
             }
           }
         }
@@ -4388,7 +4462,8 @@ namespace eval ::Eagle {
             [file join EntityFramework lib [string map [list Fx ""] \
             [string map [list netFx451 netFx45 netFx452 netFx45 netFx46 \
             netFx45 netFx461 netFx45 netFx462 netFx45 netFx47 netFx45 \
-            netFx471 netFx45] [getBuildNetFx]]] EntityFramework.dll]]
+            netFx471 netFx45 netStandard20 netFx45] [getBuildNetFx]]] \
+            EntityFramework.dll]]
 
         #
         # NOTE: Build the list of native assembly files that we handle.
@@ -4577,8 +4652,8 @@ namespace eval ::Eagle {
           #
           if {![info exists ::no(verifyBuildDirectory)]} then {
             #
-            # NOTE: At this point, the build directory MUST exist as a
-            #       valid directory for the testing process to continue.
+            # NOTE: At this point, the build directories MUST exist for
+            #       the testing process to continue.
             #
             set directory [getBuildDirectory false]
 
@@ -4589,16 +4664,37 @@ namespace eval ::Eagle {
               #       add an error to the test log file.
               #
               tputs $::test_channel [appendArgs \
-                  "---- could not verify build directory \"" $directory \
-                  "\", all testing halted\n"]
+                  "---- could not verify native build directory \"" \
+                  $directory "\", all testing halted\n"]
 
               #
               # NOTE: Raising a script error from this point should halt
               #       the testing process.
               #
               error [appendArgs \
-                  "could not verify build directory \"" $directory \
-                  "\", all testing halted"]
+                  "could not verify native build directory \"" \
+                  $directory "\", all testing halted"]
+            }
+
+            set directory [getBuildDirectory true]
+
+            if {![file exists $directory] || \
+                ![file isdirectory $directory]} then {
+              #
+              # NOTE: Just prior to actually halting the testing process,
+              #       add an error to the test log file.
+              #
+              tputs $::test_channel [appendArgs \
+                  "---- could not verify managed build directory \"" \
+                  $directory "\", all testing halted\n"]
+
+              #
+              # NOTE: Raising a script error from this point should halt
+              #       the testing process.
+              #
+              error [appendArgs \
+                  "could not verify managed build directory \"" \
+                  $directory "\", all testing halted"]
             }
           }
 
@@ -4768,24 +4864,27 @@ namespace eval ::Eagle {
         foreach fileNameOnly $nativeFileNames {
           catch {
             tputs $::test_channel [appendArgs \
-                "---- file version of \"" $fileNameOnly "\"... \"" \
-                [file version [getBinaryFileName $fileNameOnly]] \"\n]
+                "---- file version of \"" native/ $fileNameOnly \
+                "\"... \"" [file version [getBinaryFileName \
+                $fileNameOnly]] \"\n]
           }
         }
 
         foreach fileNameOnly $mixedFileNames {
           catch {
             tputs $::test_channel [appendArgs \
-                "---- file version of \"" $fileNameOnly "\"... \"" \
-                [file version [getBinaryFileName $fileNameOnly]] \"\n]
+                "---- file version of \"" mixed/ $fileNameOnly \
+                "\"... \"" [file version [getBinaryFileName \
+                $fileNameOnly]] \"\n]
           }
         }
 
         foreach fileNameOnly $managedFileNames {
           catch {
             tputs $::test_channel [appendArgs \
-                "---- file version of \"" $fileNameOnly "\"... \"" \
-                [file version [getBinaryFileName $fileNameOnly]] \"\n]
+                "---- file version of \"" managed/ $fileNameOnly \
+                "\"... \"" [file version [getBinaryFileName \
+                $fileNameOnly]] \"\n]
           }
         }
 
@@ -4793,18 +4892,20 @@ namespace eval ::Eagle {
           foreach fileNameOnly $nativeFileNames {
             catch {
               tputs $::test_channel [appendArgs \
-                  "---- file version of \"" $platform \
-                  / $fileNameOnly "\"... \"" [file version \
-                  [getBinaryFileName $fileNameOnly $platform]] \"\n]
+                  "---- file version of \"" native/platform/ \
+                  $platform / $fileNameOnly "\"... \"" [file \
+                  version [getBinaryFileName $fileNameOnly \
+                  $platform]] \"\n]
             }
           }
 
           foreach fileNameOnly $mixedFileNames {
             catch {
               tputs $::test_channel [appendArgs \
-                  "---- file version of \"" $platform \
-                  / $fileNameOnly "\"... \"" [file version \
-                  [getBinaryFileName $fileNameOnly $platform]] \"\n]
+                  "---- file version of \"" mixed/platform/ \
+                  $platform / $fileNameOnly "\"... \"" [file \
+                  version [getBinaryFileName $fileNameOnly \
+                  $platform]] \"\n]
             }
           }
         }
@@ -4813,18 +4914,20 @@ namespace eval ::Eagle {
           foreach fileNameOnly $nativeFileNames {
             catch {
               tputs $::test_channel [appendArgs \
-                  "---- file version of \"" $architecture \
-                  / $fileNameOnly "\"... \"" [file version \
-                  [getBinaryFileName $fileNameOnly $architecture]] \"\n]
+                  "---- file version of \"" native/architecture/ \
+                  $architecture / $fileNameOnly "\"... \"" [file \
+                  version [getBinaryFileName $fileNameOnly \
+                  $architecture]] \"\n]
             }
           }
 
           foreach fileNameOnly $mixedFileNames {
             catch {
               tputs $::test_channel [appendArgs \
-                  "---- file version of \"" $architecture \
-                  / $fileNameOnly "\"... \"" [file version \
-                  [getBinaryFileName $fileNameOnly $architecture]] \"\n]
+                  "---- file version of \"" mixed/architecture/ \
+                  $architecture / $fileNameOnly "\"... \"" [file \
+                  version [getBinaryFileName $fileNameOnly \
+                  $architecture]] \"\n]
             }
           }
         }
@@ -5028,6 +5131,13 @@ namespace eval ::Eagle {
         addConstraint [appendArgs buildYear. $year]
         tputs $::test_channel [appendArgs \" $year \"\n]
 
+        tputs $::test_channel \
+            "---- checking for System.Data.SQLite build native year... "
+
+        set year [getBuildNativeYear]
+        addConstraint [appendArgs buildNativeYear. $year]
+        tputs $::test_channel [appendArgs \" $year \"\n]
+
         #
         # NOTE: Check the current build .NET Framework.  Basically, this
         #       indicates which version of the .NET Framework is being
@@ -5050,6 +5160,23 @@ namespace eval ::Eagle {
         set configuration [getBuildConfiguration]
         addConstraint [appendArgs buildConfiguration. $configuration]
         tputs $::test_channel [appendArgs \" $configuration \"\n]
+
+        tputs $::test_channel \
+            "---- checking for System.Data.SQLite build extra... "
+
+        #
+        # NOTE: Check the current build extra directory.  This will normally
+        #       be either "netstandard2.0" or an empty string.
+        #
+        set extra [getBuildExtra]
+
+        if {[string length $extra] > 0} then {
+          addConstraint [appendArgs buildExtra. $extra]
+          tputs $::test_channel [appendArgs \" $extra \"\n]
+        } else {
+          addConstraint buildExtra.none
+          tputs $::test_channel <none>\n
+        }
 
         #
         # NOTE: Try to setup an interrupt callback using the script debugger

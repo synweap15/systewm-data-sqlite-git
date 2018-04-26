@@ -13,7 +13,8 @@
   ******************************************************************************
   -->
 
-  <ItemGroup Condition="'$(IsCompactFramework)' == 'false'">
+  <ItemGroup Condition="'$(IsCompactFramework)' == 'false' And
+                        '$(IsDotNetStandard)' == 'false'">
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Transactions" />

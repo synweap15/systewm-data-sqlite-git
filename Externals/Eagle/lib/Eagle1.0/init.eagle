@@ -114,12 +114,35 @@ namespace eval ::Eagle {
     return ""
   }
 
+  #
+  # NOTE: This procedure is designed to "load" (i.e. [source]) other script
+  #       files that logically belong to the package defined in this script
+  #       file.  Upon success, an empty string will be returned.  A script
+  #       error may be raised.  This should work properly in both Tcl and
+  #       Eagle.  This procedure must be defined in this script file because
+  #       it is needed while this script file is being evaluated.  If there
+  #       exists a global array element no($fileNameOnly) corresponding to a
+  #       particular script file to be loaded, it will be skipped.
+  #
+  # <bootstrap>
+  proc maybeLoadScripts { directory fileNamesOnly } {
+    set matchFileNames [list]
+
+    foreach fileNameOnly $fileNamesOnly {
+      if {![info exists ::no($fileNameOnly)]} then {
+        lappend matchFileNames $fileNameOnly
+      }
+    }
+
+    return [uplevel 1 [list loadScripts $directory $matchFileNames]]
+  }
+
   if {![interp issafe]} then {
     #
     # NOTE: Load the extra script library files that contain commonly used
     #       procedures that are shared between native Tcl and Eagle.
     #
-    loadScripts [file dirname [info script]] [list \
+    maybeLoadScripts [file dirname [info script]] [list \
         auxiliary.eagle database.eagle exec.eagle file1.eagle \
         file2.eagle file3.eagle info.eagle list.eagle \
         pkgt.eagle platform.eagle testlog.eagle unzip.eagle]
@@ -129,11 +152,11 @@ namespace eval ::Eagle {
     #       require a specific language (i.e. either native Tcl or Eagle).
     #
     if {[isEagle]} then {
-      loadScripts [file dirname [info script]] [list \
+      maybeLoadScripts [file dirname [info script]] [list \
           compat.eagle csharp.eagle object.eagle process.eagle \
           runopt.eagle unkobj.eagle update.eagle]
     } else {
-      loadScripts [file dirname [info script]] [list shim.eagle]
+      maybeLoadScripts [file dirname [info script]] [list shim.eagle]
     }
   }
 
@@ -322,7 +345,7 @@ namespace eval ::Eagle {
     # NOTE: Add script library files borrowed from native Tcl.
     #
     if {![interp issafe]} then {
-      loadScripts [file dirname [info script]] [list word.tcl]
+      maybeLoadScripts [file dirname [info script]] [list word.tcl]
     }
 
     ###########################################################################
@@ -339,12 +362,12 @@ namespace eval ::Eagle {
     #
     if {[llength [info commands exportAndImportPackageCommands]] > 0} then {
       exportAndImportPackageCommands [namespace current] [list \
-          isEagle loadScripts isWindows isInteractive haveGaruda \
-          isTclThread isMono isSameFileName getEnvironmentVariable \
-          combineFlags getCompileInfo getPlatformInfo getPluginName \
-          getPluginPath appendArgs lappendArgs getDictionaryValue \
-          getColumnValue getRowColumnValue tqputs tqlog \
-          makeBinaryChannel makeAsciiChannel makeUnicodeChannel \
+          isEagle loadScripts maybeLoadScripts isWindows isInteractive \
+          haveGaruda isTclThread isMono isDotNetCore isSameFileName \
+          getEnvironmentVariable combineFlags getCompileInfo getPlatformInfo \
+          getPluginName getPluginPath getPackageInstallPath appendArgs \
+          lappendArgs getDictionaryValue getColumnValue getRowColumnValue \
+          tqputs tqlog makeBinaryChannel makeAsciiChannel makeUnicodeChannel \
           makeLogChannel readFile readSharedFile writeFile appendFile \
           appendLogFile appendSharedFile appendSharedLogFile \
           readAsciiFile writeAsciiFile readUnicodeFile \
