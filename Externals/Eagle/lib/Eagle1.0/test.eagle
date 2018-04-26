@@ -20,10 +20,10 @@
 #       namespace if this script actually ends up being evaluated in Tcl.
 #
 namespace eval ::Eagle {
-  proc tputs { channel string } {
+  proc trawputs { channel string } {
     #
-    # NOTE: If an output channel was provided, use it; otherwise,
-    #       ignore the message.
+    # NOTE: If an output channel was provided, use it; otherwise, ignore
+    #       the message.
     #
     if {[string length $channel] > 0} then {
       #
@@ -36,8 +36,10 @@ namespace eval ::Eagle {
         puts -nonewline $channel $string
       }
     }
-
-    tlog $string
+  }
+
+  proc tputs { channel string } {
+    trawputs $channel $string; tlog $string
   }
 
   #
@@ -45,6 +47,45 @@ namespace eval ::Eagle {
   #
   proc ttclLog { string } {
     tputs $::test_channel [appendArgs $string \n]
+  }
+
+  proc doesTestLogFileExist { fileName } {
+    if {[catch {
+      expr {[file exists $fileName] && [file size $fileName] > 0}
+    } result] == 0 && $result} then {
+      return true
+    } else {
+      return false
+    }
+  }
+
+  proc getTestLogStartSentry {} {
+    if {![info exists ::test_run_id]} then {
+      set ::test_run_id [getNewTestRunId]
+    }
+
+    return [appendArgs \
+        "**** START OF TEST LOG \"" $::test_run_id "\" ****\n"]
+  }
+
+  proc doesTestLogHaveStartSentry {} {
+    set fileName [getTestLog]
+
+    if {[string length $fileName] > 0} then {
+      if {[doesTestLogFileExist $fileName]} then {
+        set sentry [string trim [getTestLogStartSentry]]
+
+        if {[string length $sentry] > 0} then {
+          set data [readFile $fileName]
+
+          if {[string first $sentry $data] != -1} then {
+            return true
+          }
+        }
+      }
+    }
+
+    return false
   }
 
   proc tlog { string } {
@@ -70,6 +111,14 @@ namespace eval ::Eagle {
           set newString $::test_log_queue($entry)
 
           if {[string length $newString] > 0} then {
+            if {![doesTestLogFileExist $fileName]} then {
+              set sentry [getTestLogStartSentry]
+
+              if {[string length $sentry] > 0} then {
+                appendSharedLogFile $fileName $sentry
+              }
+            }
+
             appendSharedLogFile $fileName $newString
           }
 
@@ -89,6 +138,14 @@ namespace eval ::Eagle {
       # NOTE: If an empty string is supplied by the caller, do nothing.
       #
       if {[string length $string] > 0} then {
+        if {![doesTestLogFileExist $fileName]} then {
+          set sentry [getTestLogStartSentry]
+
+          if {[string length $sentry] > 0} then {
+            appendSharedLogFile $fileName $sentry
+          }
+        }
+
         appendSharedLogFile $fileName $string
       }
     }
@@ -1082,6 +1139,10 @@ namespace eval ::Eagle {
   }
 
   proc getTestRunId {} {
+    return [expr {[info exists ::test_run_id] ? $::test_run_id : ""}]
+  }
+
+  proc getNewTestRunId {} {
     #
     # HACK: Yes, this is a bit ugly; however, it creates a nice unique
     #       identifier to represent the test run, which makes analyzing
@@ -4166,13 +4227,14 @@ namespace eval ::Eagle {
     #       namespace as well.
     #
     exportAndImportPackageCommands [namespace current] [list \
-        tputs ttclLog tlog getSoftwareRegistryKey haveConstraint \
-        addConstraint haveOrAddConstraint getConstraints \
-        getCachedConstraints useCachedConstraints removeConstraint \
-        fixConstraints fixTimingConstraints calculateBogoCops \
-        calculateRelativePerformance formatTimeStamp formatElapsedTime \
-        sourceIfValid processTestArguments getTclShellFileName \
-        getTemporaryPath getFiles getTestFiles getTestRunId getTestLogId \
+        tputs ttclLog doesTestLogHaveStartSentry tlog \
+        getSoftwareRegistryKey haveConstraint addConstraint \
+        haveOrAddConstraint getConstraints getCachedConstraints \
+        useCachedConstraints removeConstraint fixConstraints \
+        fixTimingConstraints calculateBogoCops calculateRelativePerformance \
+        formatTimeStamp formatElapsedTime sourceIfValid \
+        processTestArguments getTclShellFileName getTemporaryPath \
+        getFiles getTestFiles getTestRunId getNewTestRunId getTestLogId \
         getDefaultTestLog getTestLog getLastTestLog getTestSuite \
         getTestMachine getTestPlatform getTestConfiguration getTestSuffix \
         getTestUncountedLeaks getRuntimeAssemblyName getTestAssemblyName \

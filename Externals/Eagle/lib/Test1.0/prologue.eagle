@@ -803,8 +803,13 @@ if {![info exists no([file tail [info script]])]} then {
   #       any.  This must be done after the log file has been setup; otherwise,
   #       this information will not be visible in the log file.
   #
+  if {![info exists test_run_id]} then {
+    set test_run_id [getNewTestRunId]
+  }
+
   tputs $test_channel [appendArgs "---- testRunId: " \
-      [getTestRunId] \n]
+      [expr {[info exists test_run_id] ? \
+          $test_run_id : "<none>"}] \n]
 
   tputs $test_channel [appendArgs "---- processId: " \
       [pid] \n]

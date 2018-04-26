@@ -80,6 +80,16 @@ if {![info exists no([file tail [info script]])]} then {
   tputs $test_channel [appendArgs "---- ending command count: " \
       [info cmdcount] \n]
 
+  #
+  # NOTE: Check for the start-of-log sentry in the test log file.  If it
+  #       is not found, there is a problem.
+  #
+  set haveStartSentry [doesTestLogHaveStartSentry]
+
+  if {!$haveStartSentry} then {
+    tputs $test_channel "---- missing start-of-log sentry\n"
+  }
+
   if {[isEagle]} then {
     #
     # NOTE: We can only calculate the elapsed microseconds for the tests
@@ -227,6 +237,7 @@ if {![info exists no([file tail [info script]])]} then {
           $eagle_tests(Skipped)}]
 
       if {![info exists test_suite_errors] && \
+          $haveStartSentry && \
           $passedOrSkipped == $eagle_tests(Total)} then {
         set exitCode Success
 
@@ -255,6 +266,7 @@ if {![info exists no([file tail [info script]])]} then {
       #       set the exit code to success; otherwise, set it to failure.
       #
       if {![info exists test_suite_errors] && \
+          $haveStartSentry && \
           $percent >= $test_threshold} then {
         set exitCode Success
 
@@ -343,7 +355,9 @@ if {![info exists no([file tail [info script]])]} then {
       set passedOrSkipped [expr {$::tcltest::numTests(Passed) + \
           $::tcltest::numTests(Skipped)}]
 
-      if {$passedOrSkipped == $::tcltest::numTests(Total)} then {
+      if {![info exists test_suite_errors] && \
+          $haveStartSentry && \
+          $passedOrSkipped == $::tcltest::numTests(Total)} then {
         set exitCode 0; # Success.
 
         if {$::tcltest::numTests(Total) > 0} then {
@@ -353,6 +367,12 @@ if {![info exists no([file tail [info script]])]} then {
         }
       } else {
         set exitCode 1; # Failure.
+
+        if {[info exists test_suite_errors]} then {
+          tputs $test_channel [appendArgs "OVERALL ERRORS: " \
+              [expr {[llength $test_suite_errors] > 0 ? \
+              $test_suite_errors : "<empty>"}] \n]
+        }
 
         tputs $test_channel "OVERALL RESULT: FAILURE\n"
       }
@@ -364,7 +384,9 @@ if {![info exists no([file tail [info script]])]} then {
       #       make sure that we meet or exceed the requirement and then
       #       set the exit code to success; otherwise, set it to failure.
       #
-      if {$percent >= $test_threshold} then {
+      if {![info exists test_suite_errors] && \
+          $haveStartSentry && \
+          $percent >= $test_threshold} then {
         set exitCode 0; # Success.
 
         if {$::tcltest::numTests(Total) > 0} then {
@@ -377,6 +399,12 @@ if {![info exists no([file tail [info script]])]} then {
       } else {
         set exitCode 1; # Failure.
 
+        if {[info exists test_suite_errors]} then {
+          tputs $test_channel [appendArgs "OVERALL ERRORS: " \
+              [expr {[llength $test_suite_errors] > 0 ? \
+              $test_suite_errors : "<empty>"}] \n]
+        }
+
         tputs $test_channel [appendArgs \
             "OVERALL RESULT: FAILURE (" $percent "% < " $test_threshold %)\n]
       }
@@ -386,6 +414,11 @@ if {![info exists no([file tail [info script]])]} then {
 
     tputs $test_channel \n; # NOTE: Blank line.
   }
+
+  #
+  # NOTE: We no longer need the result of the start-of-log sentry check.
+  #
+  unset haveStartSentry
 
   #
   # NOTE: Call the Tcl test cleanup procedure now to give it a chance to do
