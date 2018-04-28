@@ -3053,6 +3053,7 @@ namespace System.Data.SQLite
             case SQLiteConfigDbOpsEnum.SQLITE_DBCONFIG_NO_CKPT_ON_CLOSE: // int int*
             case SQLiteConfigDbOpsEnum.SQLITE_DBCONFIG_ENABLE_QPSG: // int int*
             case SQLiteConfigDbOpsEnum.SQLITE_DBCONFIG_TRIGGER_EQP: // int int*
+            case SQLiteConfigDbOpsEnum.SQLITE_DBCONFIG_RESET_DATABASE: // int int*
                 {
                     if (!(value is bool))
                     {
