@@ -2361,51 +2361,62 @@ namespace eval ::Eagle {
     proc compileCSharpWith {
             text memory symbols strict resultsVarName errorsVarName fileNames
             args } {
-      #
-      # NOTE: Since we are going to use this method name a lot, assign it to a
-      #       variable first.
-      #
-      set add ReferencedAssemblies.Add
+      try {
+        #
+        # NOTE: Since we are going to use this method name a lot, assign
+        #       it to a variable first.
+        #
+        set add ReferencedAssemblies.Add
 
-      #
-      # NOTE: Create the base command to evaluate and add the property settings
-      #       that are almost always needed by our unit tests (i.e. the System
-      #       and System.Data assembly references).
-      #
-      set command [list \
-          compileCSharp $text $memory $symbols $strict results errors \
-          $add System.dll $add System.Data.dll $add System.Transactions.dll \
-          $add System.Xml.dll]
+        #
+        # NOTE: Create the base command to evaluate and add the property
+        #       settings that are almost always needed by our unit tests
+        #       (i.e. the System and System.Data assembly references).
+        #
+        set command [list \
+            compileCSharp $text $memory $symbols $strict results \
+            errors $add System.dll $add System.Data.dll $add \
+            System.Transactions.dll $add System.Xml.dll]
 
-      #
-      # NOTE: Add all the provided file names as assembly references.
-      #
-      foreach fileName $fileNames {
-        lappend command $add [getBinaryFileName $fileName]
+        #
+        # NOTE: Add all the provided file names as assembly references.
+        #
+        foreach fileName $fileNames {
+          lappend command $add [getBinaryFileName $fileName]
+        }
+
+        #
+        # NOTE: Add extra arguments, if any, to the command to evaluate.
+        #
+        eval lappend command $args
+
+        #
+        # NOTE: Alias the compiler local results and errors variables to
+        #       the variable names provided by our caller.
+        #
+        if {[string length $resultsVarName] > 0} then {
+          upvar 1 $resultsVarName results
+        }
+
+        if {[string length $errorsVarName] > 0} then {
+          upvar 1 $errorsVarName errors
+        }
+
+        #
+        # NOTE: Evaluate the constructed [compileCSharp] command and
+        #       return the result.
+        #
+        eval $command
+      } finally {
+        #
+        # NOTE: If the C# compiler was invoked using [exec], reset the
+        #       previous process identifier now (i.e. that way, it does
+        #       not show up as being "leaked").
+        #
+        if {[isDotNetCore]} then {
+          catch {info previouspid true}
+        }
       }
-
-      #
-      # NOTE: Add the extra arguments, if any, to the command to evaluate.
-      #
-      eval lappend command $args
-
-      #
-      # NOTE: Alias the compiler local results and errors variables to the
-      #       variable names provided by our caller.
-      #
-      if {[string length $resultsVarName] > 0} then {
-        upvar 1 $resultsVarName results
-      }
-
-      if {[string length $errorsVarName] > 0} then {
-        upvar 1 $errorsVarName errors
-      }
-
-      #
-      # NOTE: Evaluate the constructed [compileCSharp] command and return the
-      #       result.
-      #
-      eval $command
     }
 
     proc isMemoryDb { fileName } {
