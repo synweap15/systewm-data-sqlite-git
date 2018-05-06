@@ -17469,7 +17469,7 @@ static void fts5SourceIdFunc(
 ){
   assert( nArg==0 );
   UNUSED_PARAM2(nArg, apUnused);
-  sqlite3_result_text(pCtx, "fts5: 2018-04-10 17:39:29 4bb2294022060e61de7da5c227a69ccd846ba330e31626ebcd59a94efd148b3b", -1, SQLITE_TRANSIENT);
+  sqlite3_result_text(pCtx, "fts5: 2018-04-28 01:48:40 f677065aab61037914fc980456caaa60132a19b387d6d717ec1a6b6fa7c61a10", -1, SQLITE_TRANSIENT);
 }
 
 static int fts5Init(sqlite3 *db){

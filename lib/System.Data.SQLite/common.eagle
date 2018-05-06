@@ -282,7 +282,7 @@ namespace eval ::Eagle {
               return netFx46; # TODO: Or "netFx461" / "netFx462"?
             }
             2017 {
-              return netFx47; # TODO: Or "netFx471"?
+              return netFx47; # TODO: Or "netFx471" / "netFx472"?
             }
             NetStandard20 {
               return netStandard20
@@ -4474,8 +4474,8 @@ namespace eval ::Eagle {
             [file join EntityFramework lib [string map [list Fx ""] \
             [string map [list netFx451 netFx45 netFx452 netFx45 netFx46 \
             netFx45 netFx461 netFx45 netFx462 netFx45 netFx47 netFx45 \
-            netFx471 netFx45 netStandard20 netFx45] [getBuildNetFx]]] \
-            EntityFramework.dll]]
+            netFx471 netFx45 netFx472 netFx45 netStandard20 netFx45] \
+            [getBuildNetFx]]] EntityFramework.dll]]
 
         #
         # NOTE: Build the list of native assembly files that we handle.

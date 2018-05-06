@@ -43,6 +43,7 @@
     <NetFx462>false</NetFx462>
     <NetFx47>false</NetFx47>
     <NetFx471>false</NetFx471>
+    <NetFx472>false</NetFx472>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <Prefer32Bit>false</Prefer32Bit>
     <!-- <PlatformToolset>v100</PlatformToolset> -->

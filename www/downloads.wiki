@@ -2513,7 +2513,7 @@
   <p>
     The <b>framework</b> in templates (5), (6), (7), (8), (9), and (10) will
     be one of netFx20, netFx35, netFx40, netFx45, netFx451, netFx452, netFx46,
-    netFx461, netFx462, netFx47, netFx471.
+    netFx461, netFx462, netFx47, netFx471, netFx472.
   </p>
 
   <p>

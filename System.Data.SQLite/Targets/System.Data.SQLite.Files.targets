@@ -94,7 +94,8 @@
                         '$(NetFx461)' != 'false' Or
                         '$(NetFx462)' != 'false' Or
                         '$(NetFx47)' != 'false' Or
-                        '$(NetFx471)' != 'false'"
+                        '$(NetFx471)' != 'false' Or
+                        '$(NetFx472)' != 'false'"
              Include="LINQ\SQLiteConnection_Linq.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -107,7 +108,8 @@
                         '$(NetFx461)' != 'false' Or
                         '$(NetFx462)' != 'false' Or
                         '$(NetFx47)' != 'false' Or
-                        '$(NetFx471)' != 'false'"
+                        '$(NetFx471)' != 'false' Or
+                        '$(NetFx472)' != 'false'"
              Include="LINQ\SQLiteFactory_Linq.cs">
       <SubType>Code</SubType>
     </Compile>
