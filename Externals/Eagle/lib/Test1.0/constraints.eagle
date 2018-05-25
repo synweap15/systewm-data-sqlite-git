@@ -24,7 +24,7 @@ namespace eval ::Eagle {
     return [list \
         NetFx20 NetFx35 NetFx40 NetFx45 NetFx451 \
         NetFx452 NetFx46 NetFx461 NetFx462 NetFx47 \
-        NetFx471 NetStandard20 Bare LeanAndMean \
+        NetFx471 NetFx472 NetStandard20 Bare LeanAndMean \
         Database MonoOnUnix Development]
   }
 
@@ -48,13 +48,13 @@ namespace eval ::Eagle {
         MONO_LEGACY NATIVE NATIVE_PACKAGE NATIVE_THREAD_ID NATIVE_UTILITY \
         NATIVE_UTILITY_BSTR NETWORK NET_20 NET_20_FAST_ENUM NET_20_ONLY \
         NET_20_SP1 NET_20_SP2 NET_30 NET_35 NET_40 NET_45 NET_451 NET_452 \
-        NET_46 NET_461 NET_462 NET_47 NET_471 NET_CORE_20 NET_STANDARD_20 \
-        NON_WORKING_CODE NOTIFY NOTIFY_ACTIVE NOTIFY_ARGUMENTS \
-        NOTIFY_EXCEPTION NOTIFY_EXECUTE NOTIFY_EXPRESSION NOTIFY_GLOBAL \
-        NOTIFY_OBJECT OBSOLETE OBFUSCATION OFFICIAL PARSE_CACHE PATCHLEVEL \
-        PLUGIN_COMMANDS POLICY_TRACE PREVIOUS_RESULT RANDOMIZE_ID REMOTING \
-        RESULT_LIMITS SAMPLE SECURITY SERIALIZATION SHARED_ID_POOL SHELL \
-        SOURCE_ID SOURCE_TIMESTAMP STATIC TCL TCL_KITS TCL_THREADED \
+        NET_46 NET_461 NET_462 NET_47 NET_471 NET_472 NET_CORE_20 \
+        NET_STANDARD_20 NON_WORKING_CODE NOTIFY NOTIFY_ACTIVE \
+        NOTIFY_ARGUMENTS NOTIFY_EXCEPTION NOTIFY_EXECUTE NOTIFY_EXPRESSION \
+        NOTIFY_GLOBAL NOTIFY_OBJECT OBSOLETE OBFUSCATION OFFICIAL PARSE_CACHE \
+        PATCHLEVEL PLUGIN_COMMANDS POLICY_TRACE PREVIOUS_RESULT RANDOMIZE_ID \
+        REMOTING RESULT_LIMITS SAMPLE SECURITY SERIALIZATION SHARED_ID_POOL \
+        SHELL SOURCE_ID SOURCE_TIMESTAMP STATIC TCL TCL_KITS TCL_THREADED \
         TCL_THREADS TCL_UNICODE TCL_WRAPPER TEST TEST_PLUGIN THREADING \
         THROW_ON_DISPOSED TRACE TYPE_CACHE UNIX USE_APPDOMAIN_FOR_ID \
         USE_NAMESPACES VERBOSE WEB WINDOWS WINFORMS WIX_30 WIX_35 WIX_36 \
@@ -4740,6 +4740,27 @@ namespace eval ::Eagle {
       return 461310
     }
 
+    proc getFrameworkSetup472Value {} {
+      #
+      # NOTE: Check if we are running on Windows 10 or later.
+      #
+      # BUGBUG: Is greater-than-or-equal-to matching correct here?
+      #
+      if {[isWindows] && [info exists ::tcl_platform(osVersion)] && \
+          $::tcl_platform(osVersion) >= 10.0 && \
+          [haveTclPlatformOsExtraUpdateName "April 2018 Update"]} then {
+        #
+        # NOTE: We are running on Windows 10, return the special value.
+        #
+        return 461808; # BUGBUG: Fall Creators Update only?
+      }
+
+      #
+      # NOTE: We are not running on Windows 10, return the normal value.
+      #
+      return 461814
+    }
+
     proc checkForNetFx4x { channel } {
       tputs $channel "---- checking for .NET Framework 4.x... "
 
@@ -4785,12 +4806,24 @@ namespace eval ::Eagle {
           #       equal to 393297 (393295 on Windows 10), then the .NET
           #       Framework 4.6 is installed, which is an in-place upgrade
           #       to 4.5.x.  Similar handling is necessary for the .NET
-          #       Framework 4.6.1, 4.6.2, 4.7, and 4.7.1.  For information,
-          #       see:
+          #       Framework 4.6.1, 4.6.2, 4.7, 4.7.1, and 4.7.2.  For more
+          #       information, see:
           #
           #       https://msdn.microsoft.com/en-us/library/hh925568.aspx
           #
-          if {$release >= [getFrameworkSetup471Value]} then {
+          if {$release >= [getFrameworkSetup472Value]} then {
+            addConstraint dotNet451OrHigher
+            addConstraint dotNet452OrHigher
+            addConstraint dotNet46OrHigher
+            addConstraint dotNet461OrHigher
+            addConstraint dotNet462OrHigher
+            addConstraint dotNet47OrHigher
+            addConstraint dotNet471OrHigher
+            addConstraint dotNet472
+            addConstraint dotNet472OrHigher
+
+            set version 4.7.2
+          } elseif {$release >= [getFrameworkSetup471Value]} then {
             addConstraint dotNet451OrHigher
             addConstraint dotNet452OrHigher
             addConstraint dotNet46OrHigher

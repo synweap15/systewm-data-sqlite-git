@@ -81,13 +81,21 @@ if {![info exists no([file tail [info script]])]} then {
       [info cmdcount] \n]
 
   #
-  # NOTE: Check for the start-of-log sentry in the test log file.  If it
-  #       is not found, there is a problem.
+  # NOTE: Maybe check for the start-of-log sentry in the test log file.
+  #       If it is not found, there is a problem.
   #
-  set haveStartSentry [doesTestLogHaveStartSentry]
+  if {![info exists no(checkLogStartSentry)]} then {
+    set haveStartSentry [doesTestLogHaveStartSentry]
 
-  if {!$haveStartSentry} then {
-    tputs $test_channel "---- missing start-of-log sentry\n"
+    if {$haveStartSentry} then {
+      tputs $test_channel "---- found start-of-log sentry\n"
+    } else {
+      tputs $test_channel "---- missing start-of-log sentry\n"
+    }
+  } else {
+    set haveStartSentry false
+
+    tputs $test_channel "---- skipped start-of-log sentry\n"
   }
 
   if {[isEagle]} then {
@@ -237,7 +245,7 @@ if {![info exists no([file tail [info script]])]} then {
           $eagle_tests(Skipped)}]
 
       if {![info exists test_suite_errors] && \
-          $haveStartSentry && \
+          ([info exists no(failLogStartSentry)] || $haveStartSentry) && \
           $passedOrSkipped == $eagle_tests(Total)} then {
         set exitCode Success
 
@@ -266,7 +274,7 @@ if {![info exists no([file tail [info script]])]} then {
       #       set the exit code to success; otherwise, set it to failure.
       #
       if {![info exists test_suite_errors] && \
-          $haveStartSentry && \
+          ([info exists no(failLogStartSentry)] || $haveStartSentry) && \
           $percent >= $test_threshold} then {
         set exitCode Success
 
@@ -356,7 +364,7 @@ if {![info exists no([file tail [info script]])]} then {
           $::tcltest::numTests(Skipped)}]
 
       if {![info exists test_suite_errors] && \
-          $haveStartSentry && \
+          ([info exists no(failLogStartSentry)] || $haveStartSentry) && \
           $passedOrSkipped == $::tcltest::numTests(Total)} then {
         set exitCode 0; # Success.
 
@@ -385,7 +393,7 @@ if {![info exists no([file tail [info script]])]} then {
       #       set the exit code to success; otherwise, set it to failure.
       #
       if {![info exists test_suite_errors] && \
-          $haveStartSentry && \
+          ([info exists no(failLogStartSentry)] || $haveStartSentry) && \
           $percent >= $test_threshold} then {
         set exitCode 0; # Success.
 

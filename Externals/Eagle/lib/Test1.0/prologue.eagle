@@ -3317,6 +3317,7 @@ if {![info exists no([file tail [info script]])]} then {
     checkForOperatingSystemUpdate $test_channel "Anniversary Update"
     checkForOperatingSystemUpdate $test_channel "Creators Update"
     checkForOperatingSystemUpdate $test_channel "Fall Creators Update"
+    checkForOperatingSystemUpdate $test_channel "April 2018 Update"
   }
 
   if {![info exists no(scriptLibrary)]} then {
