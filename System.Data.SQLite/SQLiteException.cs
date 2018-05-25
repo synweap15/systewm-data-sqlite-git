@@ -725,6 +725,10 @@ namespace System.Data.SQLite
       /// </summary>
       Locked_SharedCache = (Locked | (1 << 8)),
       /// <summary>
+      /// A virtual table in the database is locked.
+      /// </summary>
+      Locked_Vtab = (Locked | (2 << 8)),
+      /// <summary>
       /// A database file is locked due to a recovery operation.
       /// </summary>
       Busy_Recovery = (Busy | (1 << 8)),
@@ -752,6 +756,10 @@ namespace System.Data.SQLite
       /// A virtual table is malformed.
       /// </summary>
       Corrupt_Vtab = (Corrupt | (1 << 8)),
+      /// <summary>
+      /// A required sequence table is missing or corrupt.
+      /// </summary>
+      Corrupt_Sequence = (Corrupt | (2 << 8)),
       /// <summary>
       /// A database file is read-only due to a recovery operation.
       /// </summary>

@@ -64,6 +64,7 @@ Constraint_Trigger 1811
 Constraint_Unique 2067
 Constraint_Vtab 2323
 Corrupt 11
+Corrupt_Sequence 523
 Corrupt_Vtab 267
 Done 101
 Empty 16
@@ -108,6 +109,7 @@ IoErr_VNode 6922
 IoErr_Write 778
 Locked 6
 Locked_SharedCache 262
+Locked_Vtab 518
 Mismatch 20
 Misuse 21
 NoLfs 22
