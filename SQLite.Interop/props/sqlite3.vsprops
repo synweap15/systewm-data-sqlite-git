@@ -14,12 +14,12 @@
 	>
 	<UserMacro
 		Name="SQLITE_MANIFEST_VERSION"
-		Value="3.23.2.0"
+		Value="3.24.0.0"
 		PerformEnvironmentSet="true"
 	/>
 	<UserMacro
 		Name="SQLITE_RC_VERSION"
-		Value="3,23,2,0"
+		Value="3,24,0,0"
 		PerformEnvironmentSet="true"
 	/>
 	<UserMacro
