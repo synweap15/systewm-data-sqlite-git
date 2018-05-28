@@ -200,7 +200,11 @@ SQLITE_API const char *WINAPI interop_compileoption_get(int N){
 #if defined(INTEROP_DEBUG) || defined(INTEROP_LOG)
 SQLITE_PRIVATE void sqlite3InteropDebug(const char *zFormat, ...){
   va_list ap;                         /* Vararg list */
-  StrAccum acc;                       /* String accumulator */
+#if SQLITE_VERSION_NUMBER >= 3024000
+  sqlite3_str acc;                    /* Post 3.24 String accumulator */
+#else
+  StrAccum acc;                       /* Pre 3.24 string accumulator */
+#endif
   char zMsg[SQLITE_PRINT_BUF_SIZE*3]; /* Complete log message */
   va_start(ap, zFormat);
 #if SQLITE_VERSION_NUMBER >= 3008010
@@ -209,7 +213,9 @@ SQLITE_PRIVATE void sqlite3InteropDebug(const char *zFormat, ...){
   sqlite3StrAccumInit(&acc, zMsg, sizeof(zMsg), 0);
   acc.useMalloc = 0;
 #endif
-#if SQLITE_VERSION_NUMBER >= 3011000
+#if SQLITE_VERSION_NUMBER >= 3024000
+  sqlite3_str_vappendf(&acc, zFormat, ap);
+#elif SQLITE_VERSION_NUMBER >= 3011000
   sqlite3VXPrintf(&acc, zFormat, ap);
 #else
   sqlite3VXPrintf(&acc, 0, zFormat, ap);
