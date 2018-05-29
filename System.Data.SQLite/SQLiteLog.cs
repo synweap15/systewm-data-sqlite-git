@@ -208,9 +208,14 @@ namespace System.Data.SQLite
 #endif
 
                 //
-                // NOTE: Logging is enabled by default.
+                // NOTE: Logging is enabled by default unless the configuration
+                //       setting "Disable_SQLiteLog" is present.
                 //
-                _enabled = true;
+                if (UnsafeNativeMethods.GetSettingValue(
+                        "Disable_SQLiteLog", null) != null)
+                {
+                    _enabled = true;
+                }
 
                 //
                 // NOTE: For now, always setup the default log event handler.
