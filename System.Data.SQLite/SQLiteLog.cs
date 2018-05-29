@@ -212,7 +212,7 @@ namespace System.Data.SQLite
                 //       setting "Disable_SQLiteLog" is present.
                 //
                 if (UnsafeNativeMethods.GetSettingValue(
-                        "Disable_SQLiteLog", null) != null)
+                        "Disable_SQLiteLog", null) == null)
                 {
                     _enabled = true;
                 }
