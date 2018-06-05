@@ -1057,7 +1057,7 @@ namespace System.Data.SQLite
         /// </para>
         /// <para>
         /// When doing an insert without a rowid (argc>1, argv[1] is an SQL NULL),
-        /// on a virtual table that uses ROWID (but not on a WITHOUT ROWID virtual table,
+        /// on a virtual table that uses ROWID (but not on a WITHOUT ROWID virtual table),
         /// the implementation must set *pRowid to the rowid of the newly inserted row; 
         /// this will become the value returned by the sqlite3_last_insert_rowid()
         /// function. Setting this value in all the other cases is a harmless no-op;
@@ -1074,21 +1074,24 @@ namespace System.Data.SQLite
         /// <![CDATA[<dl>]]>
         /// <![CDATA[<dt>]]><![CDATA[<b>]]>argc = 1 <![CDATA[<br>]]> argv[0] &#8800; NULL<![CDATA[</b>]]>
         /// <![CDATA[</dt>]]><![CDATA[<dd>]]>
-        /// The single row with rowid or PRIMARY KEY equal to argv[0] is deleted. 
+        /// DELETE: The single row with rowid or PRIMARY KEY equal to argv[0] is deleted. 
         /// No insert occurs.
         /// <![CDATA[</dd>]]><![CDATA[<dt>]]><![CDATA[<b>]]>argc &gt; 1 <![CDATA[<br>]]> argv[0] = NULL<![CDATA[</b>]]>
         /// <![CDATA[</dt>]]><![CDATA[<dd>]]>
-        /// A new row is inserted with column values taken from
+        /// INSERT: A new row is inserted with column values taken from
         /// argv[2] and following.  In a rowid virtual table, if argv[1] is an SQL NULL,
         /// then a new unique rowid is generated automatically.  The argv[1] will be NULL
         /// for a WITHOUT ROWID virtual table, in which case the implementation should
         /// take the PRIMARY KEY value from the appropriate column in argv[2] and following.
         /// <![CDATA[</dd>]]><![CDATA[<dt>]]><![CDATA[<b>]]>argc &gt; 1 <![CDATA[<br>]]> argv[0] &#8800; NULL <![CDATA[<br>]]> argv[0] = argv[1]<![CDATA[</b>]]>
         /// <![CDATA[</dt>]]><![CDATA[<dd>]]>
+        /// UPDATE:
         /// The row with rowid or PRIMARY KEY argv[0] is updated with new values 
         /// in argv[2] and following parameters.
         /// <![CDATA[</dd>]]><![CDATA[<dt>]]><![CDATA[<b>]]>argc &gt; 1 <![CDATA[<br>]]> argv[0] &#8800; NULL <![CDATA[<br>]]> argv[0] &#8800; argv[1]<![CDATA[</b>]]>
-        /// <![CDATA[</dt>]]><![CDATA[<dd>]]> The row with rowid or PRIMARY KEY argv[0] is updated with 
+        /// <![CDATA[</dt>]]><![CDATA[<dd>]]>
+        /// UPDATE with rowid or PRIMARY KEY change:
+        /// The row with rowid or PRIMARY KEY argv[0] is updated with 
         /// the rowid or PRIMARY KEY in argv[1] 
         /// and new values in argv[2] and following parameters. This will occur 
         /// when an SQL statement updates a rowid, as in the statement:

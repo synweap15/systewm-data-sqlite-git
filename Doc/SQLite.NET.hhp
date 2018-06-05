@@ -42,6 +42,7 @@ Core\lang_savepoint.html
 Core\lang_select.html
 Core\lang_transaction.html
 Core\lang_update.html
+Core\lang_UPSERT.html
 Core\lang_vacuum.html
 Core\lang_with.html
 Core\pragma.html

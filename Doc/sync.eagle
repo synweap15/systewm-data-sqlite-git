@@ -40,6 +40,7 @@ set fileNames [list \
     [file join lang_select.html] \
     [file join lang_transaction.html] \
     [file join lang_update.html] \
+    [file join lang_UPSERT.html] \
     [file join lang_vacuum.html] \
     [file join lang_with.html] \
     [file join pragma.html] \

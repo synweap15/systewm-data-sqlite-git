@@ -119,6 +119,7 @@ set sds_manifests(source) {
   Doc/Extra/Core/lang_select.html
   Doc/Extra/Core/lang_transaction.html
   Doc/Extra/Core/lang_update.html
+  Doc/Extra/Core/lang_UPSERT.html
   Doc/Extra/Core/lang_vacuum.html
   Doc/Extra/Core/lang_with.html
   Doc/Extra/Core/pragma.html

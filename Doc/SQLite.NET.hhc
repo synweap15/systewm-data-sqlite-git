@@ -185,6 +185,10 @@
 			<param name="Local" value="Core/lang_update.html">
 			</OBJECT>
 		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="UPSERT">
+			<param name="Local" value="Core/lang_UPSERT.html">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
 			<param name="Name" value="VACUUM">
 			<param name="Local" value="Core/lang_vacuum.html">
 			</OBJECT>
