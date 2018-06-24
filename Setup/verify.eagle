@@ -77,6 +77,10 @@ proc getSha3Sum { fileName } {
   return ""
 }
 
+proc getInnoSetupRootMap {} {
+  return [list app\\ [appendArgs {{app}} \\] tmp\\ [appendArgs {{tmp}} \\]]
+}
+
 proc getExecCommandPrefix {} {
   return [list exec -success Success -nocarriagereturns --]
 }
@@ -333,9 +337,12 @@ if {$argc >= 2 && $argc <= 3} then {
     } elseif {[file extension $archiveFileName] eq ".exe" && \
         [string match -nocase *Setup*.exe $manifest]} then {
       #
-      # HACK: Assume this is an Inno Setup package and process
-      #       it using one of the appropriate tools, which are
-      #       currently limited to "innounp" or "innoextract".
+      # HACK: There is some special handling needed for dealing with
+      #       setup packages, which are currently always created with
+      #       the Inno Setup tool.  The two tools that can be used to
+      #       verify the contents of these packages are "innounp" and
+      #       "innoextract".  Since this archive file name looks like
+      #       one that contains a setup package, assume that it is.
       #
       set listCommand(1) [getExecCommandPrefix]
 
@@ -394,13 +401,15 @@ if {$argc >= 2 && $argc <= 3} then {
     if {[catch {
       set data [eval $listCommand(1)]
     } error1] == 0 || [catch {
-      #
-      # NOTE: The "innoextract" tool does not use the curly
-      #       braces around the "{app}" directory name.
-      #
-      set data [string map [list \
-          app\\ [appendArgs {{app}} \\] tmp\\ [appendArgs {{tmp}} \\]] \
-          [eval $listCommand(2)]]
+      set data [eval $listCommand(2)]
+
+      if {$isSetup} then {
+        #
+        # HACK: The "innoextract" tool does not use the curly
+        #       braces around the "{app}"-style directory names.
+        #
+        set data [string map [getInnoSetupRootMap] $data]
+      }
     } error2] == 0} then {
       #
       # HACK: The Inno Setup unpacking tool requires some extra
@@ -513,15 +522,43 @@ if {$argc >= 2 && $argc <= 3} then {
               set data [eval \
                   [string map $extractCommandMap $extractCommand(1)]]
             } error1] == 0 || [catch {
-              #
-              # NOTE: The "innoextract" tool does not use the curly
-              #       braces around the "{app}" directory name.
-              #
-              set extractCommandMap [list \
-                  %fileName% [file nativename [string map [list \
-                  [appendArgs {{app}} \\] app\\ [appendArgs {{tmp}} \
-                  \\] tmp\\] $manifestFileName]] %directory% [file \
-                  nativename $extractDirectory]]
+              if {$isSetup} then {
+                #
+                # HACK: The "innoextract" tool does not use the curly
+                #       braces around the "{app}"-style directory names.
+                #
+                set altManifestFileName [string map [getInnoSetupRootMap] \
+                    $manifestFileName]
+
+                set extractCommandMap [list \
+                    %fileName% [file nativename $altManifestFileName] \
+                    %directory% [file nativename $extractDirectory]]
+
+                #
+                # HACK: The "innoextract" tool uses the full manifest
+                #       file name when writing the extracted file, so
+                #       adjust the extracted file name to match it;
+                #       however, first verify that the path type of
+                #       the manifest file name is relative.
+                #
+                if {[file pathtype $altManifestFileName] eq "relative"} then {
+                  set extractFileName [file normalize [file join \
+                      $extractDirectory $altManifestFileName]]
+
+                  catch {
+                    file attributes $extractFileName -readonly false
+                    file delete $extractFileName
+                  }
+                } else {
+                  error [appendArgs \
+                      "path type for manifest file name \"" \
+                      $altManifestFileName "\" is not relative"]
+                }
+              } else {
+                set extractCommandMap [list \
+                    %fileName% [file nativename $manifestFileName] \
+                    %directory% [file nativename $extractDirectory]]
+              }
 
               set data [eval \
                   [string map $extractCommandMap $extractCommand(2)]]
