@@ -77,6 +77,14 @@ proc getSha3Sum { fileName } {
   return ""
 }
 
+proc getExecCommandPrefix {} {
+  return [list exec -success Success -nocarriagereturns --]
+}
+
+proc combineErrors { error1 error2 } {
+  return [appendArgs \n\n $error1 \n $error2 \n]
+}
+
 set argc [llength $argv]
 
 if {$argc >= 2 && $argc <= 3} then {
@@ -134,6 +142,16 @@ if {$argc >= 2 && $argc <= 3} then {
 
     if {![info exists innounp] || ![file exists $innounp]} then {
       set innounp [file join $path innounp.exe]
+    }
+  }
+
+  if {![info exists innoextract]} then {
+    if {[info exists env(InnoExtractTool)]} then {
+      set innoextract $env(InnoExtractTool)
+    }
+
+    if {![info exists innoextract] || ![file exists $innoextract]} then {
+      set innoextract [file join $path innoextract.exe]
     }
   }
 
@@ -288,62 +306,142 @@ if {$argc >= 2 && $argc <= 3} then {
       }
     }
 
-    set listCommand [list]
-    lappend listCommand exec -success Success -nocarriagereturns --
-
-    set extractCommand [list]
-    lappend extractCommand exec -success Success -nocarriagereturns --
+    set isSetup false
 
     if {[file extension $archiveFileName] in [list .nupkg .zip]} then {
       if {![file exists $zip]} then {
         usage [appendArgs "tool \"" $zip "\" is missing"]
       }
 
-      lappend listCommand $zip -Z -1 $archiveFileName
+      set listCommand(1) [getExecCommandPrefix]
 
-      lappend extractCommand $zip -j -o $archiveFileName \
-          \"%fileName%\" -d \"%directory%\"
+      if {[lindex $listCommand(1) 0] ne "error"} then {
+        lappend listCommand(1) $zip -Z -1 \
+            [file nativename $archiveFileName]
+      }
+
+      set listCommand(2) [list error "no fallback list command"]
+      set extractCommand(1) [getExecCommandPrefix]
+
+      if {[lindex $extractCommand(1) 0] ne "error"} then {
+        lappend extractCommand(1) $zip -j -o \
+            [file nativename $archiveFileName] \
+            \"%fileName%\" -d \"%directory%\"
+      }
+
+      set extractCommand(2) [list error "no fallback extract command"]
     } elseif {[file extension $archiveFileName] eq ".exe" && \
         [string match -nocase *Setup*.exe $manifest]} then {
       #
       # HACK: Assume this is an Inno Setup package and process
-      #       it using the necessary external tool.
+      #       it using one of the appropriate tools, which are
+      #       currently limited to "innounp" or "innoextract".
       #
-      lappend listCommand $innounp -v $archiveFileName
+      set listCommand(1) [getExecCommandPrefix]
 
-      lappend extractCommand $innounp -x -e -y \"-d%directory%\" \
-          $archiveFileName \"%fileName%\"
+      if {[lindex $listCommand(1) 0] ne "error"} then {
+        lappend listCommand(1) $innounp -v \
+            [file nativename $archiveFileName]
+      }
+
+      set extractCommand(1) [getExecCommandPrefix]
+
+      if {[lindex $extractCommand(1) 0] ne "error"} then {
+        lappend extractCommand(1) $innounp -x -e -y \"-d%directory%\" \
+            [file nativename $archiveFileName] \"%fileName%\"
+      }
+
+      set listCommand(2) [getExecCommandPrefix]
+
+      if {[lindex $listCommand(2) 0] ne "error"} then {
+        lappend listCommand(2) $innoextract --list \
+            [file nativename $archiveFileName]
+      }
+
+      set extractCommand(2) [getExecCommandPrefix]
+
+      if {[lindex $extractCommand(2) 0] ne "error"} then {
+        lappend extractCommand(2) $innoextract --extract --output-dir \
+            \"%directory%\" --include \"%fileName%\" \
+            [file nativename $archiveFileName]
+      }
+
+      set isSetup true
     } else {
       if {![file exists $rar]} then {
         usage [appendArgs "tool \"" $rar "\" is missing"]
       }
 
-      lappend listCommand $rar vb -- $archiveFileName
+      set listCommand(1) [getExecCommandPrefix]
 
-      lappend extractCommand $rar x -ep -y -- $archiveFileName \
-          \"%fileName%\" \"%directory%\"
+      if {[lindex $listCommand(1) 0] ne "error"} then {
+        lappend listCommand(1) $rar vb -- \
+            [file nativename $archiveFileName]
+      }
+
+      set listCommand(2) [list error "no fallback list command"]
+      set extractCommand(1) [getExecCommandPrefix]
+
+      if {[lindex $extractCommand(1) 0] ne "error"} then {
+        lappend extractCommand(1) $rar x -ep -y -- \
+            [file nativename $archiveFileName] \
+            \"%fileName%\" \"%directory%\"
+      }
+
+      set extractCommand(2) [list error "no fallback extract command"]
     }
 
-    if {[catch {eval $listCommand} result] == 0} then {
+    if {[catch {
+      set data [eval $listCommand(1)]
+    } error1] == 0 || [catch {
+      #
+      # NOTE: The "innoextract" tool does not use the curly
+      #       braces around the "{app}" directory name.
+      #
+      set data [string map [list \
+          app\\ [appendArgs {{app}} \\] tmp\\ [appendArgs {{tmp}} \\]] \
+          [eval $listCommand(2)]]
+    } error2] == 0} then {
       #
       # HACK: The Inno Setup unpacking tool requires some extra
       #       parsing logic to handle the output.
       #
       set containedFileNames [list]
 
-      if {[string first [file tail $innounp] $listCommand] != -1} then {
-        foreach {dummy matchFileName} [regexp -line -all -inline -- \
-            {^[ 0-9]{10}  \d{4}\.\d{2}\.\d{2} \d{2}:\d{2}  (.*)$} $result] {
+      if {$isSetup} then {
+        if {[llength $containedFileNames] == 0} then {
+          foreach {dummy matchFileName} [regexp -line -all -inline -- \
+              {^[ 0-9]{10}  \d{4}\.\d{2}\.\d{2} \d{2}:\d{2}  (.*)$} $data] {
+            #
+            # NOTE: Add the file name extracted from the output
+            #       line to the list of file names contained in
+            #       this archive.
+            #
+            lappend containedFileNames $matchFileName
+          }
+        }
+
+        if {[llength $containedFileNames] == 0} then {
+          foreach {dummy matchFileName} [regexp -line -all -inline -- \
+              [appendArgs {^ - "(.*)"(?: \[temp\])? \(\d+(?:\.\d+)? } \
+              {(?:B|KiB|MiB|GiB|TiB|PiB|EiB|ZiB|YiB)\)$}] $data] {
+            #
+            # NOTE: Add the file name extracted from the output
+            #       line to the list of file names contained in
+            #       this archive.
+            #
+            lappend containedFileNames $matchFileName
+          }
+
           #
-          # NOTE: Add the file name extracted from the output
-          #       line to the list of file names contained in
-          #       this archive.
+          # NOTE: The "innoextract" tool does not include the
+          #       script file in the list; therefore, fake it.
           #
-          lappend containedFileNames $matchFileName
+          lappend containedFileNames install_script.iss
         }
       } else {
         foreach matchFileName [split [string map [list \\ /] [string \
-            trim $result]] \n] {
+            trim $data]] \n] {
           #
           # NOTE: Replace the dynamically calculated MD5 hash
           #       for the special NuGet package file name, if
@@ -397,10 +495,6 @@ if {$argc >= 2 && $argc <= 3} then {
           continue
         }
 
-        set extractCommandMap [list \
-            %fileName% [file nativename $manifestFileName] \
-            %directory% [file nativename $extractDirectory]]
-
         set extractFileName [file join \
             $extractDirectory [file tail $manifestFileName]]
 
@@ -410,10 +504,28 @@ if {$argc >= 2 && $argc <= 3} then {
         }
 
         try {
-          if {[info exists hashes($manifestFileName)]} then {
+          if {1 || [info exists hashes($manifestFileName)]} then {
             if {[catch {
-              eval [string map $extractCommandMap $extractCommand]
-            } result] == 0} then {
+              set extractCommandMap [list \
+                  %fileName% [file nativename $manifestFileName] \
+                  %directory% [file nativename $extractDirectory]]
+
+              set data [eval \
+                  [string map $extractCommandMap $extractCommand(1)]]
+            } error1] == 0 || [catch {
+              #
+              # NOTE: The "innoextract" tool does not use the curly
+              #       braces around the "{app}" directory name.
+              #
+              set extractCommandMap [list \
+                  %fileName% [file nativename [string map [list \
+                  [appendArgs {{app}} \\] app\\ [appendArgs {{tmp}} \
+                  \\] tmp\\] $manifestFileName]] %directory% [file \
+                  nativename $extractDirectory]]
+
+              set data [eval \
+                  [string map $extractCommandMap $extractCommand(2)]]
+            } error2] == 0} then {
               if {[string length $hashes($manifestFileName)] == 64} then {
                 set hash [getSha3Sum $extractFileName]
               } else {
@@ -447,7 +559,8 @@ if {$argc >= 2 && $argc <= 3} then {
               puts stdout [appendArgs \
                   $hashPrefix ": Failed to extract file \"" \
                   $manifestFileName "\" from archive \"" \
-                  $archiveFileName "\", error: " $result]
+                  $archiveFileName "\", error: " [combineErrors \
+                  $error1 $error2]]
 
               if {$failHashes} then {
                 set exitCode 1
@@ -489,7 +602,8 @@ if {$argc >= 2 && $argc <= 3} then {
     } else {
       puts stdout [appendArgs \
           "ERROR: Failed to get list of files in archive \"" \
-          $archiveFileName "\", error: " $result]
+          $archiveFileName "\", error: " [combineErrors \
+          $error1 $error2]]
 
       set exitCode 1
     }
