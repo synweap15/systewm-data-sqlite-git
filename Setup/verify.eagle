@@ -504,7 +504,7 @@ if {$argc >= 2 && $argc <= 3} then {
         }
 
         try {
-          if {1 || [info exists hashes($manifestFileName)]} then {
+          if {[info exists hashes($manifestFileName)]} then {
             if {[catch {
               set extractCommandMap [list \
                   %fileName% [file nativename $manifestFileName] \
