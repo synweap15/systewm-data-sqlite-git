@@ -1986,7 +1986,7 @@ namespace System.Data.SQLite
       {
           if (assembly != null)
           {
-#if NET_40 || NET_45 || NET_451 || NET_452 || NET_46 || NET_461 || NET_462 || NET_47 || NET_471 || NET_472
+#if NET_40 || NET_45 || NET_451 || NET_452 || NET_46 || NET_461 || NET_462 || NET_47 || NET_471 || NET_472 || NET_STANDARD_20
               try
               {
                   if (assembly.IsDefined(
