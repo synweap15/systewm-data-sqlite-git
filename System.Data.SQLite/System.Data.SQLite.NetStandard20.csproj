@@ -46,6 +46,15 @@
     <NetFx461>true</NetFx461>
     <IsDotNetStandard>true</IsDotNetStandard>
     <ConfigurationYear>NetStandard20</ConfigurationYear>
+  </PropertyGroup>
+
+  <!--
+  ******************************************************************************
+  **             Project / .NET Standard 2.0 Specific Properties              **
+  ******************************************************************************
+  -->
+
+  <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <Deterministic>False</Deterministic>
