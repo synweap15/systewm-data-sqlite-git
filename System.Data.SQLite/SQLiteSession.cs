@@ -799,14 +799,30 @@ namespace System.Data.SQLite
                 pSql = SQLiteString.Utf8IntPtrFromString(LockNopSql, ref nSql);
 
                 IntPtr pRemain = IntPtr.Zero;
+
+#if !SQLITE_STANDARD
                 int nRemain = 0;
+                string functionName = "sqlite3_prepare_interop";
 
                 SQLiteErrorCode rc = UnsafeNativeMethods.sqlite3_prepare_interop(
                     GetIntPtr(), pSql, nSql, ref statement, ref pRemain,
                     ref nRemain);
+#else
+#if USE_PREPARE_V2
+                string functionName = "sqlite3_prepare_v2";
+
+                SQLiteErrorCode rc = UnsafeNativeMethods.sqlite3_prepare_v2(
+                    GetIntPtr(), pSql, nSql, ref statement, ref pRemain);
+#else
+                string functionName = "sqlite3_prepare";
+
+                SQLiteErrorCode rc = UnsafeNativeMethods.sqlite3_prepare(
+                    GetIntPtr(), pSql, nSql, ref statement, ref pRemain);
+#endif
+#endif
 
                 if (rc != SQLiteErrorCode.Ok)
-                    throw new SQLiteException(rc, "sqlite3_prepare_interop");
+                    throw new SQLiteException(rc, functionName);
             }
             finally
             {
@@ -833,11 +849,20 @@ namespace System.Data.SQLite
             if (statement == IntPtr.Zero)
                 return;
 
+#if !SQLITE_STANDARD
+            string functionName = "sqlite3_finalize_interop";
+
             SQLiteErrorCode rc = UnsafeNativeMethods.sqlite3_finalize_interop(
                 statement);
+#else
+            string functionName = "sqlite3_finalize";
+
+            SQLiteErrorCode rc = UnsafeNativeMethods.sqlite3_finalize(
+                statement);
+#endif
 
             if (rc != SQLiteErrorCode.Ok)
-                throw new SQLiteException(rc, "sqlite3_finalize_interop");
+                throw new SQLiteException(rc, functionName);
 
             statement = IntPtr.Zero;
         }
