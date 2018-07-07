@@ -63,6 +63,31 @@
 
   <!--
   ******************************************************************************
+  ** .NET Standard 2.0 Specific Eagle Strong Name Signing Property Overrides  **
+  ******************************************************************************
+  -->
+
+  <PropertyGroup>
+    <!--
+        NOTE: Apparently, the .NET Core build system sets the SignAssembly
+              property to false; therefore, reset it to true.  Also, delay
+              signing is currently non-functional due to the inability to
+              run the strong name signing tool (sn.exe).  It behaves badly
+              when run against a .NET Core assembly.
+    -->
+    <SignAssembly>true</SignAssembly>
+    <DelaySign>false</DelaySign>
+
+    <!--
+        TODO: Why is this needed?  It seems that public signing is quite
+              similar to delay signing.  Why is this necessary when not
+              running on Windows?
+    -->
+    <PublicSign Condition="'$(OS)' != 'Windows_NT'">true</PublicSign>
+  </PropertyGroup>
+
+  <!--
+  ******************************************************************************
   **                    .NET Standard 2.0 Specific Targets                    **
   ******************************************************************************
   -->
