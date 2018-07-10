@@ -5102,6 +5102,42 @@ database} 1}}
 
 ###############################################################################
 
+runTest {test data-1.97 {connection pool interaction with read-only} -setup {
+  setupDb [set fileName data-1.97.db]
+} -body {
+  sql execute $db "CREATE TABLE t1(x);"
+  sql execute $db "INSERT INTO t1 (x) VALUES(1);"
+
+  cleanupDb $fileName db true false false
+  setupDb $fileName "" "" "" "" "Read Only=True;Pooling=True;" true false
+
+  set code(1) [catch {
+    sql execute $db "INSERT INTO t1 (x) VALUES(2);"
+  } error(1)]
+
+  cleanupDb $fileName db true false false
+  setupDb $fileName "" "" "" "" "Pooling=True;" true false
+
+  set code(2) [catch {
+    sql execute $db "INSERT INTO t1 (x) VALUES(3);"
+  } error(2)]
+
+  cleanupDb $fileName db true false false
+  setupDb $fileName "" "" "" "" "" true false
+
+  list $code(1) [extractSystemDataSQLiteExceptionMessage $error(1)] \
+      $code(2) [extractSystemDataSQLiteExceptionMessage $error(2)] \
+      [sql execute -execute scalar $db "SELECT SUM(x) FROM t1;"]
+} -cleanup {
+  cleanupDb $fileName
+
+  unset -nocomplain error code db fileName
+} -constraints \
+{eagle monoBug28 command.sql compile.DATA SQLite System.Data.SQLite} -result \
+{1 {attempt to write a readonly database} 0 1 4}}
+
+###############################################################################
+
 reportSQLiteResources $test_channel
 
 ###############################################################################
