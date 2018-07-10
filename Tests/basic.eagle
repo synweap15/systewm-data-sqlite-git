@@ -5037,6 +5037,71 @@ System.Data.SQLite} -match regexp -result {^\{\} \{\} \{\} \{\} \{\} \{\} \{\}\
 
 ###############################################################################
 
+runTest {test data-1.96 {connection pool interaction with read-only} -setup {
+  catch {
+    object invoke -flags +NonPublic \
+        System.Data.SQLite.SQLiteConnectionPool _poolOpened 0
+
+    object invoke -flags +NonPublic \
+        System.Data.SQLite.SQLiteConnectionPool _poolClosed 0
+  }
+
+  proc getPoolCounts {} {
+    if {[catch {
+      object invoke -flags +NonPublic \
+          System.Data.SQLite.SQLiteConnectionPool _poolOpened
+    } opened] == 0 && [catch {
+      object invoke -flags +NonPublic \
+          System.Data.SQLite.SQLiteConnectionPool _poolClosed
+    } closed] == 0} then {
+      return [list $opened $closed]
+    } else {
+      tputs $::test_channel \
+          "==== WARNING: connection pool counts are not available\n"
+
+      return [list 0 0]
+    }
+  }
+
+  setupDb [set fileName data-1.96.db]
+} -body {
+  sql execute $db "CREATE TABLE t1(x);"
+  sql execute $db "INSERT INTO t1 (x) VALUES(1);"
+
+  cleanupDb $fileName db true false false
+  setupDb $fileName "" "" "" "" "Read Only=True;Pooling=True;" true false
+
+  set code(1) [catch {
+    sql execute $db "INSERT INTO t1 (x) VALUES(2);"
+  } error(1)]
+
+  cleanupDb $fileName db true false false
+  setupDb $fileName "" "" "" "" "Read Only=True;Pooling=True;" true false
+
+  set code(2) [catch {
+    sql execute $db "INSERT INTO t1 (x) VALUES(3);"
+  } error(2)]
+
+  cleanupDb $fileName db true false false
+  setupDb $fileName "" "" "" "" "" true false
+
+  list [getPoolCounts] \
+      $code(1) [extractSystemDataSQLiteExceptionMessage $error(1)] \
+      $code(2) [extractSystemDataSQLiteExceptionMessage $error(2)] \
+      [sql execute -execute scalar $db "SELECT SUM(x) FROM t1;"]
+} -cleanup {
+  cleanupDb $fileName
+
+  unset -nocomplain error code db fileName
+
+  rename getPoolCounts ""
+} -constraints \
+{eagle monoBug28 command.sql compile.DATA SQLite System.Data.SQLite} -result \
+{{0 0} 1 {attempt to write a readonly database} 1 {attempt to write a readonly\
+database} 1}}
+
+###############################################################################
+
 reportSQLiteResources $test_channel
 
 ###############################################################################

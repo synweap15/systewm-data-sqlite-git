@@ -976,6 +976,26 @@ namespace System.Data.SQLite
             _sql, ToUTF8(dbName)), -1);
     }
 
+    /// <summary>
+    /// This method attempts to determine if a database connection opened
+    /// with the specified <see cref="SQLiteOpenFlagsEnum" /> should be
+    /// allowed into the connection pool.
+    /// </summary>
+    /// <param name="openFlags">
+    /// The <see cref="SQLiteOpenFlagsEnum" /> that were specified when the
+    /// connection was opened.
+    /// </param>
+    /// <returns>
+    /// Non-zero if the connection should (eventually) be allowed into the
+    /// connection pool; otherwise, zero.
+    /// </returns>
+    private static bool IsAllowedToUsePool(
+        SQLiteOpenFlagsEnum openFlags
+        )
+    {
+        return openFlags == SQLiteOpenFlagsEnum.Default;
+    }
+
     internal override void Open(string strFilename, string vfsName, SQLiteConnectionFlags connectionFlags, SQLiteOpenFlagsEnum openFlags, int maxPoolSize, bool usePool)
     {
       //
@@ -994,6 +1014,15 @@ namespace System.Data.SQLite
           throw new SQLiteException("connection handle is still active");
 
       _usePool = usePool;
+
+      //
+      // BUGFIX: Do not allow a connection into the pool if it was opened
+      //         with flags that are incompatible with the default flags
+      //         (e.g. read-only).
+      //
+      if (_usePool && !IsAllowedToUsePool(openFlags))
+          _usePool = false;
+
       _fileName = strFilename;
       _flags = connectionFlags;
 
