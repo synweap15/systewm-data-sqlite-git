@@ -466,8 +466,10 @@ namespace eval ::Eagle {
     #
     # NOTE: Force use of the native library pre-loader when applicable.
     #
-    set no(deleteSqliteImplicitNativeFiles) 1
-    set no(copySqliteImplicitNativeFiles) 1
+    if {![isMono]} then {
+      set no(deleteSqliteImplicitNativeFiles) 1
+      set no(copySqliteImplicitNativeFiles) 1
+    }
   }
 }
 
