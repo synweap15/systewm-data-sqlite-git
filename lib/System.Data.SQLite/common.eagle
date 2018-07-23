@@ -602,6 +602,12 @@ namespace eval ::Eagle {
       return false
     }
 
+    proc isDarwin {} {
+      return [expr {
+        [info exists ::tcl_platform(os)] && $::tcl_platform(os) eq "Darwin"
+      }]
+    }
+
     proc getNativeLibraryFileNamesOnly {} {
       #
       # NOTE: First, check if the list of native library file names has been
@@ -616,17 +622,30 @@ namespace eval ::Eagle {
         return $::native_library_file_names
       } elseif {[isWindows]} then {
         #
-        # NOTE: Otherwise, on Windows, always use the default file name
-        #       "sqlite3.dll".
+        # NOTE: Otherwise, on Win32 always use the standard native library
+        #       file name "sqlite3.dll".
         #
         return [list sqlite3.dll]
+      } elseif {[isDotNetCore]} then {
+        #
+        #       When running on .NET Core, return the same native library
+        #       file name that is used on Windows (i.e. otherwise, assume
+        #       we are running on Mono and use its P/Invoke conventions).
+        #
+        return [list sqlite3.dll]
+      } elseif {[isDarwin]} then {
+        #
+        # NOTE: When running on Darwin (i.e. the kernel of iOS / Mac OS X),
+        #       return the Mac OS X native library file name.  This file
+        #       name is normally required for Mono.
+        #
+        return [list libsqlite3.dylib]
       } else {
         #
-        # NOTE: Otherwise, return both the generic POSIX file name and the
-        #       Mac OS X file name, since we do not currently have an easy
-        #       way to detect which of those platforms we are running on.
+        # NOTE: Otherwise, return the generic POSIX native library file
+        #       name.  This file name is normally required for Mono.
         #
-        return [list libsqlite3.dylib libsqlite3.so]
+        return [list libsqlite3.so]
       }
     }
 
@@ -644,17 +663,30 @@ namespace eval ::Eagle {
         return $::interop_assembly_file_names
       } elseif {[isWindows]} then {
         #
-        # NOTE: Otherwise, on Windows, always use the default file name
-        #       "SQLite.Interop.dll".
+        # NOTE: Otherwise, on Win32, always use the interop assembly file
+        #       name "SQLite.Interop.dll".
         #
         return [list SQLite.Interop.dll]
+      } elseif {[isDotNetCore]} then {
+        #
+        #       When running on .NET Core, return the same interp assembly
+        #       file name that is used on Windows (i.e. otherwise, assume
+        #       we are running on Mono and use its P/Invoke conventions).
+        #
+        return [list SQLite.Interop.dll]
+      } elseif {[isDarwin]} then {
+        #
+        # NOTE: When running on Darwin (i.e. the kernel of iOS / Mac OS X),
+        #       return the Mac OS X interp assembly file name.  This file
+        #       name is normally required for Mono.
+        #
+        return [list libSQLite.Interop.dylib]
       } else {
         #
-        # NOTE: Otherwise, return both the generic POSIX file name and the
-        #       Mac OS X file name, since we do not currently have an easy
-        #       way to detect which of those platforms we are running on.
+        # NOTE: Otherwise, return the generic POSIX interp assembly file
+        #       name.  This file name is normally required for Mono.
         #
-        return [list libSQLite.Interop.dylib libSQLite.Interop.so]
+        return [list libSQLite.Interop.so]
       }
     }
 
