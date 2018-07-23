@@ -23,5 +23,4 @@ if [[ -f "${SQLITE_INTEROP_FILE}" ]]; then
 fi
 
 dotnet exec Externals/Eagle/bin/netStandard20/EagleShell.dll -preInitialize "set test_configuration Release; set test_year NetStandard20; set test_native_year $SQLITE_NET_YEAR" -file Tests/all.eagle "$@"
-
 popd

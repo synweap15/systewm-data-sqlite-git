@@ -622,7 +622,7 @@ namespace eval ::Eagle {
         return $::native_library_file_names
       } elseif {[isWindows]} then {
         #
-        # NOTE: Otherwise, on Win32 always use the standard native library
+        # NOTE: Otherwise, on Win32, always use the standard native library
         #       file name "sqlite3.dll".
         #
         return [list sqlite3.dll]
