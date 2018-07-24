@@ -85,6 +85,7 @@ set sds_manifests(source) {
   Doc/Extra/Core/images/syntax/type-name.gif
   Doc/Extra/Core/images/syntax/update-stmt-limited.gif
   Doc/Extra/Core/images/syntax/update-stmt.gif
+  Doc/Extra/Core/images/syntax/upsert-clause.gif
   Doc/Extra/Core/images/syntax/vacuum-stmt.gif
   Doc/Extra/Core/images/syntax/with-clause.gif
   Doc/Extra/Core/lang.html
