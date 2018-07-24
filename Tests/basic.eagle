@@ -4699,7 +4699,7 @@ runTest {test data-1.89 {using SQLiteBlob without rowid PK index} -setup {
 
   unset -nocomplain result sql db fileName
 } -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
-System.Data.SQLite} -result {9 18}}
+System.Data.SQLite SQLiteInterop} -result {9 18}}
 
 ###############################################################################
 

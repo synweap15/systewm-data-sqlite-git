@@ -56,8 +56,8 @@ runTest {test tkt-17045010df-1.1 {EnableExtensions & LoadExtension} -setup {
   unset -nocomplain db fileName
 } -constraints {eagle command.object monoBug28\
 defineConstant.System.Data.SQLite.INTEROP_TEST_EXTENSION command.sql\
-compile.DATA SQLite System.Data.SQLite} -match regexp -result {^\{0 \{\}\} \{1\
-\{EXCEPTION System\.Data\.SQLite\.SQLiteException\
+compile.DATA SQLite System.Data.SQLite SQLiteInterop} -match regexp -result \
+{^\{0 \{\}\} \{1 \{EXCEPTION System\.Data\.SQLite\.SQLiteException\
 System\.Data\.SQLite\.SQLite3\.LoadExtension\} \{SQL logic error( or missing\
 database)? -- not authorized\}\} \{1 \{EXCEPTION\
 System\.Data\.SQLite\.SQLiteException System\.Data\.SQLite\.SQLite3\.Prepare\}\

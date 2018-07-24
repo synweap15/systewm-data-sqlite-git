@@ -131,7 +131,7 @@ runTest {test tkt-85b824b736-1.1 {SQLiteValue.GetString return value} -setup {
 
   unset -nocomplain result code results errors sql dataSource id fileName
 } -constraints {eagle command.object monoBug28 monoCrash211 command.sql\
-compile.DATA SQLite System.Data.SQLite\
+compile.DATA SQLite System.Data.SQLite SQLiteInterop\
 defineConstant.System.Data.SQLite.INTEROP_VIRTUAL_TABLE compileCSharp} -match \
 regexp -result [string map [list \n \r\n] {^Ok\
 System#CodeDom#Compiler#CompilerResults#\d+ \{\} 0 \{0 2 \{one-string\
@@ -250,7 +250,7 @@ runTest {test tkt-85b824b736-1.2 {SQLiteValue.GetBlob return value} -setup {
 
   unset -nocomplain result code results errors sql dataSource id fileName
 } -constraints {eagle command.object monoBug28 monoCrash211 command.sql\
-compile.DATA SQLite System.Data.SQLite\
+compile.DATA SQLite System.Data.SQLite SQLiteInterop\
 defineConstant.System.Data.SQLite.INTEROP_VIRTUAL_TABLE compileCSharp} -match \
 regexp -result [string map [list \n \r\n] {^Ok\
 System#CodeDom#Compiler#CompilerResults#\d+ \{\} 0 \{0 2 111 110 101 45 98 108\
