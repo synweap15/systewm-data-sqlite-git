@@ -5367,26 +5367,26 @@ namespace eval ::Eagle {
           #       required by the tests in this file.
           #
           set entityFrameworkDllFile \
-              [getBuildFileName EntityFramework.dll false]
+              [getBuildFileName EntityFramework.dll true]
 
           set installerExeFile \
-              [getBuildFileName Installer.exe false]
+              [getBuildFileName Installer.exe true]
 
           set sqliteDesignerDllFile \
-              [getBuildFileName SQLite.Designer.dll false]
+              [getBuildFileName SQLite.Designer.dll true]
 
           set systemDataSQLiteDllFile \
-              [getBuildFileName System.Data.SQLite.dll false]
+              [getBuildFileName System.Data.SQLite.dll true]
 
           set systemDataSQLiteLinqDllFile \
-              [getBuildFileName System.Data.SQLite.Linq.dll false]
+              [getBuildFileName System.Data.SQLite.Linq.dll true]
 
           set systemDataSQLiteEf6DllFile \
-              [getBuildFileName System.Data.SQLite.EF6.dll false]
+              [getBuildFileName System.Data.SQLite.EF6.dll true]
 
-          set testExeFile [getBuildFileName test.exe false]
-          set testLinqExeFile [getBuildFileName testlinq.exe false]
-          set testEf6ExeFile [getBuildFileName testef6.exe false]
+          set testExeFile [getBuildFileName test.exe true]
+          set testLinqExeFile [getBuildFileName testlinq.exe true]
+          set testEf6ExeFile [getBuildFileName testef6.exe true]
 
           #
           # NOTE: Setup the variables that refer to the various data files
