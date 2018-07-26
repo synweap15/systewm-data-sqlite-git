@@ -120,6 +120,7 @@ IF NOT DEFINED EAGLESHELL (
 %_VECHO% EagleShell = '%EAGLESHELL%'
 
 CALL :fn_VerifyDotNetCore
+IF ERRORLEVEL 1 GOTO errors
 
 %__ECHO2% PUSHD "%ROOT%"
 
@@ -134,6 +135,7 @@ FOR %%C IN (%TEST_NATIVE_CONFIGURATIONS%) DO (
   FOR %%Y IN (%YEARS%) DO (
     FOR %%N IN (%NATIVE_YEARS%) DO (
       CALL :fn_RunDotNetCoreTestSuite %%C %%Y %%N
+      IF ERRORLEVEL 1 GOTO errors
     )
   )
 )
@@ -153,7 +155,8 @@ GOTO no_errors
   )
   IF NOT DEFINED %DOTNET%_PATH (
     ECHO The .NET Core executable "%DOTNET%" is required to be in the PATH.
-    GOTO errors
+    CALL :fn_SetErrorLevel
+    GOTO :EOF
   )
   GOTO :EOF
 
@@ -161,17 +164,20 @@ GOTO no_errors
   SET NATIVE_CONFIGURATION=%1
   IF NOT DEFINED NATIVE_CONFIGURATION (
     ECHO Cannot run .NET Core test suite, missing native configuration.
-    GOTO errors
+    CALL :fn_SetErrorLevel
+    GOTO :EOF
   )
   SET YEAR=%2
   IF NOT DEFINED YEAR (
     ECHO Cannot run .NET Core test suite, missing year.
-    GOTO errors
+    CALL :fn_SetErrorLevel
+    GOTO :EOF
   )
   SET NATIVE_YEAR=%3
   IF NOT DEFINED NATIVE_YEAR (
     ECHO Cannot run .NET Core test suite, missing native year.
-    GOTO errors
+    CALL :fn_SetErrorLevel
+    GOTO :EOF
   )
   SET CONFIGURATION=%NATIVE_CONFIGURATION%
   SET CONFIGURATION=%CONFIGURATION:NativeOnly=%
@@ -180,7 +186,8 @@ GOTO no_errors
       %__ECHO% "%DOTNET%" %SUBCOMMANDS% "Externals\Eagle\bin\netStandard20\%EAGLESHELL%" %PREARGS% -anyInitialize "set test_year {%YEAR%}; set test_native_year {%NATIVE_YEAR%}; set test_configuration {%CONFIGURATION%}" -file "%TEST_FILE%" %POSTARGS%
       IF ERRORLEVEL 1 (
         ECHO Testing of "%YEAR%/%NATIVE_YEAR%/%CONFIGURATION%" .NET Standard 2.0 assembly failed.
-        GOTO errors
+        CALL :fn_SetErrorLevel
+        GOTO :EOF
       )
     ) ELSE (
       %_AECHO% Native directory "bin\%NATIVE_YEAR%\%PLATFORM%\%NATIVE_CONFIGURATION%" not found, skipped.

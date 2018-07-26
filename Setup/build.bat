@@ -156,6 +156,7 @@ IF DEFINED NETCORE20ONLY (
     SET YEAR=NetStandard20
   )
   CALL :fn_VerifyDotNetCore
+  IF ERRORLEVEL 1 GOTO errors
   SET NOBUILDTOOLDIR=1
   SET USEDOTNET=1
   GOTO setup_buildToolDir
@@ -770,7 +771,8 @@ GOTO no_errors
   )
   IF NOT DEFINED %DOTNET%_PATH (
     ECHO The .NET Core executable "%DOTNET%" is required to be in the PATH.
-    GOTO errors
+    CALL :fn_SetErrorLevel
+    GOTO :EOF
   )
   GOTO :EOF
 
