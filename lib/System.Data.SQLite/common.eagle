@@ -4474,6 +4474,19 @@ namespace eval ::Eagle {
       #
       if {![info exists ::no(prologue.eagle)]} then {
         #
+        # NOTE: Save the environment variables that we intend to change for
+        #       the test suite.
+        #
+        saveEnvironmentVariables \
+            [list Initialize_SQLiteLog] ::testSuiteSavedEnv
+
+        #
+        # NOTE: Force the managed logging subsystem to attempt to initialize
+        #       itself more than once.
+        #
+        set ::env(Initialize_SQLiteLog) 1
+
+        #
         # NOTE: Load the "before-constraints" custom per-user and/or per-host
         #       test settings now.
         #
@@ -5685,6 +5698,13 @@ namespace eval ::Eagle {
         if {[hasRuntimeOption sharedCache]} then {
           enableSharedCache $::test_channel false
         }
+
+        #
+        # NOTE: Restore the previously saved environment variables that we
+        #       changed for the test suite.
+        #
+        restoreEnvironmentVariables \
+            [list Initialize_SQLiteLog] ::testSuiteSavedEnv
       }
     }
 

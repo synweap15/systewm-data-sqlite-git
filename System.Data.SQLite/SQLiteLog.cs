@@ -153,16 +153,10 @@ namespace System.Data.SQLite
             if (UnsafeNativeMethods.GetSettingValue(
                     "Initialize_SQLiteLog", null) == null)
             {
-                try
-                {
-                    if (Interlocked.Increment(ref _attemptedInitialize) > 0)
-                    {
-                        return;
-                    }
-                }
-                finally
+                if (Interlocked.Increment(ref _attemptedInitialize) > 1)
                 {
                     Interlocked.Decrement(ref _attemptedInitialize);
+                    return;
                 }
             }
 
