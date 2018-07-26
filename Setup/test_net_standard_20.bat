@@ -160,17 +160,17 @@ GOTO no_errors
 :fn_RunDotNetCoreTestSuite
   SET NATIVE_CONFIGURATION=%1
   IF NOT DEFINED NATIVE_CONFIGURATION (
-    ECHO Cannot run test suite, missing native configuration.
+    ECHO Cannot run .NET Core test suite, missing native configuration.
     GOTO errors
   )
   SET YEAR=%2
   IF NOT DEFINED YEAR (
-    ECHO Cannot run test suite, missing year.
+    ECHO Cannot run .NET Core test suite, missing year.
     GOTO errors
   )
   SET NATIVE_YEAR=%3
   IF NOT DEFINED NATIVE_YEAR (
-    ECHO Cannot run test suite, missing native year.
+    ECHO Cannot run .NET Core test suite, missing native year.
     GOTO errors
   )
   SET CONFIGURATION=%NATIVE_CONFIGURATION%
