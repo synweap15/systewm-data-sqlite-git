@@ -59,11 +59,39 @@ IF NOT DEFINED DOTNET (
 
 %_VECHO% DotNet = '%DOTNET%'
 
-IF NOT DEFINED TEST_CONFIGURATIONS (
-  SET TEST_CONFIGURATIONS=Release
+IF NOT DEFINED SUBCOMMANDS (
+  SET SUBCOMMANDS=exec
 )
 
-%_VECHO% TestConfigurations = '%TEST_CONFIGURATIONS%'
+%_VECHO% SubCommands = '%SUBCOMMANDS%'
+
+IF NOT DEFINED TEST_NATIVE_CONFIGURATIONS (
+  SET TEST_NATIVE_CONFIGURATIONS=ReleaseNativeOnly
+)
+
+%_VECHO% TestNativeConfigurations = '%TEST_NATIVE_CONFIGURATIONS%'
+
+IF DEFINED PLATFORM (
+  %_AECHO% Skipping platform detection, already set...
+  GOTO skip_detectPlatform
+)
+
+IF /I "%PROCESSOR_ARCHITECTURE%" == "x86" (
+  SET PLATFORM=Win32
+)
+
+IF /I "%PROCESSOR_ARCHITECTURE%" == "AMD64" (
+  SET PLATFORM=x64
+)
+
+:skip_detectPlatform
+
+IF NOT DEFINED PLATFORM (
+  ECHO Unsupported platform.
+  GOTO errors
+)
+
+%_VECHO% Platform = '%PLATFORM%'
 
 IF NOT DEFINED YEARS (
   SET YEARS=NetStandard20
@@ -102,23 +130,10 @@ IF ERRORLEVEL 1 (
 
 SET TEST_ALL=1
 
-FOR %%C IN (%TEST_CONFIGURATIONS%) DO (
+FOR %%C IN (%TEST_NATIVE_CONFIGURATIONS%) DO (
   FOR %%Y IN (%YEARS%) DO (
     FOR %%N IN (%NATIVE_YEARS%) DO (
-      IF EXIST "bin\%%Y\%%C\bin" (
-        IF EXIST "bin\%%N\%PLATFORM%\%%C" (
-          %__ECHO% "%DOTNET%" exec "Externals\Eagle\bin\netStandard20\%EAGLESHELL%" %PREARGS% -anyInitialize "set test_year {%%Y}; set test_native_year {%%N}; set test_configuration {%%C}" -file "%TEST_FILE%" %POSTARGS%
-
-          IF ERRORLEVEL 1 (
-            ECHO Testing of "%%Y/%%N/%%C" .NET Standard 2.0 assembly failed.
-            GOTO errors
-          )
-        ) ELSE (
-          %_AECHO% Native directory "bin\%%N\%PLATFORM%\%%C" not found, skipped.
-        )
-      ) ELSE (
-        %_AECHO% Managed directory "bin\%%Y\%%C\bin" not found, skipped.
-      )
+      CALL :fn_RunDotNetCoreTestSuite %%C %%Y %%N
     )
   )
 )
@@ -142,17 +157,48 @@ GOTO no_errors
   )
   GOTO :EOF
 
-:fn_UnsetVariable
-  SETLOCAL
-  SET VALUE=%1
-  IF DEFINED VALUE (
-    SET VALUE=
-    ENDLOCAL
-    SET %VALUE%=
-  ) ELSE (
-    ENDLOCAL
+:fn_RunDotNetCoreTestSuite
+  SET NATIVE_CONFIGURATION=%1
+  IF NOT DEFINED NATIVE_CONFIGURATION (
+    ECHO Cannot run test suite, missing native configuration.
+    GOTO errors
   )
-  CALL :fn_ResetErrorLevel
+  SET YEAR=%2
+  IF NOT DEFINED YEAR (
+    ECHO Cannot run test suite, missing year.
+    GOTO errors
+  )
+  SET NATIVE_YEAR=%3
+  IF NOT DEFINED NATIVE_YEAR (
+    ECHO Cannot run test suite, missing native year.
+    GOTO errors
+  )
+  SET CONFIGURATION=%NATIVE_CONFIGURATION%
+  SET CONFIGURATION=%CONFIGURATION:NativeOnly=%
+  IF EXIST "bin\%YEAR%\%CONFIGURATION%\bin" (
+    IF EXIST "bin\%NATIVE_YEAR%\%PLATFORM%\%NATIVE_CONFIGURATION%" (
+      %__ECHO% "%DOTNET%" %SUBCOMMANDS% "Externals\Eagle\bin\netStandard20\%EAGLESHELL%" %PREARGS% -anyInitialize "set test_year {%YEAR%}; set test_native_year {%NATIVE_YEAR%}; set test_configuration {%CONFIGURATION%}" -file "%TEST_FILE%" %POSTARGS%
+      IF ERRORLEVEL 1 (
+        ECHO Testing of "%YEAR%/%NATIVE_YEAR%/%CONFIGURATION%" .NET Standard 2.0 assembly failed.
+        GOTO errors
+      )
+    ) ELSE (
+      %_AECHO% Native directory "bin\%NATIVE_YEAR%\%PLATFORM%\%NATIVE_CONFIGURATION%" not found, skipped.
+    )
+  ) ELSE (
+    %_AECHO% Managed directory "bin\%YEAR%\%CONFIGURATION%\bin" not found, skipped.
+  )
+  GOTO :EOF
+
+:fn_SetVariable
+  SETLOCAL
+  SET __ECHO_CMD=ECHO %%%2%%
+  FOR /F "delims=" %%V IN ('%__ECHO_CMD%') DO (
+    SET VALUE=%%V
+  )
+  ENDLOCAL && (
+    SET %1=%VALUE%
+  )
   GOTO :EOF
 
 :fn_ResetErrorLevel
