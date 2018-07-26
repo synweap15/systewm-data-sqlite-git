@@ -22,5 +22,5 @@ if [[ -f "${SQLITE_INTEROP_FILE}" ]]; then
   libname=SQLite.Interop.dll
 fi
 
-dotnet exec Externals/Eagle/bin/netStandard20/EagleShell.dll -preInitialize "set test_configuration Release; set test_year NetStandard20; set test_native_year $SQLITE_NET_YEAR" -file Tests/all.eagle "$@"
+dotnet exec Externals/Eagle/bin/netStandard20/EagleShell.dll -preInitialize "set test_configuration Release; set test_configuration_suffix {$SQLITE_NET_CONFIGURATION_SUFFIX}; set test_year NetStandard20; set test_native_year $SQLITE_NET_YEAR" -file Tests/all.eagle "$@"
 popd
