@@ -11,6 +11,7 @@ namespace System.Data.SQLite
     using System.Data.Common;
     using System.Diagnostics;
     using System.Globalization;
+    using System.Threading;
 
     /// <summary>
     /// Event data for logging event handlers.
@@ -122,6 +123,14 @@ namespace System.Data.SQLite
         ///////////////////////////////////////////////////////////////////////
 
         /// <summary>
+        /// This will be non-zero if an attempt was already made to initialize
+        /// the (managed) logging subsystem.
+        /// </summary>
+        private static int _attemptedInitialize;
+
+        ///////////////////////////////////////////////////////////////////////
+
+        /// <summary>
         /// This will be non-zero if logging is currently enabled.
         /// </summary>
         private static bool _enabled;
@@ -133,6 +142,30 @@ namespace System.Data.SQLite
         /// </summary>
         public static void Initialize()
         {
+            //
+            // NOTE: First, check if the managed logging subsystem is always
+            //       supposed to at least attempt to initialize itself.  In
+            //       order to do this, several fairly complex steps must be
+            //       taken, including calling a P/Invoke (interop) method;
+            //       therefore, by default, attempt to perform these steps
+            //       once.
+            //
+            if (UnsafeNativeMethods.GetSettingValue(
+                    "Initialize_SQLiteLog", null) == null)
+            {
+                try
+                {
+                    if (Interlocked.Increment(ref _attemptedInitialize) > 0)
+                    {
+                        return;
+                    }
+                }
+                finally
+                {
+                    Interlocked.Decrement(ref _attemptedInitialize);
+                }
+            }
+
             //
             // BUFXIX: We cannot initialize the logging interface if the SQLite
             //         core library has already been initialized anywhere in
