@@ -3994,7 +3994,7 @@ namespace System.Data.SQLite
     ///////////////////////////////////////////////////////////////////////////////////////////////
 
 #if USE_INTEROP_DLL && INTEROP_LOG
-    internal static SQLiteErrorCode TryConfigureLogForInterop(
+    internal static SQLiteErrorCode ConfigureLogForInterop(
         string className
         )
     {
@@ -4005,6 +4005,10 @@ namespace System.Data.SQLite
             UnsafeNativeMethods.sqlite3_log(rc, SQLiteConvert.ToUTF8(
                 HelperMethods.StringFormat(CultureInfo.InvariantCulture,
                     "logging initialized via \"{0}\".", className)));
+        }
+        else if (rc == SQLiteErrorCode.Done)
+        {
+            rc = SQLiteErrorCode.Ok;
         }
 
         return rc;

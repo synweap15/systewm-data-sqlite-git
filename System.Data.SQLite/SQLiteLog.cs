@@ -236,7 +236,7 @@ namespace System.Data.SQLite
                 //       has somehow been initialized.  An exception will
                 //       be raised in that case.
                 //
-                SQLiteErrorCode rc = SQLite3.TryConfigureLogForInterop(
+                SQLiteErrorCode rc = SQLite3.ConfigureLogForInterop(
                     className);
 
                 if (rc != SQLiteErrorCode.Ok)

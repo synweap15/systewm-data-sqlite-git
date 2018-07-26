@@ -213,6 +213,7 @@ released versions of System.Data.SQLite.
 <ul>
     <li>Updated to <a href="https://www.sqlite.org/releaselog/3_24_0.html">SQLite 3.24.0</a>.</li>
     <li>Updated to <a href="https://www.nuget.org/packages/EntityFramework/6.2.0">Entity Framework 6.2.0</a>.</li>
+    <li>Do not attempt to initialize the logging subsystem more than once.&nbsp;<b>** Potentially Incompatible Change **</b></li>
     <li>Prevent GetSchemaTable from throwing InvalidCastException. Fix for [baf42ee135].</li>
     <li>Add preliminary support for the .NET Framework 4.7.2.</li>
     <li>Add preliminary support for .NET Core 2.0 and the .NET Standard 2.0. Pursuant to [5c89cecd1b].</li>
