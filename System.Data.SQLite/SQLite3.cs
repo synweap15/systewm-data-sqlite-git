@@ -3946,6 +3946,8 @@ namespace System.Data.SQLite
         return StaticIsInitialized();
     }
 
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+
     /// <summary>
     /// Determines if the SQLite core library has been initialized for the
     /// current process.
@@ -3988,6 +3990,28 @@ namespace System.Data.SQLite
             }
         }
     }
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+
+#if USE_INTEROP_DLL && INTEROP_LOG
+    internal static SQLiteErrorCode TryConfigureLogForInterop(
+        string className
+        )
+    {
+        SQLiteErrorCode rc = UnsafeNativeMethods.sqlite3_config_log_interop();
+
+        if (rc == SQLiteErrorCode.Ok)
+        {
+            UnsafeNativeMethods.sqlite3_log(rc, SQLiteConvert.ToUTF8(
+                HelperMethods.StringFormat(CultureInfo.InvariantCulture,
+                    "logging initialized via \"{0}\".", className)));
+        }
+
+        return rc;
+    }
+#endif
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////
 
     /// <summary>
     /// Helper function to retrieve a column of data from an active statement.

@@ -1766,7 +1766,7 @@ namespace System.Data.SQLite
       UnsafeNativeMethods.Initialize();
 #endif
 
-      SQLiteLog.Initialize();
+      SQLiteLog.Initialize(typeof(SQLiteConnection).Name);
 
 #if !PLATFORM_COMPACTFRAMEWORK && !INTEROP_LEGACY_CLOSE && SQLITE_STANDARD
       //
@@ -1789,16 +1789,6 @@ namespace System.Data.SQLite
               if (_versionNumber >= 3007014)
                   SQLiteConnectionHandle.closeConnection = SQLiteBase.CloseConnectionV2;
           }
-      }
-#endif
-
-#if USE_INTEROP_DLL && INTEROP_LOG
-      SQLiteErrorCode rc = UnsafeNativeMethods.sqlite3_config_log_interop();
-
-      if (rc == SQLiteErrorCode.Ok)
-      {
-          UnsafeNativeMethods.sqlite3_log(
-              rc, SQLiteConvert.ToUTF8("logging initialized via SQLiteConnection."));
       }
 #endif
 

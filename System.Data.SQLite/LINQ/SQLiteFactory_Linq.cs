@@ -43,17 +43,7 @@ namespace System.Data.SQLite
         UnsafeNativeMethods.Initialize();
 #endif
 
-#if USE_INTEROP_DLL && INTEROP_LOG
-        SQLiteErrorCode rc = UnsafeNativeMethods.sqlite3_config_log_interop();
-
-        if (rc == SQLiteErrorCode.Ok)
-        {
-            UnsafeNativeMethods.sqlite3_log(
-                rc, SQLiteConvert.ToUTF8("logging initialized via SQLiteFactory."));
-        }
-#endif
-
-        SQLiteLog.Initialize();
+        SQLiteLog.Initialize(typeof(SQLiteFactory).Name);
 
         string version =
 #if NET_40 || NET_45 || NET_451 || NET_452 || NET_46 || NET_461 || NET_462 || NET_47 || NET_471 || NET_472

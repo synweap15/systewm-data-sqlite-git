@@ -142,6 +142,22 @@ namespace System.Data.SQLite
         /// </summary>
         public static void Initialize()
         {
+            Initialize(null);
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+
+        /// <summary>
+        /// Initializes the SQLite logging facilities.
+        /// </summary>
+        /// <param name="className">
+        /// The name of the managed class that called this method.  This
+        /// parameter may be null.
+        /// </param>
+        internal static void Initialize(
+            string className
+            )
+        {
             //
             // NOTE: First, check if the managed logging subsystem is always
             //       supposed to at least attempt to initialize itself.  In
@@ -160,6 +176,8 @@ namespace System.Data.SQLite
                 }
             }
 
+            ///////////////////////////////////////////////////////////////////
+
             //
             // BUFXIX: We cannot initialize the logging interface if the SQLite
             //         core library has already been initialized anywhere in
@@ -167,6 +185,8 @@ namespace System.Data.SQLite
             //
             if (SQLite3.StaticIsInitialized())
                 return;
+
+            ///////////////////////////////////////////////////////////////////
 
 #if !PLATFORM_COMPACTFRAMEWORK
             //
@@ -185,6 +205,8 @@ namespace System.Data.SQLite
                 return;
             }
 #endif
+
+            ///////////////////////////////////////////////////////////////////
 
             lock (syncRoot)
             {
@@ -205,7 +227,24 @@ namespace System.Data.SQLite
                 }
 #endif
 
-#if !USE_INTEROP_DLL || !INTEROP_LOG
+                ///////////////////////////////////////////////////////////////
+
+#if USE_INTEROP_DLL && INTEROP_LOG
+                //
+                // NOTE: Attempt to setup interop assembly log callback.
+                //       This may fail, e.g. if the SQLite core library
+                //       has somehow been initialized.  An exception will
+                //       be raised in that case.
+                //
+                SQLiteErrorCode rc = SQLite3.TryConfigureLogForInterop(
+                    className);
+
+                if (rc != SQLiteErrorCode.Ok)
+                {
+                    throw new SQLiteException(rc,
+                        "Failed to configure interop assembly logging.");
+                }
+#else
                 //
                 // NOTE: Create an instance of the SQLite wrapper class.
                 //
@@ -229,10 +268,14 @@ namespace System.Data.SQLite
                     SQLiteErrorCode rc = _sql.SetLogCallback(_callback);
 
                     if (rc != SQLiteErrorCode.Ok)
+                    {
                         throw new SQLiteException(rc,
-                            "Failed to initialize logging.");
+                            "Failed to configure managed assembly logging.");
+                    }
                 }
 #endif
+
+                ///////////////////////////////////////////////////////////////
 
                 //
                 // NOTE: Logging is enabled by default unless the configuration
@@ -243,6 +286,8 @@ namespace System.Data.SQLite
                 {
                     _enabled = true;
                 }
+
+                ///////////////////////////////////////////////////////////////
 
                 //
                 // NOTE: For now, always setup the default log event handler.
