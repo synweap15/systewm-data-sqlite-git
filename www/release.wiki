@@ -83,7 +83,7 @@
   <li>Change the current directory to &quot;&lt;root&gt;\Setup&quot;.</li>
 
   <li>
-    Enter the following command to build all the binaries available for Windows
+    Enter the following commands to build all the binaries available for Windows
     CE:
     <br />
     <br />
@@ -100,7 +100,7 @@
   </li>
 
   <li>
-    Enter the following command to build all the binaries available for Windows
+    Enter the following commands to build all the binaries available for Windows
     Embedded Compact 2013:
     <br />
     <br />
@@ -137,7 +137,7 @@
   <li>Change the current directory to &quot;&lt;root&gt;\Setup&quot;.</li>
 
   <li>
-    Enter the following command to test all the binaries available for Windows
+    Enter the following commands to test all the binaries available for Windows
     CE:
     <br />
     <br />
@@ -218,7 +218,7 @@
   <li>Change the current directory to &quot;&lt;root&gt;\Setup&quot;.</li>
 
   <li>
-    Enter the following command to build all the binaries available for Mono:
+    Enter the following commands to build all the binaries available for Mono:
     <br />
     <br />
     <b>SET BUILD_FULL=</b>
@@ -243,7 +243,7 @@
   <li>Change the current directory to &quot;&lt;root&gt;\Setup&quot;.</li>
 
   <li>
-    Enter the following command to build all the binaries available for .NET
+    Enter the following commands to build all the binaries available for .NET
     Standard 2.0:
     <br />
     <br />
@@ -252,6 +252,30 @@
     <b>SET BUILD_DEBUG=1</b>
     <br />
     <b>build_net_standard_20.bat</b>
+  </li>
+
+  <li>
+    Make sure everything succeeds with no errors; the console output may be
+    checked if any errors should occur.
+  </li>
+</ol>
+
+<a name="testNetStandard20Binaries"></a>
+<h2>Test .NET Standard 2.0 Binaries</h2>
+
+<ol>
+  <li>Open a normal command prompt window with &quot;cmd.exe&quot;.</li>
+
+  <li>Change the current directory to &quot;&lt;root&gt;\Setup&quot;.</li>
+
+  <li>
+    Enter the following commands to test all the binaries available for .NET
+    Standard 2.0:
+    <br />
+    <br />
+    <b>SET TEST_DEBUG=1</b>
+    <br />
+    <b>test_net_standard_20.bat</b>
   </li>
 
   <li>
@@ -494,7 +518,7 @@
   <li>Change the current directory to &quot;&lt;root&gt;\Setup&quot;.</li>
 
   <li>
-    Enter the following command to build the &quot;standard&quot; source
+    Enter the following commands to build the &quot;standard&quot; source
     release package:
     <br />
     <br />
@@ -504,7 +528,7 @@
   </li>
 
   <li>
-    Enter the following command to build the &quot;full&quot; source
+    Enter the following commands to build the &quot;full&quot; source
     release package:
     <br />
     <br />

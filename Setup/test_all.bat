@@ -95,13 +95,13 @@ IF NOT DEFINED YEARS (
 )
 
 %_VECHO% Years = '%YEARS%'
-%_VECHO% PreArgs = '%PREARGS%'
 
 IF NOT DEFINED TEST_FILE (
   SET TEST_FILE=Tests\all.eagle
 )
 
 %_VECHO% TestFile = '%TEST_FILE%'
+%_VECHO% PreArgs = '%PREARGS%'
 %_VECHO% PostArgs = '%POSTARGS%'
 
 IF NOT DEFINED 32BITONLY (
@@ -289,6 +289,10 @@ GOTO no_errors
     SET HAVE_EF6=1
   )
   IF /I "%1" == "2015" (
+    SET HAVE_LINQ=1
+    SET HAVE_EF6=1
+  )
+  IF /I "%1" == "2017" (
     SET HAVE_LINQ=1
     SET HAVE_EF6=1
   )
