@@ -82,7 +82,7 @@ namespace eval ::Eagle {
           [list 2 11] [list 3 0] [list 3 1] [list 3 2] [list 3 4] [list 3 6] \
           [list 3 8] [list 3 10] [list 3 12] [list 4 0] [list 4 2] [list 4 4] \
           [list 4 6] [list 4 8] [list 5 0] [list 5 2] [list 5 4] [list 5 8] \
-          [list 5 10] [list 5 12]]
+          [list 5 10] [list 5 12] [list 5 14]]
     } else {
       return [list]
     }
@@ -1712,6 +1712,35 @@ namespace eval ::Eagle {
     tputs $channel no\n
   }
 
+  proc checkForEFormat { channel } {
+    tputs $channel "---- checking for \"eformat\" support... "
+
+    if {[catch {
+      #
+      # HACK: This test was stolen directly from the native Tcl source
+      #       file "library/tcltest/tcltest.tcl", which is part of the
+      #       "tcltest" package.
+      #
+      if {[isEagle]} then {
+        expr {
+          [string equal [format %.0e 5e-5] 5e-05] && \
+              [string equal [format %#.5g 0] 0.0000]
+        }
+      } else {
+        expr {
+          [string equal [format %g 5e-5] 5e-05] && \
+              [string equal [format %#.5g 0] 0.0000]
+        }
+      }
+    } eformat] == 0 && [string is true -strict $eformat]} then {
+      addConstraint eformat
+
+      tputs $channel yes\n
+    } else {
+      tputs $channel no\n
+    }
+  }
+
   proc checkForNamespaces { channel quiet } {
     tputs $channel "---- checking for namespace support... "
 
@@ -1735,7 +1764,7 @@ namespace eval ::Eagle {
       #       must be beta 29 or later); however, we still need to
       #       check if it has been enabled at runtime.
       #
-      if {$enabled} then {
+      if {[string is true -strict $enabled]} then {
         #
         # NOTE: Yes, it appears that it is available and enabled.
         #
@@ -1824,6 +1853,19 @@ namespace eval ::Eagle {
       addConstraint [appendArgs configuration. $::test_configuration]
 
       tputs $channel [appendArgs $::test_configuration \n]
+    } else {
+      tputs $channel unknown\n
+    }
+  }
+
+  proc checkForTestNamePrefix { channel } {
+    tputs $channel "---- checking for test name prefix... "
+
+    if {[info exists ::test_name_prefix] && \
+        [string length $::test_name_prefix] > 0} then {
+      addConstraint [appendArgs namePrefix. $::test_name_prefix]
+
+      tputs $channel [appendArgs $::test_name_prefix \n]
     } else {
       tputs $channel unknown\n
     }
@@ -2439,7 +2481,8 @@ namespace eval ::Eagle {
         if {[catch {
           object invoke -flags +NonPublic \
               Eagle._Components.Private.NativeStack CanQueryThread
-        } canQueryThread] == 0 && $canQueryThread} then {
+        } canQueryThread] == 0 && \
+            [string is true -strict $canQueryThread]} then {
           #
           # NOTE: Yes, it appears that it is available.
           #
@@ -2480,7 +2523,8 @@ namespace eval ::Eagle {
               [info nameofexecutable] reserve commit
 
           set reserve; # primitive, already numeric.
-        } stackSize] == 0 && $stackSize > 0} then {
+        } stackSize] == 0 && \
+            [string is integer -strict $stackSize] && $stackSize > 0} then {
           addConstraint [appendArgs stackSize.0x [format %x $stackSize]]
 
           tputs $channel [appendArgs "yes (" $stackSize ")\n"]
@@ -2693,7 +2737,7 @@ namespace eval ::Eagle {
       if {[catch {
         object invoke -flags +NonPublic Interpreter.GetActive HasSecurity
       } security] == 0} then {
-        if {$security} then {
+        if {[string is true -strict $security]} then {
           addConstraint security.enabled
 
           tputs $channel yes\n
@@ -2974,13 +3018,13 @@ namespace eval ::Eagle {
       tputs $channel "---- checking for host... "
 
       if {[catch {host isopen} open] == 0} then {
-        if {$open} then {
+        if {[string is true -strict $open]} then {
           addConstraint hostIsOpen
 
           tputs $channel open\n
         } else {
           if {[catch {host redirected Input} redirected] == 0} then {
-            if {$redirected} then {
+            if {[string is true -strict $redirected]} then {
               addConstraint hostInputRedirected
 
               tputs $channel redirected\n
@@ -3590,7 +3634,7 @@ namespace eval ::Eagle {
 
       if {[catch {
         object invoke Interpreter.GetActive Quiet
-      } isQuiet] == 0 && $isQuiet} then {
+      } isQuiet] == 0 && [string is true -strict $isQuiet]} then {
         #
         # NOTE: Yes, quiet mode is enabled.
         #
@@ -3645,8 +3689,15 @@ namespace eval ::Eagle {
 
     proc testForDynamicLoading { {fileName ""} } {
       if {[catch {
-        if {[isWindows] && [string length $fileName] == 0} then {
-          set fileName kernel32; # HACK: Always pre-loaded?
+        if {[string length $fileName] == 0} then {
+          if {[isWindows]} then {
+            set fileName kernel32; # HACK: Always pre-loaded?
+          } elseif {[info exists ::tcl_platform(os)] && \
+              $::tcl_platform(os) eq "Darwin"} then {
+            set fileName libdl.dylib; # TODO: Good default?
+          } else {
+            set fileName libdl.so; # TODO: Good default?
+          }
         }
 
         set error null
@@ -3891,6 +3942,17 @@ namespace eval ::Eagle {
           if {[haveConstraint compile.ISOLATED_INTERPRETERS] && \
               [haveConstraint compile.NATIVE] && \
               [haveConstraint compile.WINDOWS]} then {
+            #
+            # NOTE: Allocate a temporary file name that can be used to save
+            #       the Excel spreadsheet.  This name will be provided to a
+            #       child interpreter for its use -AND- cleaned up by this
+            #       interpreter before exiting this procedure.
+            #
+            set tempName(1) [getTemporaryFileName]
+
+            #
+            # NOTE: Use a try/finally block to cleanup temporary files.
+            #
             try {
               if {[catch {
                 #
@@ -3904,6 +3966,12 @@ namespace eval ::Eagle {
                 #       to set variables in the parent (this) interpreter.
                 #
                 interp alias $interp pset {} set; # parent set
+
+                #
+                # NOTE: Give the newly created (isolated) interpreter a base
+                #       name for a temporary file.
+                #
+                interp set $interp tempName(1) $tempName(1)
 
                 #
                 # NOTE: Evaluate all the Excel interop assembly related code
@@ -3962,17 +4030,11 @@ namespace eval ::Eagle {
                       $application.Workbooks Add $enumValue]
 
                   #
-                  # NOTE: The test package is needed in order to make use of
-                  #       the [getTemporaryFileName] procedure.
-                  #
-                  package require Eagle.Test
-
-                  #
                   # NOTE: Setup a temporary file name that can be used to save
                   #       the Excel spreadsheet.
                   #
-                  pset fileName [set fileName [file nativename \
-                      [appendArgs [getTemporaryFileName] .xls]]]
+                  pset fileName [set fileName [file nativename [appendArgs \
+                      $tempName(1) .xls]]]
 
                   #
                   # NOTE: Next, attempt to save a new workbook.  If this fails,
@@ -4072,6 +4134,17 @@ namespace eval ::Eagle {
               if {[info exists fileName] && [file exists $fileName]} then {
                 catch {file delete $fileName}
               }
+
+              #
+              # NOTE: Make sure the dummy temporary files are cleaned up.
+              #
+              if {[array exists tempName]} then {
+                foreach tempFileName [array values tempName] {
+                  if {[file exists $tempFileName]} then {
+                    catch {file delete $tempFileName}
+                  }
+                }
+              }
             }
           } else {
             tputs $channel "unknown, missing optional feature\n"
@@ -4147,7 +4220,8 @@ namespace eval ::Eagle {
     proc checkForTclReady { channel } {
       tputs $channel "---- checking for Tcl readiness... "
 
-      if {[catch {tcl ready} ready] == 0 && $ready} then {
+      if {[catch {tcl ready} ready] == 0 && \
+          [string is true -strict $ready]} then {
         #
         # NOTE: Yes, native Tcl is loaded and ready.
         #
@@ -4261,6 +4335,7 @@ namespace eval ::Eagle {
       set prefix "---- checking for Tcl shell version... "
 
       if {[canExecTclShell] && \
+          ![info exists ::no(getTclVersionForTclShell)] && \
           [catch {getTclVersionForTclShell} version] == 0 && \
           $version ne "error"} then {
         #
@@ -4290,6 +4365,7 @@ namespace eval ::Eagle {
       set prefix "---- checking for Tk package version... "
 
       if {[canExecTclShell] && \
+          ![info exists ::no(getTkVersionForTclShell)] && \
           [catch {getTkVersionForTclShell} version] == 0 && \
           $version ne "error"} then {
         #
@@ -4578,7 +4654,7 @@ namespace eval ::Eagle {
         #       servicing registry hive.  If this value does not exist -OR-
         #       is less than 1, then no .NET Framework 2.0 service pack is
         #       installed.  If this raises a script error, that will almost
-        #       certainly cause the result to be a non-integer, this failing
+        #       certainly cause the result to be a non-integer, thus failing
         #       the check below.
         #
         catch {
@@ -4783,7 +4859,7 @@ namespace eval ::Eagle {
         #       the servicing registry hive.  If this value does not exist
         #       -OR- is less than 378389, then the .NET Framework 4.5 is not
         #       installed.  If this raises a script error, that will almost
-        #       certainly cause the result to be a non-integer, this failing
+        #       certainly cause the result to be a non-integer, thus failing
         #       the check below.
         #
         catch {
@@ -4996,7 +5072,7 @@ namespace eval ::Eagle {
         object invoke -flags +NonPublic \
             Eagle._Components.Private.NativeOps+SafeNativeMethods \
             IsDebuggerPresent
-      } present] == 0 && $present} then {
+      } present] == 0 && [string is true -strict $present]} then {
         #
         # NOTE: Yes, it appears that it is present.
         #
@@ -5016,7 +5092,7 @@ namespace eval ::Eagle {
       #
       if {[catch {
         object invoke System.Diagnostics.Debugger IsAttached
-      } attached] == 0 && $attached} then {
+      } attached] == 0 && [string is true -strict $attached]} then {
         #
         # NOTE: Yes, it appears that it is attached.
         #
@@ -5131,18 +5207,19 @@ namespace eval ::Eagle {
         checkForFossil checkForVisualStudioViaVsWhere checkForEagle \
         checkForSymbols checkForLogFile checkForGaruda checkForShell \
         checkForOfficialStableReleaseInProgress checkForDebug checkForTk \
-        checkForVersion checkForCommand checkForSubCommand checkForNamespaces \
-        checkForTestExec checkForTestMachine checkForTestPlatform \
-        checkForTestConfiguration checkForTestSuffix checkForFile \
-        checkForPathFile checkForNativeCode checkForTip127 checkForTip194 \
-        checkForTip207 checkForTip241 checkForTip285 checkForTip405 \
-        checkForTip421 checkForTip426 checkForTip429 checkForTip440 \
-        checkForTip461 checkForTip463 checkForTip471 checkForTiming \
-        checkForPerformance checkForBigLists checkForProcessorIntensive \
-        checkForTimeIntensive checkForFullTest checkForMemoryIntensive \
-        checkForStackIntensive checkForStackSize checkForInteractive \
-        checkForInteractiveCommand checkForUserInteraction checkForNetwork \
-        checkForCompileOption checkForKnownCompileOptions] false false
+        checkForVersion checkForCommand checkForSubCommand checkForEFormat \
+        checkForNamespaces checkForTestExec checkForTestMachine \
+        checkForTestPlatform checkForTestConfiguration checkForTestNamePrefix \
+        checkForTestSuffix checkForFile checkForPathFile checkForNativeCode \
+        checkForTip127 checkForTip194 checkForTip207 checkForTip241 \
+        checkForTip285 checkForTip405 checkForTip421 checkForTip426 \
+        checkForTip429 checkForTip440 checkForTip461 checkForTip463 \
+        checkForTip471 checkForTiming checkForPerformance checkForBigLists \
+        checkForProcessorIntensive checkForTimeIntensive checkForFullTest \
+        checkForMemoryIntensive checkForStackIntensive checkForStackSize \
+        checkForInteractive checkForInteractiveCommand \
+        checkForUserInteraction checkForNetwork checkForCompileOption \
+        checkForKnownCompileOptions] false false
 
     ###########################################################################
     ############################## END Tcl ONLY ###############################

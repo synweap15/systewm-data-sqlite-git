@@ -119,34 +119,62 @@ namespace eval ::Eagle {
   #       Non-zero is returned to indicate success.  This procedure should not
   #       raise script errors.
   #
-  proc doesCompileCSharpWork { {name ""} } {
+  proc doesCompileCSharpWork { {name ""} {errorsVarName ""} } {
+    if {[string length $errorsVarName] > 0} then {
+      upvar 1 $errorsVarName errors
+    }
+
     if {[catch {getCSharpTestProgram $name} program]} then {
+      set errors [list [appendArgs \
+          "caught error while getting \"" $name "\" test program: " \
+          $program]]
+
       return false
     }
 
     if {[llength $program] < 2} then {
+      set errors [list [appendArgs \
+          "command \[getCSharpTestProgram\] returned malformed \"" \
+          $name "\" test program: " $program]]
+
       return false
     }
 
-    unset -nocomplain results errors
+    unset -nocomplain results local_errors
 
     if {[catch {
-      compileCSharp [lindex $program 1] true true true results errors
+      compileCSharp [lindex $program 1] true true true results local_errors
     } code]} then {
+      set errors [list [appendArgs \
+          "caught error while compiling \"" $name "\" test program: " \
+          $code]]
+
       return false
     }
 
     if {$code ne "Ok"} then {
+      set errors [list [appendArgs \
+          "errors from compilation of \"" $name "\" test program: " \
+          $local_errors]]
+
       return false
     }
 
     if {[catch {
       object invoke [lindex $program 0] Main null
     } exitCode]} then {
+      set errors [list [appendArgs \
+          "caught error while executing \"" $name "\" test program: " \
+          $exitCode]]
+
       return false
     }
 
     if {$exitCode ne "0"} then {
+      set errors [list [appendArgs \
+          "bad exit code from \"" $name "\" test program: " \
+          $exitCode]]
+
       return false
     }
 
@@ -289,7 +317,7 @@ namespace eval ::Eagle {
           $::eagle_platform(compileOptions) : [list] \
       }]
     } else {
-      set libraryOptions ""
+      set libraryOptions [list]
     }
 
     #
@@ -303,7 +331,7 @@ namespace eval ::Eagle {
           $::eagle_platform(csharpOptions) : [list] \
       }]
     } else {
-      set csharpOptions ""
+      set csharpOptions [list]
     }
 
     #
@@ -493,127 +521,143 @@ namespace eval ::Eagle {
     if {$memory} then {
       $parameters GenerateInMemory true
     } else {
-      $parameters OutputAssembly \
-          [set outputFileName [appendArgs [file tempname] .dll]]
+      $parameters OutputAssembly [set outputFileName [appendArgs [set \
+          tempName(1) [file tempname]] .dll]]
     }
 
     #
-    # NOTE: Do we want symbols to be generated for the generated assembly?
+    # NOTE: Use a try/finally block to cleanup temporary files.
     #
-    if {$symbols} then {
-      $parameters IncludeDebugInformation true
-    }
-
-    #
-    # NOTE: Start out the compiler options with the pre-existing defaults
-    #       for the compiler followed by those necessary for the platform.
-    #
-    $parameters CompilerOptions \
-        [getCSharpCompilerOptions $parameters true true /]
-
-    #
-    # NOTE: Process extra compiler settings the caller may have provided.
-    #
-    foreach {name value} $args {
-      $parameters -nocase $name $value
-    }
-
-    #
-    # NOTE: Prepare to transfer the object reference to the caller.  We
-    #       must use [upvar] here because otherwise the object is lost
-    #       when the procedure call frame is cleaned up.
-    #
-    if {[string length $resultsVarName] > 0} then {
-      upvar 1 $resultsVarName results
-    }
-
-    #
-    # NOTE: Attempt to compile the specified string as C# and capture the
-    #       results into the variable provided by the caller.
-    #
-    set results [$provider -alias CompileAssemblyFromSource $parameters \
-        $string]
-
-    #
-    # NOTE: We no longer need the C# code provider object (i.e. the
-    #       compiler); therefore, dispose it now.
-    #
-    unset provider; # dispose
-
-    #
-    # NOTE: Fetch the collection of compiler errors (which may be empty).
-    #
-    set errors [$results -alias Errors]
-
-    #
-    # NOTE: It is assumed that no assembly was generated if there were
-    #       any compiler errors.  Ignore all compiler warnings unless
-    #       we are in strict mode.
-    #
-    if {[$errors HasErrors] || \
-        ($strict && [$errors HasWarnings])} then {
+    try {
       #
-      # NOTE: Compilation of the assembly failed.
+      # NOTE: Do we want symbols to be generated for the generated assembly?
       #
-      set code Error
-
-      #
-      # NOTE: Prepare to transfer error messages to the caller.
-      #
-      if {[string length $errorsVarName] > 0} then {
-        upvar 1 $errorsVarName local_errors
+      if {$symbols} then {
+        $parameters IncludeDebugInformation true
       }
 
       #
-      # NOTE: Grab each error object and append the string itself to
-      #       the overall list of errors.
+      # NOTE: Start out the compiler options with the pre-existing defaults
+      #       for the compiler followed by those necessary for the platform.
       #
-      for {set index 0} {$index < [$errors Count]} {incr index} {
-        #
-        # NOTE: Get the compiler error object at this index.
-        #
-        set error [$errors -alias Item $index]
+      $parameters CompilerOptions \
+          [getCSharpCompilerOptions $parameters true true /]
 
-        #
-        # NOTE: Convert it to a string and append it to the list of
-        #       errors.
-        #
-        lappend local_errors [$error ToString]
-
-        #
-        # NOTE: Since the error itself is actually an object, we must
-        #       dispose it.
-        #
-        unset error; # dispose
+      #
+      # NOTE: Process extra compiler settings the caller may have provided.
+      #
+      foreach {name value} $args {
+        $parameters -nocase $name $value
       }
-    } else {
-      #
-      # NOTE: Compilation of the assembly succeeded.
-      #
-      set code Ok
-    }
 
-    #
-    # NOTE: We no longer need the compiler errors collection; therefore,
-    #       dispose it now.
-    #
-    unset errors; # dispose
+      #
+      # NOTE: Prepare to transfer the object reference to the caller.  We
+      #       must use [upvar] here because otherwise the object is lost
+      #       when the procedure call frame is cleaned up.
+      #
+      if {[string length $resultsVarName] > 0} then {
+        upvar 1 $resultsVarName results
+      }
 
-    #
-    # HACK: *BREAKING CHANGE* If there is an output file name, return it
-    #       as well; otherwise, just return success.
-    #
-    if {[string length $outputFileName] > 0} then {
       #
-      # NOTE: Return a two element list: the first element is the overall
-      #       result and the second element is the output file name.
+      # NOTE: Attempt to compile the specified string as C# and capture the
+      #       results into the variable provided by the caller.
       #
-      return [list $code $outputFileName]
-    } else {
+      set results [$provider -alias CompileAssemblyFromSource $parameters \
+          $string]
+
       #
-      # NOTE: Return the overall result to the caller.
+      # NOTE: We no longer need the C# code provider object (i.e. the
+      #       compiler); therefore, dispose it now.
       #
-      return $code
+      unset provider; # dispose
+
+      #
+      # NOTE: Fetch the collection of compiler errors (which may be empty).
+      #
+      set errors [$results -alias Errors]
+
+      #
+      # NOTE: It is assumed that no assembly was generated if there were
+      #       any compiler errors.  Ignore all compiler warnings unless
+      #       we are in strict mode.
+      #
+      if {[$errors HasErrors] || \
+          ($strict && [$errors HasWarnings])} then {
+        #
+        # NOTE: Compilation of the assembly failed.
+        #
+        set code Error
+
+        #
+        # NOTE: Prepare to transfer error messages to the caller.
+        #
+        if {[string length $errorsVarName] > 0} then {
+          upvar 1 $errorsVarName local_errors
+        }
+
+        #
+        # NOTE: Grab each error object and append the string itself to
+        #       the overall list of errors.
+        #
+        for {set index 0} {$index < [$errors Count]} {incr index} {
+          #
+          # NOTE: Get the compiler error object at this index.
+          #
+          set error [$errors -alias Item $index]
+
+          #
+          # NOTE: Convert it to a string and append it to the list of
+          #       errors.
+          #
+          lappend local_errors [$error ToString]
+
+          #
+          # NOTE: Since the error itself is actually an object, we must
+          #       dispose it.
+          #
+          unset error; # dispose
+        }
+      } else {
+        #
+        # NOTE: Compilation of the assembly succeeded.
+        #
+        set code Ok
+      }
+
+      #
+      # NOTE: We no longer need the compiler errors collection; therefore,
+      #       dispose it now.
+      #
+      unset errors; # dispose
+
+      #
+      # HACK: *BREAKING CHANGE* If there is an output file name, return it
+      #       as well; otherwise, just return success.
+      #
+      if {[string length $outputFileName] > 0} then {
+        #
+        # NOTE: Return a two element list: the first element is the overall
+        #       result and the second element is the output file name.
+        #
+        return [list $code $outputFileName]
+      } else {
+        #
+        # NOTE: Return the overall result to the caller.
+        #
+        return $code
+      }
+    } finally {
+      #
+      # NOTE: Make sure the dummy temporary files are cleaned up.
+      #
+      if {[array exists tempName]} then {
+        foreach tempFileName [array values tempName] {
+          if {[file exists $tempFileName]} then {
+            catch {file delete $tempFileName}
+          }
+        }
+      }
     }
   }
 
@@ -674,22 +718,25 @@ namespace eval ::Eagle {
     # NOTE: Allocate a couple temporary file names, one to hold the source
     #       code to compile and one to hold the generated assembly.
     #
-    set sourceFileName [appendArgs [file tempname] .cs]
-    set outputFileName [appendArgs [file tempname] .dll]
+    set sourceFileName [appendArgs [set tempName(1) [file tempname]] .cs]
+    set outputFileName [appendArgs [set tempName(2) [file tempname]] .dll]
 
     #
-    # NOTE: Process extra compiler settings the caller may have provided.
+    # NOTE: Use a try/finally block to cleanup temporary files.
     #
-    foreach {name value} $args {
-      set nameValueArguments \
-          [compilerParameterToArguments $name $value outputFileName]
-
-      if {[llength $nameValueArguments] > 0} then {
-        eval lappend command $nameValueArguments
-      }
-    }
-
     try {
+      #
+      # NOTE: Process extra compiler settings the caller may have provided.
+      #
+      foreach {name value} $args {
+        set nameValueArguments \
+            [compilerParameterToArguments $name $value outputFileName]
+
+        if {[llength $nameValueArguments] > 0} then {
+          eval lappend command $nameValueArguments
+        }
+      }
+
       #
       # NOTE: Make the compiler output a little quieter.  This is needed
       #       to maintain compatibility with the results generated by the
@@ -824,6 +871,17 @@ namespace eval ::Eagle {
       if {[string length $sourceFileName] > 0 && \
           [file exists $sourceFileName]} then {
         catch {file delete $sourceFileName}
+      }
+
+      #
+      # NOTE: Make sure the dummy temporary files are cleaned up.
+      #
+      if {[array exists tempName]} then {
+        foreach tempFileName [array values tempName] {
+          if {[file exists $tempFileName]} then {
+            catch {file delete $tempFileName}
+          }
+        }
       }
     }
 

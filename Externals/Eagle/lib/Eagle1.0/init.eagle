@@ -372,10 +372,10 @@ namespace eval ::Eagle {
           appendLogFile appendSharedFile appendSharedLogFile \
           readAsciiFile writeAsciiFile readUnicodeFile \
           writeUnicodeFile getDirResultPath addToPath removeFromPath \
-          execShell lshuffle ldifference filter map reduce \
+          execShell maybeGetExitCode lshuffle ldifference filter map reduce \
           getLengthModifier debug findDirectories \
           findDirectoriesRecursive findFiles findFilesRecursive \
-          exportAndImportPackageCommands setupUnzipVars \
+          copyFilesRecursive exportAndImportPackageCommands setupUnzipVars \
           unzipMustBeInstalled extractZipArchive] false false
     }
 

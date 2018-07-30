@@ -95,6 +95,24 @@ namespace eval ::Eagle {
   }
 
   #
+  # NOTE: This procedure is designed to extract the exit code for a child
+  #       process run via [exec] using the value of $::errorCode.  It will
+  #       always return either a valid integer -OR- the specified default
+  #       value, which may be an empty string.
+  #
+  proc maybeGetExitCode { value {default ""} } {
+    if {[lindex $value 0] eq "CHILDSTATUS"} then {
+      set status [lindex $value 2]
+
+      if {[string is integer -strict $status]} then {
+        return $status
+      }
+    }
+
+    return $default
+  }
+
+  #
   # NOTE: Provide the Eagle "execute" package to the interpreter.
   #
   package provide Eagle.Execute \

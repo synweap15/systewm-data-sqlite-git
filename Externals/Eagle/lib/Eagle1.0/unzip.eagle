@@ -90,7 +90,7 @@ namespace eval ::Eagle {
     variable unzipExtractCommand; # DEFAULT: unzip ...
 
     if {$force || ![info exists unzipExtractCommand]} then {
-      set unzipExtractCommand {unzip {${fileName}} -d {${directory}}}
+      set unzipExtractCommand {unzip -n {${fileName}} -d {${directory}}}
     }
   }
 

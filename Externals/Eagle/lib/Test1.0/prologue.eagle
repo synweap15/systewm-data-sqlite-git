@@ -456,6 +456,7 @@ if {![info exists no([file tail [info script]])]} then {
   set test_flags(-machine) ""; # machine architecture, default to empty.
   set test_flags(-platform) ""; # build platform, default to empty.
   set test_flags(-configuration) ""; # build configuration, default to empty.
+  set test_flags(-namePrefix) ""; # test name prefix, default to empty.
   set test_flags(-suffix) ""; # build suffix, default to empty.
   set test_flags(-file) [list *.eagle]; # default to running all test files.
   set test_flags(-notFile) [list l.*.eagle]; # COMPAT: Tcl.
@@ -633,6 +634,13 @@ if {![info exists no([file tail [info script]])]} then {
   #
   if {![info exists test_configuration]} then {
     set test_configuration [getPlatformInfo configuration Release]
+  }
+
+  #
+  # NOTE: Set the name prefix used for some tests, if necessary.
+  #
+  if {![info exists test_name_prefix]} then {
+    set test_name_prefix ""
   }
 
   #
@@ -840,6 +848,10 @@ if {![info exists no([file tail [info script]])]} then {
   tputs $test_channel [appendArgs "---- test configuration: " \
       [expr {[info exists test_configuration] ? \
           $test_configuration : "<none>"}] \n]
+
+  tputs $test_channel [appendArgs "---- test name prefix: " \
+      [expr {[info exists test_name_prefix] ? \
+          $test_name_prefix : "<none>"}] \n]
 
   tputs $test_channel [appendArgs "---- test suffix: " \
       [expr {[info exists test_suffix] ? \
@@ -3009,6 +3021,13 @@ if {![info exists no([file tail [info script]])]} then {
   }
 
   #
+  # NOTE: Has checking for the test name prefix been disabled?
+  #
+  if {![info exists no(testNamePrefix)]} then {
+    checkForTestNamePrefix $test_channel
+  }
+
+  #
   # NOTE: Has checking for the test suffix been disabled?
   #
   if {![info exists no(testSuffix)]} then {
@@ -3259,13 +3278,13 @@ if {![info exists no([file tail [info script]])]} then {
       checkForFile $test_channel [file join $core_bin_path sqlite3.dll]
 
       #
-      # NOTE: Did we manage to find the native SQLite library?  If not, do we
-      #       at least know the machine type?
+      # NOTE: Did we manage to find the native SQLite library yet?  If not,
+      #       try to check using the machine type as a sub-directory.
       #
       if {![haveConstraint file_sqlite3.dll]} then {
         #
-        # NOTE: Ok, now try to check for the machine specific native SQLite
-        #       library.
+        # NOTE: Ok, now try to check for the machine specific native
+        #       SQLite library.
         #
         checkForFile $test_channel [file join $core_bin_path \
             [machineToPlatform $test_machine true] sqlite3.dll]
@@ -3275,11 +3294,137 @@ if {![info exists no([file tail [info script]])]} then {
         #
         if {![haveConstraint file_sqlite3.dll]} then {
           #
-          # NOTE: Ok, now try to check for the platform specific native SQLite
-          #       library.
+          # NOTE: Ok, now try to check for the platform specific native
+          #       SQLite library.
           #
           checkForFile $test_channel [file join $core_bin_path \
               [machineToPlatform $test_machine false] sqlite3.dll]
+        }
+      }
+
+      if {[isEagle] && ![isWindows]} then {
+        #
+        # NOTE: Did we manage to find the native SQLite library yet?  If not,
+        #       try to check using the machine type as a sub-directory -AND-
+        #       using the Unix file name.
+        #
+        if {![haveConstraint file_sqlite3.dll]} then {
+          #
+          # NOTE: Ok, now try to check for the machine specific native
+          #       SQLite library, near the binary, using the Unix name.
+          #
+          checkForFile $test_channel [file join $core_bin_path \
+              [machineToPlatform $test_machine true] [appendArgs \
+              libsqlite3 [info sharedlibextension]]] sqlite3.dll
+
+          #
+          # NOTE: Did we manage to find the native SQLite library yet?
+          #
+          if {![haveConstraint file_sqlite3.dll]} then {
+            #
+            # NOTE: Ok, now try to check for the platform specific native
+            #       SQLite library, near the binary, using the Unix name.
+            #
+            checkForFile $test_channel [file join $core_bin_path \
+                [machineToPlatform $test_machine false] [appendArgs \
+                libsqlite3 [info sharedlibextension]]] sqlite3.dll
+          }
+        }
+
+        #
+        # NOTE: Did we manage to find the native SQLite library yet?  If not,
+        #       try to check using the Unix library directories -AND- using
+        #       the Unix file name.
+        #
+        if {![haveConstraint file_sqlite3.dll]} then {
+          #
+          # NOTE: Attempt to obtain the path information for the Unix
+          #       local library directory.  This will not work for
+          #       native Tcl.
+          #
+          if {[catch {
+            info path "=NativeLibrary +Local"
+          } lib_dir] == 0} then {
+            #
+            # NOTE: Ok, now try to check for the machine specific native
+            #       SQLite library, in the Unix local library directory,
+            #       and the Unix file name.
+            #
+            checkForFile $test_channel [file join $lib_dir [appendArgs \
+                libsqlite3 [info sharedlibextension]]] sqlite3.dll
+          }
+
+          #
+          # NOTE: Did we manage to find the native SQLite library yet?
+          #
+          if {![haveConstraint file_sqlite3.dll]} then {
+            #
+            # NOTE: Attempt to obtain the path information for the Unix
+            #       global library directory.  This will not work for
+            #       native Tcl.
+            #
+            if {[catch {
+              info path "=NativeLibrary -Local"
+            } lib_dir] == 0} then {
+              #
+              # NOTE: Ok, now try to check for the machine specific native
+              #       SQLite library, in the Unix global library directory,
+              #       and the Unix file name.
+              #
+              checkForFile $test_channel [file join $lib_dir [appendArgs \
+                  libsqlite3 [info sharedlibextension]]] sqlite3.dll
+            }
+          }
+
+          unset lib_dir
+        }
+
+        #
+        # NOTE: Did we manage to find the native SQLite library yet?  If not,
+        #       try to check using the Unix library directories -AND- using
+        #       the Unix file name, without using the processor name.
+        #
+        if {![haveConstraint file_sqlite3.dll]} then {
+          #
+          # NOTE: Attempt to obtain the path information for the Unix
+          #       local library directory without the processor name.
+          #       This will not work for native Tcl.
+          #
+          if {[catch {
+            info path "=NativeLibrary +Local +NoProcessor"
+          } lib_dir] == 0} then {
+            #
+            # NOTE: Ok, now try to check for the machine specific native
+            #       SQLite library, in the Unix local library directory,
+            #       and the Unix file name.
+            #
+            checkForFile $test_channel [file join $lib_dir [appendArgs \
+                libsqlite3 [info sharedlibextension]]] sqlite3.dll
+          }
+
+          #
+          # NOTE: Did we manage to find the native SQLite library yet?
+          #
+          if {![haveConstraint file_sqlite3.dll]} then {
+            #
+            # NOTE: Attempt to obtain the path information for the Unix
+            #       global library directory without the processor name.
+            #       This will not work for native Tcl.
+            #
+            if {[catch {
+              info path "=NativeLibrary -Local +NoProcessor"
+            } lib_dir] == 0} then {
+              #
+              # NOTE: Ok, now try to check for the machine specific native
+              #       SQLite library, in the Unix global library directory,
+              #       and the Unix file name.
+              #
+              checkForFile $test_channel [file join $lib_dir [appendArgs \
+                  libsqlite3 [info sharedlibextension]]] sqlite3.dll
+            }
+          }
+
+          unset lib_dir
         }
       }
     }
@@ -3527,6 +3672,13 @@ if {![info exists no([file tail [info script]])]} then {
 
   if {![info exists no(xmlCommand)]} then {
     checkForCommand $test_channel xml
+  }
+
+  #
+  # NOTE: Has "eformat" detection support been disabled?
+  #
+  if {![info exists no(eformat)]} then {
+    checkForEFormat $test_channel
   }
 
   #
