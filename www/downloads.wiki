@@ -2238,10 +2238,13 @@
       <td valign="top">
         This NuGet package includes all the binaries for both the x86 and x64
         versions of System.Data.SQLite 1.0.108.0 (3.22.0).  The .NET Framework
-        3.5 SP1, 4.0, 4.5, 4.5.1, 4.5.2, 4.6, 4.6.1, 4.6.2, 4.7, or 4.7.1 is
-        required.  For the included native binaries, the version of the Visual
-        C++ runtime corresponding to the .NET Framework used by the associated
-        managed assembly is statically linked.
+        3.5 SP1, 4.0, 4.5, 4.5.1, 4.5.2, 4.6, 4.6.1, 4.6.2, 4.7, or 4.7.1 -OR-
+        .NET Core 2.0 is required.  For the included Windows native binaries,
+        the version of the Visual C++ runtime corresponding to the .NET
+        Framework used by the associated managed assembly is statically linked.
+        For the included Linux native binaries, Ubuntu 16.04 LTS compatible
+        runtime libraries are required.  For the included macOS native binaries,
+        macOS Sierra compatible runtime libraries are required.
         <br />
         <big><b>This package depends on the &quot;EntityFramework&quot;
         package, version 6.0 or higher (indirectly via the
@@ -2272,9 +2275,13 @@
         versions of System.Data.SQLite 1.0.108.0 (3.22.0), <big><b>except those
         needed to support LINQ and Entity Framework 6</b></big>.  The .NET
         Framework 3.5 SP1, 4.0, 4.5, 4.5.1, 4.5.2, 4.6, 4.6.1, 4.6.2, 4.7, or
-        4.7.1 is required.  For the included native binaries, the version of the
-        Visual C++ runtime corresponding to the .NET Framework used by the
-        associated managed assembly is statically linked.
+        4.7.1 is required -OR- .NET Core 2.0 is required.  For the included
+        Windows native binaries, the version of the Visual C++ runtime
+        corresponding to the .NET Framework used by the associated managed
+        assembly is statically linked.  For the included Linux native binaries,
+        Ubuntu 16.04 LTS compatible runtime libraries are required.  For the
+        included macOS native binaries, macOS Sierra compatible runtime
+        libraries are required.
         <br />
         <big><b>This package does not depend on any other package.</b></big>
         <br />
