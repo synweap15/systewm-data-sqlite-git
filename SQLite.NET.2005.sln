@@ -383,8 +383,10 @@ Global
 		{AC139951-261A-4463-B6FA-AEBC25283A66}.ReleaseNativeOnly|x64.ActiveCfg = Release|Any CPU
 		{9E5A8F20-5F04-4629-B2E1-27B5E30F2AF6}.Debug|Any CPU.ActiveCfg = Debug|Pocket PC 2003 (ARMV4)
 		{9E5A8F20-5F04-4629-B2E1-27B5E30F2AF6}.Debug|Any CPU.Build.0 = Debug|Pocket PC 2003 (ARMV4)
+		{9E5A8F20-5F04-4629-B2E1-27B5E30F2AF6}.Debug|Any CPU.Deploy.0 = Debug|Pocket PC 2003 (ARMV4)
 		{9E5A8F20-5F04-4629-B2E1-27B5E30F2AF6}.Debug|Mixed Platforms.ActiveCfg = Debug|Pocket PC 2003 (ARMV4)
 		{9E5A8F20-5F04-4629-B2E1-27B5E30F2AF6}.Debug|Mixed Platforms.Build.0 = Debug|Pocket PC 2003 (ARMV4)
+		{9E5A8F20-5F04-4629-B2E1-27B5E30F2AF6}.Debug|Mixed Platforms.Deploy.0 = Debug|Pocket PC 2003 (ARMV4)
 		{9E5A8F20-5F04-4629-B2E1-27B5E30F2AF6}.Debug|Pocket PC 2003 (ARMV4).ActiveCfg = Debug|Pocket PC 2003 (ARMV4)
 		{9E5A8F20-5F04-4629-B2E1-27B5E30F2AF6}.Debug|Pocket PC 2003 (ARMV4).Build.0 = Debug|Pocket PC 2003 (ARMV4)
 		{9E5A8F20-5F04-4629-B2E1-27B5E30F2AF6}.Debug|Pocket PC 2003 (ARMV4).Deploy.0 = Debug|Pocket PC 2003 (ARMV4)
@@ -392,8 +394,10 @@ Global
 		{9E5A8F20-5F04-4629-B2E1-27B5E30F2AF6}.Debug|x64.ActiveCfg = Debug|Pocket PC 2003 (ARMV4)
 		{9E5A8F20-5F04-4629-B2E1-27B5E30F2AF6}.DebugNativeOnly|Any CPU.ActiveCfg = Debug|Pocket PC 2003 (ARMV4)
 		{9E5A8F20-5F04-4629-B2E1-27B5E30F2AF6}.DebugNativeOnly|Any CPU.Build.0 = Debug|Pocket PC 2003 (ARMV4)
+		{9E5A8F20-5F04-4629-B2E1-27B5E30F2AF6}.DebugNativeOnly|Any CPU.Deploy.0 = Debug|Pocket PC 2003 (ARMV4)
 		{9E5A8F20-5F04-4629-B2E1-27B5E30F2AF6}.DebugNativeOnly|Mixed Platforms.ActiveCfg = Debug|Pocket PC 2003 (ARMV4)
 		{9E5A8F20-5F04-4629-B2E1-27B5E30F2AF6}.DebugNativeOnly|Mixed Platforms.Build.0 = Debug|Pocket PC 2003 (ARMV4)
+		{9E5A8F20-5F04-4629-B2E1-27B5E30F2AF6}.DebugNativeOnly|Mixed Platforms.Deploy.0 = Debug|Pocket PC 2003 (ARMV4)
 		{9E5A8F20-5F04-4629-B2E1-27B5E30F2AF6}.DebugNativeOnly|Pocket PC 2003 (ARMV4).ActiveCfg = Debug|Pocket PC 2003 (ARMV4)
 		{9E5A8F20-5F04-4629-B2E1-27B5E30F2AF6}.DebugNativeOnly|Pocket PC 2003 (ARMV4).Build.0 = Debug|Pocket PC 2003 (ARMV4)
 		{9E5A8F20-5F04-4629-B2E1-27B5E30F2AF6}.DebugNativeOnly|Pocket PC 2003 (ARMV4).Deploy.0 = Debug|Pocket PC 2003 (ARMV4)
@@ -401,8 +405,10 @@ Global
 		{9E5A8F20-5F04-4629-B2E1-27B5E30F2AF6}.DebugNativeOnly|x64.ActiveCfg = Debug|Pocket PC 2003 (ARMV4)
 		{9E5A8F20-5F04-4629-B2E1-27B5E30F2AF6}.Release|Any CPU.ActiveCfg = Release|Pocket PC 2003 (ARMV4)
 		{9E5A8F20-5F04-4629-B2E1-27B5E30F2AF6}.Release|Any CPU.Build.0 = Release|Pocket PC 2003 (ARMV4)
+		{9E5A8F20-5F04-4629-B2E1-27B5E30F2AF6}.Release|Any CPU.Deploy.0 = Release|Pocket PC 2003 (ARMV4)
 		{9E5A8F20-5F04-4629-B2E1-27B5E30F2AF6}.Release|Mixed Platforms.ActiveCfg = Release|Pocket PC 2003 (ARMV4)
 		{9E5A8F20-5F04-4629-B2E1-27B5E30F2AF6}.Release|Mixed Platforms.Build.0 = Release|Pocket PC 2003 (ARMV4)
+		{9E5A8F20-5F04-4629-B2E1-27B5E30F2AF6}.Release|Mixed Platforms.Deploy.0 = Release|Pocket PC 2003 (ARMV4)
 		{9E5A8F20-5F04-4629-B2E1-27B5E30F2AF6}.Release|Pocket PC 2003 (ARMV4).ActiveCfg = Release|Pocket PC 2003 (ARMV4)
 		{9E5A8F20-5F04-4629-B2E1-27B5E30F2AF6}.Release|Pocket PC 2003 (ARMV4).Build.0 = Release|Pocket PC 2003 (ARMV4)
 		{9E5A8F20-5F04-4629-B2E1-27B5E30F2AF6}.Release|Pocket PC 2003 (ARMV4).Deploy.0 = Release|Pocket PC 2003 (ARMV4)
@@ -410,8 +416,10 @@ Global
 		{9E5A8F20-5F04-4629-B2E1-27B5E30F2AF6}.Release|x64.ActiveCfg = Release|Pocket PC 2003 (ARMV4)
 		{9E5A8F20-5F04-4629-B2E1-27B5E30F2AF6}.ReleaseNativeOnly|Any CPU.ActiveCfg = Release|Pocket PC 2003 (ARMV4)
 		{9E5A8F20-5F04-4629-B2E1-27B5E30F2AF6}.ReleaseNativeOnly|Any CPU.Build.0 = Release|Pocket PC 2003 (ARMV4)
+		{9E5A8F20-5F04-4629-B2E1-27B5E30F2AF6}.ReleaseNativeOnly|Any CPU.Deploy.0 = Release|Pocket PC 2003 (ARMV4)
 		{9E5A8F20-5F04-4629-B2E1-27B5E30F2AF6}.ReleaseNativeOnly|Mixed Platforms.ActiveCfg = Release|Pocket PC 2003 (ARMV4)
 		{9E5A8F20-5F04-4629-B2E1-27B5E30F2AF6}.ReleaseNativeOnly|Mixed Platforms.Build.0 = Release|Pocket PC 2003 (ARMV4)
+		{9E5A8F20-5F04-4629-B2E1-27B5E30F2AF6}.ReleaseNativeOnly|Mixed Platforms.Deploy.0 = Release|Pocket PC 2003 (ARMV4)
 		{9E5A8F20-5F04-4629-B2E1-27B5E30F2AF6}.ReleaseNativeOnly|Pocket PC 2003 (ARMV4).ActiveCfg = Release|Pocket PC 2003 (ARMV4)
 		{9E5A8F20-5F04-4629-B2E1-27B5E30F2AF6}.ReleaseNativeOnly|Pocket PC 2003 (ARMV4).Build.0 = Release|Pocket PC 2003 (ARMV4)
 		{9E5A8F20-5F04-4629-B2E1-27B5E30F2AF6}.ReleaseNativeOnly|Pocket PC 2003 (ARMV4).Deploy.0 = Release|Pocket PC 2003 (ARMV4)
@@ -419,8 +427,10 @@ Global
 		{9E5A8F20-5F04-4629-B2E1-27B5E30F2AF6}.ReleaseNativeOnly|x64.ActiveCfg = Release|Pocket PC 2003 (ARMV4)
 		{B86CE504-C4E4-496F-A0F0-E613BCFD3DF7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{B86CE504-C4E4-496F-A0F0-E613BCFD3DF7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B86CE504-C4E4-496F-A0F0-E613BCFD3DF7}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
 		{B86CE504-C4E4-496F-A0F0-E613BCFD3DF7}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
 		{B86CE504-C4E4-496F-A0F0-E613BCFD3DF7}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{B86CE504-C4E4-496F-A0F0-E613BCFD3DF7}.Debug|Mixed Platforms.Deploy.0 = Debug|Any CPU
 		{B86CE504-C4E4-496F-A0F0-E613BCFD3DF7}.Debug|Pocket PC 2003 (ARMV4).ActiveCfg = Debug|Any CPU
 		{B86CE504-C4E4-496F-A0F0-E613BCFD3DF7}.Debug|Pocket PC 2003 (ARMV4).Build.0 = Debug|Any CPU
 		{B86CE504-C4E4-496F-A0F0-E613BCFD3DF7}.Debug|Pocket PC 2003 (ARMV4).Deploy.0 = Debug|Any CPU
@@ -437,8 +447,10 @@ Global
 		{B86CE504-C4E4-496F-A0F0-E613BCFD3DF7}.DebugNativeOnly|x64.ActiveCfg = Debug|Any CPU
 		{B86CE504-C4E4-496F-A0F0-E613BCFD3DF7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B86CE504-C4E4-496F-A0F0-E613BCFD3DF7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B86CE504-C4E4-496F-A0F0-E613BCFD3DF7}.Release|Any CPU.Deploy.0 = Release|Any CPU
 		{B86CE504-C4E4-496F-A0F0-E613BCFD3DF7}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{B86CE504-C4E4-496F-A0F0-E613BCFD3DF7}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{B86CE504-C4E4-496F-A0F0-E613BCFD3DF7}.Release|Mixed Platforms.Deploy.0 = Release|Any CPU
 		{B86CE504-C4E4-496F-A0F0-E613BCFD3DF7}.Release|Pocket PC 2003 (ARMV4).ActiveCfg = Release|Any CPU
 		{B86CE504-C4E4-496F-A0F0-E613BCFD3DF7}.Release|Pocket PC 2003 (ARMV4).Build.0 = Release|Any CPU
 		{B86CE504-C4E4-496F-A0F0-E613BCFD3DF7}.Release|Pocket PC 2003 (ARMV4).Deploy.0 = Release|Any CPU

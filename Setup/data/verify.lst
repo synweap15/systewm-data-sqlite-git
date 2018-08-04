@@ -586,6 +586,7 @@ set sds_manifests(source) {
   SQLite.NET.2017.MSBuild.sln
   SQLite.NET.2017.sln
   SQLite.NET.NetStandard20.MSBuild.sln
+  SQLite.NET.NetStandard20.sln
   System.Data.SQLite.url
   System.Data.SQLite/
   System.Data.SQLite/AssemblyInfo.cs
