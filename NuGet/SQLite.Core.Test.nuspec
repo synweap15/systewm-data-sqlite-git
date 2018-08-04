@@ -54,6 +54,8 @@
     <file src="..\bin\2015\x64\ReleaseNativeOnlyStatic\SQLite.Interop.dll" target="build\net46\x64" />
     <file src="..\bin\2015\Win32\ReleaseNativeOnlyStatic\SQLite.Interop.dll" target="build\netstandard2.0\x86" />
     <file src="..\bin\2015\x64\ReleaseNativeOnlyStatic\SQLite.Interop.dll" target="build\netstandard2.0\x64" />
+    <file src="..\bin\2016\linux-x64\ReleaseNativeOnly\SQLite.Interop.dll" target="build\netstandard2.0\linux-x64" />
+    <file src="..\bin\2016\osx-x64\ReleaseNativeOnly\SQLite.Interop.dll" target="build\netstandard2.0\osx-x64" />
     <file src="shared\Core\build\System.Data.SQLite.Core.targets" target="build\net20\System.Data.SQLite.Core.Test.targets" />
     <file src="shared\Core\build\System.Data.SQLite.Core.targets" target="build\net40\System.Data.SQLite.Core.Test.targets" />
     <file src="shared\Core\build\System.Data.SQLite.Core.targets" target="build\net45\System.Data.SQLite.Core.Test.targets" />

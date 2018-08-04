@@ -37,7 +37,7 @@ SET TOOLS=%TOOLS:~0,-1%
 %_VECHO% Tools = '%TOOLS%'
 
 IF NOT DEFINED NUGET (
-  SET NUGET=NuGet2.exe
+  SET NUGET=NuGet4.exe
 )
 
 %_VECHO% NuGet = '%NUGET%'
@@ -50,6 +50,48 @@ IF NOT EXIST "%ROOT%\Setup\Output" (
   IF ERRORLEVEL 1 (
     ECHO Could not create directory "%ROOT%\Setup\Output".
     GOTO errors
+  )
+)
+
+IF NOT DEFINED LINUX_URI (
+  SET LINUX_URI=https://system.data.sqlite.org/index.html/uv/linux-x64/SQLite.Interop.dll
+)
+
+IF NOT DEFINED LINUX_DIRECTORY (
+  SET LINUX_DIRECTORY=%ROOT%\bin\2016\linux-x64\ReleaseNativeOnly
+)
+
+%_VECHO% LinuxUri = '%LINUX_URI%'
+%_VECHO% LinuxDirectory = '%LINUX_DIRECTORY%'
+
+IF NOT DEFINED MACOS_URI (
+  SET MACOS_URI=https://system.data.sqlite.org/index.html/uv/osx-x64/SQLite.Interop.dll
+)
+
+IF NOT DEFINED MACOS_DIRECTORY (
+  SET MACOS_DIRECTORY=%ROOT%\bin\2016\osx-x64\ReleaseNativeOnly
+)
+
+%_VECHO% MacOsUri = '%MACOS_URI%'
+%_VECHO% MacOsDirectory = '%MACOS_DIRECTORY%'
+
+IF NOT DEFINED NO_NUGET_XPLATFORM (
+  %__ECHO% "%ROOT%\Externals\Eagle\bin\netFramework40\EagleShell.exe" -evaluate "set directory {%LINUX_DIRECTORY%}; file mkdir $directory; uri download -- {%LINUX_URI%} [file join $directory SQLite.Interop.dll]"
+
+  IF ERRORLEVEL 1 (
+    ECHO Download of System.Data.SQLite interop assembly "%LINUX_URI%" to "%LINUX_DIRECTORY%" failure.
+    GOTO errors
+  ) ELSE (
+    %_AECHO% Download of System.Data.SQLite interop assembly "%LINUX_URI%" to "%LINUX_DIRECTORY%" success.
+  )
+
+  %__ECHO% "%ROOT%\Externals\Eagle\bin\netFramework40\EagleShell.exe" -evaluate "set directory {%MACOS_DIRECTORY%}; file mkdir $directory; uri download -- {%MACOS_URI%} [file join $directory SQLite.Interop.dll]"
+
+  IF ERRORLEVEL 1 (
+    ECHO Download of System.Data.SQLite interop assembly "%MACOS_URI%" to "%MACOS_DIRECTORY%" failure.
+    GOTO errors
+  ) ELSE (
+    %_AECHO% Download of System.Data.SQLite interop assembly "%MACOS_URI%" to "%MACOS_DIRECTORY%" success.
   )
 )
 
