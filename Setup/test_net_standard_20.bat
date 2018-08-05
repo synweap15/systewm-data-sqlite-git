@@ -183,7 +183,7 @@ GOTO no_errors
   SET CONFIGURATION=%CONFIGURATION:NativeOnly=%
   IF EXIST "bin\%YEAR%\%CONFIGURATION%\bin" (
     IF EXIST "bin\%NATIVE_YEAR%\%PLATFORM%\%NATIVE_CONFIGURATION%" (
-      %__ECHO% "%DOTNET%" %SUBCOMMANDS% "Externals\Eagle\bin\netStandard20\%EAGLESHELL%" %PREARGS% -anyInitialize "set no(temporaryTestLog) true; set test_year {%YEAR%}; set test_native_year {%NATIVE_YEAR%}; set test_configuration {%CONFIGURATION%}" -file "%TEST_FILE%" %POSTARGS%
+      %__ECHO% "%DOTNET%" %SUBCOMMANDS% "Externals\Eagle\bin\netStandard20\%EAGLESHELL%" %PREARGS% -anyInitialize "set test_year {%YEAR%}; set test_native_year {%NATIVE_YEAR%}; set test_configuration {%CONFIGURATION%}" -file "%TEST_FILE%" %POSTARGS%
       IF ERRORLEVEL 1 (
         ECHO Testing of "%YEAR%/%NATIVE_YEAR%/%CONFIGURATION%" .NET Standard 2.0 assembly failed.
         CALL :fn_SetErrorLevel

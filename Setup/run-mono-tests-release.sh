@@ -7,5 +7,5 @@ if [[ -z "$SQLITE_NET_YEAR" ]]; then
 fi
 
 pushd "$scriptdir/.."
-mono Externals/Eagle/bin/netFramework40/EagleShell.exe -preInitialize "set no(temporaryTestLog) true; set root_path {$scriptdir/..}; set test_configuration Release; set test_year $SQLITE_NET_YEAR; set build_directory {bin/$SQLITE_NET_YEAR/Release$SQLITE_NET_CONFIGURATION_SUFFIX/bin}" -file Tests/all.eagle "$@"
+mono Externals/Eagle/bin/netFramework40/EagleShell.exe -preInitialize "set root_path {$scriptdir/..}; set test_configuration Release; set test_year {$SQLITE_NET_YEAR}; set build_directory {bin/$SQLITE_NET_YEAR/Release$SQLITE_NET_CONFIGURATION_SUFFIX/bin}" -file Tests/all.eagle "$@"
 popd
