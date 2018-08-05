@@ -3,6 +3,7 @@
 *.ilk
 *.json
 *.lib
+*.log
 *.manifest
 *.map
 *.mda.config

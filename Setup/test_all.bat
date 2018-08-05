@@ -143,7 +143,7 @@ IF NOT DEFINED SKIPMAIN (
         )
 
         IF NOT DEFINED NOMANAGEDONLY (
-          %__ECHO% "Externals\Eagle\bin\netFramework40\%EAGLESHELL%" %PREARGS% -anyInitialize "set test_year {%%Y}; set test_configuration {%%C}" -file "%TEST_FILE%" %POSTARGS%
+          %__ECHO% "Externals\Eagle\bin\netFramework40\%EAGLESHELL%" %PREARGS% -anyInitialize "set no(temporaryTestLog) true; set test_year {%%Y}; set test_configuration {%%C}" -file "%TEST_FILE%" %POSTARGS%
 
           IF ERRORLEVEL 1 (
             ECHO Testing of "%%Y/%%C" managed-only assembly failed.
@@ -224,7 +224,7 @@ IF NOT DEFINED SKIPMAIN (
               )
             )
 
-            %__ECHO% "Externals\Eagle\bin\netFramework40\%EAGLESHELL%" %PREARGS% -preInitialize "set test_year {%%Y}; set test_configuration {%%C}" -initialize -runtimeOption native -file "%TEST_FILE%" %POSTARGS%
+            %__ECHO% "Externals\Eagle\bin\netFramework40\%EAGLESHELL%" %PREARGS% -preInitialize "set no(temporaryTestLog) true; set test_year {%%Y}; set test_configuration {%%C}" -initialize -runtimeOption native -file "%TEST_FILE%" %POSTARGS%
 
             IF ERRORLEVEL 1 (
               ECHO Testing of "%%Y/%%C" mixed-mode assembly failed.
