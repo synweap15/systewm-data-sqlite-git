@@ -44,7 +44,7 @@ runTest {test installer-1.1 {installer tool / Visual Studio 2005} -setup {
         -noNetFx471 true -noNetFx472 true -noVs2008 true -noVs2010 true \
         -noVs2012 true -noVs2013 true -noVs2015 true -noVs2017 true \
         -whatIf true -verbose true -confirm true -install true -debug true \
-        -wow64 true -directory [file nativename [getBuildDirectory false]] \
+        -wow64 true -directory [file nativename [getBuildDirectory true]] \
         -logFileName [appendArgs \" [file nativename $fileName] \"] \
         -traceFormat [appendArgs \" "#{0}: {2}" \"]
   } error]
@@ -87,7 +87,7 @@ runTest {test installer-1.2 {uninstaller tool / Visual Studio 2005} -setup {
         -noNetFx471 true -noNetFx472 true -noVs2008 true -noVs2010 true \
         -noVs2012 true -noVs2013 true -noVs2015 true -noVs2017 true \
         -whatIf true -verbose true -confirm true -install false -debug true \
-        -wow64 true -directory [file nativename [getBuildDirectory false]] \
+        -wow64 true -directory [file nativename [getBuildDirectory true]] \
         -logFileName [appendArgs \" [file nativename $fileName] \"] \
         -traceFormat [appendArgs \" "#{0}: {2}" \"]
   } error]
@@ -130,7 +130,7 @@ runTest {test installer-1.3 {installer tool / Visual Studio 2008} -setup {
         -noNetFx472 true -noVs2005 true -noVs2010 true -noVs2012 true \
         -noVs2013 true -noVs2015 true -noVs2017 true -whatIf true \
         -verbose true -confirm true -install true -debug true -wow64 true \
-        -directory [file nativename [getBuildDirectory false]] \
+        -directory [file nativename [getBuildDirectory true]] \
         -logFileName [appendArgs \" [file nativename $fileName] \"] \
         -traceFormat [appendArgs \" "#{0}: {2}" \"]
   } error]
@@ -173,7 +173,7 @@ runTest {test installer-1.4 {uninstaller tool / Visual Studio 2008} -setup {
         -noNetFx472 true -noVs2005 true -noVs2010 true -noVs2012 true \
         -noVs2013 true -noVs2015 true -noVs2017 true -whatIf true \
         -verbose true -confirm true -install false -debug true -wow64 true \
-        -directory [file nativename [getBuildDirectory false]] \
+        -directory [file nativename [getBuildDirectory true]] \
         -logFileName [appendArgs \" [file nativename $fileName] \"] \
         -traceFormat [appendArgs \" "#{0}: {2}" \"]
   } error]
@@ -216,7 +216,7 @@ runTest {test installer-1.5 {installer tool / Visual Studio 2010} -setup {
         -noNetFx471 true -noNetFx472 true -noVs2005 true -noVs2008 true \
         -noVs2012 true -noVs2013 true -noVs2015 true -noVs2017 true \
         -whatIf true -verbose true -confirm true -install true -debug true \
-        -wow64 true -directory [file nativename [getBuildDirectory false]] \
+        -wow64 true -directory [file nativename [getBuildDirectory true]] \
         -logFileName [appendArgs \" [file nativename $fileName] \"] \
         -traceFormat [appendArgs \" "#{0}: {2}" \"]
   } error]
@@ -260,7 +260,7 @@ runTest {test installer-1.6 {uninstaller tool / Visual Studio 2010} -setup {
         -noNetFx471 true -noNetFx472 true -noVs2005 true -noVs2008 true \
         -noVs2012 true -noVs2013 true -noVs2015 true -noVs2017 true \
         -whatIf true -verbose true -confirm true -install false -debug true \
-        -wow64 true -directory [file nativename [getBuildDirectory false]] \
+        -wow64 true -directory [file nativename [getBuildDirectory true]] \
         -logFileName [appendArgs \" [file nativename $fileName] \"] \
         -traceFormat [appendArgs \" "#{0}: {2}" \"]
   } error]
@@ -305,7 +305,7 @@ runTest {test installer-1.7 {installer tool / Visual Studio 2012} -setup {
         -noVs2010 true -noVs2013 true -noVs2015 true -noVs2017 true \
         -whatIf true -verbose true -confirm true -install true -debug true \
         -wow64 true -configVersion 4.0.30319 \
-        -directory [file nativename [getBuildDirectory false]] \
+        -directory [file nativename [getBuildDirectory true]] \
         -logFileName [appendArgs \" [file nativename $fileName] \"] \
         -traceFormat [appendArgs \" "#{0}: {2}" \"]
   } error]
@@ -350,7 +350,7 @@ runTest {test installer-1.8 {uninstaller tool / Visual Studio 2012} -setup {
         -noVs2010 true -noVs2013 true -noVs2015 true -noVs2017 true \
         -whatIf true -verbose true -confirm true -install false -debug true \
         -wow64 true -configVersion 4.0.30319 \
-        -directory [file nativename [getBuildDirectory false]] \
+        -directory [file nativename [getBuildDirectory true]] \
         -logFileName [appendArgs \" [file nativename $fileName] \"] \
         -traceFormat [appendArgs \" "#{0}: {2}" \"]
   } error]
@@ -395,7 +395,7 @@ runTest {test installer-1.9 {installer tool / Visual Studio 2013} -setup {
         -noVs2010 true -noVs2012 true -noVs2015 true -noVs2017 true \
         -whatIf true -verbose true -confirm true -install true -debug true \
         -wow64 true -configVersion 4.0.30319 \
-        -directory [file nativename [getBuildDirectory false]] \
+        -directory [file nativename [getBuildDirectory true]] \
         -logFileName [appendArgs \" [file nativename $fileName] \"] \
         -traceFormat [appendArgs \" "#{0}: {2}" \"]
   } error]
@@ -440,7 +440,7 @@ runTest {test installer-1.10 {uninstaller tool / Visual Studio 2013} -setup {
         -noVs2010 true -noVs2012 true -noVs2015 true -noVs2017 true \
         -whatIf true -verbose true -confirm true -install false -debug true \
         -wow64 true -configVersion 4.0.30319 \
-        -directory [file nativename [getBuildDirectory false]] \
+        -directory [file nativename [getBuildDirectory true]] \
         -logFileName [appendArgs \" [file nativename $fileName] \"] \
         -traceFormat [appendArgs \" "#{0}: {2}" \"]
   } error]
@@ -485,7 +485,7 @@ runTest {test installer-1.11 {installer tool / Visual Studio 2015} -setup {
         -noVs2010 true -noVs2012 true -noVs2013 true -noVs2017 true \
         -whatIf true -verbose true -confirm true -install true -debug true \
         -wow64 true -configVersion 4.0.30319 \
-        -directory [file nativename [getBuildDirectory false]] \
+        -directory [file nativename [getBuildDirectory true]] \
         -logFileName [appendArgs \" [file nativename $fileName] \"] \
         -traceFormat [appendArgs \" "#{0}: {2}" \"]
   } error]
@@ -530,7 +530,7 @@ runTest {test installer-1.12 {uninstaller tool / Visual Studio 2015} -setup {
         -noVs2010 true -noVs2012 true -noVs2013 true -noVs2017 true \
         -whatIf true -verbose true -confirm true -install false -debug true \
         -wow64 true -configVersion 4.0.30319 \
-        -directory [file nativename [getBuildDirectory false]] \
+        -directory [file nativename [getBuildDirectory true]] \
         -logFileName [appendArgs \" [file nativename $fileName] \"] \
         -traceFormat [appendArgs \" "#{0}: {2}" \"]
   } error]

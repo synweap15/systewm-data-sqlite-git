@@ -1,6 +1,6 @@
 Installer.exe: #[getLineNumber]: Configuration.Process: No actual changes will be made to this system because "what-if" mode is enabled.
-Installer.exe: #[getLineNumber]: Installer.Main: GacRemove: assemblyPath = "[file nativename [file join [getBuildDirectory false] SQLite.Designer.dll]]"
-Installer.exe: #[getLineNumber]: Installer.Main: GacRemove: assemblyPath = "[file nativename [file join [getBuildDirectory false] System.Data.SQLite.dll]]"
+Installer.exe: #[getLineNumber]: Installer.Main: GacRemove: assemblyPath = "[file nativename [file join [getBuildDirectory true] SQLite.Designer.dll]]"
+Installer.exe: #[getLineNumber]: Installer.Main: GacRemove: assemblyPath = "[file nativename [file join [getBuildDirectory true] System.Data.SQLite.dll]]"
 Installer.exe: #[getLineNumber]: RegistryHelper.OpenSubKey: rootKey = "HKEY_LOCAL_MACHINE", subKeyName = "Software${wow64}\Microsoft\.NETFramework\v2.0.50727", writable = False
 Installer.exe: #[getLineNumber]: RegistryHelper.OpenSubKey: rootKey = "HKEY_LOCAL_MACHINE", subKeyName = "Software${wow64}\Microsoft\.NETFramework\v2.0.50727\AssemblyFoldersEx", writable = True
 Installer.exe: #[getLineNumber]: RegistryHelper.DeleteSubKey: rootKey = "HKEY_LOCAL_MACHINE\Software${wow64}\Microsoft\.NETFramework\v2.0.50727\AssemblyFoldersEx", subKeyName = "System.Data.SQLite"
