@@ -4781,6 +4781,9 @@ namespace System.Data.SQLite
     internal static extern void sqlite3_result_int64_interop(IntPtr context, ref Int64 value);
 
     [DllImport(SQLITE_DLL)]
+    internal static extern void sqlite3_msize_interop(IntPtr p, ref ulong size);
+
+    [DllImport(SQLITE_DLL)]
     internal static extern IntPtr sqlite3_create_disposable_module_interop(
         IntPtr db, IntPtr name, IntPtr pModule, int iVersion, xCreate xCreate,
         xConnect xConnect, xBestIndex xBestIndex, xDisconnect xDisconnect,
