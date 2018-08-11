@@ -466,6 +466,8 @@ if {![info exists no([file tail [info script]])]} then {
   set test_flags(-skip) [list]; # default to skipping no tests.
   set test_flags(-constraints) [list]; # default to no manual constraints.
   set test_flags(-verbose) ""; # default to pass, body, skip, start, error.
+  set test_flags(-logPath) ""; # default to using standard log file path.
+  set test_flags(-logId) ""; # default to using no log identifier.
   set test_flags(-logFile) ""; # default to using standard log file naming.
   set test_flags(-threshold) ""; # default to requiring all tests to pass.
   set test_flags(-randomOrder) ""; # default to deterministic order.
@@ -500,6 +502,22 @@ if {![info exists no([file tail [info script]])]} then {
       }
 
       unset -nocomplain name value
+    }
+
+    if {[info exists test_flags(-logPath)] && \
+        [string length $test_flags(-logPath)] > 0} then {
+      #
+      # NOTE: Set the log path to the one provided by the command line.
+      #
+      set test_log_path $test_flags(-logPath)
+    }
+
+    if {[info exists test_flags(-logId)] && \
+        [string length $test_flags(-logId)] > 0} then {
+      #
+      # NOTE: Set the log identifier to the one provided by the command line.
+      #
+      set test_log_id $test_flags(-logId)
     }
 
     if {[info exists test_flags(-logFile)] && \
@@ -931,6 +949,16 @@ if {![info exists no([file tail [info script]])]} then {
       [expr {[info exists test_flags(-bad)] && \
           [string length $test_flags(-bad)] > 0 ? \
               $test_flags(-bad) : "<none>"}] \n]
+
+  tputs $test_channel [appendArgs "---- logging path: " \
+      [expr {[info exists test_log_path] && \
+          [string length $test_log_path] > 0 ? \
+              [appendArgs \" $test_log_path \"] : "<none>"}] \n]
+
+  tputs $test_channel [appendArgs "---- logging identifier: " \
+      [expr {[info exists test_log_id] && \
+          [string length $test_log_id] > 0 ? \
+              [appendArgs \" $test_log_id \"] : "<none>"}] \n]
 
   tputs $test_channel [appendArgs "---- logging to: " \
       [expr {[info exists test_log] && [string length $test_log] > 0 ? \

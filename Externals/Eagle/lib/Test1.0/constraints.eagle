@@ -991,11 +991,16 @@ namespace eval ::Eagle {
       }
 
       #
-      # NOTE: This test constraint is needed by tests "socket-*.*".
+      # NOTE: These test constraints are needed by tests "socket-*.*".
       #
       if {![info exists ::no(compileNetwork)]} then {
         lappend result compile.NETWORK
         addConstraint compile.NETWORK
+      }
+
+      if {![info exists ::no(compileConfiguration)]} then {
+        lappend result compile.CONFIGURATION
+        addConstraint compile.CONFIGURATION
       }
 
       #

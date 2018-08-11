@@ -695,10 +695,11 @@ namespace eval ::Eagle {
     #
     set options [list \
         -breakOnLeak -configuration -constraints -exitOnComplete \
-        -file -logFile -machine -match -namePrefix -no -notFile \
-        -platform -postTest -preTest -postWait -preWait -randomOrder \
-        -skip -startFile -stopFile -stopOnFailure -stopOnLeak -suffix \
-        -suite -tclsh -threshold -uncountedLeaks -verbose]
+        -file -logFile -logId -logPath -machine -match -namePrefix \
+        -no -notFile -platform -postTest -preTest -postWait -preWait \
+        -randomOrder -skip -startFile -stopFile -stopOnFailure \
+        -stopOnLeak -suffix -suite -tclsh -threshold -uncountedLeaks \
+        -verbose]
 
     set length [llength $args]
 
@@ -1211,6 +1212,31 @@ namespace eval ::Eagle {
     }
   }
 
+  proc getDefaultTestLogPath { executable } {
+    #
+    # NOTE: By default, use the configured temporary directory for
+    #       test log files unless we are forbidden from doing so.
+    #
+    if {![info exists ::no(temporaryTestLog)]} then {
+      return [getTemporaryPath]
+    } else {
+      #
+      # HACK: It seems that .NET Core considers itself to be the
+      #       executable-of-record for the process; in that case,
+      #       relocate the log file to be nearer the assemblies.
+      #
+      if {[isEagle] && [isDotNetCore]} then {
+        return [info binary]
+      } else {
+        return [file dirname $executable]
+      }
+    }
+  }
+
+  proc getTestLogPath {} {
+    return [expr {[info exists ::test_log_path] ? $test_log_path : ""}]
+  }
+
   proc getTestLogId {} {
     return [expr {[info exists ::test_log_id] ? \
         [append result . $::test_log_id] : ""}]
@@ -1219,19 +1245,10 @@ namespace eval ::Eagle {
   proc getDefaultTestLog {} {
     set executable [info nameofexecutable]
 
-    if {![info exists ::no(temporaryTestLog)]} then {
-      set path [getTemporaryPath]
+    if {[info exists ::test_log_path]} then {
+      set path $::test_log_path
     } else {
-      #
-      # HACK: It seems that .NET Core considers itself to be the
-      #       executable-of-record for the process; in that case,
-      #       relocate the log file to be nearer the assemblies.
-      #
-      if {[isEagle] && [isDotNetCore]} then {
-        set path [info binary]
-      } else {
-        set path [file dirname $executable]
-      }
+      set path [getDefaultTestLogPath $executable]
     }
 
     return [file normalize [file join $path [appendArgs \
@@ -4271,23 +4288,24 @@ namespace eval ::Eagle {
         haveOrAddConstraint getConstraints getCachedConstraints \
         useCachedConstraints removeConstraint fixConstraints \
         fixTimingConstraints calculateBogoCops calculateRelativePerformance \
-        formatTimeStamp formatElapsedTime sourceIfValid \
-        processTestArguments getTclShellFileName getTemporaryPath \
-        getFiles getTestFiles getTestRunId getNewTestRunId getTestLogId \
-        getDefaultTestLog getTestLog getLastTestLog getTestSuite \
-        getTestMachine getTestPlatform getTestConfiguration getTestNamePrefix \
-        getTestSuffix getTestUncountedLeaks getRuntimeAssemblyName \
-        getTestAssemblyName canTestExec testExec testClrExec execTestShell \
-        isRandomOrder isBreakOnDemand isBreakOnLeak isStopOnFailure \
-        isStopOnLeak isExitOnComplete returnInfoScript runTestPrologue \
-        runTestEpilogue hookPuts unhookPuts runTest testDebugBreak \
-        testArrayGet testShim tsource recordTestStatistics \
-        reportTestStatistics formatList formatListAsDict pathToRegexp \
-        assemblyNameToRegexp inverseLsearchGlob removePathFromFileNames \
-        formatDecimal clearTestPercent reportTestPercent runAllTests \
-        isTestSuiteRunning getTestChannelOrDefault tryVerifyTestPath \
-        checkForAndSetTestPath configureTcltest machineToPlatform \
-        getPassPercentage getSkipPercentage] false false
+        formatTimeStamp formatElapsedTime sourceIfValid processTestArguments \
+        getTclShellFileName getTemporaryPath getFiles getTestFiles \
+        getTestRunId getNewTestRunId getDefaultTestLogPath getTestLogPath \
+        getTestLogId getDefaultTestLog getTestLog getLastTestLog \
+        getTestSuite getTestMachine getTestPlatform getTestConfiguration \
+        getTestNamePrefix getTestSuffix getTestUncountedLeaks \
+        getRuntimeAssemblyName getTestAssemblyName canTestExec testExec \
+        testClrExec execTestShell isRandomOrder isBreakOnDemand \
+        isBreakOnLeak isStopOnFailure isStopOnLeak isExitOnComplete \
+        returnInfoScript runTestPrologue runTestEpilogue hookPuts unhookPuts \
+        runTest testDebugBreak testArrayGet testShim tsource \
+        recordTestStatistics reportTestStatistics formatList \
+        formatListAsDict pathToRegexp assemblyNameToRegexp \
+        inverseLsearchGlob removePathFromFileNames formatDecimal \
+        clearTestPercent reportTestPercent runAllTests isTestSuiteRunning \
+        getTestChannelOrDefault tryVerifyTestPath checkForAndSetTestPath \
+        configureTcltest machineToPlatform getPassPercentage \
+        getSkipPercentage] false false
 
     ###########################################################################
     ############################## END Tcl ONLY ###############################

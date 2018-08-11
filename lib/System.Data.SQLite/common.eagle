@@ -4467,6 +4467,24 @@ namespace eval ::Eagle {
       }
     }
 
+    proc moveTestLogFile { path } {
+      if {[info exists ::test_log] && [file exists $::test_log]} then {
+        set old_test_log $::test_log
+        set new_test_log [file join $path [file tail $old_test_log]]
+
+        file copy $old_test_log $new_test_log; file delete $old_test_log
+        set ::test_log $new_test_log
+
+        if {[info exists ::test_log_path]} then {
+          set ::test_log_path $path
+        }
+
+        tputs $::test_channel [appendArgs \
+            "---- moved test log from \"" $old_test_log "\" to \"" \
+            $new_test_log \"\n]
+      }
+    }
+
     proc runSQLiteTestPrologue {} {
       #
       # NOTE: Skip running our custom prologue if the main one has been
@@ -4774,7 +4792,17 @@ namespace eval ::Eagle {
                   "could not verify managed build directory \"" \
                   $directory "\", all testing halted"]
             }
+
+            set logDirectory $directory
+          } else {
+            set logDirectory [getBuildDirectory true]
           }
+
+          #
+          # NOTE: We're going to move the test log file to the directory
+          #       containing the managed assemblies being tested.
+          #
+          moveTestLogFile $logDirectory
 
           #
           # NOTE: Skip trying to copy any files if instructed.
