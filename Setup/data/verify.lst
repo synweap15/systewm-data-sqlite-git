@@ -976,6 +976,7 @@ set sds_manifests(eagle) {
   Externals/Eagle/bin/netFramework40/x64/Spilornis.dll
   Externals/Eagle/bin/netFramework40/x86/
   Externals/Eagle/bin/netFramework40/x86/Spilornis.dll
+  Externals/Eagle/bin/netStandard20/
   Externals/Eagle/bin/netStandard20/Eagle.dll
   Externals/Eagle/bin/netStandard20/EagleShell.dll
   Externals/Eagle/bin/netStandard20/EagleShell.runtimeconfig.json
@@ -2202,6 +2203,13 @@ set manifests(sqlite-netFx472-setup-bundle-x86-2017-.exe) [list sds \
 set manifests(sqlite-netFx472-setup-bundle-x64-2017-.exe) [list sds \
     setupCore setupBundle setupLinqCore setupEf6Core setupLinqBundle \
     setupEf6Bundle setupX64Vs2017]
+
+###############################################################################
+################### Visual Studio 2017 / .NET Standard 2.0 ####################
+############################### Binary Packages ###############################
+###############################################################################
+
+set manifests(sqlite-netStandard20-binary-.zip) [list sds binaryCore]
 
 ###############################################################################
 ############################### NuGet Packages ################################
