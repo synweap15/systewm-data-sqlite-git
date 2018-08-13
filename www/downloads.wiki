@@ -1621,6 +1621,31 @@
 
     <tr>
       <td colspan="4">
+        <b>Precompiled Binaries for the .NET Standard 2.0 (.NET Core 2.0)</b>
+      </td>
+    </tr>
+
+    <tr>
+      <td width="10">&nbsp;</td>
+      <td width="30%" valign="top" align="right">
+        <a name="sqlite-netStandard20-binary"></a>
+        <a href="/downloads/1.0.109.0/sqlite-netStandard20-binary-1.0.109.0.zip">sqlite-netStandard20-binary-1.0.109.0.zip</a>
+        <br />
+        (301 KiB)
+      </td>
+      <td width="5"></td>
+      <td valign="top">
+        This binary package contains all the managed binaries for the .NET
+        Standard 2.0 version of the System.Data.SQLite 1.0.109.0 (3.24.0)
+        package.  The <a href="https://dotnet.github.io/">.NET Core</a>
+        runtime (2.0 or higher) is required.
+        <br />
+        (sha1: 4b4a92ef122371403b28b43757ddaaea3d700ec1)
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="4">
         <b>Precompiled Statically-Linked Binaries for 32-bit Windows (.NET Framework 2.0 SP2)</b>
       </td>
     </tr>
