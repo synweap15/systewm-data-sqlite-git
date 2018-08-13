@@ -4681,7 +4681,7 @@ namespace eval ::Eagle {
 
             if {![info exists ::no(deleteSqliteExternalFiles)]} then {
               foreach fileName $mdaConfigFileNames {
-                tryDeleteBuildFile $fileName false
+                tryDeleteBuildFile $fileName true
               }
 
               foreach fileName $externalFileNames {
@@ -4834,7 +4834,7 @@ namespace eval ::Eagle {
                   "---- copying \"configuration\" files...\n"
 
               foreach fileName $configFileNames {
-                tryCopyBuildFile $fileName false
+                tryCopyBuildFile $fileName true
               }
             }
 
