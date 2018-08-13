@@ -76,7 +76,7 @@ IF NOT DEFINED MACOS_DIRECTORY (
 %_VECHO% MacOsDirectory = '%MACOS_DIRECTORY%'
 
 IF NOT DEFINED NO_NUGET_XPLATFORM (
-  %__ECHO% "%ROOT%\Externals\Eagle\bin\netFramework40\EagleShell.exe" -evaluate "set directory {%LINUX_DIRECTORY%}; file mkdir $directory; uri download -- {%LINUX_URI%} [file join $directory SQLite.Interop.dll]"
+  %__ECHO% "%ROOT%\Externals\Eagle\bin\netFramework40\EagleShell.exe" -evaluate "set directory {%LINUX_DIRECTORY%}; set fileName [file join $directory SQLite.Interop.dll]; file mkdir $directory; catch {file delete $fileName}; uri download -- {%LINUX_URI%} $fileName"
 
   IF ERRORLEVEL 1 (
     ECHO Download of System.Data.SQLite interop assembly "%LINUX_URI%" to "%LINUX_DIRECTORY%" failure.
@@ -85,7 +85,7 @@ IF NOT DEFINED NO_NUGET_XPLATFORM (
     %_AECHO% Download of System.Data.SQLite interop assembly "%LINUX_URI%" to "%LINUX_DIRECTORY%" success.
   )
 
-  %__ECHO% "%ROOT%\Externals\Eagle\bin\netFramework40\EagleShell.exe" -evaluate "set directory {%MACOS_DIRECTORY%}; file mkdir $directory; uri download -- {%MACOS_URI%} [file join $directory SQLite.Interop.dll]"
+  %__ECHO% "%ROOT%\Externals\Eagle\bin\netFramework40\EagleShell.exe" -evaluate "set directory {%MACOS_DIRECTORY%}; set fileName [file join $directory SQLite.Interop.dll]; file mkdir $directory; catch {file delete $fileName}; uri download -- {%MACOS_URI%} $fileName"
 
   IF ERRORLEVEL 1 (
     ECHO Download of System.Data.SQLite interop assembly "%MACOS_URI%" to "%MACOS_DIRECTORY%" failure.
