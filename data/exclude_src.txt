@@ -23,14 +23,7 @@ Externals/Eagle/bin/netFramework40/System.*
 Externals/Eagle/bin/netFramework40/Win32/*
 Externals/Eagle/bin/netFramework40/x64/*
 Externals/Eagle/bin/netFramework40/x86/*
-Externals/Eagle/bin/netStandard20/Eagle.dll
-Externals/Eagle/bin/netStandard20/EagleShell.dll
-Externals/Eagle/bin/netStandard20/EagleShell.runtimeconfig.json
-Externals/Eagle/bin/netStandard20/EntityFramework.*
-Externals/Eagle/bin/netStandard20/SQLite.Interop.*
-Externals/Eagle/bin/netStandard20/sqlite3.*
-Externals/Eagle/bin/netStandard20/System.*
-Externals/Eagle/bin/netStandard20/Win32/*
+Externals/Eagle/bin/netStandard20/*
 Externals/Eagle/lib/Eagle1.0/auxiliary.eagle
 Externals/Eagle/lib/Eagle1.0/compat.eagle
 Externals/Eagle/lib/Eagle1.0/csharp.eagle
