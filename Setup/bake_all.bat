@@ -39,6 +39,11 @@ IF ERRORLEVEL 1 (
   GOTO errors
 )
 
+REM
+REM NOTE: There is no setup package for the .NET Standard 2.0.
+REM
+SET NONETSTANDARD20=1
+
 %__ECHO3% CALL "%TOOLS%\set_common.bat"
 
 IF ERRORLEVEL 1 (

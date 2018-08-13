@@ -1338,7 +1338,6 @@ namespace System.Data.SQLite
     ///////////////////////////////////////////////////////////////////////////////////////////////
 
     #region Query Diagnostics Support
-#if !PLATFORM_COMPACTFRAMEWORK
     /// <summary>
     /// This field is used to keep track of whether or not the
     /// "SQLite_ForceLogPrepare" environment variable has been queried.  If so,
@@ -1355,7 +1354,7 @@ namespace System.Data.SQLite
     /// <returns>
     /// Non-zero to log all calls to prepare a SQL query.
     /// </returns>
-    private static bool ForceLogPrepare()
+    internal static bool ForceLogPrepare()
     {
         lock (syncRoot)
         {
@@ -1375,7 +1374,6 @@ namespace System.Data.SQLite
             return (bool)forceLogPrepare;
         }
     }
-#endif
     #endregion
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -1408,10 +1406,7 @@ namespace System.Data.SQLite
       SQLiteConnectionFlags flags =
           (cnn != null) ? cnn.Flags : SQLiteConnectionFlags.Default;
 
-      if (
-#if !PLATFORM_COMPACTFRAMEWORK
-          ForceLogPrepare() ||
-#endif
+      if (ForceLogPrepare() ||
           HelperMethods.LogPrepare(flags))
       {
           if ((strSql == null) || (strSql.Length == 0) || (strSql.Trim().Length == 0))
@@ -1680,7 +1675,7 @@ namespace System.Data.SQLite
     {
         SQLiteStatementHandle handle = stmt._sqlite_stmt;
 
-        if (HelperMethods.LogBind(flags))
+        if (ForceLogPrepare() || HelperMethods.LogBind(flags))
         {
             LogBind(handle, index, value);
         }
@@ -1700,7 +1695,7 @@ namespace System.Data.SQLite
     {
         SQLiteStatementHandle handle = stmt._sqlite_stmt;
 
-        if (HelperMethods.LogBind(flags))
+        if (ForceLogPrepare() || HelperMethods.LogBind(flags))
         {
             LogBind(handle, index, value);
         }
@@ -1713,7 +1708,7 @@ namespace System.Data.SQLite
     {
         SQLiteStatementHandle handle = stmt._sqlite_stmt;
 
-        if (HelperMethods.LogBind(flags))
+        if (ForceLogPrepare() || HelperMethods.LogBind(flags))
         {
             LogBind(handle, index, value);
         }
@@ -1743,7 +1738,7 @@ namespace System.Data.SQLite
     {
         SQLiteStatementHandle handle = stmt._sqlite_stmt;
 
-        if (HelperMethods.LogBind(flags))
+        if (ForceLogPrepare() || HelperMethods.LogBind(flags))
         {
             LogBind(handle, index, value);
         }
@@ -1763,7 +1758,7 @@ namespace System.Data.SQLite
     {
         SQLiteStatementHandle handle = stmt._sqlite_stmt;
 
-        if (HelperMethods.LogBind(flags))
+        if (ForceLogPrepare() || HelperMethods.LogBind(flags))
         {
             LogBind(handle, index, value);
         }
@@ -1783,7 +1778,7 @@ namespace System.Data.SQLite
     {
         SQLiteStatementHandle handle = stmt._sqlite_stmt;
 
-        if (HelperMethods.LogBind(flags))
+        if (ForceLogPrepare() || HelperMethods.LogBind(flags))
         {
             LogBind(handle, index, value);
         }
@@ -1798,14 +1793,14 @@ namespace System.Data.SQLite
     {
         SQLiteStatementHandle handle = stmt._sqlite_stmt;
 
-        if (HelperMethods.LogBind(flags))
+        if (ForceLogPrepare() || HelperMethods.LogBind(flags))
         {
             LogBind(handle, index, value);
         }
 
         byte[] b = ToUTF8(value);
 
-        if (HelperMethods.LogBind(flags))
+        if (ForceLogPrepare() || HelperMethods.LogBind(flags))
         {
             LogBind(handle, index, b);
         }
@@ -1818,7 +1813,7 @@ namespace System.Data.SQLite
     {
         SQLiteStatementHandle handle = stmt._sqlite_stmt;
 
-        if (HelperMethods.LogBind(flags))
+        if (ForceLogPrepare() || HelperMethods.LogBind(flags))
         {
             LogBind(handle, index, dt);
         }
@@ -1842,7 +1837,7 @@ namespace System.Data.SQLite
                 {
                     long value = dt.Ticks;
 
-                    if (HelperMethods.LogBind(flags))
+                    if (ForceLogPrepare() || HelperMethods.LogBind(flags))
                     {
                         LogBind(handle, index, value);
                     }
@@ -1863,7 +1858,7 @@ namespace System.Data.SQLite
                 {
                     double value = ToJulianDay(dt);
 
-                    if (HelperMethods.LogBind(flags))
+                    if (ForceLogPrepare() || HelperMethods.LogBind(flags))
                     {
                         LogBind(handle, index, value);
                     }
@@ -1884,7 +1879,7 @@ namespace System.Data.SQLite
                 {
                     long value = Convert.ToInt64(dt.Subtract(UnixEpoch).TotalSeconds);
 
-                    if (HelperMethods.LogBind(flags))
+                    if (ForceLogPrepare() || HelperMethods.LogBind(flags))
                     {
                         LogBind(handle, index, value);
                     }
@@ -1905,7 +1900,7 @@ namespace System.Data.SQLite
                 {
                     byte[] b = ToUTF8(dt);
 
-                    if (HelperMethods.LogBind(flags))
+                    if (ForceLogPrepare() || HelperMethods.LogBind(flags))
                     {
                         LogBind(handle, index, b);
                     }
@@ -1921,7 +1916,7 @@ namespace System.Data.SQLite
     {
         SQLiteStatementHandle handle = stmt._sqlite_stmt;
 
-        if (HelperMethods.LogBind(flags))
+        if (ForceLogPrepare() || HelperMethods.LogBind(flags))
         {
             LogBind(handle, index, blobData);
         }
@@ -1934,7 +1929,7 @@ namespace System.Data.SQLite
     {
         SQLiteStatementHandle handle = stmt._sqlite_stmt;
 
-        if (HelperMethods.LogBind(flags))
+        if (ForceLogPrepare() || HelperMethods.LogBind(flags))
         {
             LogBind(handle, index);
         }
@@ -1948,7 +1943,7 @@ namespace System.Data.SQLite
         SQLiteStatementHandle handle = stmt._sqlite_stmt;
         int value = UnsafeNativeMethods.sqlite3_bind_parameter_count(handle);
 
-        if (HelperMethods.LogBind(flags))
+        if (ForceLogPrepare() || HelperMethods.LogBind(flags))
         {
             IntPtr handleIntPtr = handle;
 
@@ -1973,7 +1968,7 @@ namespace System.Data.SQLite
         name = UTF8ToString(UnsafeNativeMethods.sqlite3_bind_parameter_name(handle, index), -1);
 #endif
 
-        if (HelperMethods.LogBind(flags))
+        if (ForceLogPrepare() || HelperMethods.LogBind(flags))
         {
             IntPtr handleIntPtr = handle;
 
@@ -1991,7 +1986,7 @@ namespace System.Data.SQLite
         SQLiteStatementHandle handle = stmt._sqlite_stmt;
         int index = UnsafeNativeMethods.sqlite3_bind_parameter_index(handle, ToUTF8(paramName));
 
-        if (HelperMethods.LogBind(flags))
+        if (ForceLogPrepare() || HelperMethods.LogBind(flags))
         {
             IntPtr handleIntPtr = handle;
 

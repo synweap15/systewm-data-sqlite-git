@@ -17,7 +17,7 @@ namespace System.Data.SQLite
         /// <summary>
         /// <para><code>
         /// int (*xCreate)(sqlite3 *db, void *pAux,
-        ///              int argc, char **argv,
+        ///              int argc, char *const*argv,
         ///              sqlite3_vtab **ppVTab,
         ///              char **pzErr);
         /// </code></para>
@@ -255,7 +255,7 @@ namespace System.Data.SQLite
         /// <summary>
         /// <para><code>
         /// int (*xConnect)(sqlite3*, void *pAux,
-        ///              int argc, char **argv,
+        ///              int argc, char *const*argv,
         ///              sqlite3_vtab **ppVTab,
         ///              char **pzErr);
         /// </code></para>

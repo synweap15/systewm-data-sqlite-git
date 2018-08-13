@@ -9,7 +9,7 @@
 </p>
 
 <a name="buildBinaries"></a>
-<h2>Build x86 &amp; x64 Binaries</h2>
+<h2>Build Windows x86 &amp; x64 Binaries</h2>
 
 <ol>
   <li>
@@ -40,7 +40,7 @@
 </ol>
 
 <a name="testBinaries"></a>
-<h2>Test x86 &amp; x64 Binaries</h2>
+<h2>Test Windows x86 &amp; x64 Binaries</h2>
 
 <ol>
   <li>
@@ -382,7 +382,7 @@
 </ol>
 
 <a name="buildBinaryPackages"></a>
-<h2>Build x86 &amp; x64 Binary Release Packages</h2>
+<h2>Build Windows x86 &amp; x64 Binary Release Packages</h2>
 
 <ol>
   <li>Open a normal command prompt window with &quot;cmd.exe&quot;.</li>
@@ -406,7 +406,7 @@
 </ol>
 
 <a name="buildStaticBinaryPackages"></a>
-<h2>Build x86 &amp; x64 Static Binary Release Packages</h2>
+<h2>Build Windows x86 &amp; x64 Static Binary Release Packages</h2>
 
 <ol>
   <li>Open a normal command prompt window with &quot;cmd.exe&quot;.</li>

@@ -414,11 +414,11 @@ the behavior of a virtual table.  The module structure looks like this:
 struct sqlite3_module {
   int iVersion;
   int (*xCreate)(sqlite3*, void *pAux,
-               int argc, char **argv,
+               int argc, char *const*argv,
                sqlite3_vtab **ppVTab,
                char **pzErr);
   int (*xConnect)(sqlite3*, void *pAux,
-               int argc, char **argv,
+               int argc, char *const*argv,
                sqlite3_vtab **ppVTab,
                char **pzErr);
   int (*xBestIndex)(sqlite3_vtab *pVTab, sqlite3_index_info*);
@@ -503,7 +503,7 @@ for "sqlite3_create_module".
 <h2 id="the_xcreate_method"><span>2.1. </span>The xCreate Method</h2>
 
 <div class="codeblock"><pre>int (*xCreate)(sqlite3 *db, void *pAux,
-             int argc, char **argv,
+             int argc, char *const*argv,
              sqlite3_vtab **ppVTab,
              char **pzErr);
 </pre></div>
@@ -697,7 +697,7 @@ PRIMARY KEY column and a non-NULL xUpdate method.
 </p><h2 id="the_xconnect_method"><span>2.2. </span>The xConnect Method</h2>
 
 <div class="codeblock"><pre>int (*xConnect)(sqlite3*, void *pAux,
-             int argc, char **argv,
+             int argc, char *const*argv,
              sqlite3_vtab **ppVTab,
              char **pzErr);
 </pre></div>

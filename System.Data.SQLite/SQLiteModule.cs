@@ -3414,13 +3414,15 @@ namespace System.Data.SQLite
         /// the available version of the SQLite core library.
         /// </summary>
         /// <returns>
-        /// Non-zero if the native sqlite3_msize() API property is supported
-        /// by the SQLite core library.
+        /// Non-zero if the native sqlite3_msize() API is supported by the
+        /// SQLite core library.
         /// </returns>
         private static bool CanUseSize64()
         {
+#if !PLATFORM_COMPACTFRAMEWORK || !SQLITE_STANDARD
             if (UnsafeNativeMethods.sqlite3_libversion_number() >= 3008007)
                 return true;
+#endif
 
             return false;
         }
@@ -3594,7 +3596,15 @@ namespace System.Data.SQLite
             SQLiteMarshal.CheckAlignment("Size64", pMemory, 0, IntPtr.Size);
 #endif
 
+#if !PLATFORM_COMPACTFRAMEWORK
             return UnsafeNativeMethods.sqlite3_msize(pMemory);
+#elif !SQLITE_STANDARD
+            ulong size = 0;
+            UnsafeNativeMethods.sqlite3_msize_interop(pMemory, ref size);
+            return size;
+#else
+            throw new NotImplementedException();
+#endif
         }
 
         ///////////////////////////////////////////////////////////////////////

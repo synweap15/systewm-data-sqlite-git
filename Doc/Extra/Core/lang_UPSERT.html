@@ -261,5 +261,9 @@ newer than the entry already in the table.  If the table already
 contains an entry with the same name and a current validDate,
 then the WHERE clause causes the DO UPDATE to become a no-op.
 
+<h3>Limitations</h3>
+
+<p>UPSERT does not currently work for <a href="vtab.html">virtual tables</a>.
+
 
 

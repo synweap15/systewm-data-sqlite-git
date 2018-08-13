@@ -76,7 +76,7 @@ IF NOT DEFINED MACOS_DIRECTORY (
 %_VECHO% MacOsDirectory = '%MACOS_DIRECTORY%'
 
 IF NOT DEFINED NO_NUGET_XPLATFORM (
-  %__ECHO% "%ROOT%\Externals\Eagle\bin\netFramework40\EagleShell.exe" -evaluate "set directory {%LINUX_DIRECTORY%}; file mkdir $directory; uri download -- {%LINUX_URI%} [file join $directory SQLite.Interop.dll]"
+  %__ECHO% "%ROOT%\Externals\Eagle\bin\netFramework40\EagleShell.exe" -evaluate "set directory {%LINUX_DIRECTORY%}; set fileName [file join $directory SQLite.Interop.dll]; file mkdir $directory; catch {file delete $fileName}; uri download -- {%LINUX_URI%} $fileName"
 
   IF ERRORLEVEL 1 (
     ECHO Download of System.Data.SQLite interop assembly "%LINUX_URI%" to "%LINUX_DIRECTORY%" failure.
@@ -85,7 +85,7 @@ IF NOT DEFINED NO_NUGET_XPLATFORM (
     %_AECHO% Download of System.Data.SQLite interop assembly "%LINUX_URI%" to "%LINUX_DIRECTORY%" success.
   )
 
-  %__ECHO% "%ROOT%\Externals\Eagle\bin\netFramework40\EagleShell.exe" -evaluate "set directory {%MACOS_DIRECTORY%}; file mkdir $directory; uri download -- {%MACOS_URI%} [file join $directory SQLite.Interop.dll]"
+  %__ECHO% "%ROOT%\Externals\Eagle\bin\netFramework40\EagleShell.exe" -evaluate "set directory {%MACOS_DIRECTORY%}; set fileName [file join $directory SQLite.Interop.dll]; file mkdir $directory; catch {file delete $fileName}; uri download -- {%MACOS_URI%} $fileName"
 
   IF ERRORLEVEL 1 (
     ECHO Download of System.Data.SQLite interop assembly "%MACOS_URI%" to "%MACOS_DIRECTORY%" failure.
@@ -95,56 +95,56 @@ IF NOT DEFINED NO_NUGET_XPLATFORM (
   )
 )
 
-%__ECHO% "%NUGET%" pack "%ROOT%\NuGet\SQLite.nuspec"
+%__ECHO% "%NUGET%" pack -VerbatimVersion "%ROOT%\NuGet\SQLite.nuspec"
 
 IF ERRORLEVEL 1 (
   ECHO The "%ROOT%\NuGet\SQLite.nuspec" package could not be built.
   GOTO usage
 )
 
-%__ECHO% "%NUGET%" pack "%ROOT%\NuGet\SQLite.Core.nuspec"
+%__ECHO% "%NUGET%" pack -VerbatimVersion "%ROOT%\NuGet\SQLite.Core.nuspec"
 
 IF ERRORLEVEL 1 (
   ECHO The "%ROOT%\NuGet\SQLite.Core.nuspec" package could not be built.
   GOTO usage
 )
 
-%__ECHO% "%NUGET%" pack "%ROOT%\NuGet\SQLite.Core.MSIL.nuspec"
+%__ECHO% "%NUGET%" pack -VerbatimVersion "%ROOT%\NuGet\SQLite.Core.MSIL.nuspec"
 
 IF ERRORLEVEL 1 (
   ECHO The "%ROOT%\NuGet\SQLite.Core.MSIL.nuspec" package could not be built.
   GOTO usage
 )
 
-%__ECHO% "%NUGET%" pack "%ROOT%\NuGet\SQLite.EF6.nuspec"
+%__ECHO% "%NUGET%" pack -VerbatimVersion "%ROOT%\NuGet\SQLite.EF6.nuspec"
 
 IF ERRORLEVEL 1 (
   ECHO The "%ROOT%\NuGet\SQLite.EF6.nuspec" package could not be built.
   GOTO usage
 )
 
-%__ECHO% "%NUGET%" pack "%ROOT%\NuGet\SQLite.Linq.nuspec"
+%__ECHO% "%NUGET%" pack -VerbatimVersion "%ROOT%\NuGet\SQLite.Linq.nuspec"
 
 IF ERRORLEVEL 1 (
   ECHO The "%ROOT%\NuGet\SQLite.Linq.nuspec" package could not be built.
   GOTO usage
 )
 
-%__ECHO% "%NUGET%" pack "%ROOT%\NuGet\SQLite.MSIL.nuspec"
+%__ECHO% "%NUGET%" pack -VerbatimVersion "%ROOT%\NuGet\SQLite.MSIL.nuspec"
 
 IF ERRORLEVEL 1 (
   ECHO The "%ROOT%\NuGet\SQLite.MSIL.nuspec" package could not be built.
   GOTO usage
 )
 
-%__ECHO% "%NUGET%" pack "%ROOT%\NuGet\SQLite.x86.nuspec"
+%__ECHO% "%NUGET%" pack -VerbatimVersion "%ROOT%\NuGet\SQLite.x86.nuspec"
 
 IF ERRORLEVEL 1 (
   ECHO The "%ROOT%\NuGet\SQLite.x86.nuspec" package could not be built.
   GOTO usage
 )
 
-%__ECHO% "%NUGET%" pack "%ROOT%\NuGet\SQLite.x64.nuspec"
+%__ECHO% "%NUGET%" pack -VerbatimVersion "%ROOT%\NuGet\SQLite.x64.nuspec"
 
 IF ERRORLEVEL 1 (
   ECHO The "%ROOT%\NuGet\SQLite.x64.nuspec" package could not be built.

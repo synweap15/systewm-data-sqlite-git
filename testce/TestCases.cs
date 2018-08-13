@@ -1,7 +1,7 @@
 /********************************************************
  * ADO.NET 2.0 Data Provider for SQLite Version 3.X
  * Written by Robert Simpson (robert@blackcastlesoft.com)
- * 
+ *
  * Released to the public domain, use at your own risk!
  ********************************************************/
 
@@ -16,7 +16,7 @@ namespace test
 {
 
   /// <summary>
-  /// Scalar user-defined function.  In this example, the same class is declared twice with 
+  /// Scalar user-defined function.  In this example, the same class is declared twice with
   /// different function names to demonstrate how to use alias names for user-defined functions.
   /// </summary>
   [SQLiteFunction(Name = "Foo", Arguments = 2, FuncType = FunctionType.Scalar)]
@@ -214,47 +214,47 @@ namespace test
 
       total++;
       try { CreateTable(cnn); frm.WriteLine("SUCCESS - CreateTable"); passed++; }
-      catch (Exception) { frm.WriteLine("FAIL - CreateTable"); failed++; }
+      catch (Exception e) { frm.WriteLine(String.Format("FAIL - CreateTable: {0}", e)); failed++; }
 
       total++;
       try { DataTypeTest(cnn); frm.WriteLine("SUCCESS - DataType Test"); passed++; }
-      catch (Exception) { frm.WriteLine("FAIL - DataType Test"); failed++; }
+      catch (Exception e) { frm.WriteLine(String.Format("FAIL - DataType Test: {0}", e)); failed++; }
 
       total++;
       try { FullTextTest(cnn); frm.WriteLine("SUCCESS - Full Text Search"); passed++; }
-      catch (Exception) { frm.WriteLine("FAIL - Full Text Search"); failed++; }
+      catch (Exception e) { frm.WriteLine(String.Format("FAIL - Full Text Search: {0}", e)); failed++; }
 
       total++;
       try { KeyInfoTest(cnn); frm.WriteLine("SUCCESS - KeyInfo Fetch"); passed++; }
-      catch (Exception) { frm.WriteLine("FAIL - KeyInfo Fetch"); failed++; }
+      catch (Exception e) { frm.WriteLine(String.Format("FAIL - KeyInfo Fetch: {0}", e)); failed++; }
 
       total++;
       try { InsertTable(cnn); frm.WriteLine("SUCCESS - InsertTable"); passed++; }
-      catch (Exception) { frm.WriteLine("FAIL - InsertTable"); failed++; }
+      catch (Exception e) { frm.WriteLine(String.Format("FAIL - InsertTable: {0}", e)); failed++; }
 
       total++;
       try { VerifyInsert(cnn); frm.WriteLine("SUCCESS - VerifyInsert"); passed++; }
-      catch (Exception) { frm.WriteLine("FAIL - VerifyInsert"); failed++; }
+      catch (Exception e) { frm.WriteLine(String.Format("FAIL - VerifyInsert: {0}", e)); failed++; }
 
       total++;
-      try { CoersionTest(cnn); frm.WriteLine("FAIL - CoersionTest"); failed++; }
-      catch (Exception) { frm.WriteLine("SUCCESS - CoersionTest"); passed++; }
+      try { CoercionTest(cnn); frm.WriteLine("FAIL - CoercionTest"); failed++; }
+      catch (Exception) { frm.WriteLine("SUCCESS - CoercionTest"); passed++; }
 
       total++;
       try { ParameterizedInsert(cnn); frm.WriteLine("SUCCESS - ParameterizedInsert"); passed++; }
-      catch (Exception) { frm.WriteLine("FAIL - ParameterizedInsert"); failed++; }
+      catch (Exception e) { frm.WriteLine(String.Format("FAIL - ParameterizedInsert: {0}", e)); failed++; }
 
       total++;
       try { BinaryInsert(cnn); frm.WriteLine("SUCCESS - BinaryInsert"); passed++; }
-      catch (Exception) { frm.WriteLine("FAIL - BinaryInsert"); failed++; }
+      catch (Exception e) { frm.WriteLine(String.Format("FAIL - BinaryInsert: {0}", e)); failed++; }
 
       total++;
       try { VerifyBinaryData(cnn); frm.WriteLine("SUCCESS - VerifyBinaryData"); passed++; }
-      catch (Exception) { frm.WriteLine("FAIL - VerifyBinaryData"); failed++; }
+      catch (Exception e) { frm.WriteLine(String.Format("FAIL - VerifyBinaryData: {0}", e)); failed++; }
 
       total++;
       try { LockTest(cnn, sql, isolatedSql); frm.WriteLine("SUCCESS - LockTest"); passed++; }
-      catch (Exception) { frm.WriteLine("FAIL - LockTest"); failed++; }
+      catch (Exception e) { frm.WriteLine(String.Format("FAIL - LockTest: {0}", e)); failed++; }
 
       total++;
       try { ParameterizedInsertMissingParams(cnn); frm.WriteLine("FAIL - ParameterizedInsertMissingParams"); failed++; }
@@ -262,53 +262,53 @@ namespace test
 
       total++;
       try { InsertMany(cnn, false); frm.WriteLine("SUCCESS - InsertMany"); passed++; }
-      catch (Exception) { frm.WriteLine("FAIL - InsertMany"); failed++; }
+      catch (Exception e) { frm.WriteLine(String.Format("FAIL - InsertMany: {0}", e)); failed++; }
 
       total++;
       try { InsertMany(cnn, true); frm.WriteLine("SUCCESS - InsertManyWithIdentityFetch"); passed++; }
-      catch (Exception) { frm.WriteLine("FAIL - InsertManyWithIdentityFetch"); failed++; }
+      catch (Exception e) { frm.WriteLine(String.Format("FAIL - InsertManyWithIdentityFetch: {0}", e)); failed++; }
 
       total++;
       try { FastInsertMany(cnn); frm.WriteLine("SUCCESS - FastInsertMany"); passed++; }
-      catch (Exception) { frm.WriteLine("FAIL - FastInsertMany"); failed++; }
+      catch (Exception e) { frm.WriteLine(String.Format("FAIL - FastInsertMany: {0}", e)); failed++; }
 
       total++;
       try { IterationTest(cnn); frm.WriteLine("SUCCESS - Iteration Test"); passed++; }
-      catch (Exception) { frm.WriteLine("FAIL - Iteration Test"); failed++; }
+      catch (Exception e) { frm.WriteLine(String.Format("FAIL - Iteration Test: {0}", e)); failed++; }
 
       total++;
       try { UserFunction(cnn); frm.WriteLine("SUCCESS - UserFunction"); passed++; }
-      catch (Exception) { frm.WriteLine("FAIL - UserFunction"); failed++; }
+      catch (Exception e) { frm.WriteLine(String.Format("FAIL - UserFunction: {0}", e)); failed++; }
 
       total++;
       try { UserAggregate(cnn); frm.WriteLine("SUCCESS - UserAggregate"); passed++; }
-      catch (Exception) { frm.WriteLine("FAIL - UserAggregate"); failed++; }
+      catch (Exception e) { frm.WriteLine(String.Format("FAIL - UserAggregate: {0}", e)); failed++; }
 
       total++;
       try { UserCollation(cnn); frm.WriteLine("SUCCESS - UserCollation"); passed++; }
-      catch (Exception) { frm.WriteLine("FAIL - UserCollation"); failed++; }
+      catch (Exception e) { frm.WriteLine(String.Format("FAIL - UserCollation: {0}", e)); failed++; }
 
       total++;
       try { Int64Properties(cnn); frm.WriteLine("SUCCESS - Int64Properties"); passed++; }
-      catch (Exception) { frm.WriteLine("FAIL - Int64Properties"); failed++; }
+      catch (Exception e) { frm.WriteLine(String.Format("FAIL - Int64Properties: {0}", e)); failed++; }
 
 #if INTEROP_VIRTUAL_TABLE
       total++;
       try { ManagedVirtualTable(cnn); frm.WriteLine("SUCCESS - ManagedVirtualTable"); passed++; }
-      catch (Exception) { frm.WriteLine("FAIL - ManagedVirtualTable"); failed++; }
+      catch (Exception e) { frm.WriteLine(String.Format("FAIL - ManagedVirtualTable: {0}", e)); failed++; }
 #endif
 
       total++;
       try { MultipleThreadStress(cnn); frm.WriteLine("SUCCESS - MultipleThreadStress"); passed++; }
-      catch (Exception) { frm.WriteLine("FAIL - MultipleThreadStress"); failed++; }
+      catch (Exception e) { frm.WriteLine(String.Format("FAIL - MultipleThreadStress: {0}", e)); failed++; }
 
       total++;
       try { SimpleRTree(cnn); frm.WriteLine("SUCCESS - SimpleRTree"); passed++; }
-      catch (Exception) { frm.WriteLine("FAIL - SimpleRTree"); failed++; }
+      catch (Exception e) { frm.WriteLine(String.Format("FAIL - SimpleRTree: {0}", e)); failed++; }
 
       total++;
       try { DropTable(cnn); frm.WriteLine("SUCCESS - DropTable"); passed++; }
-      catch (Exception) { frm.WriteLine("FAIL - DropTable"); failed++; }
+      catch (Exception e) { frm.WriteLine(String.Format("FAIL - DropTable: {0}", e)); failed++; }
 
       frm.WriteLine("\r\nTests Finished.");
 
@@ -588,7 +588,7 @@ namespace test
       }
     }
 
-    internal void CoersionTest(DbConnection cnn)
+    internal void CoercionTest(DbConnection cnn)
     {
       using (DbCommand cmd = cnn.CreateCommand())
       {
@@ -1012,7 +1012,7 @@ namespace test
       using (DbCommand cmd = cnn.CreateCommand())
       {
         // Using a default collating sequence in descending order, "Param Field3" will appear at the top
-        // and "Field3" will be next, followed by a NULL.  Our user-defined collating sequence will 
+        // and "Field3" will be next, followed by a NULL.  Our user-defined collating sequence will
         // deliberately place them out of order so Field3 is first.
         cmd.CommandText = "SELECT Field3 FROM TestCase ORDER BY Field3 COLLATE MYSEQUENCE DESC";
         string s = (string)cmd.ExecuteScalar();

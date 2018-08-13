@@ -434,6 +434,26 @@ namespace eval ::Eagle {
       }
     }
 
+    proc getBuildNativeConfigurationSuffix {} {
+      #
+      # NOTE: See if the test native configuration suffix has been
+      #       overridden by the user (e.g. on the command line).
+      #
+      if {[info exists ::test_native_configuration_suffix] && \
+          [string length $::test_native_configuration_suffix] > 0} then {
+        #
+        # NOTE: Use the specified test native configuration suffix.
+        #
+        return $::test_native_configuration_suffix
+      } else {
+        #
+        # NOTE: Use the default test native configuration suffix, which
+        #       should be an empty string.
+        #
+        return ""
+      }
+    }
+
     proc getBuildExtra {} {
       if {[info exists ::test_extra] && \
           [string length $::test_extra] > 0} then {
@@ -926,7 +946,8 @@ namespace eval ::Eagle {
         return [joinBuildDirectory $native [getBuildBaseDirectory] \
             [expr {$managedOnly ? [getBuildYear] : [getBuildNativeYear]}] \
             [getBuildPlatform $native] [appendArgs [getBuildConfiguration] \
-            [getBuildConfigurationSuffix]] [expr {$managedOnly ? \
+            [expr {$managedOnly ? [getBuildConfigurationSuffix] : \
+            [getBuildNativeConfigurationSuffix]}]] [expr {$managedOnly ? \
             [getBuildExtra] : ""}]]
       }
     }
@@ -4463,7 +4484,25 @@ namespace eval ::Eagle {
         #       by a previous test run.
         #
         file copy -force $northwindEfDbFile \
-          [file join [getBuildDirectory false] [file tail $northwindEfDbFile]]
+          [file join [getBuildDirectory true] [file tail $northwindEfDbFile]]
+      }
+    }
+
+    proc moveTestLogFile { path } {
+      if {[info exists ::test_log] && [file exists $::test_log]} then {
+        set old_test_log $::test_log
+        set new_test_log [file join $path [file tail $old_test_log]]
+
+        file copy $old_test_log $new_test_log; file delete $old_test_log
+        set ::test_log $new_test_log
+
+        if {[info exists ::test_log_path]} then {
+          set ::test_log_path $path
+        }
+
+        tputs $::test_channel [appendArgs \
+            "---- moved test log from \"" $old_test_log "\" to \"" \
+            $new_test_log \"\n]
       }
     }
 
@@ -4774,7 +4813,17 @@ namespace eval ::Eagle {
                   "could not verify managed build directory \"" \
                   $directory "\", all testing halted"]
             }
+
+            set logDirectory $directory
+          } else {
+            set logDirectory [getBuildDirectory true]
           }
+
+          #
+          # NOTE: We're going to move the test log file to the directory
+          #       containing the managed assemblies being tested.
+          #
+          moveTestLogFile $logDirectory
 
           #
           # NOTE: Skip trying to copy any files if instructed.

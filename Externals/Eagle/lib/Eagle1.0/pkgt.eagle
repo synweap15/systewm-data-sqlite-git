@@ -199,7 +199,7 @@ namespace eval ::Eagle {
   #
   proc loadPackageClientToolset {
           {directory auto} {apiKeys ""} {hookUnknown true} {enableSecurity true}
-          {strictSecurity false} {debug false} } {
+          {isolateSecurity false} {strictSecurity false} {debug false} } {
     #
     # NOTE: When running in Eagle, namespace support must be available and
     #       enabled.
@@ -328,7 +328,22 @@ namespace eval ::Eagle {
     #
     if {[isEagle] && $enableSecurity} then {
       if {[catch {
-        uplevel 1 [list source enableSecurity]
+        try {
+          if {$isolateSecurity} then {
+            set savedPluginFlags [object invoke -flags +NonPublic \
+                Interpreter.GetActive PluginFlags]
+
+            object invoke -flags +NonPublic Interpreter.GetActive \
+                PluginFlags [combineFlags $savedPluginFlags Isolated]
+          }
+
+          uplevel 1 [list source enableSecurity]
+        } finally {
+          if {$isolateSecurity && [info exists savedPluginFlags]} then {
+            object invoke -flags +NonPublic Interpreter.GetActive \
+                PluginFlags [appendArgs = $savedPluginFlags]
+          }
+        }
       } error] && $strictSecurity} then {
         error $error
       }

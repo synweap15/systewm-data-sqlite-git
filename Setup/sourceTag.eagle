@@ -63,8 +63,9 @@ if {$argc == 2} then {
           #
           set pattern {^checkout:\s+([^\s]+)\s+(.*)\s+$}
 
-          if {[catch {set exec [exec -success Success -directory \
-                  [file dirname $fileName] -- fossil info]}] || \
+          if {[catch {set exec [string map [list \n \r\n] [exec \
+                  -success Success -nocarriagereturns -directory \
+                  [file dirname $fileName] -- fossil info]]}] || \
               [regexp -line -- $pattern $exec dummy id timeStamp] == 0} then {
             #
             # NOTE: We could not query the source identifier(s); therefore,

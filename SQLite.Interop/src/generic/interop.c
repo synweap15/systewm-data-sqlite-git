@@ -251,6 +251,12 @@ SQLITE_API int WINAPI sqlite3_malloc_size_interop(void *p){
   return sqlite3MallocSize(p);
 }
 
+SQLITE_API void WINAPI sqlite3_msize_interop(void *p, sqlite_uint64 *pN)
+{
+  if (!pN) return;
+  *pN = sqlite3_msize(p);
+}
+
 #if defined(INTEROP_LEGACY_CLOSE) || SQLITE_VERSION_NUMBER < 3007014
 SQLITE_PRIVATE void * sqlite3DbMallocZero_interop(sqlite3 *db, int n)
 {
