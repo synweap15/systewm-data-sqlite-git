@@ -360,12 +360,12 @@ namespace eval ::Eagle {
         release_version scratch_directory temporary_directory test_clr \
         test_clr_v2 test_clr_v4 test_configuration test_configurations \
         test_configuration_suffix test_constraints test_extra test_extras \
-        test_machine test_native_year test_net_fx test_net_fx_2005 \
-        test_net_fx_2008 test_net_fx_2010 test_net_fx_2012 test_net_fx_2013 \
-        test_net_fx_2015 test_net_fx_2017 test_overrides test_platform \
-        test_suite test_year test_years test_year_clr_v2 test_year_clr_v4 \
-        vendor_directory vendor_test_directory]}] \
-        [checkForVendorQuiet checkForTestOverrides]
+        test_machine test_native_configuration_suffix test_native_year \
+        test_net_fx test_net_fx_2005 test_net_fx_2008 test_net_fx_2010 \
+        test_net_fx_2012 test_net_fx_2013 test_net_fx_2015 test_net_fx_2017 \
+        test_overrides test_platform test_suite test_year test_years \
+        test_year_clr_v2 test_year_clr_v4 vendor_directory \
+        vendor_test_directory]}] [checkForVendorQuiet checkForTestOverrides]
 
     #
     # NOTE: Set the name of the running test suite, if necessary.

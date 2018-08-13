@@ -434,6 +434,26 @@ namespace eval ::Eagle {
       }
     }
 
+    proc getBuildNativeConfigurationSuffix {} {
+      #
+      # NOTE: See if the test native configuration suffix has been
+      #       overridden by the user (e.g. on the command line).
+      #
+      if {[info exists ::test_native_configuration_suffix] && \
+          [string length $::test_native_configuration_suffix] > 0} then {
+        #
+        # NOTE: Use the specified test native configuration suffix.
+        #
+        return $::test_native_configuration_suffix
+      } else {
+        #
+        # NOTE: Use the default test native configuration suffix, which
+        #       should be an empty string.
+        #
+        return ""
+      }
+    }
+
     proc getBuildExtra {} {
       if {[info exists ::test_extra] && \
           [string length $::test_extra] > 0} then {
@@ -926,7 +946,8 @@ namespace eval ::Eagle {
         return [joinBuildDirectory $native [getBuildBaseDirectory] \
             [expr {$managedOnly ? [getBuildYear] : [getBuildNativeYear]}] \
             [getBuildPlatform $native] [appendArgs [getBuildConfiguration] \
-            [getBuildConfigurationSuffix]] [expr {$managedOnly ? \
+            [expr {$managedOnly ? [getBuildConfigurationSuffix] : \
+            [getBuildNativeConfigurationSuffix]}]] [expr {$managedOnly ? \
             [getBuildExtra] : ""}]]
       }
     }
