@@ -39,6 +39,12 @@ IF ERRORLEVEL 1 (
   GOTO errors
 )
 
+REM
+REM NOTE: Precompiled binary packages for the .NET Standard 2.0 are handled
+REM       by another tool.
+REM
+SET NONETSTANDARD20=1
+
 %__ECHO3% CALL "%TOOLS%\set_common.bat"
 
 IF ERRORLEVEL 1 (
