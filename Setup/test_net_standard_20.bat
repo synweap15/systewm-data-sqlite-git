@@ -181,6 +181,7 @@ GOTO no_errors
   )
   SET CONFIGURATION=%NATIVE_CONFIGURATION%
   SET CONFIGURATION=%CONFIGURATION:NativeOnly=%
+  SET CONFIGURATION=%CONFIGURATION%NetStandard20
   IF EXIST "bin\%YEAR%\%CONFIGURATION%\bin" (
     IF EXIST "bin\%NATIVE_YEAR%\%PLATFORM%\%NATIVE_CONFIGURATION%" (
       %__ECHO% "%DOTNET%" %SUBCOMMANDS% "Externals\Eagle\bin\netStandard20\%EAGLESHELL%" %PREARGS% -anyInitialize "set test_year {%YEAR%}; set test_native_year {%NATIVE_YEAR%}; set test_configuration {%CONFIGURATION%}" -file "%TEST_FILE%" %POSTARGS%
