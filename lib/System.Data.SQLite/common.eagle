@@ -4605,6 +4605,164 @@ namespace eval ::Eagle {
       }
     }
 
+    proc showSQLiteBuildParameters { channel } {
+      #
+      # NOTE: Check if the native build flag has been forcibly set.
+      #
+      tputs $channel \
+          "---- checking for System.Data.SQLite build native override... "
+
+      set native [getBuildNative]
+
+      if {[string length $native] > 0} then {
+        addConstraint [appendArgs buildNative. $native]
+        tputs $channel [appendArgs \" $native \"\n]
+      } else {
+        addConstraint buildNative.none
+        tputs $channel <none>\n
+      }
+
+      #
+      # NOTE: Check the current build year.  Basically, this indicates
+      #       which version of MSBuild and/or Visual Studio was used to
+      #       compile the assembly binaries under test.
+      #
+      tputs $channel \
+          "---- checking for System.Data.SQLite build year... "
+
+      set year [getBuildYear]
+
+      if {[string length $year] > 0} then {
+        addConstraint [appendArgs buildYear. $year]
+        tputs $channel [appendArgs \" $year \"\n]
+      } else {
+        addConstraint buildYear.none
+        tputs $channel <none>\n
+      }
+
+      tputs $channel \
+          "---- checking for System.Data.SQLite build native year... "
+
+      set year [getBuildNativeYear]
+
+      if {[string length $year] > 0} then {
+        addConstraint [appendArgs buildNativeYear. $year]
+        tputs $channel [appendArgs \" $year \"\n]
+      } else {
+        addConstraint buildNativeYear.none
+        tputs $channel <none>\n
+      }
+
+      tputs $channel \
+          "---- checking for System.Data.SQLite build platform... "
+
+      set platform [getBuildPlatform true]
+
+      if {[string length $platform] > 0} then {
+        addConstraint [appendArgs buildPlatform. $platform]
+        tputs $channel [appendArgs \" $platform \"\n]
+      } else {
+        addConstraint buildPlatform.none
+        tputs $channel <none>\n
+      }
+
+      set architecture [architectureForPlatform $platform]
+
+      tputs $channel \
+          "---- checking for System.Data.SQLite build architecture... "
+
+      if {[string length $architecture] > 0} then {
+        addConstraint [appendArgs buildArchitecture. $architecture]
+        tputs $channel [appendArgs \" $architecture \"\n]
+      } else {
+        addConstraint buildArchitecture.none
+        tputs $channel <none>\n
+      }
+
+      #
+      # NOTE: Check the current build .NET Framework.  Basically, this
+      #       indicates which version of the .NET Framework is being
+      #       used by the assembly binaries under test.
+      #
+      tputs $channel \
+          "---- checking for System.Data.SQLite build .NET Framework... "
+
+      set netFx [getBuildNetFx]
+
+      if {[string length $netFx] > 0} then {
+        addConstraint [appendArgs buildFramework. $netFx]
+        tputs $channel [appendArgs \" $netFx \"\n]
+      } else {
+        addConstraint buildFramework.none
+        tputs $channel <none>\n
+      }
+
+      #
+      # NOTE: Check the current build configuration.  This should normally
+      #       be either "Debug" or "Release".
+      #
+      tputs $channel \
+          "---- checking for System.Data.SQLite build configuration... "
+
+      set configuration [getBuildConfiguration]
+
+      if {[string length $configuration] > 0} then {
+        addConstraint [appendArgs buildConfiguration. $configuration]
+        tputs $channel [appendArgs \" $configuration \"\n]
+      } else {
+        addConstraint buildConfiguration.none
+        tputs $channel <none>\n
+      }
+
+      #
+      # NOTE: Check the current build configuration suffix.  This will
+      #       normally be either "NetStandard20" or an empty string.
+      #
+      tputs $channel \
+          "---- checking for System.Data.SQLite build configuration suffix... "
+
+      set suffix [getBuildConfigurationSuffix]
+
+      if {[string length $suffix] > 0} then {
+        addConstraint [appendArgs buildConfigurationSuffix. $suffix]
+        tputs $channel [appendArgs \" $suffix \"\n]
+      } else {
+        addConstraint buildConfigurationSuffix.none
+        tputs $channel <none>\n
+      }
+
+      tputs $channel [appendArgs \
+          "---- checking for System.Data.SQLite build native configuration " \
+          "suffix... "]
+
+      set suffix [getBuildNativeConfigurationSuffix]
+
+      if {[string length $suffix] > 0} then {
+        addConstraint [appendArgs buildNativeConfigurationSuffix. $suffix]
+        tputs $channel [appendArgs \" $suffix \"\n]
+      } else {
+        addConstraint buildNativeConfigurationSuffix.none
+        tputs $channel <none>\n
+      }
+
+      #
+      # NOTE: Check the current build extra directory.  This will normally
+      #       be either "netstandard2.0" or an empty string.
+      #
+      tputs $channel \
+          "---- checking for System.Data.SQLite build extra... "
+
+      set extra [getBuildExtra]
+
+      if {[string length $extra] > 0} then {
+        addConstraint [appendArgs buildExtra. $extra]
+        tputs $channel [appendArgs \" $extra \"\n]
+      } else {
+        addConstraint buildExtra.none
+        tputs $channel <none>\n
+      }
+    }
+
     proc runSQLiteTestPrologue {} {
       #
       # NOTE: Skip running our custom prologue if the main one has been
@@ -4641,6 +4799,12 @@ namespace eval ::Eagle {
         #
         set platform [getBuildPlatform true]
         set architecture [architectureForPlatform $platform]
+
+        #
+        # NOTE: Show (and log) the global parameters that control where the
+        #       build directory should be.
+        #
+        showSQLiteBuildParameters $::test_channel
 
         #
         # NOTE: Show the platform and architecture used to help locate the
@@ -4785,6 +4949,13 @@ namespace eval ::Eagle {
           if {![checkForSQLiteBuilds $::test_channel true]} then {
             checkForSQLiteReleases $::test_channel true
           }
+
+          #
+          # NOTE: Show (and log) the global parameters that control where
+          #       the build directory should be.  The auto-selection may
+          #       have modified some of these parameters.
+          #
+          showSQLiteBuildParameters $::test_channel
         }
 
         #
@@ -4872,6 +5043,12 @@ namespace eval ::Eagle {
               }
             }
           }
+
+          #
+          # NOTE: Show (and log) the global parameters that control where
+          #       the build directory should be.
+          #
+          showSQLiteBuildParameters $::test_channel
 
           #
           # NOTE: Skip trying to verify the build directory if instructed;
@@ -5375,135 +5552,6 @@ namespace eval ::Eagle {
               addConstraint System.Data.SQLite.Encryption
             }
           }
-        }
-
-        #
-        # NOTE: Check if the native build flag has been forcibly set.
-        #
-        tputs $::test_channel \
-            "---- checking for System.Data.SQLite build native flag... "
-
-        set native [getBuildNative]
-
-        if {[string length $native] > 0} then {
-          addConstraint [appendArgs buildNative. $native]
-          tputs $::test_channel [appendArgs \" $native \"\n]
-        } else {
-          addConstraint buildNative.none
-          tputs $::test_channel <none>\n
-        }
-
-        #
-        # NOTE: Check the current build year.  Basically, this indicates
-        #       which version of MSBuild and/or Visual Studio was used to
-        #       compile the assembly binaries under test.
-        #
-        tputs $::test_channel \
-            "---- checking for System.Data.SQLite build year... "
-
-        set year [getBuildYear]
-
-        if {[string length $year] > 0} then {
-          addConstraint [appendArgs buildYear. $year]
-          tputs $::test_channel [appendArgs \" $year \"\n]
-        } else {
-          addConstraint buildYear.none
-          tputs $::test_channel <none>\n
-        }
-
-        tputs $::test_channel \
-            "---- checking for System.Data.SQLite build native year... "
-
-        set year [getBuildNativeYear]
-
-        if {[string length $year] > 0} then {
-          addConstraint [appendArgs buildNativeYear. $year]
-          tputs $::test_channel [appendArgs \" $year \"\n]
-        } else {
-          addConstraint buildNativeYear.none
-          tputs $::test_channel <none>\n
-        }
-
-        #
-        # NOTE: Check the current build .NET Framework.  Basically, this
-        #       indicates which version of the .NET Framework is being
-        #       used by the assembly binaries under test.
-        #
-        tputs $::test_channel \
-            "---- checking for System.Data.SQLite build .NET Framework... "
-
-        set netFx [getBuildNetFx]
-
-        if {[string length $netFx] > 0} then {
-          addConstraint [appendArgs buildFramework. $netFx]
-          tputs $::test_channel [appendArgs \" $netFx \"\n]
-        } else {
-          addConstraint buildFramework.none
-          tputs $::test_channel <none>\n
-        }
-
-        #
-        # NOTE: Check the current build configuration.  This should normally
-        #       be either "Debug" or "Release".
-        #
-        tputs $::test_channel \
-            "---- checking for System.Data.SQLite build configuration... "
-
-        set configuration [getBuildConfiguration]
-
-        if {[string length $configuration] > 0} then {
-          addConstraint [appendArgs buildConfiguration. $configuration]
-          tputs $::test_channel [appendArgs \" $configuration \"\n]
-        } else {
-          addConstraint buildConfiguration.none
-          tputs $::test_channel <none>\n
-        }
-
-        #
-        # NOTE: Check the current build configuration suffix.  This will
-        #       normally be either "NetStandard20" or an empty string.
-        #
-        tputs $::test_channel \
-            "---- checking for System.Data.SQLite build configuration suffix... "
-
-        set suffix [getBuildConfigurationSuffix]
-
-        if {[string length $suffix] > 0} then {
-          addConstraint [appendArgs buildConfigurationSuffix. $suffix]
-          tputs $::test_channel [appendArgs \" $suffix \"\n]
-        } else {
-          addConstraint buildConfigurationSuffix.none
-          tputs $::test_channel <none>\n
-        }
-
-        tputs $::test_channel \
-            "---- checking for System.Data.SQLite build native configuration suffix... "
-
-        set suffix [getBuildNativeConfigurationSuffix]
-
-        if {[string length $suffix] > 0} then {
-          addConstraint [appendArgs buildNativeConfigurationSuffix. $suffix]
-          tputs $::test_channel [appendArgs \" $suffix \"\n]
-        } else {
-          addConstraint buildNativeConfigurationSuffix.none
-          tputs $::test_channel <none>\n
-        }
-
-        #
-        # NOTE: Check the current build extra directory.  This will normally
-        #       be either "netstandard2.0" or an empty string.
-        #
-        tputs $::test_channel \
-            "---- checking for System.Data.SQLite build extra... "
-
-        set extra [getBuildExtra]
-
-        if {[string length $extra] > 0} then {
-          addConstraint [appendArgs buildExtra. $extra]
-          tputs $::test_channel [appendArgs \" $extra \"\n]
-        } else {
-          addConstraint buildExtra.none
-          tputs $::test_channel <none>\n
         }
 
         #
