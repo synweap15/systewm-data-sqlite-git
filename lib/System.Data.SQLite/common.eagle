@@ -66,6 +66,21 @@ namespace eval ::Eagle {
           [appendArgs [getSQLiteCompileOptionPrefix] $name]]
     }
 
+    proc getBuildNative {} {
+      #
+      # NOTE: Check if we are being forced to treat this as a native build.
+      #       This is normally done (automatically) only when the mixed-mode
+      #       assembly is in use; however, in some circumstances it is useful
+      #       to force this behavior.
+      #
+      if {[info exists ::test_native] && \
+          [string is boolean -strict $::test_native]} then {
+        return $::test_native
+      } else {
+        return false
+      }
+    }
+
     proc getBuildYear {} {
       #
       # NOTE: See if the "year" setting has been overridden by the user (e.g.
@@ -165,6 +180,39 @@ namespace eval ::Eagle {
       }
     }
 
+    proc getBuildNativeYearForDotNetCore { year } {
+      if {[isDotNetCore] && [isWindows]} then {
+        return 2015; # HACK: Special case, use 2015 native binaries.
+      } elseif {[string length $year] > 0} then {
+        return $year
+      } else {
+        return [getBuildNativeYear]
+      }
+    }
+
+    proc getBuildYears {} {
+      #
+      # NOTE: See if the list of test years has been overridden by the user
+      #       (e.g. on the command line).
+      #
+      if {[info exists ::test_years] && [llength $::test_years] > 0} then {
+        #
+        # NOTE: Use the specified list of test years.
+        #
+        return $::test_years
+      } elseif {[isDotNetCore]} then {
+        #
+        # NOTE: Running on .NET Core, prioritize its list of test years.
+        #
+        return [list NetStandard20]
+      } else {
+        #
+        # NOTE: Use the default list of test years (i.e. all).
+        #
+        return [list 2005 2008 2010 2012 2013 2015 2017 NetStandard20]
+      }
+    }
+
     #
     # NOTE: This procedure is only used when adding shimmed test constraints.
     #
@@ -213,24 +261,6 @@ namespace eval ::Eagle {
             return 2.0.50727; # TODO: Good "fallback" default?
           }
         }
-      }
-    }
-
-    proc getBuildYears {} {
-      #
-      # NOTE: See if the list of test years has been overridden by the user
-      #       (e.g. on the command line).
-      #
-      if {[info exists ::test_years] && [llength $::test_years] > 0} then {
-        #
-        # NOTE: Use the specified list of test years.
-        #
-        return $::test_years
-      } else {
-        #
-        # NOTE: Use the default list of test years (i.e. all).
-        #
-        return [list 2005 2008 2010 2012 2013 2015 2017 NetStandard20]
       }
     }
 
@@ -326,8 +356,10 @@ namespace eval ::Eagle {
       if {[info exists ::test_platform] && \
           [string length $::test_platform] > 0} then {
         #
-        # NOTE: Use the specified test platform.  If this variable is not set,
-        #       the default value will be based on the machine architecture.
+        # NOTE: Possibly use the specified test platform.  If this variable
+        #       is not set, the default value will be based on the machine
+        #       architecture.  Normally, this is done for builds that involve
+        #       the mixed-mode assembly.
         #
         return [expr {$native ? $::test_platform : ""}]
       } elseif {[info exists ::test_machine] && \
@@ -335,7 +367,8 @@ namespace eval ::Eagle {
         #
         # NOTE: For native builds, return the platform name corresponding to
         #       the test machine architecture; otherwise, return an empty
-        #       string.
+        #       string.  Normally, this is done for builds that involve the
+        #       mixed-mode assembly.
         #
         return [expr {
           $native ? [machineToPlatform $::test_machine] : ""
@@ -344,6 +377,8 @@ namespace eval ::Eagle {
         #
         # NOTE: For native builds, return the platform name corresponding to
         #       the machine architecture; otherwise, return an empty string.
+        #       Normally, this is done for builds that involve the mixed-mode
+        #       assembly.
         #
         return [expr {
           $native ? [machineToPlatform $::tcl_platform(machine)] : ""
@@ -395,6 +430,25 @@ namespace eval ::Eagle {
       }
     }
 
+    proc getBuildConfigurations {} {
+      #
+      # NOTE: See if the list of test configurations has been overridden by
+      #       the user (e.g. on the command line).
+      #
+      if {[info exists ::test_configurations] && \
+          [llength $::test_configurations] > 0} then {
+        #
+        # NOTE: Use the specified list of test configurations.
+        #
+        return $::test_configurations
+      } else {
+        #
+        # NOTE: Use the default list of test configurations.
+        #
+        return [list Debug Release]
+      }
+    }
+
     proc getBuildConfigurationSuffix {} {
       #
       # NOTE: See if the test configuration suffix has been overridden by
@@ -415,25 +469,6 @@ namespace eval ::Eagle {
       }
     }
 
-    proc getBuildConfigurations {} {
-      #
-      # NOTE: See if the list of test configurations has been overridden by
-      #       the user (e.g. on the command line).
-      #
-      if {[info exists ::test_configurations] && \
-          [llength $::test_configurations] > 0} then {
-        #
-        # NOTE: Use the specified list of test configurations.
-        #
-        return $::test_configurations
-      } else {
-        #
-        # NOTE: Use the default list of test configurations.
-        #
-        return [list Debug Release]
-      }
-    }
-
     proc getBuildNativeConfigurationSuffix {} {
       #
       # NOTE: See if the test native configuration suffix has been
@@ -451,6 +486,41 @@ namespace eval ::Eagle {
         #       should be an empty string.
         #
         return ""
+      }
+    }
+
+    proc getBuildNativeConfigurationSuffixForDotNetCore { suffix } {
+      if {[isDotNetCore] && [isWindows]} then {
+        return NativeOnly; # HACK: Special case, use 2015 native binaries.
+      } elseif {[string length $suffix] > 0} then {
+        return $suffix
+      } else {
+        return [getBuildNativeConfigurationSuffix]
+      }
+    }
+
+    proc getBuildConfigurationSuffixes {} {
+      #
+      # NOTE: See if the list of test configuration suffixes has been
+      #       overridden by the user (e.g. on the command line).
+      #
+      if {[info exists ::test_configuration_suffixes] && \
+          [llength $::test_configuration_suffixes] > 0} then {
+        #
+        # NOTE: Use the specified list of test configurations suffixes.
+        #
+        return $::test_configuration_suffixes
+      } elseif {[isDotNetCore]} then {
+        #
+        # NOTE: Running on .NET Core, prioritize its test configuration
+        #       suffixes for library files.
+        #
+        return [list NetStandard20 ""]
+      } else {
+        #
+        # NOTE: Use the default list of test configurations suffixes.
+        #
+        return [list ""]
       }
     }
 
@@ -740,7 +810,7 @@ namespace eval ::Eagle {
       return $default
     }
 
-    proc isBuildAvailable { native directory {varName ""} } {
+    proc isBuildAvailable { native skipNative directory {varName ""} } {
       #
       # NOTE: Build the fully qualified file name for the primary assembly
       #       containing the System.Data.SQLite managed components.  It
@@ -752,6 +822,14 @@ namespace eval ::Eagle {
 
       if {![file exists $fileName]} then {
         return false
+      }
+
+      #
+      # NOTE: If we are skipping looking for the native components, stop
+      #       now.
+      #
+      if {$skipNative} then {
+        return true
       }
 
       #
@@ -860,7 +938,7 @@ namespace eval ::Eagle {
         upvar 1 $varName $varName
       }
 
-      return [isBuildAvailable "" $directory $varName]
+      return [isBuildAvailable "" false $directory $varName]
     }
 
     proc joinBuildDirectory { native path year platform configuration extra } {
@@ -941,7 +1019,9 @@ namespace eval ::Eagle {
         #       Refer to the comments in [getBuildYear] for more information on
         #       how to set this variable.
         #
-        set native [expr {!$managedOnly && [hasRuntimeOption native]}]
+        set native [expr {
+          !$managedOnly && ([getBuildNative] || [hasRuntimeOption native])
+        }]
 
         return [joinBuildDirectory $native [getBuildBaseDirectory] \
             [expr {$managedOnly ? [getBuildYear] : [getBuildNativeYear]}] \
@@ -1854,70 +1934,89 @@ namespace eval ::Eagle {
       foreach native [list false true] {
         foreach year [getBuildYears] {
           foreach configuration [getBuildConfigurations] {
-            foreach extra [getBuildExtras] {
-              #
-              # NOTE: Figure out the effective build platform.  This is
-              #       based on whether or not a [primarily] native build
-              #       is being used.  For [primarily] non-native builds,
-              #       this will be an empty string.
-              #
-              set platform [getBuildPlatform $native]
-
-              tputs $channel [appendArgs \
-                  "---- checking for System.Data.SQLite build \"" [expr \
-                  {$native ? "native/" : ""}] [expr {[string length \
-                  $platform] > 0 ? [appendArgs $platform /] : ""}] $year \
-                  / $configuration "\"... "]
-
-              #
-              # NOTE: Build the fully qualified directory where the necessary
-              #       components for System.Data.SQLite should be found.
-              #
-              set directory [joinBuildDirectory $native \
-                  [getBuildBaseDirectory] $year $platform $configuration \
-                  $extra]
-
-              #
-              # NOTE: Do the necessary files exist?  Currently, no other steps
-              #       are taken to verify this build is actually viable.
-              #
-              if {[isBuildAvailable $native $directory]} then {
+            foreach suffix [getBuildConfigurationSuffixes] {
+              foreach extra [getBuildExtras] {
                 #
-                # NOTE: When in "select" mode, automatically select the first
-                #       available build of System.Data.SQLite and then return
-                #       immediately.
+                # NOTE: Figure out the effective build platform.  This is
+                #       based on whether or not a [primarily] native build
+                #       is being used.  For [primarily] non-native builds,
+                #       this will be an empty string.
                 #
-                if {$select && [matchPlatform $platform]} then {
+                set platform [getBuildPlatform $native]
+
+                #
+                # NOTE: Build the fully qualified directory where the
+                #       necessary components for System.Data.SQLite should
+                #       be found.
+                #
+                set directory [joinBuildDirectory $native \
+                    [getBuildBaseDirectory] $year $platform [appendArgs \
+                    $configuration $suffix] $extra]
+
+                tputs $channel [appendArgs \
+                    "---- checking for System.Data.SQLite build \"" [expr \
+                    {$native ? "native/" : ""}] [expr {[string length \
+                    $platform] > 0 ? [appendArgs $platform /] : ""}] \
+                    $year / [appendArgs $configuration $suffix] "\"... "]
+
+                #
+                # NOTE: Do the necessary files exist?  Currently, no other
+                #       steps are taken to verify this build is actually
+                #       viable.
+                #
+                set skipNative [expr {[isDotNetCore] && [isWindows]}]
+
+                if {[isBuildAvailable $native $skipNative $directory]} then {
                   #
-                  # NOTE: Manually override all the build directory selection
-                  #       related test settings in order to force this build
-                  #       of System.Data.SQLite to be used.
+                  # NOTE: When in "select" mode, automatically select the
+                  #       first available build of System.Data.SQLite and
+                  #       then return immediately.
                   #
-                  if {![changeNativeRuntimeOption $native]} then {
+                  if {$select && [matchPlatform $platform]} then {
+                    #
+                    # NOTE: Manually override all the build directory
+                    #       selection related test settings in order to
+                    #       force this build of System.Data.SQLite to be
+                    #       used.
+                    #
+                    if {![changeNativeRuntimeOption $native]} then {
+                      tputs $channel [appendArgs \
+                          "no, failed to " [expr {$native ? "add" : \
+                          "remove"}] " the \"native\" runtime option\n"]
+
+                      return false
+                    }
+
+                    set ::test_native $skipNative
+                    set ::test_year $year
+
+                    set ::test_native_year \
+                        [getBuildNativeYearForDotNetCore $year]
+
+                    set ::test_platform $platform
+                    set ::test_configuration $configuration
+                    set ::test_configuration_suffix $suffix
+
+                    set ::test_native_configuration_suffix \
+                        [getBuildNativeConfigurationSuffixForDotNetCore \
+                        $suffix]
+
+                    set ::test_extra $extra
+
                     tputs $channel [appendArgs \
-                        "no, failed to " [expr {$native ? "add" : "remove"}] \
-                        " the \"native\" runtime option\n"]
+                        "yes, selected (" [expr {$native ? "native/" : ""}] \
+                        [expr {[string length $platform] > 0 ? [appendArgs \
+                        $platform /] : ""}] $year / [appendArgs \
+                        $configuration $suffix] [expr {[string length \
+                        $extra] > 0 ? [appendArgs / $extra] : ""}] ")\n"]
 
-                    return false
+                    return true
+                  } else {
+                    tputs $channel yes\n
                   }
-
-                  set ::test_year $year
-                  set ::test_platform $platform
-                  set ::test_configuration $configuration
-
-                  tputs $channel [appendArgs \
-                      "yes, selected (" [expr {$native ? "native/" : ""}] \
-                      [expr {[string length $platform] > 0 ? [appendArgs \
-                      $platform /] : ""}] $year / $configuration \
-                      [expr {[string length $extra] > 0 ? [appendArgs / \
-                      $extra] : ""}] ")\n"]
-
-                  return true
                 } else {
-                  tputs $channel yes\n
+                  tputs $channel no\n
                 }
-              } else {
-                tputs $channel no\n
               }
             }
           }
@@ -4549,11 +4648,13 @@ namespace eval ::Eagle {
         #
         tputs $::test_channel [appendArgs \
             "---- platform for locating native build files is \"" \
-            $platform \"\n]
+            [expr {[string length $platform] > 0 ? $platform : "<none>"}] \
+            \"\n]
 
         tputs $::test_channel [appendArgs \
             "---- architecture for locating native build files is \"" \
-            $architecture \"\n]
+            [expr {[string length $architecture] > 0 ? $architecture : \
+            "<none>"}] \"\n]
 
         #
         # NOTE: Build a list of configuration files that we handle.
@@ -4615,23 +4716,33 @@ namespace eval ::Eagle {
         #
         tputs $::test_channel [appendArgs \
             "---- list of \"configuration\" file names is: " \
-            $configFileNames \n]
+            [expr {[llength $configFileNames] > 0 ? $configFileNames : \
+            "<none>"}] \n]
 
         tputs $::test_channel [appendArgs \
             "---- list of \"MDA configuration\" file names is: " \
-            $mdaConfigFileNames \n]
+            [expr {[llength $mdaConfigFileNames] > 0 ? $mdaConfigFileNames : \
+            "<none>"}] \n]
 
         tputs $::test_channel [appendArgs \
-            "---- list of \"external\" file names is: " $externalFileNames \n]
+            "---- list of \"external\" file names is: " \
+            [expr {[llength $externalFileNames] > 0 ? $externalFileNames : \
+            "<none>"}] \n]
 
         tputs $::test_channel [appendArgs \
-            "---- list of \"native\" file names is: " $nativeFileNames \n]
+            "---- list of \"native\" file names is: " \
+            [expr {[llength $nativeFileNames] > 0 ? $nativeFileNames : \
+            "<none>"}] \n]
 
         tputs $::test_channel [appendArgs \
-            "---- list of \"mixed\" file names is: " $mixedFileNames \n]
+            "---- list of \"mixed\" file names is: " \
+            [expr {[llength $mixedFileNames] > 0 ? $mixedFileNames : \
+            "<none>"}] \n]
 
         tputs $::test_channel [appendArgs \
-            "---- list of \"managed\" file names is: " $managedFileNames \n]
+            "---- list of \"managed\" file names is: " \
+            [expr {[llength $managedFileNames] > 0 ? $managedFileNames : \
+            "<none>"}] \n]
 
         #
         # NOTE: Remove any test constraints that refer to the native and/or
@@ -4661,6 +4772,18 @@ namespace eval ::Eagle {
 
           foreach fileName $managedFileNames {
             removeConstraint [appendArgs file_ $fileName]
+          }
+        }
+
+        #
+        # NOTE: Check for the "autoSelect" runtime option.  If present,
+        #       attempt to automatically select the first available
+        #       build (or "release") of SQLite and System.Data.SQLite
+        #       for use with the test suite.
+        #
+        if {[hasRuntimeOption autoSelect]} then {
+          if {![checkForSQLiteBuilds $::test_channel true]} then {
+            checkForSQLiteReleases $::test_channel true
           }
         }
 
@@ -4747,18 +4870,6 @@ namespace eval ::Eagle {
               foreach fileName $managedFileNames {
                 tryDeleteAssembly $fileName
               }
-            }
-          }
-
-          #
-          # NOTE: Check for the "autoSelect" runtime option.  If present,
-          #       attempt to automatically select the first available
-          #       build (or "release") of SQLite and System.Data.SQLite
-          #       for use with the test suite.
-          #
-          if {[hasRuntimeOption autoSelect]} then {
-            if {![checkForSQLiteBuilds $::test_channel true]} then {
-              checkForSQLiteReleases $::test_channel true
             }
           }
 
@@ -4905,6 +5016,16 @@ namespace eval ::Eagle {
                     tryCopyAssembly $fileName false $architecture
                   }
                 }
+
+                if {![info exists ::no(copySqliteForcedNativeFiles)] && \
+                    [getBuildNative]} then {
+                  tputs $::test_channel \
+                      "---- copying forced \"native\" files...\n"
+
+                  foreach fileName $nativeFileNames {
+                    tryCopyAssembly $fileName false
+                  }
+                }
               }
             }
 
@@ -4944,6 +5065,16 @@ namespace eval ::Eagle {
 
                   foreach fileName $mixedFileNames {
                     tryCopyAssembly $fileName false $architecture
+                  }
+                }
+
+                if {![info exists ::no(copySqliteForcedMixedFiles)] && \
+                    [getBuildNative]} then {
+                  tputs $::test_channel \
+                      "---- copying forced \"mixed\" files...\n"
+
+                  foreach fileName $mixedFileNames {
+                    tryCopyAssembly $fileName false
                   }
                 }
               }
@@ -5247,6 +5378,22 @@ namespace eval ::Eagle {
         }
 
         #
+        # NOTE: Check if the native build flag has been forcibly set.
+        #
+        tputs $::test_channel \
+            "---- checking for System.Data.SQLite build native flag... "
+
+        set native [getBuildNative]
+
+        if {[string length $native] > 0} then {
+          addConstraint [appendArgs buildNative. $native]
+          tputs $::test_channel [appendArgs \" $native \"\n]
+        } else {
+          addConstraint buildNative.none
+          tputs $::test_channel <none>\n
+        }
+
+        #
         # NOTE: Check the current build year.  Basically, this indicates
         #       which version of MSBuild and/or Visual Studio was used to
         #       compile the assembly binaries under test.
@@ -5255,15 +5402,27 @@ namespace eval ::Eagle {
             "---- checking for System.Data.SQLite build year... "
 
         set year [getBuildYear]
-        addConstraint [appendArgs buildYear. $year]
-        tputs $::test_channel [appendArgs \" $year \"\n]
+
+        if {[string length $year] > 0} then {
+          addConstraint [appendArgs buildYear. $year]
+          tputs $::test_channel [appendArgs \" $year \"\n]
+        } else {
+          addConstraint buildYear.none
+          tputs $::test_channel <none>\n
+        }
 
         tputs $::test_channel \
             "---- checking for System.Data.SQLite build native year... "
 
         set year [getBuildNativeYear]
-        addConstraint [appendArgs buildNativeYear. $year]
-        tputs $::test_channel [appendArgs \" $year \"\n]
+
+        if {[string length $year] > 0} then {
+          addConstraint [appendArgs buildNativeYear. $year]
+          tputs $::test_channel [appendArgs \" $year \"\n]
+        } else {
+          addConstraint buildNativeYear.none
+          tputs $::test_channel <none>\n
+        }
 
         #
         # NOTE: Check the current build .NET Framework.  Basically, this
@@ -5274,8 +5433,14 @@ namespace eval ::Eagle {
             "---- checking for System.Data.SQLite build .NET Framework... "
 
         set netFx [getBuildNetFx]
-        addConstraint [appendArgs buildFramework. $netFx]
-        tputs $::test_channel [appendArgs \" $netFx \"\n]
+
+        if {[string length $netFx] > 0} then {
+          addConstraint [appendArgs buildFramework. $netFx]
+          tputs $::test_channel [appendArgs \" $netFx \"\n]
+        } else {
+          addConstraint buildFramework.none
+          tputs $::test_channel <none>\n
+        }
 
         #
         # NOTE: Check the current build configuration.  This should normally
@@ -5285,16 +5450,52 @@ namespace eval ::Eagle {
             "---- checking for System.Data.SQLite build configuration... "
 
         set configuration [getBuildConfiguration]
-        addConstraint [appendArgs buildConfiguration. $configuration]
-        tputs $::test_channel [appendArgs \" $configuration \"\n]
+
+        if {[string length $configuration] > 0} then {
+          addConstraint [appendArgs buildConfiguration. $configuration]
+          tputs $::test_channel [appendArgs \" $configuration \"\n]
+        } else {
+          addConstraint buildConfiguration.none
+          tputs $::test_channel <none>\n
+        }
+
+        #
+        # NOTE: Check the current build configuration suffix.  This will
+        #       normally be either "NetStandard20" or an empty string.
+        #
+        tputs $::test_channel \
+            "---- checking for System.Data.SQLite build configuration suffix... "
+
+        set suffix [getBuildConfigurationSuffix]
+
+        if {[string length $suffix] > 0} then {
+          addConstraint [appendArgs buildConfigurationSuffix. $suffix]
+          tputs $::test_channel [appendArgs \" $suffix \"\n]
+        } else {
+          addConstraint buildConfigurationSuffix.none
+          tputs $::test_channel <none>\n
+        }
 
         tputs $::test_channel \
-            "---- checking for System.Data.SQLite build extra... "
+            "---- checking for System.Data.SQLite build native configuration suffix... "
+
+        set suffix [getBuildNativeConfigurationSuffix]
+
+        if {[string length $suffix] > 0} then {
+          addConstraint [appendArgs buildNativeConfigurationSuffix. $suffix]
+          tputs $::test_channel [appendArgs \" $suffix \"\n]
+        } else {
+          addConstraint buildNativeConfigurationSuffix.none
+          tputs $::test_channel <none>\n
+        }
 
         #
         # NOTE: Check the current build extra directory.  This will normally
         #       be either "netstandard2.0" or an empty string.
         #
+        tputs $::test_channel \
+            "---- checking for System.Data.SQLite build extra... "
+
         set extra [getBuildExtra]
 
         if {[string length $extra] > 0} then {
