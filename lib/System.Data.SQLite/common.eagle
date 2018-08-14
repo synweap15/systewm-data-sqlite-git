@@ -4789,6 +4789,12 @@ namespace eval ::Eagle {
         uplevel 1 [list loadSQLiteTestSettings $::test_channel .before]
 
         #
+        # NOTE: Show (and log) the global parameters that control where the
+        #       build directory should be.
+        #
+        showSQLiteBuildParameters $::test_channel
+
+        #
         # NOTE: Check if the [object] command is available; if not, add some
         #       shims to make the test suite run smoother.
         #
@@ -4799,26 +4805,6 @@ namespace eval ::Eagle {
         #
         set platform [getBuildPlatform true]
         set architecture [architectureForPlatform $platform]
-
-        #
-        # NOTE: Show (and log) the global parameters that control where the
-        #       build directory should be.
-        #
-        showSQLiteBuildParameters $::test_channel
-
-        #
-        # NOTE: Show the platform and architecture used to help locate the
-        #       native build files.
-        #
-        tputs $::test_channel [appendArgs \
-            "---- platform for locating native build files is \"" \
-            [expr {[string length $platform] > 0 ? $platform : "<none>"}] \
-            \"\n]
-
-        tputs $::test_channel [appendArgs \
-            "---- architecture for locating native build files is \"" \
-            [expr {[string length $architecture] > 0 ? $architecture : \
-            "<none>"}] \"\n]
 
         #
         # NOTE: Build a list of configuration files that we handle.
