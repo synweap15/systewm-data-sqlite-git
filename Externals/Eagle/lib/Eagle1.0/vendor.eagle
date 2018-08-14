@@ -34,16 +34,18 @@
 namespace eval ::Eagle {
   if {[isEagle]} then {
     proc checkForVendorQuiet { {name ""} } {
-      if {[info exists ::env(checkForVendorQuiet)]} then {
-        return true
-      }
-
-      if {[string length $name] > 0} then {
-        set envVarName [appendArgs quiet [string toupper \
-            [string index $name 0]] [string range $name 1 end]]
-
-        if {[info exists ::env($envVarName)]} then {
+      if {![interp issafe]} then {
+        if {[info exists ::env(checkForVendorQuiet)]} then {
           return true
+        }
+
+        if {[string length $name] > 0} then {
+          set envVarName [appendArgs quiet [string toupper \
+              [string index $name 0]] [string range $name 1 end]]
+
+          if {[info exists ::env($envVarName)]} then {
+            return true
+          }
         }
       }
 
@@ -467,7 +469,7 @@ namespace eval ::Eagle {
     #
     # NOTE: Force use of the native library pre-loader when applicable.
     #
-    if {[isWindows]} then {
+    if {![interp issafe] && [isWindows]} then {
       set no(deleteSqliteImplicitNativeFiles) 1
       set no(copySqliteImplicitNativeFiles) 1
     }
