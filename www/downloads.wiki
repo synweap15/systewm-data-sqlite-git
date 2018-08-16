@@ -2255,7 +2255,7 @@
     <tr>
       <td width="10">&nbsp;</td>
       <td width="30%" valign="top" align="right">
-        <a href="/downloads/1.0.109.0/System.Data.SQLite.1.0.109.0.nupkg">System.Data.SQLite.1.0.109.0.nupkg</a>
+        <a href="/downloads/1.0.109.0/System.Data.SQLite.1.0.109.1.nupkg">System.Data.SQLite.1.0.109.1.nupkg</a>
         <br />
         (0.00 MiB)
       </td>
@@ -2283,14 +2283,14 @@
         &quot;System.Data.SQLite.EF6&quot; packages.</i></b></big>
         <br />
         <br />
-        (sha1: 130e4ea8c4a84adea68b1fa157be8446ed492b5a)
+        (sha1: 6904d010b2b8c55543a5973958285636579e40af)
       </td>
     </tr>
 
     <tr>
       <td width="10">&nbsp;</td>
       <td width="30%" valign="top" align="right">
-        <a href="/downloads/1.0.109.0/System.Data.SQLite.Core.1.0.109.0.nupkg">System.Data.SQLite.Core.1.0.109.0.nupkg</a>
+        <a href="/downloads/1.0.109.0/System.Data.SQLite.Core.1.0.109.1.nupkg">System.Data.SQLite.Core.1.0.109.1.nupkg</a>
         <br />
         (12.17 MiB)
       </td>
@@ -2310,7 +2310,7 @@
         <br />
         <big><b>This package does not depend on any other package.</b></big>
         <br />
-        (sha1: a4128ed7c5cdb47f5d6530b07854b71427508c53)
+        (sha1: 5e4dff84e7c1551986a0e24a93453de00f9d7552)
       </td>
     </tr>
 

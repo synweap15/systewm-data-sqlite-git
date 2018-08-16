@@ -11,7 +11,7 @@
   <metadata>
     <id>System.Data.SQLite.Core</id>
     <title>System.Data.SQLite Core (x86/x64)</title>
-    <version>1.0.109.0</version>
+    <version>1.0.109.1</version>
     <authors>SQLite Development Team</authors>
     <description>The official SQLite database engine for both x86 and x64 along with the ADO.NET provider.</description>
     <language>en-US</language>
@@ -52,16 +52,15 @@
     <file src="..\bin\2013\x64\ReleaseNativeOnlyStatic\SQLite.Interop.dll" target="build\net451\x64" />
     <file src="..\bin\2015\Win32\ReleaseNativeOnlyStatic\SQLite.Interop.dll" target="build\net46\x86" />
     <file src="..\bin\2015\x64\ReleaseNativeOnlyStatic\SQLite.Interop.dll" target="build\net46\x64" />
-    <file src="..\bin\2015\Win32\ReleaseNativeOnlyStatic\SQLite.Interop.dll" target="build\netstandard2.0\x86" />
-    <file src="..\bin\2015\x64\ReleaseNativeOnlyStatic\SQLite.Interop.dll" target="build\netstandard2.0\x64" />
-    <file src="..\bin\2016\linux-x64\ReleaseNativeOnly\SQLite.Interop.dll" target="build\netstandard2.0\linux-x64" />
-    <file src="..\bin\2016\osx-x64\ReleaseNativeOnly\SQLite.Interop.dll" target="build\netstandard2.0\osx-x64" />
+    <file src="..\bin\2015\Win32\ReleaseNativeOnlyStatic\SQLite.Interop.dll" target="runtimes\win-x86\lib\netstandard2.0" />
+    <file src="..\bin\2015\x64\ReleaseNativeOnlyStatic\SQLite.Interop.dll" target="runtimes\win-x64\lib\netstandard2.0" />
+    <file src="..\bin\2016\linux-x64\ReleaseNativeOnly\SQLite.Interop.dll" target="runtimes\linux-x64\lib\netstandard2.0" />
+    <file src="..\bin\2016\osx-x64\ReleaseNativeOnly\SQLite.Interop.dll" target="runtimes\osx-x64\lib\netstandard2.0" />
     <file src="shared\Core\build\System.Data.SQLite.Core.targets" target="build\net20\System.Data.SQLite.Core.targets" />
     <file src="shared\Core\build\System.Data.SQLite.Core.targets" target="build\net40\System.Data.SQLite.Core.targets" />
     <file src="shared\Core\build\System.Data.SQLite.Core.targets" target="build\net45\System.Data.SQLite.Core.targets" />
     <file src="shared\Core\build\System.Data.SQLite.Core.targets" target="build\net451\System.Data.SQLite.Core.targets" />
     <file src="shared\Core\build\System.Data.SQLite.Core.targets" target="build\net46\System.Data.SQLite.Core.targets" />
-    <file src="shared\Core\build\System.Data.SQLite.Core.targets" target="build\netstandard2.0\System.Data.SQLite.Core.targets" />
     <file src="shared\Core\lib\System.Data.SQLite.dll.config" target="lib\net20" />
     <file src="shared\Core\lib\System.Data.SQLite.dll.config" target="lib\net40" />
     <file src="shared\Core\lib\System.Data.SQLite.dll.config" target="lib\net45" />
