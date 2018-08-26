@@ -1311,6 +1311,18 @@ namespace System.Data.SQLite
       WaitForEnlistmentReset = 0x100000000000,
 
       /// <summary>
+      /// When returning <see cref="Int64" /> column values, always use
+      /// the invariant culture when converting their values from strings.
+      /// </summary>
+      GetInvariantInt64 = 0x200000000000,
+
+      /// <summary>
+      /// When returning <see cref="Double" /> column values, always use
+      /// the invariant culture when converting their values from strings.
+      /// </summary>
+      GetInvariantDouble = 0x400000000000,
+
+      /// <summary>
       /// When binding parameter values or returning column values, always
       /// treat them as though they were plain text (i.e. no numeric,
       /// date/time, or other conversions should be attempted).

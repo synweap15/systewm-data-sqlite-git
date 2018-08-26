@@ -4053,7 +4053,8 @@ namespace System.Data.SQLite
           return GetDateTime(stmt, index);
         case TypeAffinity.Double:
           if (t == null) return GetDouble(stmt, index);
-          return Convert.ChangeType(GetDouble(stmt, index), t, null);
+          bool invariantDouble = ((flags & SQLiteConnectionFlags.GetInvariantDouble) == SQLiteConnectionFlags.GetInvariantDouble);
+          return Convert.ChangeType(GetDouble(stmt, index), t, invariantDouble ? CultureInfo.InvariantCulture : CultureInfo.CurrentCulture);
         case TypeAffinity.Int64:
           if (t == null) return GetInt64(stmt, index);
           if (t == typeof(Boolean)) return GetBoolean(stmt, index);
@@ -4065,7 +4066,8 @@ namespace System.Data.SQLite
           if (t == typeof(UInt32)) return GetUInt32(stmt, index);
           if (t == typeof(Int64)) return GetInt64(stmt, index);
           if (t == typeof(UInt64)) return GetUInt64(stmt, index);
-          return Convert.ChangeType(GetInt64(stmt, index), t, null);
+          bool invariantInt64 = ((flags & SQLiteConnectionFlags.GetInvariantInt64) == SQLiteConnectionFlags.GetInvariantInt64);
+          return Convert.ChangeType(GetInt64(stmt, index), t, invariantInt64 ? CultureInfo.InvariantCulture : CultureInfo.CurrentCulture);
         default:
           return GetText(stmt, index);
       }
