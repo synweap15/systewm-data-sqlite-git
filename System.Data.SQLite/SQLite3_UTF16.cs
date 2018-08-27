@@ -181,7 +181,7 @@ namespace System.Data.SQLite
           IntPtr db = IntPtr.Zero;
           SQLiteErrorCode n;
 
-          int extFuncs = ((connectionFlags & SQLiteConnectionFlags.NoExtensionFunctions) != SQLiteConnectionFlags.NoExtensionFunctions) ? 1 : 0;
+          int extFuncs = HelperMethods.HasFlags(connectionFlags, SQLiteConnectionFlags.NoExtensionFunctions) ? 0 : 1;
 
 #if !SQLITE_STANDARD
           if ((vfsName != null) || (extFuncs != 0))
@@ -230,7 +230,7 @@ namespace System.Data.SQLite
 
       // Bind functions to this connection.  If any previous functions of the same name
       // were already bound, then the new bindings replace the old.
-      if ((connectionFlags & SQLiteConnectionFlags.NoBindFunctions) != SQLiteConnectionFlags.NoBindFunctions)
+      if (!HelperMethods.HasFlags(connectionFlags, SQLiteConnectionFlags.NoBindFunctions))
       {
           if (_functions == null)
               _functions = new Dictionary<SQLiteFunctionAttribute, SQLiteFunction>();

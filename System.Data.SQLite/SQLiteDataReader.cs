@@ -391,7 +391,7 @@ namespace System.Data.SQLite
     /// <param name="typ">The type we want to get out of the column</param>
     private TypeAffinity VerifyType(int i, DbType typ)
     {
-        if ((_flags & SQLiteConnectionFlags.NoVerifyTypeAffinity) == SQLiteConnectionFlags.NoVerifyTypeAffinity)
+        if (HelperMethods.HasFlags(_flags, SQLiteConnectionFlags.NoVerifyTypeAffinity))
             return TypeAffinity.None;
 
         TypeAffinity affinity = GetSQLiteType(_flags, i).Affinity;
@@ -547,7 +547,7 @@ namespace System.Data.SQLite
         CheckDisposed();
         VerifyForGet();
 
-        if ((_flags & SQLiteConnectionFlags.UseConnectionReadValueCallbacks) == SQLiteConnectionFlags.UseConnectionReadValueCallbacks)
+        if (HelperMethods.HasFlags(_flags, SQLiteConnectionFlags.UseConnectionReadValueCallbacks))
         {
             SQLiteDataReaderValue value = new SQLiteDataReaderValue();
             bool complete;
@@ -576,7 +576,7 @@ namespace System.Data.SQLite
         CheckDisposed();
         VerifyForGet();
 
-        if ((_flags & SQLiteConnectionFlags.UseConnectionReadValueCallbacks) == SQLiteConnectionFlags.UseConnectionReadValueCallbacks)
+        if (HelperMethods.HasFlags(_flags, SQLiteConnectionFlags.UseConnectionReadValueCallbacks))
         {
             SQLiteDataReaderValue value = new SQLiteDataReaderValue();
             bool complete;
@@ -610,7 +610,7 @@ namespace System.Data.SQLite
         CheckDisposed();
         VerifyForGet();
 
-        if ((_flags & SQLiteConnectionFlags.UseConnectionReadValueCallbacks) == SQLiteConnectionFlags.UseConnectionReadValueCallbacks)
+        if (HelperMethods.HasFlags(_flags, SQLiteConnectionFlags.UseConnectionReadValueCallbacks))
         {
             SQLiteDataReaderValue value = new SQLiteDataReaderValue();
             bool complete;
@@ -651,7 +651,7 @@ namespace System.Data.SQLite
         CheckDisposed();
         VerifyForGet();
 
-        if ((_flags & SQLiteConnectionFlags.UseConnectionReadValueCallbacks) == SQLiteConnectionFlags.UseConnectionReadValueCallbacks)
+        if (HelperMethods.HasFlags(_flags, SQLiteConnectionFlags.UseConnectionReadValueCallbacks))
         {
             SQLiteReadArrayEventArgs eventArgs = new SQLiteReadArrayEventArgs(
                 fieldOffset, buffer, bufferoffset, length);
@@ -704,7 +704,7 @@ namespace System.Data.SQLite
         CheckDisposed();
         VerifyForGet();
 
-        if ((_flags & SQLiteConnectionFlags.UseConnectionReadValueCallbacks) == SQLiteConnectionFlags.UseConnectionReadValueCallbacks)
+        if (HelperMethods.HasFlags(_flags, SQLiteConnectionFlags.UseConnectionReadValueCallbacks))
         {
             SQLiteDataReaderValue value = new SQLiteDataReaderValue();
             bool complete;
@@ -745,7 +745,7 @@ namespace System.Data.SQLite
         CheckDisposed();
         VerifyForGet();
 
-        if ((_flags & SQLiteConnectionFlags.UseConnectionReadValueCallbacks) == SQLiteConnectionFlags.UseConnectionReadValueCallbacks)
+        if (HelperMethods.HasFlags(_flags, SQLiteConnectionFlags.UseConnectionReadValueCallbacks))
         {
             SQLiteReadArrayEventArgs eventArgs = new SQLiteReadArrayEventArgs(
                 fieldoffset, buffer, bufferoffset, length);
@@ -784,7 +784,7 @@ namespace System.Data.SQLite
         if (i >= PrivateVisibleFieldCount && _keyInfo != null)
             return _keyInfo.GetChars(i - PrivateVisibleFieldCount, fieldoffset, buffer, bufferoffset, length);
 
-        if ((_flags & SQLiteConnectionFlags.NoVerifyTextAffinity) != SQLiteConnectionFlags.NoVerifyTextAffinity)
+        if (!HelperMethods.HasFlags(_flags, SQLiteConnectionFlags.NoVerifyTextAffinity))
             VerifyType(i, DbType.String);
 
         return _activeStatement._sql.GetChars(_activeStatement, i, (int)fieldoffset, buffer, bufferoffset, length);
@@ -816,7 +816,7 @@ namespace System.Data.SQLite
         CheckDisposed();
         VerifyForGet();
 
-        if ((_flags & SQLiteConnectionFlags.UseConnectionReadValueCallbacks) == SQLiteConnectionFlags.UseConnectionReadValueCallbacks)
+        if (HelperMethods.HasFlags(_flags, SQLiteConnectionFlags.UseConnectionReadValueCallbacks))
         {
             SQLiteDataReaderValue value = new SQLiteDataReaderValue();
             bool complete;
@@ -850,7 +850,7 @@ namespace System.Data.SQLite
         CheckDisposed();
         VerifyForGet();
 
-        if ((_flags & SQLiteConnectionFlags.UseConnectionReadValueCallbacks) == SQLiteConnectionFlags.UseConnectionReadValueCallbacks)
+        if (HelperMethods.HasFlags(_flags, SQLiteConnectionFlags.UseConnectionReadValueCallbacks))
         {
             SQLiteDataReaderValue value = new SQLiteDataReaderValue();
             bool complete;
@@ -874,7 +874,7 @@ namespace System.Data.SQLite
 
         CultureInfo cultureInfo = CultureInfo.CurrentCulture;
 
-        if ((_flags & SQLiteConnectionFlags.GetInvariantDecimal) == SQLiteConnectionFlags.GetInvariantDecimal)
+        if (HelperMethods.HasFlags(_flags, SQLiteConnectionFlags.GetInvariantDecimal))
             cultureInfo = CultureInfo.InvariantCulture;
 
         return Decimal.Parse(_activeStatement._sql.GetText(_activeStatement, i), NumberStyles.AllowDecimalPoint | NumberStyles.AllowExponent | NumberStyles.AllowLeadingSign, cultureInfo);
@@ -890,7 +890,7 @@ namespace System.Data.SQLite
         CheckDisposed();
         VerifyForGet();
 
-        if ((_flags & SQLiteConnectionFlags.UseConnectionReadValueCallbacks) == SQLiteConnectionFlags.UseConnectionReadValueCallbacks)
+        if (HelperMethods.HasFlags(_flags, SQLiteConnectionFlags.UseConnectionReadValueCallbacks))
         {
             SQLiteDataReaderValue value = new SQLiteDataReaderValue();
             bool complete;
@@ -960,7 +960,7 @@ namespace System.Data.SQLite
         CheckDisposed();
         VerifyForGet();
 
-        if ((_flags & SQLiteConnectionFlags.UseConnectionReadValueCallbacks) == SQLiteConnectionFlags.UseConnectionReadValueCallbacks)
+        if (HelperMethods.HasFlags(_flags, SQLiteConnectionFlags.UseConnectionReadValueCallbacks))
         {
             SQLiteDataReaderValue value = new SQLiteDataReaderValue();
             bool complete;
@@ -994,7 +994,7 @@ namespace System.Data.SQLite
         CheckDisposed();
         VerifyForGet();
 
-        if ((_flags & SQLiteConnectionFlags.UseConnectionReadValueCallbacks) == SQLiteConnectionFlags.UseConnectionReadValueCallbacks)
+        if (HelperMethods.HasFlags(_flags, SQLiteConnectionFlags.UseConnectionReadValueCallbacks))
         {
             SQLiteDataReaderValue value = new SQLiteDataReaderValue();
             bool complete;
@@ -1035,7 +1035,7 @@ namespace System.Data.SQLite
         CheckDisposed();
         VerifyForGet();
 
-        if ((_flags & SQLiteConnectionFlags.UseConnectionReadValueCallbacks) == SQLiteConnectionFlags.UseConnectionReadValueCallbacks)
+        if (HelperMethods.HasFlags(_flags, SQLiteConnectionFlags.UseConnectionReadValueCallbacks))
         {
             SQLiteDataReaderValue value = new SQLiteDataReaderValue();
             bool complete;
@@ -1069,7 +1069,7 @@ namespace System.Data.SQLite
         CheckDisposed();
         VerifyForGet();
 
-        if ((_flags & SQLiteConnectionFlags.UseConnectionReadValueCallbacks) == SQLiteConnectionFlags.UseConnectionReadValueCallbacks)
+        if (HelperMethods.HasFlags(_flags, SQLiteConnectionFlags.UseConnectionReadValueCallbacks))
         {
             SQLiteDataReaderValue value = new SQLiteDataReaderValue();
             bool complete;
@@ -1103,7 +1103,7 @@ namespace System.Data.SQLite
         CheckDisposed();
         VerifyForGet();
 
-        if ((_flags & SQLiteConnectionFlags.UseConnectionReadValueCallbacks) == SQLiteConnectionFlags.UseConnectionReadValueCallbacks)
+        if (HelperMethods.HasFlags(_flags, SQLiteConnectionFlags.UseConnectionReadValueCallbacks))
         {
             SQLiteDataReaderValue value = new SQLiteDataReaderValue();
             bool complete;
@@ -1678,7 +1678,7 @@ namespace System.Data.SQLite
         CheckDisposed();
         VerifyForGet();
 
-        if ((_flags & SQLiteConnectionFlags.UseConnectionReadValueCallbacks) == SQLiteConnectionFlags.UseConnectionReadValueCallbacks)
+        if (HelperMethods.HasFlags(_flags, SQLiteConnectionFlags.UseConnectionReadValueCallbacks))
         {
             SQLiteDataReaderValue value = new SQLiteDataReaderValue();
             bool complete;
@@ -1693,7 +1693,7 @@ namespace System.Data.SQLite
         if (i >= PrivateVisibleFieldCount && _keyInfo != null)
             return _keyInfo.GetString(i - PrivateVisibleFieldCount);
 
-        if ((_flags & SQLiteConnectionFlags.NoVerifyTextAffinity) != SQLiteConnectionFlags.NoVerifyTextAffinity)
+        if (!HelperMethods.HasFlags(_flags, SQLiteConnectionFlags.NoVerifyTextAffinity))
             VerifyType(i, DbType.String);
 
         return _activeStatement._sql.GetText(_activeStatement, i);
@@ -1709,7 +1709,7 @@ namespace System.Data.SQLite
         CheckDisposed();
         VerifyForGet();
 
-        if ((_flags & SQLiteConnectionFlags.UseConnectionReadValueCallbacks) == SQLiteConnectionFlags.UseConnectionReadValueCallbacks)
+        if (HelperMethods.HasFlags(_flags, SQLiteConnectionFlags.UseConnectionReadValueCallbacks))
         {
             SQLiteDataReaderValue value = new SQLiteDataReaderValue();
             bool complete;
@@ -1726,13 +1726,15 @@ namespace System.Data.SQLite
 
         SQLiteType typ = GetSQLiteType(_flags, i);
 
-        if (((_flags & SQLiteConnectionFlags.DetectTextAffinity) == SQLiteConnectionFlags.DetectTextAffinity) &&
+        if (HelperMethods.HasFlags(
+                _flags, SQLiteConnectionFlags.DetectTextAffinity) &&
             ((typ == null) || (typ.Affinity == TypeAffinity.Text)))
         {
             typ = GetSQLiteType(
                 typ, _activeStatement._sql.GetText(_activeStatement, i));
         }
-        else if (((_flags & SQLiteConnectionFlags.DetectStringType) == SQLiteConnectionFlags.DetectStringType) &&
+        else if (HelperMethods.HasFlags(
+                _flags, SQLiteConnectionFlags.DetectStringType) &&
             ((typ == null) || SQLiteConvert.IsStringDbType(typ.Type)))
         {
             typ = GetSQLiteType(
@@ -1811,8 +1813,11 @@ namespace System.Data.SQLite
         //       other ADO.NET providers that use these same semantics for
         //       the HasRows property.
         //
-        if ((_flags & SQLiteConnectionFlags.StickyHasRows) == SQLiteConnectionFlags.StickyHasRows)
+        if (HelperMethods.HasFlags(
+                _flags, SQLiteConnectionFlags.StickyHasRows))
+        {
           return ((_readingState != 1) || (_stepCount > 0));
+        }
 
         //
         // NOTE: This is the default behavior.  It returns non-zero only if

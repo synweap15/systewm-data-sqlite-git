@@ -1428,8 +1428,8 @@ namespace System.Data.SQLite
         SQLiteConnectionFlags flags = (connection != null) ?
             connection.Flags : SQLiteConnectionFlags.None;
 
-        if ((flags & SQLiteConnectionFlags.NoConvertSettings)
-                == SQLiteConnectionFlags.NoConvertSettings)
+        if (HelperMethods.HasFlags(
+                flags, SQLiteConnectionFlags.NoConvertSettings))
         {
             return FallbackDefaultTypeName;
         }
@@ -1478,7 +1478,7 @@ namespace System.Data.SQLite
         string typeName
         )
     {
-        if ((flags & SQLiteConnectionFlags.TraceWarning) == SQLiteConnectionFlags.TraceWarning)
+        if (HelperMethods.HasFlags(flags, SQLiteConnectionFlags.TraceWarning))
         {
             Trace.WriteLine(HelperMethods.StringFormat(
                 CultureInfo.CurrentCulture,
@@ -1507,7 +1507,7 @@ namespace System.Data.SQLite
         )
     {
         if (!String.IsNullOrEmpty(typeName) &&
-            ((flags & SQLiteConnectionFlags.TraceWarning) == SQLiteConnectionFlags.TraceWarning))
+            HelperMethods.HasFlags(flags, SQLiteConnectionFlags.TraceWarning))
         {
             Trace.WriteLine(HelperMethods.StringFormat(
                 CultureInfo.CurrentCulture,
@@ -1536,7 +1536,7 @@ namespace System.Data.SQLite
         {
             flags |= connection.Flags;
 
-            if ((flags & SQLiteConnectionFlags.UseConnectionTypes) == SQLiteConnectionFlags.UseConnectionTypes)
+            if (HelperMethods.HasFlags(flags, SQLiteConnectionFlags.UseConnectionTypes))
             {
                 SQLiteDbTypeMap connectionTypeNames = connection._typeNames;
 
@@ -1555,7 +1555,7 @@ namespace System.Data.SQLite
             defaultTypeName = connection.DefaultTypeName;
         }
 
-        if ((flags & SQLiteConnectionFlags.NoGlobalTypes) == SQLiteConnectionFlags.NoGlobalTypes)
+        if (HelperMethods.HasFlags(flags, SQLiteConnectionFlags.NoGlobalTypes))
         {
             if (defaultTypeName != null)
                 return defaultTypeName;
@@ -1660,7 +1660,7 @@ namespace System.Data.SQLite
           return TypeAffinity.Text;
       }
       if ((tc == TypeCode.Decimal) &&
-          ((flags & SQLiteConnectionFlags.GetDecimalAsText) == SQLiteConnectionFlags.GetDecimalAsText))
+          HelperMethods.HasFlags(flags, SQLiteConnectionFlags.GetDecimalAsText))
       {
           return TypeAffinity.Text;
       }
@@ -1844,8 +1844,8 @@ namespace System.Data.SQLite
         SQLiteConnectionFlags flags = (connection != null) ?
             connection.Flags : SQLiteConnectionFlags.None;
 
-        if ((flags & SQLiteConnectionFlags.NoConvertSettings)
-                == SQLiteConnectionFlags.NoConvertSettings)
+        if (HelperMethods.HasFlags(
+                flags, SQLiteConnectionFlags.NoConvertSettings))
         {
             return FallbackDefaultDbType;
         }
@@ -2080,7 +2080,7 @@ namespace System.Data.SQLite
         {
             flags |= connection.Flags;
 
-            if ((flags & SQLiteConnectionFlags.UseConnectionTypes) == SQLiteConnectionFlags.UseConnectionTypes)
+            if (HelperMethods.HasFlags(flags, SQLiteConnectionFlags.UseConnectionTypes))
             {
                 SQLiteDbTypeMap connectionTypeNames = connection._typeNames;
 
@@ -2114,7 +2114,7 @@ namespace System.Data.SQLite
             defaultDbType = connection.DefaultDbType;
         }
 
-        if ((flags & SQLiteConnectionFlags.NoGlobalTypes) == SQLiteConnectionFlags.NoGlobalTypes)
+        if (HelperMethods.HasFlags(flags, SQLiteConnectionFlags.NoGlobalTypes))
         {
             if (defaultDbType != null)
                 return (DbType)defaultDbType;

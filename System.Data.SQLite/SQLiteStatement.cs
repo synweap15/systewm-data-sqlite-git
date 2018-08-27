@@ -323,8 +323,8 @@ namespace System.Data.SQLite
                 // NOTE: Are we allowed to fallback to using the parameter name
                 //       as the basis for looking up the binding callback?
                 //
-                if ((_flags & SQLiteConnectionFlags.UseParameterNameForTypeName)
-                        == SQLiteConnectionFlags.UseParameterNameForTypeName)
+                if (HelperMethods.HasFlags(
+                        _flags, SQLiteConnectionFlags.UseParameterNameForTypeName))
                 {
                     typeName = parameter.ParameterName;
                 }
@@ -337,8 +337,8 @@ namespace System.Data.SQLite
                 //       name translated from the DbType as the basis for looking
                 //       up the binding callback?
                 //
-                if ((_flags & SQLiteConnectionFlags.UseParameterDbTypeForTypeName)
-                        == SQLiteConnectionFlags.UseParameterDbTypeForTypeName)
+                if (HelperMethods.HasFlags(
+                        _flags, SQLiteConnectionFlags.UseParameterDbTypeForTypeName))
                 {
                     typeName = SQLiteConvert.DbTypeToTypeName(
                         connection, parameter.DbType, _flags);
@@ -383,7 +383,8 @@ namespace System.Data.SQLite
       if (param == null)
         throw new SQLiteException("Insufficient parameters supplied to the command");
 
-      if ((_flags & SQLiteConnectionFlags.UseConnectionBindValueCallbacks) == SQLiteConnectionFlags.UseConnectionBindValueCallbacks)
+      if (HelperMethods.HasFlags(
+            _flags, SQLiteConnectionFlags.UseConnectionBindValueCallbacks))
       {
           bool complete;
 
@@ -417,15 +418,19 @@ namespace System.Data.SQLite
 
       CultureInfo invariantCultureInfo = CultureInfo.InvariantCulture;
 
-      bool invariantText = ((_flags & SQLiteConnectionFlags.BindInvariantText)
-          == SQLiteConnectionFlags.BindInvariantText);
+      bool invariantText = HelperMethods.HasFlags(
+          _flags, SQLiteConnectionFlags.BindInvariantText);
 
       CultureInfo cultureInfo = CultureInfo.CurrentCulture;
 
-      if ((_flags & SQLiteConnectionFlags.ConvertInvariantText) == SQLiteConnectionFlags.ConvertInvariantText)
+      if (HelperMethods.HasFlags(
+            _flags, SQLiteConnectionFlags.ConvertInvariantText))
+      {
           cultureInfo = invariantCultureInfo;
+      }
 
-      if ((_flags & SQLiteConnectionFlags.BindAllAsText) == SQLiteConnectionFlags.BindAllAsText)
+      if (HelperMethods.HasFlags(
+            _flags, SQLiteConnectionFlags.BindAllAsText))
       {
           if (obj is DateTime)
           {
@@ -441,10 +446,11 @@ namespace System.Data.SQLite
           return;
       }
 
-      bool invariantDecimal = ((_flags & SQLiteConnectionFlags.BindInvariantDecimal)
-          == SQLiteConnectionFlags.BindInvariantDecimal);
+      bool invariantDecimal = HelperMethods.HasFlags(
+          _flags, SQLiteConnectionFlags.BindInvariantDecimal);
 
-      if ((_flags & SQLiteConnectionFlags.BindDecimalAsText) == SQLiteConnectionFlags.BindDecimalAsText)
+      if (HelperMethods.HasFlags(
+            _flags, SQLiteConnectionFlags.BindDecimalAsText))
       {
           if (obj is Decimal)
           {

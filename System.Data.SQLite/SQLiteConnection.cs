@@ -2725,7 +2725,7 @@ namespace System.Data.SQLite
     protected override void Dispose(bool disposing)
     {
 #if !NET_COMPACT_20 && TRACE_WARNING
-        if ((_flags & SQLiteConnectionFlags.TraceWarning) == SQLiteConnectionFlags.TraceWarning)
+        if (HelperMethods.HasFlags(_flags, SQLiteConnectionFlags.TraceWarning))
         {
             if (_noDispose)
             {
@@ -2938,8 +2938,7 @@ namespace System.Data.SQLite
 
       SQLiteTransaction transaction;
 
-      if ((_flags & SQLiteConnectionFlags.AllowNestedTransactions)
-            == SQLiteConnectionFlags.AllowNestedTransactions)
+      if (HelperMethods.HasFlags(_flags, SQLiteConnectionFlags.AllowNestedTransactions))
       {
           transaction = new SQLiteTransaction2(
               this, isolationLevel != ImmediateIsolationLevel);
@@ -3480,8 +3479,8 @@ namespace System.Data.SQLite
 
         lock (_enlistmentSyncRoot) /* TRANSACTIONAL */
         {
-            waitForEnlistmentReset = ((_flags & SQLiteConnectionFlags.WaitForEnlistmentReset) ==
-                SQLiteConnectionFlags.WaitForEnlistmentReset);
+            waitForEnlistmentReset = HelperMethods.HasFlags(
+                _flags, SQLiteConnectionFlags.WaitForEnlistmentReset);
 
             waitTimeout = _waitTimeout;
         }
@@ -3502,8 +3501,8 @@ namespace System.Data.SQLite
             else if (transaction == null)
                 throw new ArgumentNullException("Unable to enlist in transaction, it is null");
 
-            bool strictEnlistment = ((_flags & SQLiteConnectionFlags.StrictEnlistment) ==
-                SQLiteConnectionFlags.StrictEnlistment);
+            bool strictEnlistment = HelperMethods.HasFlags(
+                _flags, SQLiteConnectionFlags.StrictEnlistment);
 
             _enlistment = new SQLiteEnlistment(this, transaction,
                 GetFallbackDefaultIsolationLevel(), strictEnlistment,
@@ -3780,7 +3779,7 @@ namespace System.Data.SQLite
         }
 
         if ((option == SQLiteConfigDbOpsEnum.SQLITE_DBCONFIG_ENABLE_LOAD_EXTENSION) &&
-            ((_flags & SQLiteConnectionFlags.NoLoadExtension) == SQLiteConnectionFlags.NoLoadExtension))
+            HelperMethods.HasFlags(_flags, SQLiteConnectionFlags.NoLoadExtension))
         {
             throw new SQLiteException("Loading extensions is disabled for this database connection.");
         }
@@ -3809,7 +3808,7 @@ namespace System.Data.SQLite
                 "Database connection not valid for {0} extensions.",
                 enable ? "enabling" : "disabling"));
 
-        if ((_flags & SQLiteConnectionFlags.NoLoadExtension) == SQLiteConnectionFlags.NoLoadExtension)
+        if (HelperMethods.HasFlags(_flags, SQLiteConnectionFlags.NoLoadExtension))
             throw new SQLiteException("Loading extensions is disabled for this database connection.");
 
         _sql.SetLoadExtension(enable);
@@ -3851,7 +3850,7 @@ namespace System.Data.SQLite
             throw new InvalidOperationException(
                 "Database connection not valid for loading extensions.");
 
-        if ((_flags & SQLiteConnectionFlags.NoLoadExtension) == SQLiteConnectionFlags.NoLoadExtension)
+        if (HelperMethods.HasFlags(_flags, SQLiteConnectionFlags.NoLoadExtension))
             throw new SQLiteException("Loading extensions is disabled for this database connection.");
 
         _sql.LoadExtension(fileName, procName);
@@ -3875,7 +3874,7 @@ namespace System.Data.SQLite
             throw new InvalidOperationException(
                 "Database connection not valid for creating modules.");
 
-        if ((_flags & SQLiteConnectionFlags.NoCreateModule) == SQLiteConnectionFlags.NoCreateModule)
+        if (HelperMethods.HasFlags(_flags, SQLiteConnectionFlags.NoCreateModule))
             throw new SQLiteException("Creating modules is disabled for this database connection.");
 
         _sql.CreateModule(module, _flags);
@@ -4006,18 +4005,18 @@ namespace System.Data.SQLite
 
         if (result) /* NOTE: True branch not reached in the default build. */
         {
-            if ((_flags & SQLiteConnectionFlags.NoConnectionPool) == SQLiteConnectionFlags.NoConnectionPool)
+            if (HelperMethods.HasFlags(_flags, SQLiteConnectionFlags.NoConnectionPool))
                 result = false;
 
-            if ((_flags & SQLiteConnectionFlags.UseConnectionPool) == SQLiteConnectionFlags.UseConnectionPool)
+            if (HelperMethods.HasFlags(_flags, SQLiteConnectionFlags.UseConnectionPool))
                 result = true;
         }
         else
         {
-            if ((_flags & SQLiteConnectionFlags.UseConnectionPool) == SQLiteConnectionFlags.UseConnectionPool)
+            if (HelperMethods.HasFlags(_flags, SQLiteConnectionFlags.UseConnectionPool))
                 result = true;
 
-            if ((_flags & SQLiteConnectionFlags.NoConnectionPool) == SQLiteConnectionFlags.NoConnectionPool)
+            if (HelperMethods.HasFlags(_flags, SQLiteConnectionFlags.NoConnectionPool))
                 result = false;
         }
 
@@ -4041,8 +4040,8 @@ namespace System.Data.SQLite
         IsolationLevel isolationLevel
         )
     {
-        if ((_flags & SQLiteConnectionFlags.MapIsolationLevels)
-                != SQLiteConnectionFlags.MapIsolationLevels)
+        if (!HelperMethods.HasFlags(
+                _flags, SQLiteConnectionFlags.MapIsolationLevels))
         {
             return isolationLevel;
         }
@@ -4193,7 +4192,7 @@ namespace System.Data.SQLite
       bool isMemory = (String.Compare(fileName, MemoryFileName, StringComparison.OrdinalIgnoreCase) == 0);
 
 #if !NET_COMPACT_20 && TRACE_WARNING
-      if ((_flags & SQLiteConnectionFlags.TraceWarning) == SQLiteConnectionFlags.TraceWarning)
+      if (HelperMethods.HasFlags(_flags, SQLiteConnectionFlags.TraceWarning))
       {
           if (!uri && !fullUri && !isMemory && !String.IsNullOrEmpty(fileName) &&
               fileName.StartsWith("\\", StringComparison.OrdinalIgnoreCase) &&
@@ -6760,8 +6759,8 @@ namespace System.Data.SQLite
         //
         // NOTE: Should throwing an exception interrupt the operation?
         //
-        if ((_flags & SQLiteConnectionFlags.InterruptOnException) ==
-                SQLiteConnectionFlags.InterruptOnException)
+        if (HelperMethods.HasFlags(
+                _flags, SQLiteConnectionFlags.InterruptOnException))
         {
             return SQLiteProgressReturnCode.Interrupt;
         }
@@ -6812,8 +6811,8 @@ namespace System.Data.SQLite
         //
         // NOTE: Should throwing an exception deny the action?
         //
-        if ((_flags & SQLiteConnectionFlags.DenyOnException) ==
-                SQLiteConnectionFlags.DenyOnException)
+        if (HelperMethods.HasFlags(
+                _flags, SQLiteConnectionFlags.DenyOnException))
         {
             return SQLiteAuthorizerReturnCode.Deny;
         }
@@ -7011,8 +7010,8 @@ namespace System.Data.SQLite
         //
         // NOTE: Should throwing an exception rollback the transaction?
         //
-        if ((_flags & SQLiteConnectionFlags.RollbackOnException) ==
-                SQLiteConnectionFlags.RollbackOnException)
+        if (HelperMethods.HasFlags(
+                _flags, SQLiteConnectionFlags.RollbackOnException))
         {
             return 1; // rollback
         }

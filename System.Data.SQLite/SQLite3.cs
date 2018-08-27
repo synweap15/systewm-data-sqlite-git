@@ -276,8 +276,7 @@ namespace System.Data.SQLite
               return;
           }
 
-          bool unbindFunctions = ((_flags & SQLiteConnectionFlags.UnbindFunctionsOnClose)
-                == SQLiteConnectionFlags.UnbindFunctionsOnClose);
+          bool unbindFunctions = HelperMethods.HasFlags(_flags, SQLiteConnectionFlags.UnbindFunctionsOnClose);
 
       retry:
 
@@ -1055,7 +1054,7 @@ namespace System.Data.SQLite
           SQLiteErrorCode n;
 
 #if !SQLITE_STANDARD
-          int extFuncs = ((connectionFlags & SQLiteConnectionFlags.NoExtensionFunctions) != SQLiteConnectionFlags.NoExtensionFunctions) ? 1 : 0;
+          int extFuncs = HelperMethods.HasFlags(connectionFlags, SQLiteConnectionFlags.NoExtensionFunctions) ? 0 : 1;
 
           if (extFuncs != 0)
           {
@@ -1087,7 +1086,7 @@ namespace System.Data.SQLite
 
       // Bind functions to this connection.  If any previous functions of the same name
       // were already bound, then the new bindings replace the old.
-      if ((connectionFlags & SQLiteConnectionFlags.NoBindFunctions) != SQLiteConnectionFlags.NoBindFunctions)
+      if (!HelperMethods.HasFlags(connectionFlags, SQLiteConnectionFlags.NoBindFunctions))
       {
           if (_functions == null)
               _functions = new Dictionary<SQLiteFunctionAttribute, SQLiteFunction>();
@@ -1715,7 +1714,7 @@ namespace System.Data.SQLite
 
         SQLiteErrorCode n;
 
-        if ((flags & SQLiteConnectionFlags.BindUInt32AsInt64) == SQLiteConnectionFlags.BindUInt32AsInt64)
+        if (HelperMethods.HasFlags(flags, SQLiteConnectionFlags.BindUInt32AsInt64))
         {
             long value2 = value;
 
@@ -1818,7 +1817,7 @@ namespace System.Data.SQLite
             LogBind(handle, index, dt);
         }
 
-        if ((flags & SQLiteConnectionFlags.BindDateTimeWithKind) == SQLiteConnectionFlags.BindDateTimeWithKind)
+        if (HelperMethods.HasFlags(flags, SQLiteConnectionFlags.BindDateTimeWithKind))
         {
             if ((_datetimeKind != DateTimeKind.Unspecified) &&
                 (dt.Kind != DateTimeKind.Unspecified) &&
@@ -4032,7 +4031,7 @@ namespace System.Data.SQLite
         aff = TypeToAffinity(t, flags);
       }
 
-      if ((flags & SQLiteConnectionFlags.GetAllAsText) == SQLiteConnectionFlags.GetAllAsText)
+      if (HelperMethods.HasFlags(flags, SQLiteConnectionFlags.GetAllAsText))
           return GetText(stmt, index);
 
       switch (aff)
@@ -4053,8 +4052,9 @@ namespace System.Data.SQLite
           return GetDateTime(stmt, index);
         case TypeAffinity.Double:
           if (t == null) return GetDouble(stmt, index);
-          bool invariantDouble = ((flags & SQLiteConnectionFlags.GetInvariantDouble) == SQLiteConnectionFlags.GetInvariantDouble);
-          return Convert.ChangeType(GetDouble(stmt, index), t, invariantDouble ? CultureInfo.InvariantCulture : CultureInfo.CurrentCulture);
+          return Convert.ChangeType(GetDouble(stmt, index), t,
+              HelperMethods.HasFlags(flags, SQLiteConnectionFlags.GetInvariantDouble) ?
+                  CultureInfo.InvariantCulture : CultureInfo.CurrentCulture);
         case TypeAffinity.Int64:
           if (t == null) return GetInt64(stmt, index);
           if (t == typeof(Boolean)) return GetBoolean(stmt, index);
@@ -4066,8 +4066,9 @@ namespace System.Data.SQLite
           if (t == typeof(UInt32)) return GetUInt32(stmt, index);
           if (t == typeof(Int64)) return GetInt64(stmt, index);
           if (t == typeof(UInt64)) return GetUInt64(stmt, index);
-          bool invariantInt64 = ((flags & SQLiteConnectionFlags.GetInvariantInt64) == SQLiteConnectionFlags.GetInvariantInt64);
-          return Convert.ChangeType(GetInt64(stmt, index), t, invariantInt64 ? CultureInfo.InvariantCulture : CultureInfo.CurrentCulture);
+          return Convert.ChangeType(GetInt64(stmt, index), t,
+              HelperMethods.HasFlags(flags, SQLiteConnectionFlags.GetInvariantInt64) ?
+                  CultureInfo.InvariantCulture : CultureInfo.CurrentCulture);
         default:
           return GetText(stmt, index);
       }

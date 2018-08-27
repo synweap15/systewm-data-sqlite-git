@@ -609,6 +609,30 @@ namespace System.Data.SQLite
       /////////////////////////////////////////////////////////////////////////
 
       /// <summary>
+      /// Determines if the specified flags are present within the flags
+      /// associated with the parent connection object.
+      /// </summary>
+      /// <param name="flags">
+      /// The flags associated with the parent connection object.
+      /// </param>
+      /// <param name="hasFlags">
+      /// The flags to check for.
+      /// </param>
+      /// <returns>
+      /// Non-zero if the specified flag or flags were present; otherwise,
+      /// zero.
+      /// </returns>
+      internal static bool HasFlags(
+          SQLiteConnectionFlags flags,
+          SQLiteConnectionFlags hasFlags
+          )
+      {
+          return ((flags & hasFlags) == hasFlags);
+      }
+
+      /////////////////////////////////////////////////////////////////////////
+
+      /// <summary>
       /// Determines if preparing a query should be logged.
       /// </summary>
       /// <param name="flags">
@@ -621,8 +645,7 @@ namespace System.Data.SQLite
           SQLiteConnectionFlags flags
           )
       {
-          flags &= SQLiteConnectionFlags.LogPrepare;
-          return (flags == SQLiteConnectionFlags.LogPrepare);
+          return HasFlags(flags, SQLiteConnectionFlags.LogPrepare);
       }
 
       /////////////////////////////////////////////////////////////////////////
@@ -640,8 +663,7 @@ namespace System.Data.SQLite
           SQLiteConnectionFlags flags
           )
       {
-          flags &= SQLiteConnectionFlags.LogPreBind;
-          return (flags == SQLiteConnectionFlags.LogPreBind);
+          return HasFlags(flags, SQLiteConnectionFlags.LogPreBind);
       }
 
       /////////////////////////////////////////////////////////////////////////
@@ -658,8 +680,7 @@ namespace System.Data.SQLite
           SQLiteConnectionFlags flags
           )
       {
-          flags &= SQLiteConnectionFlags.LogBind;
-          return (flags == SQLiteConnectionFlags.LogBind);
+          return HasFlags(flags, SQLiteConnectionFlags.LogBind);
       }
 
       /////////////////////////////////////////////////////////////////////////
@@ -676,8 +697,7 @@ namespace System.Data.SQLite
           SQLiteConnectionFlags flags
           )
       {
-          flags &= SQLiteConnectionFlags.LogCallbackException;
-          return (flags == SQLiteConnectionFlags.LogCallbackException);
+          return HasFlags(flags, SQLiteConnectionFlags.LogCallbackException);
       }
 
       /////////////////////////////////////////////////////////////////////////
@@ -694,8 +714,7 @@ namespace System.Data.SQLite
           SQLiteConnectionFlags flags
           )
       {
-          flags &= SQLiteConnectionFlags.LogBackup;
-          return (flags == SQLiteConnectionFlags.LogBackup);
+          return HasFlags(flags, SQLiteConnectionFlags.LogBackup);
       }
 
 #if INTEROP_VIRTUAL_TABLE
@@ -715,8 +734,7 @@ namespace System.Data.SQLite
           SQLiteConnectionFlags flags
           )
       {
-          flags &= SQLiteConnectionFlags.NoLogModule;
-          return (flags == SQLiteConnectionFlags.NoLogModule);
+          return HasFlags(flags, SQLiteConnectionFlags.NoLogModule);
       }
 
       /////////////////////////////////////////////////////////////////////////
@@ -734,8 +752,7 @@ namespace System.Data.SQLite
           SQLiteConnectionFlags flags
           )
       {
-          flags &= SQLiteConnectionFlags.LogModuleError;
-          return (flags == SQLiteConnectionFlags.LogModuleError);
+          return HasFlags(flags, SQLiteConnectionFlags.LogModuleError);
       }
 
       /////////////////////////////////////////////////////////////////////////
@@ -754,8 +771,7 @@ namespace System.Data.SQLite
           SQLiteConnectionFlags flags
           )
       {
-          flags &= SQLiteConnectionFlags.LogModuleException;
-          return (flags == SQLiteConnectionFlags.LogModuleException);
+          return HasFlags(flags, SQLiteConnectionFlags.LogModuleException);
       }
 #endif
 
