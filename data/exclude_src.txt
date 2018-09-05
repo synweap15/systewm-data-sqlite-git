@@ -57,6 +57,7 @@ Externals/EntityFramework/*
 Externals/HtmlHelp/*
 Externals/MSVCPP/*
 Externals/NDoc3/*
+Externals/NuGet/*
 Externals/ResGen/*
 Externals/vswhere/*
 obj/*

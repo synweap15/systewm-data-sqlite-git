@@ -1026,6 +1026,8 @@ set sds_manifests(eagle) {
 #       options may be unavailable.
 #
 set sds_manifests(external) {
+  Externals/NuGet/
+  Externals/NuGet/NuGet.exe
   Externals/ResGen/
   Externals/ResGen/ResGen.exe
   Externals/ResGen/ResGen.exe.config
