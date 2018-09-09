@@ -15,7 +15,7 @@ proc usage { error } {
   puts stdout "usage:\
 [file tail [info nameofexecutable]]\
 [file tail [info script]] \[year\] \[platform\] \[configuration\]\
-\[culture\] \[platformId\] \[deviceId\] \[quiet\]"
+\[culture\] \[platformId\] \[deviceId\] \[mode\] \[quiet\]"
 
   #
   # NOTE: Indicate to the caller, if any, that we have failed.
@@ -101,7 +101,7 @@ proc startRemoteProcess { device fileName arguments {wait true} } {
 
 set argc [llength $argv]
 
-if {$argc >= 0 && $argc <= 7} then {
+if {$argc >= 0 && $argc <= 8} then {
   #
   # NOTE: Setup the default values for all command line options.
   #
@@ -112,6 +112,7 @@ if {$argc >= 0 && $argc <= 7} then {
          culture en-US
       platformId 3c41c503-53ef-4c2a-8dd4-a8217cad115e
         deviceId {}
+            mode test
            quiet false
   }
 
@@ -120,7 +121,7 @@ if {$argc >= 0 && $argc <= 7} then {
   #       is not present, use the default value.
   #
   set names [list \
-      year platform configuration culture platformId deviceId quiet]
+      year platform configuration culture platformId deviceId mode quiet]
 
   for {set index 0} {$index < [llength $names]} {incr index} {
     set name [lindex $names $index]; set value ""
@@ -207,23 +208,49 @@ if {$argc >= 0 && $argc <= 7} then {
   # NOTE: The base path should be the project root directory, which should
   #       be one level above the one containing this script.
   #
-  set base_path [file dirname $path]
+  if {![info exists base_path]} then {
+    set base_path [file dirname $path]
+  }
 
   #
   # NOTE: The managed binaries to be deployed to the target device should
   #       be located in the "<base>\bin\<year>\<configuration>Compact\bin"
   #       directory.
   #
-  set managed_directory [file join \
-      $base_path bin $year [appendArgs $configuration Compact] bin]
+  if {![info exists managed_directory]} then {
+    set managed_directory [file join \
+        $base_path bin $year [appendArgs $configuration Compact] bin]
+  }
 
   #
   # NOTE: The native binaries to be deployed to the target device should
   #       be located in the "<base>\bin\<year>\<platform>\<configuration>"
   #       directory.
   #
-  set native_directory [file join \
-      $base_path bin $year $platform $configuration]
+  if {![info exists native_directory]} then {
+    set native_directory [file join \
+        $base_path bin $year $platform $configuration]
+  }
+
+  #
+  # NOTE: Figure out the main test file names based on the mode argument from
+  #       the caller.
+  #
+  switch -exact -nocase -- $mode {
+    test {
+      set testFileNameOnly testce.exe
+      set cfgFileNameOnly test.cfg
+      set sqlFileNameOnly test.sql
+    }
+    shell {
+      set testFileNameOnly shellce.exe
+      set cfgFileNameOnly shell.cfg
+      set sqlFileNameOnly shell.sql
+    }
+    default {
+      error [appendArgs "unsupported mode \"" $mode \"]
+    }
+  }
 
   #
   # NOTE: Build the list of all application files that need to be deployed to
@@ -244,16 +271,17 @@ if {$argc >= 0 && $argc <= 7} then {
     #       itself, the System.Data.SQLite managed assembly, the SQLite interop
     #       assembly, and the test application configuration file.
     #
-    set fileNames [list [file join $managed_directory testce.exe] [file \
-        join $managed_directory System.Data.SQLite.dll] [file join \
+    set fileNames [list [file join $managed_directory $testFileNameOnly] \
+        [file join $managed_directory System.Data.SQLite.dll] [file join \
         $native_directory [appendArgs SQLite.Interop. [format %03d \
         [$assemblyName Version.Build]] .dll]] [file join $managed_directory \
-        test.cfg] [file join $managed_directory test.sql]]
+        $cfgFileNameOnly] [file join $managed_directory $sqlFileNameOnly]]
   }
 
   #
   # NOTE: Setup the directory on the target device where the application files
-  #       should be deployed to.
+  #       should be deployed to.  It should be noted that this directory value
+  #       does not vary based on the mode.
   #
   if {![info exists device_directory]} then {
     set device_directory "\\Program Files\\testce\\"
@@ -349,10 +377,11 @@ if {$argc >= 0 && $argc <= 7} then {
   #       The exit code will be zero upon success (i.e. all tests passed) or
   #       non-zero otherwise.
   #
-  set testFileName [file nativename [file join $device_directory testce.exe]]
+  set testFileName [file nativename \
+      [file join $device_directory $testFileNameOnly]]
 
   #
-  # NOTE: The first (and only) argument passed to "testce.exe" on the device
+  # NOTE: The first (and only) argument passed to main test EXE on the device
   #       is the auto-close flag.  When non-zero, it will close automatically
   #       upon completion.  Setting this to zero is sometimes useful in order
   #       to more carefully examine the detailed results.
