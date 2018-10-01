@@ -104,13 +104,16 @@ namespace eval ::Eagle {
     }
 
     #
-    # NOTE: The URN, relative to the base URI, where license certificate
-    #       requests should be sent.
+    # NOTE: The list of URNs, relative to the base URI, where license
+    #       certificate requests should be sent.  One of these will be
+    #       selected at random.
     #
-    variable licenseUrn; # DEFAULT: get_license_01
+    variable licenseUrns; # DEFAULT: get_license_01 ... get_license_NN
 
-    if {$force || ![info exists licenseUrn]} then {
-      set licenseUrn get_license_01
+    if {$force || ![info exists licenseUrns]} then {
+      set licenseUrns [list \
+          get_license_01 get_license_02 get_license_03 get_license_04 \
+          get_license_05 get_license_06 get_license_07]
     }
 
     #
@@ -123,13 +126,15 @@ namespace eval ::Eagle {
     }
 
     #
-    # NOTE: The URN, relative to the base URI, where script evaluation
-    #       requests should be submitted to the "safe" sandbox.
+    # NOTE: The list of URNs, relative to the base URI, where script
+    #       evaluation requests should be submitted to the "safe"
+    #       sandbox.  One of these will be selected at random.
     #
-    variable sandboxEvalUrn; # DEFAULT: eval_01
+    variable sandboxEvalUrns; # DEFAULT: eval_01 ... eval_NN
 
-    if {$force || ![info exists sandboxEvalUrn]} then {
-      set sandboxEvalUrn eval_01
+    if {$force || ![info exists sandboxEvalUrns]} then {
+      set sandboxEvalUrns [list \
+          eval_01 eval_02 eval_03 eval_04 eval_05 eval_06 eval_07]
     }
 
     #
@@ -491,7 +496,7 @@ namespace eval ::Eagle {
 
     variable baseUri
     variable licenseUri
-    variable licenseUrn
+    variable licenseUrns
 
     package require Eagle.Test
 
@@ -564,7 +569,10 @@ namespace eval ::Eagle {
     set directory [appendArgs \
         $processDirectoryPrefix [string trim [clock seconds] -]]
 
-    set urn [subst $licenseUrn]; set uri [subst $licenseUri]
+    set urn [subst [lindex \
+        $licenseUrns [expr {int(rand() * [llength $licenseUrns])}]]]
+
+    set uri [subst $licenseUri]
 
     if {![isEagle] || [catch {
       object invoke System.Security.Principal.WindowsIdentity \
@@ -668,9 +676,11 @@ namespace eval ::Eagle {
 
     variable baseUri
     variable sandboxEvalUri
-    variable sandboxEvalUrn
+    variable sandboxEvalUrns
 
-    set urn [subst $sandboxEvalUrn]
+    set urn [subst [lindex \
+        $sandboxEvalUrns [expr {int(rand() * [llength $sandboxEvalUrns])}]]]
+
     set uri [subst $sandboxEvalUri]
 
     set query [list go 1 raw 1 script $script]

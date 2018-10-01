@@ -3798,6 +3798,12 @@ namespace eval ::Eagle {
 
       tputs $channel [appendArgs \
           "---- FactoryOps cleanup results: " $result \n]
+
+      catch {uplevel 1 [list object invoke -flags +NonPublic \
+          Eagle._Components.Private.ScriptOps ClearInterpreterCache]} result
+
+      tputs $channel [appendArgs \
+          "---- ScriptOps cleanup results: " $result \n]
     }
 
     proc evalWithTimeout { script {milliseconds 2000} {resultVarName ""} } {

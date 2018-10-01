@@ -42,13 +42,13 @@ namespace eval ::Eagle {
         DEBUG_WRITE DEMO_EDITION DRAWING DYNAMIC EAGLE EMBEDDED_LIBRARY \
         EMBED_CERTIFICATES EMIT ENTERPRISE_LOCKDOWN EXECUTE_CACHE \
         EXPRESSION_FLAGS FAST_ERRORCODE FAST_ERRORINFO FOR_TEST_USE_ONLY \
-        HAVE_SIZEOF HISTORY IA64 INTERACTIVE_COMMANDS INTERNALS_VISIBLE_TO \
-        ISOLATED_INTERPRETERS ISOLATED_PLUGINS LIBRARY LICENSING \
-        LICENSE_MANAGER LIMITED_EDITION LIST_CACHE MONO MONO_BUILD MONO_HACKS \
-        MONO_LEGACY NATIVE NATIVE_PACKAGE NATIVE_THREAD_ID NATIVE_UTILITY \
-        NATIVE_UTILITY_BSTR NETWORK NET_20 NET_20_FAST_ENUM NET_20_ONLY \
-        NET_20_SP1 NET_20_SP2 NET_30 NET_35 NET_40 NET_45 NET_451 NET_452 \
-        NET_46 NET_461 NET_462 NET_47 NET_471 NET_472 NET_CORE_20 \
+        FORCE_TRACE HAVE_SIZEOF HISTORY IA64 INTERACTIVE_COMMANDS \
+        INTERNALS_VISIBLE_TO ISOLATED_INTERPRETERS ISOLATED_PLUGINS LIBRARY \
+        LICENSING LICENSE_MANAGER LIMITED_EDITION LIST_CACHE MONO MONO_BUILD \
+        MONO_HACKS MONO_LEGACY NATIVE NATIVE_PACKAGE NATIVE_THREAD_ID \
+        NATIVE_UTILITY NATIVE_UTILITY_BSTR NETWORK NET_20 NET_20_FAST_ENUM \
+        NET_20_ONLY NET_20_SP1 NET_20_SP2 NET_30 NET_35 NET_40 NET_45 NET_451 \
+        NET_452 NET_46 NET_461 NET_462 NET_47 NET_471 NET_472 NET_CORE_20 \
         NET_STANDARD_20 NON_WORKING_CODE NOTIFY NOTIFY_ACTIVE \
         NOTIFY_ARGUMENTS NOTIFY_EXCEPTION NOTIFY_EXECUTE NOTIFY_EXPRESSION \
         NOTIFY_GLOBAL NOTIFY_OBJECT OBSOLETE OBFUSCATION OFFICIAL PARSE_CACHE \
@@ -82,7 +82,7 @@ namespace eval ::Eagle {
           [list 2 11] [list 3 0] [list 3 1] [list 3 2] [list 3 4] [list 3 6] \
           [list 3 8] [list 3 10] [list 3 12] [list 4 0] [list 4 2] [list 4 4] \
           [list 4 6] [list 4 8] [list 5 0] [list 5 2] [list 5 4] [list 5 8] \
-          [list 5 10] [list 5 12] [list 5 14]]
+          [list 5 10] [list 5 12] [list 5 14] [list 5 16]]
     } else {
       return [list]
     }
@@ -2613,7 +2613,7 @@ namespace eval ::Eagle {
     }
   }
 
-  proc checkForNetwork { channel host timeout } {
+  proc checkForNetwork { channel host timeout {successOnly false} } {
     tputs $channel [appendArgs \
         "---- checking for network connectivity to host \"" $host "\"... "]
 
@@ -2632,9 +2632,9 @@ namespace eval ::Eagle {
         #
         set expr {[llength [info commands uri]] > 0 && \
             [catch {uri ping $host $timeout} response] == 0 && \
-            [lindex $response 0] in [list Success TimedOut] && \
-            [string is integer -strict [lindex $response 1]] && \
-            [lindex $response 1] <= $timeout}
+            [lindex $response 0] in ($successOnly ? [list Success] : \
+            [list Success TimedOut]) && [string is integer -strict \
+            [lindex $response 1]] && [lindex $response 1] <= $timeout}
 
         #
         # NOTE: Does it look like we are able to contact the network host?

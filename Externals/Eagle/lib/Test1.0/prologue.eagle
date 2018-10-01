@@ -89,6 +89,14 @@ if {![info exists no([file tail [info script]])]} then {
   }
 
   #
+  # NOTE: Set the location of the home directory for the current
+  #       user.
+  #
+  if {![info exists test_home_path]} then {
+    set test_home_path [file normalize ~]
+  }
+
+  #
   # NOTE: Set the location of the test suite data, if necessary.
   #
   if {![info exists test_data_path]} then {
@@ -1064,6 +1072,9 @@ if {![info exists no([file tail [info script]])]} then {
 
   tputs $test_channel [appendArgs "---- core library path: \"" \
       $core_lib_path \"\n]
+
+  tputs $test_channel [appendArgs "---- test home path: \"" \
+      $test_home_path \"\n]
 
   tputs $test_channel [appendArgs "---- test suite files located in: \"" \
       $test_all_path \"\n]
@@ -2057,6 +2068,17 @@ if {![info exists no([file tail [info script]])]} then {
       }
 
       #
+      # NOTE: Has use interpreter callback testing support been disabled?
+      #
+      if {![info exists no(testUseInterpreter)]} then {
+        checkForObjectMember $test_channel Eagle._Tests.Default \
+            *TestSetUseInterpreterCallback*
+
+        checkForObjectMember $test_channel Eagle._Tests.Default \
+            *TestUseInterpreterCallback*
+      }
+
+      #
       # NOTE: Has custom match mode testing been disabled?
       #
       if {![info exists no(testMatchMode)]} then {
@@ -2617,6 +2639,18 @@ if {![info exists no([file tail [info script]])]} then {
       }
 
       #
+      # NOTE: Has script limiter testing support been disabled?
+      #
+      if {![info exists no(testLimiter)]} then {
+        #
+        # NOTE: For tests "interp-1.90?".
+        #
+        checkForObjectMember $test_channel \
+            Eagle._Tests.Default+ScriptLimiter *ToString* \
+            Eagle._Tests.Default.ScriptLimiter.ToString
+      }
+
+      #
       # NOTE: Has TraceListener testing support been disabled?
       #
       if {![info exists no(testTraceListener)]} then {
@@ -3155,6 +3189,14 @@ if {![info exists no([file tail [info script]])]} then {
     }
 
     #
+    # NOTE: For tests "fileIO-5.6.*".
+    #
+    if {![info exists no(HomeDocuments)]} then {
+      checkForFile $test_channel [file join \
+          $test_home_path Documents] HomeDocuments
+    }
+
+    #
     # NOTE: For test "garbage-1.1".
     #
     if {![info exists no(garbage.txt)]} then {
@@ -3491,6 +3533,7 @@ if {![info exists no([file tail [info script]])]} then {
     checkForOperatingSystemUpdate $test_channel "Creators Update"
     checkForOperatingSystemUpdate $test_channel "Fall Creators Update"
     checkForOperatingSystemUpdate $test_channel "April 2018 Update"
+    checkForOperatingSystemUpdate $test_channel "October 2018 Update"
   }
 
   if {![info exists no(scriptLibrary)]} then {

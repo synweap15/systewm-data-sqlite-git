@@ -216,7 +216,7 @@ namespace eval ::Eagle {
         eval exec -success Success [subst $unzipExtractCommand]
       } error]} then {
         error [appendArgs \
-            "could not extract archive \"" $fileName "\": " $error]
+            "could not extract archive " $fileName ": " $error]
       }
     } else {
       unzipMustBeInstalled
