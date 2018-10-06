@@ -383,7 +383,11 @@ SQLITE_API int sqlite3_rekey_v2(sqlite3 *db, const char *zDbName, const void *pK
   sqlite3_mutex_enter(db->mutex);
 
   /* Start a transaction */
+#if SQLITE_VERSION_NUMBER >= 3025000
+  rc = sqlite3BtreeBeginTrans(pbt, 1, 0);
+#else
   rc = sqlite3BtreeBeginTrans(pbt, 1);
+#endif
 
   if (!rc)
   {
