@@ -427,6 +427,7 @@ namespace System.Data.SQLite
         /// #define SQLITE_INDEX_CONSTRAINT_ISNOTNULL 70  /* 3.21.0 and later */
         /// #define SQLITE_INDEX_CONSTRAINT_ISNULL    71  /* 3.21.0 and later */
         /// #define SQLITE_INDEX_CONSTRAINT_IS        72  /* 3.21.0 and later */
+        /// #define SQLITE_INDEX_CONSTRAINT_FUNCTION 150  /* 3.25.0 and later */
         /// #define SQLITE_INDEX_SCAN_UNIQUE           1  /* Scan visits at most 1 row */
         /// </code></para>
         /// <para>
@@ -481,7 +482,7 @@ namespace System.Data.SQLite
         /// nConstraint entries in that array.
         /// </para>
         /// <para>
-        /// Each constraint will correspond to a term in the WHERE clause
+        /// Each constraint will usually correspond to a term in the WHERE clause
         /// or in a USING or ON clause that is of the form
         /// </para>
         /// <para><code>
@@ -516,7 +517,7 @@ namespace System.Data.SQLite
         /// y &lt; 999
         /// </code></para>
         /// <para>
-        /// For each constraint, the aConstraint[].iColumn field indicates which 
+        /// For such each constraint, the aConstraint[].iColumn field indicates which 
         /// column appears on the left-hand side of the constraint.
         /// The first column of the virtual table is column 0. 
         /// The rowid of the virtual table is column -1. 
@@ -526,6 +527,18 @@ namespace System.Data.SQLite
         /// Columns occur in the order they were defined by the call to
         /// sqlite3_declare_vtab() in the xCreate or xConnect method.
         /// Hidden columns are counted when determining the column index.
+        /// </para>
+        /// <para>
+        /// If the xFindFunction() method for the virtual table is defined, and 
+        /// if xFindFunction() sometimes returns SQLITE_INDEX_CONSTRAINT_FUNCTION or
+        /// larger, then the constraints might also be of the form:
+        /// </para>
+        /// <para><code>
+        ///      FUNCTION( column, EXPR)
+        /// </code></para>
+        /// <para>
+        /// In this case the aConstraint[].op value is the same as the value
+        /// returned by xFindFunction() for FUNCTION.
         /// </para>
         /// <para>
         /// The aConstraint[] array contains information about all constraints 
@@ -1310,8 +1323,39 @@ namespace System.Data.SQLite
         /// name of the function. If no overloading is desired, this method
         /// returns 0. To overload the function, this method writes the new 
         /// function implementation into *pxFunc and writes user data into *ppArg 
-        /// and returns 1.
+        /// and returns either 1 or a number between
+        /// SQLITE_INDEX_CONSTRAINT_FUNCTION and 255.
         /// </para>
+        /// <para>
+        /// Historically, the return value from xFindFunction() was either zero
+        /// or one.  Zero means that the function is not overloaded and one means that
+        /// it is overload.  The ability to return values of 
+        /// SQLITE_INDEX_CONSTRAINT_FUNCTION or greater was added in
+        /// version 3.25.0 (2018-09-15).  If xFindFunction returns
+        /// SQLITE_INDEX_CONSTRAINT_FUNCTION or greater, than means that the function
+        /// takes two arguments and the function
+        /// can be used as a boolean in the WHERE clause of a query and that
+        /// the virtual table is able to exploit that function to speed up the query
+        /// result.  When xFindFunction returns SQLITE_INDEX_CONSTRAINT_FUNCTION or 
+        /// larger, the value returned becomes the sqlite3_index_info.aConstraint.op
+        /// value for one of the constraints passed into xBestIndex() and the second
+        /// argument becomes the value corresponding to that constraint that is passed
+        /// to xFilter().  This enables the
+        /// xBestIndex()/xFilter implementations to use the function to speed
+        /// its search.
+        /// </para>
+        /// <para>
+        /// The technique of having xFindFunction() return values of
+        /// SQLITE_INDEX_CONSTRAINT_FUNCTION was initially used in the implementation
+        /// of the Geopoly module.  The xFindFunction() method of that module returns
+        /// SQLITE_INDEX_CONSTRAINT_FUNCTION for the geopoly_overlap() SQL function
+        /// and it returns
+        /// SQLITE_INDEX_CONSTRAINT_FUNCTION+1 for the geopoly_within() SQL function.
+        /// This permits search optimizations for queries such as:
+        /// </para>
+        /// <para><code>
+        /// SELECT * FROM geopolytab WHERE geopoly_overlap(_shape, $query_polygon);
+        /// </code></para>
         /// <para>
         /// Note that infix functions (LIKE, GLOB, REGEXP, and MATCH) reverse 
         /// the order of their arguments. So "like(A,B)" is equivalent to "B like A". 
@@ -1366,7 +1410,17 @@ namespace System.Data.SQLite
         /// If this method returns an error code then the renaming is prevented.
         /// </para>
         /// <para>
-        /// The xRename method is required for every virtual table implementation.
+        /// The xRename method is optional.  If omitted, then the virtual
+        /// table may not be renamed using the ALTER TABLE RENAME command.
+        /// </para>
+        /// <para>
+        /// The PRAGMA legacy_alter_table setting is enabled prior to invoking this
+        /// method, and the value for legacy_alter_table is restored after this
+        /// method finishes.  This is necessary for the correct operation of virtual
+        /// tables that make use of shadow tables where the shadow tables must be
+        /// renamed to match the new virtual table name.  If the legacy_alter_format is
+        /// off, then the xConnect method will be invoked for the virtual table every
+        /// time the xRename method tries to change the name of the shadow table.
         /// </para>
         /// </summary>
         /// <param name="pVtab">
