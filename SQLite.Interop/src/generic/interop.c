@@ -20,6 +20,10 @@
 #endif
 #endif
 
+#if defined(INTEROP_INCLUDE_SEE)
+#include "../ext/see-prefix.txt"
+#endif
+
 #include "../core/sqlite3.c"
 
 #if !SQLITE_OS_WIN
