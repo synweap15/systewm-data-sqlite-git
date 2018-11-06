@@ -224,7 +224,7 @@ document.getElementById("listtab32").innerHTML = h;
   relative to the infix <a href="lang_expr.html#glob">GLOB</a> operator.  Y is the string and X is the
   pattern.  So, for example, the following expressions are equivalent:
   <blockquote><pre>
-     name LIKE '*helium*'
+     name GLOB '*helium*'
      glob('*helium*',name)
   </pre></blockquote>
   <p>If the <a href="c3ref/create_function.html">sqlite3_create_function()</a> interface is used to
