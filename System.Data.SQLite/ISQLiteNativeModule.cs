@@ -469,7 +469,7 @@ namespace System.Data.SQLite
         /// Note that xBestIndex will always be called before xFilter, since
         /// the idxNum and idxStr outputs from xBestIndex are required inputs to
         /// xFilter.  However, there is no guarantee that xFilter will be called
-        /// following a successful xBestIndex.  
+        /// following a successful xBestIndex.
         /// </para>
         /// <para>
         /// The xBestIndex method is required for every virtual table implementation.
@@ -517,7 +517,7 @@ namespace System.Data.SQLite
         /// y &lt; 999
         /// </code></para>
         /// <para>
-        /// For such each constraint, the aConstraint[].iColumn field indicates which 
+        /// For each such constraint, the aConstraint[].iColumn field indicates which 
         /// column appears on the left-hand side of the constraint.
         /// The first column of the virtual table is column 0. 
         /// The rowid of the virtual table is column -1. 
@@ -589,6 +589,8 @@ namespace System.Data.SQLite
         /// If this is the case, then the needToFreeIdxStr flag must be set to 
         /// true so that the SQLite core will know to call sqlite3_free() on 
         /// that string when it has finished with it, and thus avoid a memory leak.
+        /// The idxStr value may also be a static constant string, in which case
+        /// the needToFreeIdxStr boolean should remain false.
         /// </para>
         /// <para>
         /// If the virtual table will output rows in the order specified by 
@@ -604,6 +606,10 @@ namespace System.Data.SQLite
         /// the virtual table. The SQLite core will often call xBestIndex 
         /// multiple times with different constraints, obtain multiple cost
         /// estimates, then choose the query plan that gives the lowest estimate.
+        /// The SQLite core initializes estimatedCost to a very large value
+        /// prior to invoking xBestIndex, so if xBestIndex determines that the
+        /// current combination of parameters is undesirable, it can leave the
+        /// estimatedCost field unchanged to discourage its use.
         /// </para>
         /// <para>
         /// If the current version of SQLite is 3.8.2 or greater, the estimatedRows
@@ -642,6 +648,59 @@ namespace System.Data.SQLite
         /// each row of the virtual table that it receives. If such a check 
         /// is redundant, the xBestFilter method can suppress that double-check by 
         /// setting aConstraintUsage[].omit.
+        /// </para>
+        /// <para>
+        /// The xBestIndex method should return SQLITE_OK on success.  If any
+        /// kind of fatal error occurs, an appropriate error code (ex: SQLITE_NOMEM)
+        /// should be returned instead.
+        /// </para>
+        /// <para>
+        /// If xBestIndex returns SQLITE_CONSTRAINT, that does not indicate an
+        /// error.  Rather, SQLITE_CONSTRAINT indicates that the particular combination
+        /// of input parameters specified should not be used in the query plan.
+        /// The SQLITE_CONSTRAINT return is useful for table-valued functions that
+        /// have required parameters.  If the aConstraint[].usable field is false
+        /// for one of the required parameter, then the xBestIndex method should
+        /// return SQLITE_CONSTRAINT.
+        /// </para>
+        /// <para>
+        /// The following example will better illustrate the use of SQLITE_CONSTRAINT
+        /// as a return value from xBestIndex:
+        /// </para>
+        /// <para><code>
+        /// SELECT * FROM realtab, tablevaluedfunc(realtab.x);
+        /// </code></para>
+        /// <para>
+        /// Assuming that the first hidden column of "tablevaluedfunc" is "param1",
+        /// the query above is semantically equivalent to this:
+        /// </para>
+        /// <para><code>
+        /// SELECT * FROM realtab, tablevaluedfunc
+        ///  WHERE tablevaluedfunc.param1 = realtab.x;
+        /// </code></para>
+        /// <para>
+        /// The query planner must decide between many possible implementations
+        /// of this query, but two plans in particular are of note:
+        /// </para>
+        /// <![CDATA[<ol>]]>
+        /// <![CDATA[<li>]]>Scan all
+        /// rows of realtab and for each row, find rows in tablevaluedfunc where
+        /// param1 is equal to realtab.x
+        /// <![CDATA[</li>]]><![CDATA[<li>]]>Scan all rows of tablevalued func and for each row find rows
+        /// in realtab where x is equal to tablevaluedfunc.param1.
+        /// <![CDATA[</li>]]><![CDATA[</ol>]]>
+        /// <para>
+        /// The xBestIndex method will be invoked once for each of the potential
+        /// plans above.  For plan 1, the aConstraint[].usable flag for for the
+        /// SQLITE_CONSTRAINT_EQ constraint on the param1 column will be true because
+        /// the right-hand side value for the "param1 = ?" constraint will be known,
+        /// since it is determined by the outer realtab loop.
+        /// But for plan 2, the aConstraint[].usable flag for "param1 = ?" will be false
+        /// because the right-hand side value is determined by an inner loop and is thus
+        /// an unknown quantity.  Because param1 is a required input to the table-valued
+        /// functions, the xBestIndex method should return SQLITE_CONSTRAINT when presented 
+        /// with plan 2, indicating that a required input is missing.  This forces the
+        /// query planner to select plan 1.
         /// </para>
         /// </summary>
         /// <param name="pVtab">
