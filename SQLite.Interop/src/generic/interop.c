@@ -44,6 +44,9 @@
 
 #if defined(INTEROP_INCLUDE_ZIPVFS)
 #include "../ext/zipvfs.c"
+#if defined(SQLITE_ENABLE_ZIPVFS_VTAB)
+#include "../ext/zipvfs_vtab.c"
+#endif
 #include "../ext/algorithms.c"
 #endif
 
