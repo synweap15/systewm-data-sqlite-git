@@ -1228,6 +1228,12 @@ namespace System.Data.SQLite
           _fieldIndexes.Add(name, r);
       }
 
+      if (r == -1 && HelperMethods.HasFlags(
+            _flags, SQLiteConnectionFlags.StrictConformance))
+      {
+          throw new IndexOutOfRangeException();
+      }
+
       return r;
     }
 

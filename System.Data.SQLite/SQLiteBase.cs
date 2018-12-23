@@ -1323,6 +1323,13 @@ namespace System.Data.SQLite
       GetInvariantDouble = 0x400000000000,
 
       /// <summary>
+      /// <b>EXPERIMENTAL</b> --
+      /// Enable strict conformance to the ADO.NET standard, e.g. use of
+      /// thrown exceptions to indicate common error conditions.
+      /// </summary>
+      StrictConformance = 0x800000000000,
+
+      /// <summary>
       /// When binding parameter values or returning column values, always
       /// treat them as though they were plain text (i.e. no numeric,
       /// date/time, or other conversions should be attempted).
