@@ -4643,7 +4643,8 @@ namespace System.Data.SQLite
           _debugString = HelperMethods.StringFormat(
               CultureInfo.InvariantCulture,
               "openThreadId = {0}, connectionString = {1}",
-              HelperMethods.GetThreadId(), _connectionString);
+              HelperMethods.GetThreadId(),
+              eventArgConnectionString);
 #endif
         }
         catch
