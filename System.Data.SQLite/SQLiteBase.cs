@@ -1330,6 +1330,15 @@ namespace System.Data.SQLite
       StrictConformance = 0x800000000000,
 
       /// <summary>
+      /// <b>EXPERIMENTAL</b> --
+      /// When opening a connection, attempt to hide the password from the
+      /// connection string, etc.  Given the memory architecture of the CLR,
+      /// (and P/Invoke) this is not 100% reliable and should not be relied
+      /// upon for security critical uses or applications.
+      /// </summary>
+      HidePassword = 0x1000000000000,
+
+      /// <summary>
       /// When binding parameter values or returning column values, always
       /// treat them as though they were plain text (i.e. no numeric,
       /// date/time, or other conversions should be attempted).

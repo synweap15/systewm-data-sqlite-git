@@ -3547,6 +3547,14 @@ namespace eval ::Eagle {
       saveEnvironmentVariables [list \
           DefaultFlags_SQLiteConnection No_SQLiteConnectionNewParser] \
           savedEnv
+
+      upvar 1 savedConnectionFlags savedConnectionFlags
+
+      if {[info exists ::connection_flags]} then {
+        set savedConnectionFlags $::connection_flags
+      } else {
+        unset -nocomplain savedConnectionFlags
+      }
     }
 
     proc restoreSQLiteConnectionEnvironment {} {
@@ -3555,6 +3563,15 @@ namespace eval ::Eagle {
       restoreEnvironmentVariables [list \
           DefaultFlags_SQLiteConnection No_SQLiteConnectionNewParser] \
           savedEnv
+
+      upvar 1 savedConnectionFlags savedConnectionFlags
+
+      if {[info exists savedConnectionFlags]} then {
+        set ::connection_flags $savedConnectionFlags
+        unset -nocomplain savedConnectionFlags
+      } else {
+        unset -nocomplain ::connection_flags
+      }
     }
 
     proc saveSQLiteConvertEnvironment {} {

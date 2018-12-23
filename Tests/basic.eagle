@@ -3147,6 +3147,7 @@ runTest {test data-1.68 {unset env(DefaultFlags_SQLiteConnection)} -setup {
   saveSQLiteConnectionEnvironment
 
   unset -nocomplain env(DefaultFlags_SQLiteConnection)
+  unset -nocomplain ::connection_flags
 
   setupDb [set fileName data-1.68.db]
 } -body {
@@ -3171,6 +3172,7 @@ runTest {test data-1.69 {set env(DefaultFlags_SQLiteConnection)} -setup {
   saveSQLiteConnectionEnvironment
 
   set env(DefaultFlags_SQLiteConnection) "DetectTextAffinity, DetectStringType"
+  unset -nocomplain ::connection_flags
 
   setupDb [set fileName data-1.69.db]
 } -body {

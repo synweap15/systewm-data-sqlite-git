@@ -24,6 +24,52 @@ namespace System.Data.SQLite
   public abstract class SQLiteConvert
   {
     /// <summary>
+    /// This character is used to escape other characters, including itself, in
+    /// connection string property names and values.
+    /// </summary>
+    internal const char EscapeChar = '\\';
+
+    /// <summary>
+    /// This character can be used to wrap connection string property names and
+    /// values.  Normally, it is optional; however, when used, it must be the
+    /// first -AND- last character of that connection string property name -OR-
+    /// value.
+    /// </summary>
+    internal const char QuoteChar = '"';
+
+    /// <summary>
+    /// This character can be used to wrap connection string property names and
+    /// values.  Normally, it is optional; however, when used, it must be the
+    /// first -AND- last character of that connection string property name -OR-
+    /// value.
+    /// </summary>
+    internal const char AltQuoteChar = '\'';
+
+    /// <summary>
+    /// The character is used to separate the name and value for a connection
+    /// string property.  This character cannot be present in any connection
+    /// string property name.  This character can be present in a connection
+    /// string property value; however, this should be avoided unless deemed
+    /// absolutely necessary.
+    /// </summary>
+    internal const char ValueChar = '=';
+
+    /// <summary>
+    /// This character is used to separate connection string properties.  When
+    /// the "No_SQLiteConnectionNewParser" setting is enabled, this character
+    /// may not appear in connection string property names -OR- values.
+    /// </summary>
+    internal const char PairChar = ';';
+
+    /// <summary>
+    /// These are the characters that are special to the connection string
+    /// parser.
+    /// </summary>
+    internal static readonly char[] SpecialChars = {
+        QuoteChar, AltQuoteChar, PairChar, ValueChar, EscapeChar
+    };
+
+    /// <summary>
     /// The fallback default database type when one cannot be obtained from an
     /// existing connection instance.
     /// </summary>
@@ -869,8 +915,8 @@ namespace System.Data.SQLite
     /// <returns>A string array of the split up elements</returns>
     public static string[] Split(string source, char separator)
     {
-      char[] toks = new char[2] { '\"', separator };
-      char[] quot = new char[1] { '\"' };
+      char[] toks = new char[2] { QuoteChar, separator };
+      char[] quot = new char[1] { QuoteChar };
       int n = 0;
       List<string> ls = new List<string>();
       string s;
@@ -951,9 +997,6 @@ namespace System.Data.SQLite
         ref string error
         )
     {
-        const char EscapeChar = '\\';
-        const char QuoteChar = '\"';
-
         //
         // NOTE: It is illegal for the separator character to be either a
         //       backslash or a double-quote because both of those characters

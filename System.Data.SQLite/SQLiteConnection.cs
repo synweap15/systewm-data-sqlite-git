@@ -2647,6 +2647,129 @@ namespace System.Data.SQLite
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
 
+#if INTEROP_CODEC || INTEROP_INCLUDE_SEE
+    /// <summary>
+    /// Attempts to escape the specified connection string property name or
+    /// value in a way that is compatible with the connection string parser.
+    /// </summary>
+    /// <param name="value">
+    /// The connection string property name or value to escape.
+    /// </param>
+    /// <param name="allowEquals">
+    /// Non-zero if the equals sign is permitted in the string.  If this is
+    /// zero and the string contains an equals sign, an exception will be
+    /// thrown.
+    /// </param>
+    /// <returns>
+    /// The original string, with all special characters escaped.  If the
+    /// original string contains equals signs, they will not be escaped.
+    /// Instead, they will be preserved verbatim.
+    /// </returns>
+    private static string EscapeForConnectionString(
+        string value,
+        bool allowEquals
+        )
+    {
+        if (String.IsNullOrEmpty(value))
+            return value;
+
+        if (value.IndexOfAny(SQLiteConvert.SpecialChars) == -1)
+            return value;
+
+        int length = value.Length;
+        StringBuilder builder = new StringBuilder(length);
+
+        for (int index = 0; index < length; index++)
+        {
+            char character = value[index];
+
+            switch (character)
+            {
+                case SQLiteConvert.QuoteChar:
+                case SQLiteConvert.AltQuoteChar:
+                case SQLiteConvert.PairChar:
+                case SQLiteConvert.EscapeChar:
+                    {
+                        builder.Append(SQLiteConvert.EscapeChar);
+                        builder.Append(character);
+                        break;
+                    }
+                case SQLiteConvert.ValueChar:
+                    {
+                        if (allowEquals)
+                        {
+                            //
+                            // HACK: The connection string parser allows
+                            //       connection string property values
+                            //       to contain equals signs; however,
+                            //       they cannot be escaped.
+                            //
+                            // builder.Append(SQLiteConvert.EscapeChar);
+                            builder.Append(character);
+                        }
+                        else
+                        {
+                            throw new ArgumentException(
+                                "equals sign character is not allowed here");
+                        }
+                        break;
+                    }
+                default:
+                    {
+                        builder.Append(character);
+                        break;
+                    }
+            }
+        }
+
+        return builder.ToString();
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+
+    /// <summary>
+    /// Builds a connection string from a list of key/value pairs.
+    /// </summary>
+    /// <param name="opts">
+    /// The list of key/value pairs corresponding to the parameters to be
+    /// specified within the connection string.
+    /// </param>
+    /// <returns>
+    /// The connection string.  Depending on how the connection string was
+    /// originally parsed, the returned connection string value may not be
+    /// usable in a subsequent call to the <see cref="Open" /> method.
+    /// </returns>
+    private static string BuildConnectionString(
+        SortedList<string, string> opts
+        )
+    {
+        if (opts == null) return null;
+        StringBuilder builder = new StringBuilder();
+
+        foreach (KeyValuePair<string, string> pair in opts)
+        {
+#if NET_COMPACT_20
+            builder.Append(HelperMethods.StringFormat(
+                CultureInfo.InvariantCulture, "{0}{1}{2}{3}",
+                EscapeForConnectionString(pair.Key, false),
+                SQLiteConvert.ValueChar,
+                EscapeForConnectionString(pair.Value, true),
+                SQLiteConvert.PairChar));
+#else
+            builder.AppendFormat("{0}{1}{2}{3}",
+                EscapeForConnectionString(pair.Key, false),
+                SQLiteConvert.ValueChar,
+                EscapeForConnectionString(pair.Value, true),
+                SQLiteConvert.PairChar);
+#endif
+        }
+
+        return builder.ToString();
+    }
+#endif
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+
     private void SetupSQLiteBase(SortedList<string, string> opts)
     {
         object enumValue;
@@ -3360,9 +3483,9 @@ namespace System.Data.SQLite
       string[] arParts;
 
       if (ShouldUseLegacyConnectionStringParser(connection))
-          arParts = SQLiteConvert.Split(s, ';');
+          arParts = SQLiteConvert.Split(s, SQLiteConvert.PairChar);
       else
-          arParts = SQLiteConvert.NewSplit(s, ';', true, ref error);
+          arParts = SQLiteConvert.NewSplit(s, SQLiteConvert.PairChar, true, ref error);
 
       if (arParts == null)
       {
@@ -3384,7 +3507,7 @@ namespace System.Data.SQLite
         if (arParts[n].Length == 0)
           continue;
 
-        int indexOf = arParts[n].IndexOf('=');
+        int indexOf = arParts[n].IndexOf(SQLiteConvert.ValueChar);
 
         if (indexOf != -1)
           ls.Add(UnwrapString(arParts[n].Substring(0, indexOf).Trim()), UnwrapString(arParts[n].Substring(indexOf + 1).Trim()));
@@ -4083,13 +4206,7 @@ namespace System.Data.SQLite
       SortedList<string, string> opts = ParseConnectionString(
           this, _connectionString, _parseViaFramework, false);
 
-      OnChanged(this, new ConnectionEventArgs(
-          SQLiteConnectionEventType.ConnectionString, null, null, null, null,
-          null, _connectionString, new object[] { opts }));
-
-      object enumValue;
-
-      enumValue = TryParseEnum(typeof(SQLiteConnectionFlags), FindKey(opts, "Flags", null), true);
+      object enumValue = TryParseEnum(typeof(SQLiteConnectionFlags), FindKey(opts, "Flags", null), true);
 
       //
       // BUGFIX: Always preserve the pre-existing instance flags.  This is OK
@@ -4112,6 +4229,47 @@ namespace System.Data.SQLite
 
       bool noSharedFlags = SQLiteConvert.ToBoolean(FindKey(opts, "NoSharedFlags", DefaultNoSharedFlags.ToString()));
       if (!noSharedFlags) { lock (_syncRoot) { _flags |= _sharedFlags; } }
+
+#if INTEROP_CODEC || INTEROP_INCLUDE_SEE
+      bool hidePassword = HelperMethods.HasFlags(_flags, SQLiteConnectionFlags.HidePassword);
+#endif
+
+      SortedList<string, string> eventArgOpts = opts;
+      string eventArgConnectionString = _connectionString;
+
+#if INTEROP_CODEC || INTEROP_INCLUDE_SEE
+      if (hidePassword)
+      {
+          eventArgOpts = new SortedList<string, string>(
+              StringComparer.OrdinalIgnoreCase);
+
+          foreach (KeyValuePair<string, string> pair in opts)
+          {
+              if (String.Equals(
+                    pair.Key, "Password",
+                    StringComparison.OrdinalIgnoreCase))
+              {
+                  continue;
+              }
+
+              if (String.Equals(
+                    pair.Key, "HexPassword",
+                    StringComparison.OrdinalIgnoreCase))
+              {
+                  continue;
+              }
+
+              eventArgOpts.Add(pair.Key, pair.Value);
+          }
+
+          eventArgConnectionString = BuildConnectionString(
+              eventArgOpts);
+      }
+#endif
+
+      OnChanged(this, new ConnectionEventArgs(
+          SQLiteConnectionEventType.ConnectionString, null, null, null, null,
+          null, eventArgConnectionString, new object[] { eventArgOpts }));
 
       enumValue = TryParseEnum(typeof(DbType), FindKey(opts, "DefaultDbType", null), true);
       _defaultDbType = (enumValue is DbType) ? (DbType)enumValue : (DbType?)null;
@@ -4298,11 +4456,31 @@ namespace System.Data.SQLite
             string password = FindKey(opts, "Password", DefaultPassword);
 
             if (password != null)
-                _sql.SetPassword(UTF8Encoding.UTF8.GetBytes(password));
+            {
+                byte[] passwordBytes = UTF8Encoding.UTF8.GetBytes(
+                    password); /* throw */
+
+                _sql.SetPassword(passwordBytes);
+            }
             else if (_password != null)
+            {
                 _sql.SetPassword(_password);
+            }
         }
-        _password = null;
+
+        hexPassword = null; /* IMMUTABLE */
+        _password = null; /* IMMUTABLE */
+
+        if (hidePassword)
+        {
+            if (opts.ContainsKey("HexPassword"))
+                opts["HexPassword"] = String.Empty;
+
+            if (opts.ContainsKey("Password"))
+                opts["Password"] = String.Empty;
+
+            _connectionString = BuildConnectionString(opts);
+        }
 #else
         if (FindKey(opts, "HexPassword", DefaultHexPassword) != null)
         {
@@ -4459,7 +4637,7 @@ namespace System.Data.SQLite
 
           OnChanged(this, new ConnectionEventArgs(
               SQLiteConnectionEventType.Opened, eventArgs, null, null, null,
-              null, _connectionString, new object[] { opts }));
+              null, eventArgConnectionString, new object[] { eventArgOpts }));
 
 #if DEBUG
           _debugString = HelperMethods.StringFormat(
@@ -5258,9 +5436,19 @@ namespace System.Data.SQLite
     /// <param name="newPassword">The new password to assign to the database</param>
     public void ChangePassword(string newPassword)
     {
-      CheckDisposed();
+        CheckDisposed();
 
-      ChangePassword(String.IsNullOrEmpty(newPassword) ? null : UTF8Encoding.UTF8.GetBytes(newPassword));
+        if (!String.IsNullOrEmpty(newPassword))
+        {
+            byte[] newPasswordBytes = UTF8Encoding.UTF8.GetBytes(
+                newPassword); /* throw */
+
+            ChangePassword(newPasswordBytes);
+        }
+        else
+        {
+            ChangePassword((byte[])null);
+        }
     }
 
     /// <summary>
@@ -5288,9 +5476,19 @@ namespace System.Data.SQLite
     /// <param name="databasePassword">The password for the database</param>
     public void SetPassword(string databasePassword)
     {
-      CheckDisposed();
+        CheckDisposed();
 
-      SetPassword(String.IsNullOrEmpty(databasePassword) ? null : UTF8Encoding.UTF8.GetBytes(databasePassword));
+        if (!String.IsNullOrEmpty(databasePassword))
+        {
+            byte[] databasePasswordBytes = UTF8Encoding.UTF8.GetBytes(
+                databasePassword); /* throw */
+
+            SetPassword(databasePasswordBytes);
+        }
+        else
+        {
+            SetPassword((byte[])null);
+        }
     }
 
     /// <summary>
@@ -5307,6 +5505,13 @@ namespace System.Data.SQLite
 
       if (databasePassword != null)
         if (databasePassword.Length == 0) databasePassword = null;
+
+      if ((databasePassword != null) &&
+          HelperMethods.HasFlags(_flags, SQLiteConnectionFlags.HidePassword))
+      {
+          throw new InvalidOperationException(
+              "With 'HidePassword' enabled, passwords can only be set via the connection string.");
+      }
 
       _password = databasePassword;
     }
@@ -5416,11 +5621,22 @@ namespace System.Data.SQLite
 
         int length = value.Length;
 
-        if (((value[0] == '\'') && (value[length - 1] == '\'')) ||
-            ((value[0] == '"') && (value[length - 1] == '"')))
+        if ((value[0] == SQLiteConvert.QuoteChar) &&
+            (value[length - 1] == SQLiteConvert.QuoteChar))
         {
             //
-            // NOTE: Remove the first and last character.
+            // NOTE: Remove the first and last character, which are
+            //       both double quotes.
+            //
+            return value.Substring(1, length - 2);
+        }
+
+        if ((value[0] == SQLiteConvert.AltQuoteChar) &&
+            (value[length - 1] == SQLiteConvert.AltQuoteChar))
+        {
+            //
+            // NOTE: Remove the first and last character, which are
+            //       both single quotes.
             //
             return value.Substring(1, length - 2);
         }

@@ -49,6 +49,7 @@
 </p>
 <ul>
     <li>Updated to [https://www.sqlite.org/releaselog/3_26_0.html|SQLite 3.26.0].</li>
+    <li>Add HidePassword connection flag to remove the password from the connection string once the database is opened. Pursuant to [23d8d6171e].</li>
     <li>Add experimental StrictConformance connection flag to force strict compliance to the ADO.NET standard. Pursuant to [e36e05e299].</li>
 </ul>
 <p>

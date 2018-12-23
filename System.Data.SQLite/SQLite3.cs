@@ -3198,9 +3198,26 @@ namespace System.Data.SQLite
     }
 
 #if INTEROP_CODEC || INTEROP_INCLUDE_SEE
+    private static void ZeroPassword(byte[] passwordBytes)
+    {
+        if (passwordBytes == null) return;
+
+        for (int index = 0; index < passwordBytes.Length; index++)
+        {
+            byte value = (byte)((index + 1) % byte.MaxValue);
+
+            passwordBytes[index] = value;
+            passwordBytes[index] ^= value;
+        }
+    }
+
     internal override void SetPassword(byte[] passwordBytes)
     {
       SQLiteErrorCode n = UnsafeNativeMethods.sqlite3_key(_sql, passwordBytes, passwordBytes.Length);
+
+      if (HelperMethods.HasFlags(_flags, SQLiteConnectionFlags.HidePassword))
+        ZeroPassword(passwordBytes);
+
       if (n != SQLiteErrorCode.Ok) throw new SQLiteException(n, GetLastError());
 
       if (_usePool)
@@ -3219,6 +3236,10 @@ namespace System.Data.SQLite
     internal override void ChangePassword(byte[] newPasswordBytes)
     {
       SQLiteErrorCode n = UnsafeNativeMethods.sqlite3_rekey(_sql, newPasswordBytes, (newPasswordBytes == null) ? 0 : newPasswordBytes.Length);
+
+      if (HelperMethods.HasFlags(_flags, SQLiteConnectionFlags.HidePassword))
+        ZeroPassword(newPasswordBytes);
+
       if (n != SQLiteErrorCode.Ok) throw new SQLiteException(n, GetLastError());
 
       if (_usePool)
