@@ -3287,6 +3287,29 @@ namespace System.Data.SQLite
 
     /// <summary>
     /// Attempts to create a new <see cref="ISQLiteChangeSet" /> object instance
+    /// using this connection and the specified raw data.
+    /// </summary>
+    /// <param name="rawData">
+    /// The raw data that contains a change set (or patch set).
+    /// </param>
+    /// <param name="flags">
+    /// The flags used to create the change set iterator.
+    /// </param>
+    /// <returns>
+    /// The newly created change set -OR- null if it cannot be created.
+    /// </returns>
+    public ISQLiteChangeSet CreateChangeSet(
+        byte[] rawData,
+        SQLiteChangeSetStartFlags flags
+        )
+    {
+        CheckDisposed();
+
+        return new SQLiteMemoryChangeSet(rawData, GetNativeHandle(this), _flags, flags);
+    }
+
+    /// <summary>
+    /// Attempts to create a new <see cref="ISQLiteChangeSet" /> object instance
     /// using this connection and the specified stream.
     /// </summary>
     /// <param name="inputStream">
@@ -3309,6 +3332,36 @@ namespace System.Data.SQLite
 
         return new SQLiteStreamChangeSet(
             inputStream, outputStream, GetNativeHandle(this), _flags);
+    }
+
+    /// <summary>
+    /// Attempts to create a new <see cref="ISQLiteChangeSet" /> object instance
+    /// using this connection and the specified stream.
+    /// </summary>
+    /// <param name="inputStream">
+    /// The stream where the raw data that contains a change set (or patch set)
+    /// may be read.
+    /// </param>
+    /// <param name="outputStream">
+    /// The stream where the raw data that contains a change set (or patch set)
+    /// may be written.
+    /// </param>
+    /// <param name="flags">
+    /// The flags used to create the change set iterator.
+    /// </param>
+    /// <returns>
+    /// The newly created change set -OR- null if it cannot be created.
+    /// </returns>
+    public ISQLiteChangeSet CreateChangeSet(
+        Stream inputStream,
+        Stream outputStream,
+        SQLiteChangeSetStartFlags flags
+        )
+    {
+        CheckDisposed();
+
+        return new SQLiteStreamChangeSet(
+            inputStream, outputStream, GetNativeHandle(this), _flags, flags);
     }
 
     /// <summary>

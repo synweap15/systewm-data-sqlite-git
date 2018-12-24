@@ -4597,6 +4597,13 @@ namespace System.Data.SQLite
 #else
     [DllImport(SQLITE_DLL)]
 #endif
+    internal static extern SQLiteErrorCode sqlite3changeset_start_v2(ref IntPtr iterator, int nChangeSet, IntPtr pChangeSet, SQLiteChangeSetStartFlags flags);
+
+#if !PLATFORM_COMPACTFRAMEWORK
+    [DllImport(SQLITE_DLL, CallingConvention = CallingConvention.Cdecl)]
+#else
+    [DllImport(SQLITE_DLL)]
+#endif
     internal static extern SQLiteErrorCode sqlite3changeset_next(IntPtr iterator);
 
 #if !PLATFORM_COMPACTFRAMEWORK
@@ -4724,6 +4731,13 @@ namespace System.Data.SQLite
     [DllImport(SQLITE_DLL)]
 #endif
     internal static extern SQLiteErrorCode sqlite3changeset_start_strm(ref IntPtr iterator, xSessionInput xInput, IntPtr pIn);
+
+#if !PLATFORM_COMPACTFRAMEWORK
+    [DllImport(SQLITE_DLL, CallingConvention = CallingConvention.Cdecl)]
+#else
+    [DllImport(SQLITE_DLL)]
+#endif
+    internal static extern SQLiteErrorCode sqlite3changeset_start_v2_strm(ref IntPtr iterator, xSessionInput xInput, IntPtr pIn, SQLiteChangeSetStartFlags flags);
 
 #if !PLATFORM_COMPACTFRAMEWORK
     [DllImport(SQLITE_DLL, CallingConvention = CallingConvention.Cdecl)]

@@ -129,6 +129,29 @@ namespace System.Data.SQLite
         /// </summary>
         Abort = 2
     }
+
+    ///////////////////////////////////////////////////////////////////////////
+
+    /// <summary>
+    /// This enumerated type represents possible flags that may be passed
+    /// to the appropriate overloads of various change set creation methods.
+    /// </summary>
+    public enum SQLiteChangeSetStartFlags
+    {
+        /// <summary>
+        /// No special handling.
+        /// </summary>
+        None = 0x0,
+
+        /// <summary>
+        /// Invert the change set while iterating through it.
+        /// This is equivalent to inverting a change set using
+        /// <see cref="ISQLiteChangeSet.Invert" /> before
+        /// applying it. It is an error to specify this flag
+        /// with a patch set.
+        /// </summary>
+        Invert = 0x2
+    }
     #endregion
 
     ///////////////////////////////////////////////////////////////////////////
@@ -1341,6 +1364,74 @@ namespace System.Data.SQLite
 
             return result;
         }
+
+        ///////////////////////////////////////////////////////////////////////
+
+        /// <summary>
+        /// Attempts to create an instance of this class using the specified
+        /// raw byte data.
+        /// </summary>
+        /// <param name="rawData">
+        /// The raw byte data containing the set of changes for this native
+        /// iterator.
+        /// </param>
+        /// <param name="flags">
+        /// The flags used to create the change set iterator.
+        /// </param>
+        /// <returns>
+        /// The new instance of this class -OR- null if it cannot be created.
+        /// </returns>
+        public static SQLiteMemoryChangeSetIterator Create(
+            byte[] rawData,
+            SQLiteChangeSetStartFlags flags
+            )
+        {
+            SQLiteSessionHelpers.CheckRawData(rawData);
+
+            SQLiteMemoryChangeSetIterator result = null;
+            IntPtr pData = IntPtr.Zero;
+            IntPtr iterator = IntPtr.Zero;
+
+            try
+            {
+                int nData = 0;
+
+                pData = SQLiteBytes.ToIntPtr(rawData, ref nData);
+
+                if (pData == IntPtr.Zero)
+                    throw new SQLiteException(SQLiteErrorCode.NoMem, null);
+
+                SQLiteErrorCode rc = UnsafeNativeMethods.sqlite3changeset_start_v2(
+                    ref iterator, nData, pData, flags);
+
+                if (rc != SQLiteErrorCode.Ok)
+                    throw new SQLiteException(rc, "sqlite3changeset_start_v2");
+
+                result = new SQLiteMemoryChangeSetIterator(
+                    pData, iterator, true);
+            }
+            finally
+            {
+                if (result == null)
+                {
+                    if (iterator != IntPtr.Zero)
+                    {
+                        UnsafeNativeMethods.sqlite3changeset_finalize(
+                            iterator);
+
+                        iterator = IntPtr.Zero;
+                    }
+
+                    if (pData != IntPtr.Zero)
+                    {
+                        SQLiteMemory.Free(pData);
+                        pData = IntPtr.Zero;
+                    }
+                }
+            }
+
+            return result;
+        }
         #endregion
 
         ///////////////////////////////////////////////////////////////////////
@@ -1475,7 +1566,7 @@ namespace System.Data.SQLite
         /// The <see cref="Stream" /> where the raw byte data for the set of
         /// changes may be read.
         /// </param>
-        /// <param name="flags">
+        /// <param name="connectionFlags">
         /// The flags associated with the parent connection.
         /// </param>
         /// <returns>
@@ -1483,7 +1574,7 @@ namespace System.Data.SQLite
         /// </returns>
         public static SQLiteStreamChangeSetIterator Create(
             Stream stream,
-            SQLiteConnectionFlags flags
+            SQLiteConnectionFlags connectionFlags
             )
         {
             if (stream == null)
@@ -1495,7 +1586,7 @@ namespace System.Data.SQLite
 
             try
             {
-                streamAdapter = new SQLiteStreamAdapter(stream, flags);
+                streamAdapter = new SQLiteStreamAdapter(stream, connectionFlags);
 
                 SQLiteErrorCode rc = UnsafeNativeMethods.sqlite3changeset_start_strm(
                     ref iterator, streamAdapter.GetInputDelegate(), IntPtr.Zero);
@@ -1504,6 +1595,78 @@ namespace System.Data.SQLite
                 {
                     throw new SQLiteException(
                         rc, "sqlite3changeset_start_strm");
+                }
+
+                result = new SQLiteStreamChangeSetIterator(
+                    streamAdapter, iterator, true);
+            }
+            finally
+            {
+                if (result == null)
+                {
+                    if (iterator != IntPtr.Zero)
+                    {
+                        UnsafeNativeMethods.sqlite3changeset_finalize(
+                            iterator);
+
+                        iterator = IntPtr.Zero;
+                    }
+
+                    if (streamAdapter != null)
+                    {
+                        streamAdapter.Dispose();
+                        streamAdapter = null;
+                    }
+                }
+            }
+
+            return result;
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+
+        /// <summary>
+        /// Attempts to create an instance of this class using the specified
+        /// <see cref="Stream" />.
+        /// </summary>
+        /// <param name="stream">
+        /// The <see cref="Stream" /> where the raw byte data for the set of
+        /// changes may be read.
+        /// </param>
+        /// <param name="connectionFlags">
+        /// The flags associated with the parent connection.
+        /// </param>
+        /// <param name="startFlags">
+        /// The flags used to create the change set iterator.
+        /// </param>
+        /// <returns>
+        /// The new instance of this class -OR- null if it cannot be created.
+        /// </returns>
+        public static SQLiteStreamChangeSetIterator Create(
+            Stream stream,
+            SQLiteConnectionFlags connectionFlags,
+            SQLiteChangeSetStartFlags startFlags
+            )
+        {
+            if (stream == null)
+                throw new ArgumentNullException("stream");
+
+            SQLiteStreamAdapter streamAdapter = null;
+            SQLiteStreamChangeSetIterator result = null;
+            IntPtr iterator = IntPtr.Zero;
+
+            try
+            {
+                streamAdapter = new SQLiteStreamAdapter(stream, connectionFlags);
+
+                SQLiteErrorCode rc = UnsafeNativeMethods.sqlite3changeset_start_v2_strm(
+                    ref iterator, streamAdapter.GetInputDelegate(), IntPtr.Zero,
+                    startFlags);
+
+                if (rc != SQLiteErrorCode.Ok)
+                {
+                    throw new SQLiteException(
+                        rc, "sqlite3changeset_start_v2_strm");
                 }
 
                 result = new SQLiteStreamChangeSetIterator(
@@ -3534,6 +3697,11 @@ namespace System.Data.SQLite
         /// amount of data contained within it.
         /// </summary>
         private byte[] rawData;
+
+        /// <summary>
+        /// The flags used to create the change set iterator.
+        /// </summary>
+        private SQLiteChangeSetStartFlags startFlags;
         #endregion
 
         ///////////////////////////////////////////////////////////////////////
@@ -3550,18 +3718,51 @@ namespace System.Data.SQLite
         /// The wrapped native connection handle to be associated with this
         /// set of changes.
         /// </param>
-        /// <param name="flags">
+        /// <param name="connectionFlags">
         /// The flags associated with the connection represented by the
         /// <paramref name="handle" /> value.
         /// </param>
         internal SQLiteMemoryChangeSet(
             byte[] rawData,
             SQLiteConnectionHandle handle,
-            SQLiteConnectionFlags flags
+            SQLiteConnectionFlags connectionFlags
             )
-            : base(handle, flags)
+            : base(handle, connectionFlags)
         {
             this.rawData = rawData;
+            this.startFlags = SQLiteChangeSetStartFlags.None;
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+
+        /// <summary>
+        /// Constructs an instance of this class using the specified raw byte
+        /// data and wrapped native connection handle.
+        /// </summary>
+        /// <param name="rawData">
+        /// The raw byte data for the specified change set (or patch set).
+        /// </param>
+        /// <param name="handle">
+        /// The wrapped native connection handle to be associated with this
+        /// set of changes.
+        /// </param>
+        /// <param name="connectionFlags">
+        /// The flags associated with the connection represented by the
+        /// <paramref name="handle" /> value.
+        /// </param>
+        /// <param name="startFlags">
+        /// The flags used to create the change set iterator.
+        /// </param>
+        internal SQLiteMemoryChangeSet(
+            byte[] rawData,
+            SQLiteConnectionHandle handle,
+            SQLiteConnectionFlags connectionFlags,
+            SQLiteChangeSetStartFlags startFlags
+            )
+            : base(handle, connectionFlags)
+        {
+            this.rawData = rawData;
+            this.startFlags = startFlags;
         }
         #endregion
 
@@ -3814,7 +4015,15 @@ namespace System.Data.SQLite
         /// </returns>
         public IEnumerator<ISQLiteChangeSetMetadataItem> GetEnumerator()
         {
-            return new SQLiteMemoryChangeSetEnumerator(rawData);
+            if (startFlags != SQLiteChangeSetStartFlags.None)
+            {
+                return new SQLiteMemoryChangeSetEnumerator(
+                    rawData, startFlags);
+            }
+            else
+            {
+                return new SQLiteMemoryChangeSetEnumerator(rawData);
+            }
         }
         #endregion
 
@@ -3938,6 +4147,11 @@ namespace System.Data.SQLite
         /// <see cref="CombineWith" /> methods.
         /// </summary>
         private Stream outputStream;
+
+        /// <summary>
+        /// The flags used to create the change set iterator.
+        /// </summary>
+        private SQLiteChangeSetStartFlags startFlags;
         #endregion
 
         ///////////////////////////////////////////////////////////////////////
@@ -3959,7 +4173,7 @@ namespace System.Data.SQLite
         /// The wrapped native connection handle to be associated with this
         /// set of changes.
         /// </param>
-        /// <param name="flags">
+        /// <param name="connectionFlags">
         /// The flags associated with the connection represented by the
         /// <paramref name="handle" /> value.
         /// </param>
@@ -3967,12 +4181,51 @@ namespace System.Data.SQLite
             Stream inputStream,
             Stream outputStream,
             SQLiteConnectionHandle handle,
-            SQLiteConnectionFlags flags
+            SQLiteConnectionFlags connectionFlags
             )
-            : base(handle, flags)
+            : base(handle, connectionFlags)
         {
             this.inputStream = inputStream;
             this.outputStream = outputStream;
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+
+        /// <summary>
+        /// Constructs an instance of this class using the specified streams
+        /// and wrapped native connection handle.
+        /// </summary>
+        /// <param name="inputStream">
+        /// The <see cref="Stream" /> where the raw byte data for the set of
+        /// changes may be read.
+        /// </param>
+        /// <param name="outputStream">
+        /// The <see cref="Stream" /> where the raw byte data for resulting
+        /// sets of changes may be written.
+        /// </param>
+        /// <param name="handle">
+        /// The wrapped native connection handle to be associated with this
+        /// set of changes.
+        /// </param>
+        /// <param name="connectionFlags">
+        /// The flags associated with the connection represented by the
+        /// <paramref name="handle" /> value.
+        /// </param>
+        /// <param name="startFlags">
+        /// The flags used to create the change set iterator.
+        /// </param>
+        internal SQLiteStreamChangeSet(
+            Stream inputStream,
+            Stream outputStream,
+            SQLiteConnectionHandle handle,
+            SQLiteConnectionFlags connectionFlags,
+            SQLiteChangeSetStartFlags startFlags
+            )
+            : base(handle, connectionFlags)
+        {
+            this.inputStream = inputStream;
+            this.outputStream = outputStream;
+            this.startFlags = startFlags;
         }
         #endregion
 
@@ -4185,8 +4438,16 @@ namespace System.Data.SQLite
         /// </returns>
         public IEnumerator<ISQLiteChangeSetMetadataItem> GetEnumerator()
         {
-            return new SQLiteStreamChangeSetEnumerator(
-                inputStream, GetFlags());
+            if (startFlags != SQLiteChangeSetStartFlags.None)
+            {
+                return new SQLiteStreamChangeSetEnumerator(
+                    inputStream, GetFlags(), startFlags);
+            }
+            else
+            {
+                return new SQLiteStreamChangeSetEnumerator(
+                    inputStream, GetFlags());
+            }
         }
         #endregion
 
@@ -4561,6 +4822,11 @@ namespace System.Data.SQLite
         /// amount of data contained within it.
         /// </summary>
         private byte[] rawData;
+
+        /// <summary>
+        /// The flags used to create the change set iterator.
+        /// </summary>
+        private SQLiteChangeSetStartFlags flags;
         #endregion
 
         ///////////////////////////////////////////////////////////////////////
@@ -4580,6 +4846,30 @@ namespace System.Data.SQLite
             : base(SQLiteMemoryChangeSetIterator.Create(rawData))
         {
             this.rawData = rawData;
+            this.flags = SQLiteChangeSetStartFlags.None;
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+
+        /// <summary>
+        /// Constructs an instance of this class using the specified raw byte
+        /// data.
+        /// </summary>
+        /// <param name="rawData">
+        /// The raw byte data containing the set of changes for this
+        /// enumerator.
+        /// </param>
+        /// <param name="flags">
+        /// The flags used to create the change set iterator.
+        /// </param>
+        public SQLiteMemoryChangeSetEnumerator(
+            byte[] rawData,
+            SQLiteChangeSetStartFlags flags
+            )
+            : base(SQLiteMemoryChangeSetIterator.Create(rawData, flags))
+        {
+            this.rawData = rawData;
+            this.flags = flags;
         }
         #endregion
 
@@ -4593,7 +4883,14 @@ namespace System.Data.SQLite
         {
             CheckDisposed();
 
-            ResetIterator(SQLiteMemoryChangeSetIterator.Create(rawData));
+            SQLiteMemoryChangeSetIterator result;
+
+            if (flags != SQLiteChangeSetStartFlags.None)
+                result = SQLiteMemoryChangeSetIterator.Create(rawData, flags);
+            else
+                result = SQLiteMemoryChangeSetIterator.Create(rawData);
+
+            ResetIterator(result);
         }
         #endregion
 
@@ -4679,14 +4976,41 @@ namespace System.Data.SQLite
         /// The <see cref="Stream" /> where the raw byte data for the set of
         /// changes may be read.
         /// </param>
-        /// <param name="flags">
+        /// <param name="connectionFlags">
         /// The flags associated with the parent connection.
         /// </param>
         public SQLiteStreamChangeSetEnumerator(
             Stream stream,
-            SQLiteConnectionFlags flags
+            SQLiteConnectionFlags connectionFlags
             )
-            : base(SQLiteStreamChangeSetIterator.Create(stream, flags))
+            : base(SQLiteStreamChangeSetIterator.Create(
+                stream, connectionFlags))
+        {
+            // do nothing.
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+
+        /// <summary>
+        /// Constructs an instance of this class using the specified stream.
+        /// </summary>
+        /// <param name="stream">
+        /// The <see cref="Stream" /> where the raw byte data for the set of
+        /// changes may be read.
+        /// </param>
+        /// <param name="connectionFlags">
+        /// The flags associated with the parent connection.
+        /// </param>
+        /// <param name="startFlags">
+        /// The flags used to create the change set iterator.
+        /// </param>
+        public SQLiteStreamChangeSetEnumerator(
+            Stream stream,
+            SQLiteConnectionFlags connectionFlags,
+            SQLiteChangeSetStartFlags startFlags
+            )
+            : base(SQLiteStreamChangeSetIterator.Create(
+                stream, connectionFlags, startFlags))
         {
             // do nothing.
         }

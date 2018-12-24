@@ -108,9 +108,9 @@ proc forDisplay { object member } {
 
 ###############################################################################
 
-proc createMemoryChangeSetForConnection { connection rawData } {
+proc createMemoryChangeSetForConnection { connection rawData flags } {
   if {[isObjectHandle $connection] && $connection ne "null"} then {
-    return [$connection -alias CreateChangeSet $rawData]
+    return [$connection -alias CreateChangeSet $rawData $flags]
   }
 
   return null
@@ -156,7 +156,7 @@ proc writeRawDataToFile { fileName rawData } {
 ###############################################################################
 
 proc openStreamChangeSetForConnection {
-        connection inputFileName outputFileName {varName ""} } {
+        connection inputFileName outputFileName flags {varName ""} } {
   if {[isObjectHandle $connection] && $connection ne "null"} then {
     if {[string length $varName] > 0} then {
       upvar 1 $varName state
@@ -177,7 +177,8 @@ proc openStreamChangeSetForConnection {
     }
 
     set state(changeSet) [$connection -alias \
-        CreateChangeSet $state(inputStream) $state(outputStream)]
+        CreateChangeSet $state(inputStream) $state(outputStream) \
+        $flags]
 
     return true
   }
@@ -223,12 +224,12 @@ proc writeStreamChangeSetForObject { object fileName {patch false} } {
 
 ###############################################################################
 
-proc changeSetFileToString { connection fileName includeValues } {
+proc changeSetFileToString { connection fileName flags includeValues } {
   set result [list]
 
   if {[isObjectHandle $connection] && $connection ne "null"} then {
     if {[openStreamChangeSetForConnection \
-        $connection $fileName "" state]} then {
+        $connection $fileName "" $flags state]} then {
       return [changeSetToString $state(changeSet) $includeValues]
     }
   }
@@ -291,7 +292,7 @@ proc changeSetToString { changeSet includeValues } {
 
 ###############################################################################
 
-proc matchSession { connection session expr } {
+proc matchSession { connection session flags expr } {
   if {[isObjectHandle $session] && $session ne "null"} then {
     if {![$session IsEmpty]} then {
       set rawData [createMemoryChangeSetForObject $session]
@@ -299,7 +300,7 @@ proc matchSession { connection session expr } {
 
       if {[isObjectHandle $rawData] && $rawData ne "null"} then {
         return [matchChangeSet [set changeSet \
-            [$connection -alias CreateChangeSet $rawData]] $expr]
+            [$connection -alias CreateChangeSet $rawData $flags]] $expr]
       }
     }
   }
@@ -511,7 +512,7 @@ runTest {test session-1.1 {basic extension usage} -setup {
 
   writeRawDataToFile $fileName(1) $rawData
   writeStreamChangeSetForObject $session $fileName(2)
-  openStreamChangeSetForConnection $connection $fileName(2) "" state
+  openStreamChangeSetForConnection $connection $fileName(2) "" None state
 
   list [expr {[file size $fileName(1)] > 0}] \
       [string equal [readFile $fileName(1)] [readFile $fileName(2)]] \
@@ -568,7 +569,7 @@ runTest {test session-1.2.1 {change set read/write/invert (memory)} -setup {
   object removeref $rawData
 
   set changeSet(1) \
-      [createMemoryChangeSetForConnection $connection $rawData]
+      [createMemoryChangeSetForConnection $connection $rawData None]
 
   object removeref $changeSet(1)
 
@@ -630,10 +631,10 @@ runTest {test session-1.2.2 {change set read/write/invert (stream)} -setup {
   writeStreamChangeSetForObject $session $fileName(1)
 
   openStreamChangeSetForConnection \
-      $connection $fileName(1) $fileName(2) state
+      $connection $fileName(1) $fileName(2) None state
 
   $state(changeSet) -alias Invert; unset state
-  list [changeSetFileToString $connection $fileName(2) true]
+  list [changeSetFileToString $connection $fileName(2) None true]
 } -cleanup {
   cleanupSomeText
 
@@ -644,6 +645,120 @@ runTest {test session-1.2.2 {change set read/write/invert (stream)} -setup {
   unset -nocomplain connection
 
   cleanupFile $fileName(2)
+  cleanupFile $fileName(1)
+
+  cleanupDb $fileName(0)
+
+  unset -nocomplain db fileName
+} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
+System.Data.SQLite SQLiteInterop\
+defineConstant.System.Data.SQLite.INTEROP_SESSION_EXTENSION} -result \
+{{{TableName t1 NumberOfColumns 2 OperationCode Insert Indirect False\
+PrimaryKeyColumns {[True, False]} OldValue 0 <nullObject> NewValue 0 1\
+ConflictValue 0 <nullObject> OldValue 1 <nullObject> NewValue 1 {"inserted:\
+Alpha Bravo Charlie Delta Echo"} ConflictValue 1 <nullObject>} {TableName t1\
+NumberOfColumns 2 OperationCode Update Indirect False PrimaryKeyColumns {[True,\
+False]} OldValue 0 2 NewValue 0 <nullObject> ConflictValue 0 <nullObject>\
+OldValue 1 {"updated: Uniform Victor Whiskey X-ray Yankee"} NewValue 1\
+{"inserted: Foxtrot Golf Hotel India Juliet"} ConflictValue 1 <nullObject>}\
+{TableName t1 NumberOfColumns 2 OperationCode Update Indirect False\
+PrimaryKeyColumns {[True, False]} OldValue 0 3 NewValue 0 <nullObject>\
+ConflictValue 0 <nullObject> OldValue 1 {"updated: Uniform Victor Whiskey X-ray\
+Yankee"} NewValue 1 {"inserted: Kilo Lima Mike November Oscar"} ConflictValue 1\
+<nullObject>} {TableName t1 NumberOfColumns 2 OperationCode Delete Indirect\
+False PrimaryKeyColumns {[True, False]} OldValue 0 4 NewValue 0 <nullObject>\
+ConflictValue 0 <nullObject> OldValue 1 {"inserted: Papa Quebec Romeo Sierra\
+Tango"} NewValue 1 <nullObject> ConflictValue 1 <nullObject>}}}}
+
+###############################################################################
+
+runTest {test session-1.2.3 {change set read/write/invert (memory)} -setup {
+  setupDb [set fileName session-1.2.3.db]
+
+  cleanupSomeText
+} -body {
+  createTheSchema $db main
+  makeSomeChanges $db t1 [list insert insert insert]
+
+  set connection [getDbConnection]
+
+  set session [$connection -alias CreateSession main]
+  $session AttachTable null
+
+  makeSomeChanges $db t1 [list insert update delete]
+
+  set rawData [createMemoryChangeSetForObject $session]
+  object removeref $rawData
+
+  set changeSet(1) \
+      [createMemoryChangeSetForConnection $connection $rawData Invert]
+
+  object removeref $changeSet(1)
+
+  list [changeSetToString $changeSet(1) true]
+} -cleanup {
+  cleanupSomeText
+
+  unset -nocomplain changeSet rawData byteArray session
+
+  freeDbConnection
+
+  unset -nocomplain connection
+
+  cleanupDb $fileName
+
+  unset -nocomplain db fileName
+} -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
+System.Data.SQLite SQLiteInterop\
+defineConstant.System.Data.SQLite.INTEROP_SESSION_EXTENSION} -result \
+{{{TableName t1 NumberOfColumns 2 OperationCode Insert Indirect False\
+PrimaryKeyColumns {[True, False]} OldValue 0 <nullObject> NewValue 0 1\
+ConflictValue 0 <nullObject> OldValue 1 <nullObject> NewValue 1 {"inserted:\
+Alpha Bravo Charlie Delta Echo"} ConflictValue 1 <nullObject>} {TableName t1\
+NumberOfColumns 2 OperationCode Update Indirect False PrimaryKeyColumns {[True,\
+False]} OldValue 0 2 NewValue 0 <nullObject> ConflictValue 0 <nullObject>\
+OldValue 1 {"updated: Uniform Victor Whiskey X-ray Yankee"} NewValue 1\
+{"inserted: Foxtrot Golf Hotel India Juliet"} ConflictValue 1 <nullObject>}\
+{TableName t1 NumberOfColumns 2 OperationCode Update Indirect False\
+PrimaryKeyColumns {[True, False]} OldValue 0 3 NewValue 0 <nullObject>\
+ConflictValue 0 <nullObject> OldValue 1 {"updated: Uniform Victor Whiskey X-ray\
+Yankee"} NewValue 1 {"inserted: Kilo Lima Mike November Oscar"} ConflictValue 1\
+<nullObject>} {TableName t1 NumberOfColumns 2 OperationCode Delete Indirect\
+False PrimaryKeyColumns {[True, False]} OldValue 0 4 NewValue 0 <nullObject>\
+ConflictValue 0 <nullObject> OldValue 1 {"inserted: Papa Quebec Romeo Sierra\
+Tango"} NewValue 1 <nullObject> ConflictValue 1 <nullObject>}}}}
+
+###############################################################################
+
+runTest {test session-1.2.4 {change set read/write/invert (stream)} -setup {
+  setupDb [set fileName(0) session-1.2.4.db]
+
+  set fileName(1) [getChangeSetFileName 1]
+
+  cleanupSomeText
+} -body {
+  createTheSchema $db main
+  makeSomeChanges $db t1 [list insert insert insert]
+
+  set connection [getDbConnection]
+
+  set session [$connection -alias CreateSession main]
+  $session AttachTable null
+
+  makeSomeChanges $db t1 [list insert update delete]
+
+  writeStreamChangeSetForObject $session $fileName(1)
+
+  list [changeSetFileToString $connection $fileName(1) Invert true]
+} -cleanup {
+  cleanupSomeText
+
+  unset -nocomplain state byteArray session
+
+  freeDbConnection
+
+  unset -nocomplain connection
+
   cleanupFile $fileName(1)
 
   cleanupDb $fileName(0)
@@ -708,7 +823,7 @@ runTest {test session-1.3 {enabled/disabled state} -setup {
   object removeref $rawData
 
   set changeSet(1) \
-      [createMemoryChangeSetForConnection $connection $rawData]
+      [createMemoryChangeSetForConnection $connection $rawData None]
 
   object removeref $changeSet(1)
 
@@ -769,7 +884,7 @@ runTest {test session-1.4 {direct/indirect state} -setup {
   object removeref $rawData
 
   set changeSet(1) \
-      [createMemoryChangeSetForConnection $connection $rawData]
+      [createMemoryChangeSetForConnection $connection $rawData None]
 
   object removeref $changeSet(1)
 
@@ -814,14 +929,14 @@ runTest {test session-1.5 {table filter} -setup {
   makeSomeChanges $db t2 [list insert]
   lappend result IsEmpty [$session IsEmpty]
 
-  lappend result MatchT2 [matchSession $connection $session {
+  lappend result MatchT2 [matchSession $connection $session None {
     [$item TableName] eq "t2"
   }]
 
   makeSomeChanges $db t1 [list insert]
   lappend result IsEmpty [$session IsEmpty]
 
-  lappend result MatchT1 [matchSession $connection $session {
+  lappend result MatchT1 [matchSession $connection $session None {
     [$item TableName] eq "t1"
   }]
 
@@ -830,14 +945,14 @@ runTest {test session-1.5 {table filter} -setup {
   makeSomeChanges $db t2 [list insert]
   lappend result IsEmpty [$session IsEmpty]
 
-  lappend result MatchT2 [matchSession $connection $session {
+  lappend result MatchT2 [matchSession $connection $session None {
     [$item TableName] eq "t2"
   }]
 
   makeSomeChanges $db t1 [list insert]
   lappend result IsEmpty [$session IsEmpty]
 
-  lappend result MatchT1 [matchSession $connection $session {
+  lappend result MatchT1 [matchSession $connection $session None {
     [$item TableName] eq "t1"
   }]
 
@@ -891,12 +1006,12 @@ runTest {test session-1.6.1 {combine/apply change sets (memory)} -setup {
   }]; object removeref $rawData(2)
 
   set changeSet(1) \
-      [createMemoryChangeSetForConnection $connection $rawData(1)]
+      [createMemoryChangeSetForConnection $connection $rawData(1) None]
 
   object removeref $changeSet(1)
 
   set changeSet(2) \
-      [createMemoryChangeSetForConnection $connection $rawData(2)]
+      [createMemoryChangeSetForConnection $connection $rawData(2) None]
 
   object removeref $changeSet(2)
 
@@ -969,21 +1084,21 @@ runTest {test session-1.6.2 {combine/apply change sets (stream)} -setup {
   } $fileName(2)
 
   openStreamChangeSetForConnection \
-      $connection $fileName(1) $fileName(3) state1
+      $connection $fileName(1) $fileName(3) None state1
 
   openStreamChangeSetForConnection \
-      $connection $fileName(2) "" state2
+      $connection $fileName(2) "" None state2
 
   $state1(changeSet) CombineWith $state2(changeSet); unset state2 state1
 
   openStreamChangeSetForConnection \
-      $connection $fileName(3) "" state3
+      $connection $fileName(3) "" None state3
 
   $state3(changeSet) -marshalflags +DynamicCallback \
       Apply conflictCallback null; unset state3
 
   openStreamChangeSetForConnection \
-      $connection $fileName(3) "" state4
+      $connection $fileName(3) "" None state4
 
   list [changeSetToString $state4(changeSet) true] Data \
       [sql execute -execute reader -format list $db \
@@ -1048,12 +1163,12 @@ runTest {test session-1.7.1 {combine/apply patch sets (memory)} -setup {
   } true]; object removeref $rawData(2)
 
   set changeSet(1) \
-      [createMemoryChangeSetForConnection $connection $rawData(1)]
+      [createMemoryChangeSetForConnection $connection $rawData(1) None]
 
   object removeref $changeSet(1)
 
   set changeSet(2) \
-      [createMemoryChangeSetForConnection $connection $rawData(2)]
+      [createMemoryChangeSetForConnection $connection $rawData(2) None]
 
   object removeref $changeSet(2)
 
@@ -1125,21 +1240,21 @@ runTest {test session-1.7.2 {combine/apply patch sets (stream)} -setup {
   } $fileName(2) true
 
   openStreamChangeSetForConnection \
-      $connection $fileName(1) $fileName(3) state1
+      $connection $fileName(1) $fileName(3) None state1
 
   openStreamChangeSetForConnection \
-      $connection $fileName(2) "" state2
+      $connection $fileName(2) "" None state2
 
   $state1(changeSet) CombineWith $state2(changeSet); unset state1
 
   openStreamChangeSetForConnection \
-      $connection $fileName(3) "" state3
+      $connection $fileName(3) "" None state3
 
   $state3(changeSet) -marshalflags +DynamicCallback \
       Apply conflictCallback null; unset state3
 
   openStreamChangeSetForConnection \
-      $connection $fileName(3) "" state4
+      $connection $fileName(3) "" None state4
 
   list [changeSetToString $state4(changeSet) true] Data \
       [sql execute -execute reader -format list $db \
@@ -1305,7 +1420,7 @@ runTest {test session-1.10.1 {change group (memory)} -setup {
   object removeref $rawData(3)
 
   set changeSet \
-      [createMemoryChangeSetForConnection $connection $rawData(3)]
+      [createMemoryChangeSetForConnection $connection $rawData(3) None]
 
   object removeref $changeSet
 
@@ -1365,7 +1480,7 @@ runTest {test session-1.10.2 {change group (stream)} -setup {
   writeStreamChangeSetForObject $changeGroup $fileName(3)
 
   openStreamChangeSetForConnection \
-      $connection $fileName(3) "" state
+      $connection $fileName(3) "" None state
 
   changeSetToString $state(changeSet) true
 } -cleanup {
