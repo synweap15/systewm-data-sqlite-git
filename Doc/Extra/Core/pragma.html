@@ -666,7 +666,7 @@ for use in application programs.</ol></p>
     <p><b>PRAGMA database_list;</b></p>
     <p>This pragma works like a query to return one row for each database
     attached to the current database connection.
-    The second column is the "main" for the main database file, "temp"
+    The second column is "main" for the main database file, "temp"
     for the database file used to store TEMP objects, or the name of the
     ATTACHed database for other database files.
     The third column is the name of the database file itself, or an empty
@@ -1102,7 +1102,7 @@ for use in application programs.</ol></p>
     the <a href="lang_altertable.html#altertabrename">ALTER TABLE RENAME</a> command only rewrites the initial occurrence
     of the table name in its <a href="lang_createtable.html">CREATE TABLE</a> statement and in any associated
     <a href="lang_createindex.html">CREATE INDEX</a> and <a href="lang_createtrigger.html">CREATE TRIGGER</a> statements.  Other references to the
-    table are unmodifed, including:
+    table are unmodified, including:
     <ul>
     <li> References to the table within the bodies of triggers and views.
     <li> References to the table within CHECK constraints in the original
