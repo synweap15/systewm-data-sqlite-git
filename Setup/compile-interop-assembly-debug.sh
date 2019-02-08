@@ -5,7 +5,9 @@ extradefs="$@"
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
   libname=libSQLite.Interop.dylib
-  gccflags="-arch i386 -arch x86_64"
+  # NOTE: No longer works in 10.14+
+  # gccflags="-arch i386 -arch x86_64"
+  gccflags="-arch x86_64"
 else
   libname=libSQLite.Interop.so
   gccflags=""
