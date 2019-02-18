@@ -445,8 +445,8 @@ namespace eval ::Eagle {
 
     #
     # HACK: When the Eagle core test suite infrastructure is beta 44 or
-    #       lower, upgrade the [getKnownMonoVersions] procedure to add
-    #       more known versions of the Mono runtime.  Eventually, this
+    #       lower, override the [getKnownMonoVersions] procedure to add
+    #       more "known" versions of the Mono runtime.  Eventually, this
     #       override should be removed (i.e. once the Eagle core library
     #       included in "Externals" is updated).
     #
