@@ -2283,7 +2283,7 @@
         &quot;System.Data.SQLite.EF6&quot; packages.</i></b></big>
         <br />
         <br />
-        (sha1: ff202a6a3f352fa0a818413d732d23a2032bcd46)
+        (sha1: 25cc6ba350916be15c88ef4ed36b605d368024b9)
       </td>
     </tr>
 
@@ -2292,7 +2292,7 @@
       <td width="30%" valign="top" align="right">
         <a href="/downloads/1.0.110.0/System.Data.SQLite.Core.1.0.110.0.nupkg">System.Data.SQLite.Core.1.0.110.0.nupkg</a>
         <br />
-        (12.51 MiB)
+        (11.91 MiB)
       </td>
       <td width="5"></td>
       <td valign="top">
@@ -2310,7 +2310,7 @@
         <br />
         <big><b>This package does not depend on any other package.</b></big>
         <br />
-        (sha1: a9ccdb58ddbc0e00b6b7430007597ffde6bd3235)
+        (sha1: 51aeb7a4b4578057936f97996c3093699111be7b)
       </td>
     </tr>
 
@@ -2337,7 +2337,7 @@
         native library search path.</i></b></big>
         <br />
         <br />
-        (sha1: afe793ee253ef68b16529f6853f5ac3ff6d12904)
+        (sha1: d4ce92c36f29bfac7ef72dacf85ae9ec74566b13)
       </td>
     </tr>
 
@@ -2358,7 +2358,7 @@
         <big><b>This package depends on the &quot;EntityFramework&quot;
         package, version 6.0 or higher.</b></big>
         <br />
-        (sha1: 6f44ddda2990e67c85e667b7f6738be47197717c)
+        (sha1: d76159f815329abd57eacd7f6997c2a1648649e4)
       </td>
     </tr>
 
@@ -2377,7 +2377,7 @@
         <br />
         <big><b>This package does not depend on any other package.</b></big>
         <br />
-        (sha1: abec1f0014ddd41fd9fa4affffa96478a2c13297)
+        (sha1: 65444e112e98a2f26f83087644082c54e23eb581)
       </td>
     </tr>
 
@@ -2413,7 +2413,7 @@
         &quot;System.Data.SQLite.EF6&quot; packages.</i></b></big>
         <br />
         <br />
-        (sha1: c404b94edde3fa5dbc4b1097df742a643a2e551c)
+        (sha1: ad803972c1252a3a419b46fc75471b2ef45b67f1)
       </td>
     </tr>
 
@@ -2437,7 +2437,7 @@
         &quot;System.Data.SQLite&quot; or &quot;System.Data.SQLite.Core&quot;
         package instead.</b></big>
         <br />
-        (sha1: 5bbdca1256a5a3b4faf4510baf7aefb878e3ac30)
+        (sha1: 478ce10e64488630db356170639ebeb02ddf2509)
       </td>
     </tr>
 
@@ -2461,7 +2461,7 @@
         &quot;System.Data.SQLite&quot; or &quot;System.Data.SQLite.Core&quot;
         package instead.</b></big>
         <br />
-        (sha1: 320f19980c0a0b0643397df4695575d3ffe3ab5e)
+        (sha1: ffda24ef14ebf8834d785158195a3ce0e193a68a)
       </td>
     </tr>
 
