@@ -92,7 +92,7 @@ if {![info exists outputDirectory] || \
 #       updated.
 #
 set pattern1 {<a\
-    href=".*?/([^"]*?\.(?:exe|zip|nupkg))">.*?\((\d+?\.\d+?) MiB\).*?sha1:\
+    href="[^"]*?/([^"]*?\.(?:exe|zip|nupkg))">.*?\((\d+?\.\d+?) MiB\).*?sha1:\
     ([0-9A-F]{40})}
 
 set pattern2 {<a\
