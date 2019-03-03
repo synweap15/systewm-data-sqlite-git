@@ -85,21 +85,21 @@ if {![info exists outputDirectory] || \
 #
 # NOTE: Setup the regular expression patterns with the necessary captures.
 #       These patterns are mostly non-greedy; however, at the end we need to
-#       match exactly 40 hexadecimal characters.  In theory, in Tcl, this could
+#       match exactly 40 hexadecimal characters.  In theory, in Tcl, this can
 #       have an undefined result due to the mixing of greedy and non-greedy
 #       quantifiers; however, in practice, this seems to work properly.  Also,
-#       this pattern assumes a particular structure for the [HTML] file to be
+#       these patterns assume a particular structure for the [HTML] file to be
 #       updated.
 #
 set pattern1 {<a\
-    href=".*?/(.*?\.(?:exe|zip|nupkg))">.*?\((\d+?\.\d+?) MiB\).*?sha1:\
+    href="[^"]*?/([^"]*?\.(?:exe|zip|nupkg))">.*?\((\d+?\.\d+?) MiB\).*?sha1:\
     ([0-9A-F]{40})}
 
 set pattern2 {<a\
-    href=".*?/package/.*?/\d+\.\d+\.\d+\.\d+">(.*?)</a>.*?\((\d+?\.\d+?)\
+    href="[^"]*?/package/[^"]*?/\d+\.\d+\.\d+\.\d+">(.*?)</a>.*?\((\d+?\.\d+?)\
     MiB\).*?sha1: ([0-9A-F]{40})}
 
-set pattern3 {href="/downloads/(.*?)"}
+set pattern3 {href="/downloads/([^"]*?)"}
 set pattern4 {\(sha1: ([0-9A-F]{40})\)}
 set pattern5 {\((\d+?\.\d+?) MiB\)}
 
