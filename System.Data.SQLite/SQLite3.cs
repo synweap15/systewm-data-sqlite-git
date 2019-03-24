@@ -3166,7 +3166,7 @@ namespace System.Data.SQLite
         }
     }
 
-    /// Enables or disabled extended result codes returned by SQLite
+    /// Enables or disables extended result codes returned by SQLite
     internal override void SetExtendedResultCodes(bool bOnOff)
     {
       SQLiteErrorCode n = UnsafeNativeMethods.sqlite3_extended_result_codes(

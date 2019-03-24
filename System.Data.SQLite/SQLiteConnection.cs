@@ -3967,7 +3967,7 @@ namespace System.Data.SQLite
     }
 
     /// <summary>
-    /// Enables or disabled extension loading.
+    /// Enables or disables extension loading.
     /// </summary>
     /// <param name="enable">
     /// True to enable loading of extensions, false to disable.
@@ -5431,14 +5431,14 @@ namespace System.Data.SQLite
         }
     }
 
-    /// Enables or disabled extended result codes returned by SQLite
+    /// Enables or disables extended result codes returned by SQLite
     public void SetExtendedResultCodes(bool bOnOff)
     {
       CheckDisposed();
 
       if (_sql != null) _sql.SetExtendedResultCodes(bOnOff);
     }
-    /// Enables or disabled extended result codes returned by SQLite
+    /// Enables or disables extended result codes returned by SQLite
     public SQLiteErrorCode ResultCode()
     {
       CheckDisposed();
@@ -5447,7 +5447,7 @@ namespace System.Data.SQLite
         throw new InvalidOperationException("Database connection not valid for getting result code.");
       return _sql.ResultCode();
     }
-    /// Enables or disabled extended result codes returned by SQLite
+    /// Enables or disables extended result codes returned by SQLite
     public SQLiteErrorCode ExtendedResultCode()
     {
       CheckDisposed();

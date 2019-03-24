@@ -425,7 +425,7 @@ namespace System.Data.SQLite
     /// </param>
     internal abstract void LoadExtension(string fileName, string procName);
     /// <summary>
-    /// Enables or disabled extened result codes returned by SQLite
+    /// Enables or disables extened result codes returned by SQLite
     /// </summary>
     /// <param name="bOnOff">true to enable extended result codes, false to disable.</param>
     /// <returns></returns>
