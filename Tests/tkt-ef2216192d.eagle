@@ -68,7 +68,7 @@ runTest {test tkt-ef2216192d-1.1 {GetSchemaTable w/large VARCHAR} -setup {
         }
       }
     }
-  }] true true true results errors System.Data.SQLite.dll]
+  }] true false true results errors System.Data.SQLite.dll]
 
   list $code $results \
       [expr {[info exists errors] ? $errors : ""}] \

@@ -106,7 +106,7 @@ runTest {test tkt-47c6fa04d3-1.1 {loading DataTable with JOIN} -setup {
         }
       }
     }
-  }] true true true results errors System.Data.SQLite.dll]
+  }] true false true results errors System.Data.SQLite.dll]
 
   list $code $results \
       [expr {[info exists errors] ? $errors : ""}] \

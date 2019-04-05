@@ -269,7 +269,7 @@ runTest {test tkt-72905c9a77-1.1 {StaticIsInitialized race condition} -setup {
         }
       }
     }
-  }] true true true results errors System.Data.SQLite.dll]
+  }] true false true results errors System.Data.SQLite.dll]
 
   list $code $results \
       [expr {[info exists errors] ? $errors : ""}] \

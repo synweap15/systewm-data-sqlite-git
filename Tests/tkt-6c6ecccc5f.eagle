@@ -60,7 +60,7 @@ runTest {test tkt-6c6ecccc5f-1.1 {CloseConnection with extensions} -setup {
         }
       }
     }
-  }] true true true results errors System.Data.SQLite.dll]
+  }] true false true results errors System.Data.SQLite.dll]
 
   list $code $results \
       [expr {[info exists errors] ? $errors : ""}] \

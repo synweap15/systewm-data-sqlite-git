@@ -1121,7 +1121,7 @@ runTest {test stress-1.1 {multithreaded stress testing} -setup {
                 }
               }
             }
-          }] true true true results errors System.Data.SQLite.dll]
+          }] true false true results errors System.Data.SQLite.dll]
           if {$code eq "Ok"} then {
             set ::compiled(12) $id; # NOTE: Compiled OK.
             if {[catch {
@@ -1204,7 +1204,7 @@ runTest {test stress-1.1 {multithreaded stress testing} -setup {
                 }
               }
             }
-          }] true true true results errors System.Data.SQLite.dll]
+          }] true false true results errors System.Data.SQLite.dll]
           if {$code eq "Ok"} then {
             set ::compiled(13) $id; # NOTE: Compiled OK.
             if {[catch {

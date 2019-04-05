@@ -65,7 +65,7 @@ runTest {test tkt-6434e23a0f-1.1 {SQLiteDataAdapter command disposal} -setup {
         }
       }
     }
-  }] true true true results errors System.Data.SQLite.dll]
+  }] true false true results errors System.Data.SQLite.dll]
 
   list $code $results \
       [expr {[info exists errors] ? $errors : ""}] \

@@ -177,7 +177,7 @@ runTest {test tkt-343d392b51-2.1 {SQLiteDataAdapter update fail} -setup {
         }
       }
     }
-  }] true true true results errors System.Data.SQLite.dll]
+  }] true false true results errors System.Data.SQLite.dll]
 
   list $code $results \
       [expr {[info exists errors] ? $errors : ""}] \
@@ -284,7 +284,7 @@ runTest {test tkt-343d392b51-2.2 {SQLiteDataAdapter update success} -setup {
         }
       }
     }
-  }] true true true results errors System.Data.SQLite.dll]
+  }] true false true results errors System.Data.SQLite.dll]
 
   list $code $results \
       [expr {[info exists errors] ? $errors : ""}] \
@@ -420,7 +420,7 @@ runTest {test tkt-343d392b51-3.2 {adapter, attached db, table names} -setup {
         }
       }
     }
-  }] true true true results errors System.Data.SQLite.dll]
+  }] true false true results errors System.Data.SQLite.dll]
 
   list $code $results \
       [expr {[info exists errors] ? $errors : ""}] \

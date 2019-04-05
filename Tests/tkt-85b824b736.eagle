@@ -119,7 +119,7 @@ runTest {test tkt-85b824b736-1.1 {SQLiteValue.GetString return value} -setup {
         }
       }
     }
-  }] true true true results errors [list System.Data.SQLite.dll Eagle.dll]]
+  }] true false true results errors [list System.Data.SQLite.dll Eagle.dll]]
 
   list $code $results \
       [expr {[info exists errors] ? $errors : ""}] \
@@ -238,7 +238,7 @@ runTest {test tkt-85b824b736-1.2 {SQLiteValue.GetBlob return value} -setup {
         }
       }
     }
-  }] true true true results errors [list System.Data.SQLite.dll Eagle.dll]]
+  }] true false true results errors [list System.Data.SQLite.dll Eagle.dll]]
 
   list $code $results \
       [expr {[info exists errors] ? $errors : ""}] \

@@ -135,7 +135,7 @@ runTest {test tkt-ae5267b863-1.1 {segfault during command GC} -setup {
         }
       }
     }
-  }] true true true results errors System.Data.SQLite.dll]
+  }] true false true results errors System.Data.SQLite.dll]
 
   list $code $results \
       [expr {[info exists errors] ? $errors : ""}] \

@@ -200,7 +200,7 @@ runTest {test tkt-5cee5409f8-1.1 {asynchronous transaction handling} -setup {
         #endregion
       }
     }
-  }] true true true results errors System.Data.SQLite.dll]
+  }] true false true results errors System.Data.SQLite.dll]
 
   list $code $results \
       [expr {[info exists errors] ? $errors : ""}] \

@@ -75,7 +75,7 @@ runTest {test tkt-2556655d1b-1.1 {duplicate functions} -setup {
         }
       }
     }
-  }] true true true results errors System.Data.SQLite.dll]
+  }] true false true results errors System.Data.SQLite.dll]
 
   #
   # NOTE: Compile the C# code (above) to register the custom SQLite function

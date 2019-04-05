@@ -265,7 +265,7 @@ runTest {test tkt-0e48e80333-1.2 {delegate MDA on pooled close} -setup {
           #endregion
         }
       }
-    }] true true true results errors System.Data.SQLite.dll]
+    }] true false true results errors System.Data.SQLite.dll]
 
     puts stdout [list $code $results \
         [expr {[info exists errors] ? $errors : ""}] \

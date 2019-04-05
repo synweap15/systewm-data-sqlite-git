@@ -108,7 +108,7 @@ runTest {test tkt-e1b2e0f769-1.1 {data reader cleanup} -setup {
           }
         }
       }
-    }] true true true results errors System.Data.SQLite.dll]
+    }] true false true results errors System.Data.SQLite.dll]
 
     lappend result1 $code $results \
         [expr {[info exists errors] ? $errors : ""}] \

@@ -266,7 +266,7 @@ for {set i 1} {$i < 11} {incr i} {
           }
         }
       }
-    }] true true true results errors System.Data.SQLite.dll]
+    }] true false true results errors System.Data.SQLite.dll]
 
     list $code $results \
         [expr {[info exists errors] ? $errors : ""}] \

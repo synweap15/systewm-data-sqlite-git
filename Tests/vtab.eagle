@@ -102,7 +102,7 @@ runTest {test vtab-1.1 {basic virtual table support} -setup {
         }
       }
     }
-  }] true true true results errors System.Data.SQLite.dll]
+  }] true false true results errors System.Data.SQLite.dll]
 
   list $code $results \
       [expr {[info exists errors] ? $errors : ""}] \
@@ -208,7 +208,7 @@ runTest {test vtab-1.2.1 {IEnumerable virtual table} -setup {
         }
       }
     }
-  }] true true true results errors [list System.Data.SQLite.dll Eagle.dll]]
+  }] true false true results errors [list System.Data.SQLite.dll Eagle.dll]]
 
   list $code $results \
       [expr {[info exists errors] ? $errors : ""}] \
@@ -319,7 +319,7 @@ runTest {test vtab-1.2.2 {IEnumerable virtual table} -setup {
         }
       }
     }
-  }] true true true results errors [list System.Data.SQLite.dll Eagle.dll]]
+  }] true false true results errors [list System.Data.SQLite.dll Eagle.dll]]
 
   list $code $results \
       [expr {[info exists errors] ? $errors : ""}] \
@@ -428,7 +428,7 @@ runTest {test vtab-1.3.1 {IEnumerable<T> virtual table} -setup {
         }
       }
     }
-  }] true true true results errors [list System.Data.SQLite.dll Eagle.dll]]
+  }] true false true results errors [list System.Data.SQLite.dll Eagle.dll]]
 
   list $code $results \
       [expr {[info exists errors] ? $errors : ""}] \
@@ -539,7 +539,7 @@ runTest {test vtab-1.3.2 {IEnumerable<T> virtual table} -setup {
         }
       }
     }
-  }] true true true results errors [list System.Data.SQLite.dll Eagle.dll]]
+  }] true false true results errors [list System.Data.SQLite.dll Eagle.dll]]
 
   list $code $results \
       [expr {[info exists errors] ? $errors : ""}] \
@@ -790,7 +790,7 @@ runTest {test vtab-1.4 {virtual table function support} -setup {
         }
       }
     }
-  }] true true true results errors [list System.Data.SQLite.dll Eagle.dll]]
+  }] true false true results errors [list System.Data.SQLite.dll Eagle.dll]]
 
   list $code $results \
       [expr {[info exists errors] ? $errors : ""}] \
@@ -1043,7 +1043,7 @@ runTest {test vtab-1.5 {virtual table function support} -setup {
         }
       }
     }
-  }] true true true results errors [list System.Data.SQLite.dll Eagle.dll]]
+  }] true false true results errors [list System.Data.SQLite.dll Eagle.dll]]
 
   list $code $results \
       [expr {[info exists errors] ? $errors : ""}] \
@@ -1222,7 +1222,7 @@ runTest {test vtab-1.6 {virtual table rename support} -setup {
         }
       }
     }
-  }] true true true results errors [list System.Data.SQLite.dll Eagle.dll]]
+  }] true false true results errors [list System.Data.SQLite.dll Eagle.dll]]
 
   list $code $results \
       [expr {[info exists errors] ? $errors : ""}] \
@@ -1365,7 +1365,7 @@ runTest {test vtab-1.7 {virtual table xBestIndex marshalling (1)} -setup {
         }
       }
     }
-  }] true true true results errors [list System.Data.SQLite.dll Eagle.dll]]
+  }] true false true results errors [list System.Data.SQLite.dll Eagle.dll]]
 
   list $code $results \
       [expr {[info exists errors] ? $errors : ""}] \
@@ -1510,7 +1510,7 @@ runTest {test vtab-1.8 {virtual table xBestIndex marshalling (2)} -setup {
         }
       }
     }
-  }] true true true results errors [list System.Data.SQLite.dll Eagle.dll]]
+  }] true false true results errors [list System.Data.SQLite.dll Eagle.dll]]
 
   list $code $results \
       [expr {[info exists errors] ? $errors : ""}] \
@@ -1589,7 +1589,7 @@ runTest {test vtab-1.9 {IEnumerable virtual table w/large byte array} -setup {
         }
       }
     }
-  }] true true true results errors System.Data.SQLite.dll]
+  }] true false true results errors System.Data.SQLite.dll]
 
   list $code $results \
       [expr {[info exists errors] ? $errors : ""}] \
@@ -1686,7 +1686,7 @@ runTest {test vtab-1.10 {virtual table xRowId uniqueness} -setup {
         }
       }
     }
-  }] true true true results errors [list System.Data.SQLite.dll Eagle.dll]]
+  }] true false true results errors [list System.Data.SQLite.dll Eagle.dll]]
 
   list $code $results \
       [expr {[info exists errors] ? $errors : ""}] \
@@ -1778,7 +1778,7 @@ runTest {test vtab-1.11 {IEnumerable virtual table w/object identity} -setup {
         }
       }
     }
-  }] true true true results errors [list System.Data.SQLite.dll Eagle.dll]]
+  }] true false true results errors [list System.Data.SQLite.dll Eagle.dll]]
 
   list $code $results \
       [expr {[info exists errors] ? $errors : ""}] \

@@ -200,7 +200,7 @@ for {set i 0} {$i < [llength $params(pages)]} {incr i} {
           }
         }
       }
-    }] true true true results errors [list System.Data.SQLite.dll Eagle.dll]]
+    }] true false true results errors [list System.Data.SQLite.dll Eagle.dll]]
 
     set callbackResults [list]
 

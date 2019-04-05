@@ -65,7 +65,7 @@ runTest {test tkt-3aa50d8413-1.1 {FillSchema with multiple result sets} -setup {
         }
       }
     }
-  }] true true true results errors System.Data.SQLite.dll]
+  }] true false true results errors System.Data.SQLite.dll]
 
   list $code $results \
       [expr {[info exists errors] ? $errors : ""}] \
