@@ -269,6 +269,8 @@ namespace System.Data.SQLite
 
                     if (rc != SQLiteErrorCode.Ok)
                     {
+                        _callback = null; /* UNDO */
+
                         throw new SQLiteException(rc,
                             "Failed to configure managed assembly logging.");
                     }
