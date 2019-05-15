@@ -123,6 +123,16 @@ namespace System.Data.SQLite
         ///////////////////////////////////////////////////////////////////////
 
         /// <summary>
+        /// The number of times that the <see cref="Initialize(string)" />
+        /// has been called when the logging subystem was actually eligible
+        /// to be initialized (i.e. without the "No_SQLiteLog" environment
+        /// variable being set).
+        /// </summary>
+        private static int _initializeCallCount;
+
+        ///////////////////////////////////////////////////////////////////////
+
+        /// <summary>
         /// This will be non-zero if an attempt was already made to initialize
         /// the (managed) logging subsystem.
         /// </summary>
@@ -158,6 +168,26 @@ namespace System.Data.SQLite
             string className
             )
         {
+            //
+            // NOTE: See if the logging subsystem has been totally disabled.
+            //       If so, do nothing.
+            //
+            if (UnsafeNativeMethods.GetSettingValue(
+                    "No_SQLiteLog", null) != null)
+            {
+                return;
+            }
+
+            ///////////////////////////////////////////////////////////////
+
+            //
+            // NOTE: Keep track of exactly how many times this method is
+            //       called (i.e. per-AppDomain, of course).
+            //
+            Interlocked.Increment(ref _initializeCallCount);
+
+            ///////////////////////////////////////////////////////////////
+
             //
             // NOTE: First, check if the managed logging subsystem is always
             //       supposed to at least attempt to initialize itself.  In

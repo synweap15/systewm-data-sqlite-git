@@ -191,6 +191,13 @@
           or in the associated XML configuration file.</td>
         </tr>
         <tr valign="top">
+          <td>No_SQLiteLog</td>
+          <td>If this environment variable is set [to anything], the SQLite
+          logging subsystem will not be initialized by the SQLiteLog class;
+          however, it may still be initialized by external components (i.e.
+          something other than System.Data.SQLite).</td>
+        </tr>
+        <tr valign="top">
           <td>No_SQLiteXmlConfigFile</td>
           <td>If this environment variable is set [to anything], calls to the
           GetSettingValue method will never result in the XML configuration
