@@ -209,7 +209,7 @@ namespace System.Data.SQLite
             ///////////////////////////////////////////////////////////////////
 
             //
-            // BUFXIX: We cannot initialize the logging interface if the SQLite
+            // BUFXIX: Cannot initialize the logging interface if the SQLite
             //         core library has already been initialized anywhere in
             //         the process (see ticket [2ce0870fad]).
             //

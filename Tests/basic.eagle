@@ -5140,27 +5140,47 @@ runTest {test data-1.97 {connection pool interaction with read-only} -setup {
 
 ###############################################################################
 
-runTest {test data-1.98 {create SQLiteConnection objects w/logging} -setup {
+runTest {test data-1.98 {SQLiteLog initialize (enabled)} -setup {
+  #
+  # NOTE: Make sure that SQLite core library is completely shutdown prior to
+  #       starting this test.
+  #
+  shutdownSQLite $test_channel
+
   proc threadStart {} {
     for {set i 0} {$i < 1000} {incr i} {
       set c($i) [object create System.Data.SQLite.SQLiteConnection]
-      incr ::count
+      incr ::count(0)
     }
   }
 
-  saveEnvironmentVariables [list No_SQLiteLog] savedEnv
+  saveEnvironmentVariables [list No_SQLiteLog Initialize_SQLiteLog] savedEnv
 
   unset -nocomplain env(No_SQLiteLog)
+  unset -nocomplain env(Initialize_SQLiteLog)
 } -body {
+  set count(1) [object invoke -flags +NonPublic \
+      System.Data.SQLite.SQLiteLog _initializeCallCount]
+
+  set count(2) [object invoke -flags +NonPublic \
+      System.Data.SQLite.SQLiteLog _attemptedInitialize]
+
+  tputs $test_channel [appendArgs \
+      "---- starting with call count " $count(1) " and attempt count " \
+      $count(2) \n]
+
   object invoke -flags +NonPublic \
       System.Data.SQLite.SQLiteLog _initializeCallCount 0
+
+  object invoke -flags +NonPublic \
+      System.Data.SQLite.SQLiteLog _attemptedInitialize 0
 
   for {set i 0} {$i < 20} {incr i} {
     set thread($i) [createThread threadStart false 1048576]
     $thread($i) Name [appendArgs "test data-1.98 #" $i]
   }
 
-  set count 0
+  set count(0) 0
 
   foreach i [array names thread] {
     startThread $thread($i)
@@ -5170,10 +5190,11 @@ runTest {test data-1.98 {create SQLiteConnection objects w/logging} -setup {
     $thread($i) Join
   }
 
-  list $count [object invoke -flags +NonPublic \
-      System.Data.SQLite.SQLiteLog _initializeCallCount]
+  list $count(0) [object invoke -flags +NonPublic \
+      System.Data.SQLite.SQLiteLog _initializeCallCount] [object invoke \
+      -flags +NonPublic System.Data.SQLite.SQLiteLog _attemptedInitialize]
 } -cleanup {
-  restoreEnvironmentVariables [list No_SQLiteLog] savedEnv
+  restoreEnvironmentVariables [list No_SQLiteLog Initialize_SQLiteLog] savedEnv
 
   if {[info exists thread]} then {
     foreach i [array names thread] {
@@ -5189,31 +5210,51 @@ runTest {test data-1.98 {create SQLiteConnection objects w/logging} -setup {
 
   rename threadStart ""
 } -constraints {eagle command.object SQLite System.Data.SQLite} -result \
-{20000 20000}}
+{20000 20000 1}}
 
 ###############################################################################
 
-runTest {test data-1.99 {create SQLiteConnection objects w/o logging} -setup {
+runTest {test data-1.99 {SQLiteLog initialize (disabled)} -setup {
+  #
+  # NOTE: Make sure that SQLite core library is completely shutdown prior to
+  #       starting this test.
+  #
+  shutdownSQLite $test_channel
+
   proc threadStart {} {
     for {set i 0} {$i < 1000} {incr i} {
       set c($i) [object create System.Data.SQLite.SQLiteConnection]
-      incr ::count
+      incr ::count(0)
     }
   }
 
-  saveEnvironmentVariables [list No_SQLiteLog] savedEnv
+  saveEnvironmentVariables [list No_SQLiteLog Initialize_SQLiteLog] savedEnv
 
   set env(No_SQLiteLog) 1
+  unset -nocomplain env(Initialize_SQLiteLog)
 } -body {
+  set count(1) [object invoke -flags +NonPublic \
+      System.Data.SQLite.SQLiteLog _initializeCallCount]
+
+  set count(2) [object invoke -flags +NonPublic \
+      System.Data.SQLite.SQLiteLog _attemptedInitialize]
+
+  tputs $test_channel [appendArgs \
+      "---- starting with call count " $count(1) " and attempt count " \
+      $count(2) \n]
+
   object invoke -flags +NonPublic \
       System.Data.SQLite.SQLiteLog _initializeCallCount 0
+
+  object invoke -flags +NonPublic \
+      System.Data.SQLite.SQLiteLog _attemptedInitialize 0
 
   for {set i 0} {$i < 20} {incr i} {
     set thread($i) [createThread threadStart false 1048576]
     $thread($i) Name [appendArgs "test data-1.99 #" $i]
   }
 
-  set count 0
+  set count(0) 0
 
   foreach i [array names thread] {
     startThread $thread($i)
@@ -5223,10 +5264,11 @@ runTest {test data-1.99 {create SQLiteConnection objects w/o logging} -setup {
     $thread($i) Join
   }
 
-  list $count [object invoke -flags +NonPublic \
-      System.Data.SQLite.SQLiteLog _initializeCallCount]
+  list $count(0) [object invoke -flags +NonPublic \
+      System.Data.SQLite.SQLiteLog _initializeCallCount] [object invoke \
+      -flags +NonPublic System.Data.SQLite.SQLiteLog _attemptedInitialize]
 } -cleanup {
-  restoreEnvironmentVariables [list No_SQLiteLog] savedEnv
+  restoreEnvironmentVariables [list No_SQLiteLog Initialize_SQLiteLog] savedEnv
 
   if {[info exists thread]} then {
     foreach i [array names thread] {
@@ -5242,7 +5284,155 @@ runTest {test data-1.99 {create SQLiteConnection objects w/o logging} -setup {
 
   rename threadStart ""
 } -constraints {eagle command.object SQLite System.Data.SQLite} -result \
-{20000 0}}
+{20000 0 0}}
+
+###############################################################################
+
+runTest {test data-1.100 {SQLiteLog forced initialize (enabled)} -setup {
+  #
+  # NOTE: Make sure that SQLite core library is completely shutdown prior to
+  #       starting this test.
+  #
+  shutdownSQLite $test_channel
+
+  proc threadStart {} {
+    for {set i 0} {$i < 1000} {incr i} {
+      set c($i) [object create System.Data.SQLite.SQLiteConnection]
+      incr ::count(0)
+    }
+  }
+
+  saveEnvironmentVariables [list No_SQLiteLog Initialize_SQLiteLog] savedEnv
+
+  unset -nocomplain env(No_SQLiteLog)
+  set env(Initialize_SQLiteLog) 1
+} -body {
+  set count(1) [object invoke -flags +NonPublic \
+      System.Data.SQLite.SQLiteLog _initializeCallCount]
+
+  set count(2) [object invoke -flags +NonPublic \
+      System.Data.SQLite.SQLiteLog _attemptedInitialize]
+
+  tputs $test_channel [appendArgs \
+      "---- starting with call count " $count(1) " and attempt count " \
+      $count(2) \n]
+
+  object invoke -flags +NonPublic \
+      System.Data.SQLite.SQLiteLog _initializeCallCount 0
+
+  object invoke -flags +NonPublic \
+      System.Data.SQLite.SQLiteLog _attemptedInitialize 0
+
+  for {set i 0} {$i < 20} {incr i} {
+    set thread($i) [createThread threadStart false 1048576]
+    $thread($i) Name [appendArgs "test data-1.100 #" $i]
+  }
+
+  set count(0) 0
+
+  foreach i [array names thread] {
+    startThread $thread($i)
+  }
+
+  foreach i [array names thread] {
+    $thread($i) Join
+  }
+
+  list $count(0) [object invoke -flags +NonPublic \
+      System.Data.SQLite.SQLiteLog _initializeCallCount] [object invoke \
+      -flags +NonPublic System.Data.SQLite.SQLiteLog _attemptedInitialize]
+} -cleanup {
+  restoreEnvironmentVariables [list No_SQLiteLog Initialize_SQLiteLog] savedEnv
+
+  if {[info exists thread]} then {
+    foreach i [array names thread] {
+      if {[info exists thread($i)] && [cleanupThread $thread($i)]} then {
+        unset -nocomplain thread($i)
+      }
+    }
+  }
+
+  catch {object removecallback threadStart}
+
+  unset -nocomplain thread i count
+
+  rename threadStart ""
+} -constraints {eagle command.object SQLite System.Data.SQLite} -result \
+{20000 20000 0}}
+
+###############################################################################
+
+runTest {test data-1.101 {SQLiteLog forced initialize (disabled)} -setup {
+  #
+  # NOTE: Make sure that SQLite core library is completely shutdown prior to
+  #       starting this test.
+  #
+  shutdownSQLite $test_channel
+
+  proc threadStart {} {
+    for {set i 0} {$i < 1000} {incr i} {
+      set c($i) [object create System.Data.SQLite.SQLiteConnection]
+      incr ::count(0)
+    }
+  }
+
+  saveEnvironmentVariables [list No_SQLiteLog Initialize_SQLiteLog] savedEnv
+
+  set env(No_SQLiteLog) 1
+  set env(Initialize_SQLiteLog) 1
+} -body {
+  set count(1) [object invoke -flags +NonPublic \
+      System.Data.SQLite.SQLiteLog _initializeCallCount]
+
+  set count(2) [object invoke -flags +NonPublic \
+      System.Data.SQLite.SQLiteLog _attemptedInitialize]
+
+  tputs $test_channel [appendArgs \
+      "---- starting with call count " $count(1) " and attempt count " \
+      $count(2) \n]
+
+  object invoke -flags +NonPublic \
+      System.Data.SQLite.SQLiteLog _initializeCallCount 0
+
+  object invoke -flags +NonPublic \
+      System.Data.SQLite.SQLiteLog _attemptedInitialize 0
+
+  for {set i 0} {$i < 20} {incr i} {
+    set thread($i) [createThread threadStart false 1048576]
+    $thread($i) Name [appendArgs "test data-1.101 #" $i]
+  }
+
+  set count(0) 0
+
+  foreach i [array names thread] {
+    startThread $thread($i)
+  }
+
+  foreach i [array names thread] {
+    $thread($i) Join
+  }
+
+  list $count(0) [object invoke -flags +NonPublic \
+      System.Data.SQLite.SQLiteLog _initializeCallCount] [object invoke \
+      -flags +NonPublic System.Data.SQLite.SQLiteLog _attemptedInitialize]
+} -cleanup {
+  restoreEnvironmentVariables [list No_SQLiteLog Initialize_SQLiteLog] savedEnv
+
+  if {[info exists thread]} then {
+    foreach i [array names thread] {
+      if {[info exists thread($i)] && [cleanupThread $thread($i)]} then {
+        unset -nocomplain thread($i)
+      }
+    }
+  }
+
+  catch {object removecallback threadStart}
+
+  unset -nocomplain thread i count
+
+  rename threadStart ""
+} -constraints {eagle command.object SQLite System.Data.SQLite} -result \
+{20000 0 0}}
 
 ###############################################################################
 
