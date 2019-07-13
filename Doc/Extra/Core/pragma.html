@@ -1,4 +1,4 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<!DOCTYPE html>
 <html><head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
@@ -507,7 +507,7 @@ for use in application programs.</ol></p>
     setting is a (suggested) upper bound on the amount of memory that the
     cache can use, not the amount of memory it will use all of the time.
     This is the behavior of the default page cache implementation, but an
-    <a href="c3ref/pcache_methods2.html">applicaction defined page cache</a> is free
+    <a href="c3ref/pcache_methods2.html">application defined page cache</a> is free
     to behave differently if it wants.
 <a name="pragma_cache_spill"></a>
 <h _id=pragma_cache_spill style="display:none"> PRAGMA cache_spill</h><hr>
@@ -1054,7 +1054,15 @@ for use in application programs.</ol></p>
     If the application crashes
     in the middle of a transaction when the OFF journaling mode is
     set, then the database file will very likely
-    <a href="howtocorrupt.html#cfgerr">go corrupt</a>.</p>
+    <a href="howtocorrupt.html#cfgerr">go corrupt</a>. Without a journal, there is no way for
+    a statement to unwind partially completed operations following
+    a constraint error.  This might also leave the database in a corrupted
+    state.  For example, if a duplicate entry causes a 
+    <a href="lang_createindex.html">CREATE UNIQUE INDEX</a> statement to fail half-way through,
+    it will leave behind a partially created, and hence corrupt, index.
+    Because OFF journaling
+    mode allows the database file to be corrupted using ordinary SQL,
+    it is disabled when <a href="c3ref/c_dbconfig_defensive.html#sqlitedbconfigdefensive">SQLITE_DBCONFIG_DEFENSIVE</a> is enabled.</p>
 
     <p>Note that the journal_mode for an <a href="inmemorydb.html">in-memory database</a>
     is either MEMORY or OFF and can not be changed to a different value.
@@ -1135,6 +1143,9 @@ for use in application programs.</ol></p>
     this flag is turned on temporarily while the <a href="vtab.html#xrename">sqlite3_module.xRename</a>
     method is being run.  The value of this flag is restore after the 
     <a href="vtab.html#xrename">sqlite3_module.xRename</a> method finishes.
+    <p>The legacy alter table behavior can also be toggled on and off
+    using the <a href="c3ref/c_dbconfig_defensive.html#sqlitedbconfiglegacyaltertable">SQLITE_DBCONFIG_LEGACY_ALTER_TABLE</a> option to the
+    <a href="c3ref/db_config.html">sqlite3_db_config()</a> interface.
 <a name="pragma_legacy_file_format"></a>
 <h _id=pragma_legacy_file_format style="display:none"> PRAGMA legacy_file_format</h><hr>
    <p><b>PRAGMA legacy_file_format;
