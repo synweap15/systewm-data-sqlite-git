@@ -5436,6 +5436,68 @@ runTest {test data-1.101 {SQLiteLog forced initialize (disabled)} -setup {
 
 ###############################################################################
 
+runTest {test data-1.102 {Target Framework Abbreviations} -body {
+  set targetFrameworkNames [list \
+      null "" bad 1.0 2.0 3.0 X.X \
+      .NETFramework,Version=v2.0 \
+      .NETFramework,Version=v3.5 \
+      .NETFramework,Version=v4.0 \
+      .NETFramework,Version=v4.5 \
+      .NETFramework,Version=v4.5.1 \
+      .NETFramework,Version=v4.5.2 \
+      .NETFramework,Version=v4.6 \
+      .NETFramework,Version=v4.6.1 \
+      .NETFramework,Version=v4.6.2 \
+      .NETFramework,Version=v4.7 \
+      .NETFramework,Version=v4.7.1 \
+      .NETFramework,Version=v4.7.2 \
+      .NETFramework,Version=v4.8 \
+      .NETFramework,Version=vX.X \
+      .NETStandard,Version=v2.0 \
+      .NETStandard,Version=v2.1 \
+      .NETStandard,Version=vX.X]
+
+  set targetFrameworkAbbreviations [list]
+
+  foreach targetFrameworkName $targetFrameworkNames {
+    set targetFrameworkAbbreviation [object invoke -flags +NonPublic \
+        System.Data.SQLite.UnsafeNativeMethods AbbreviateTargetFramework \
+        $targetFrameworkName]
+
+    lappend targetFrameworkAbbreviations $targetFrameworkAbbreviation
+  }
+
+  appendArgs ( [join $targetFrameworkAbbreviations )\n(] )
+} -cleanup {
+  unset -nocomplain targetFrameworkName targetFrameworkAbbreviation
+  unset -nocomplain targetFrameworkNames targetFrameworkAbbreviations
+} -constraints {eagle command.object System.Data.SQLite} -result {()
+()
+(bad)
+(1.0)
+(2.0)
+(3.0)
+(X.X)
+(net20)
+(net35)
+(net40)
+(net45)
+(net451)
+(net452)
+(net46)
+(net461)
+(net462)
+(net47)
+(net471)
+(net472)
+(net48)
+(netXX)
+(netstandard2.0)
+(netstandard2.1)
+(.NETStandard,Version=vX.X)}}
+
+###############################################################################
+
 reportSQLiteResources $test_channel
 
 ###############################################################################

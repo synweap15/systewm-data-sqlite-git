@@ -1520,6 +1520,14 @@ namespace System.Data.SQLite
 
       /////////////////////////////////////////////////////////////////////////
       /// <summary>
+      /// This dictionary stores the mappings between target framework names
+      /// and their associated (NuGet) abbreviations.  These mappings are only
+      /// used by the <see cref="AbbreviateTargetFramework" /> method.
+      /// </summary>
+      private static Dictionary<string, string> targetFrameworkAbbreviations;
+
+      /////////////////////////////////////////////////////////////////////////
+      /// <summary>
       /// This dictionary stores the mappings between processor architecture
       /// names and platform names.  These mappings are now used for two
       /// purposes.  First, they are used to determine if the assembly code
@@ -1616,10 +1624,63 @@ namespace System.Data.SQLite
           lock (staticSyncRoot)
           {
               //
-              // TODO: Make sure this list is updated if the supported
-              //       processor architecture names and/or platform names
-              //       changes.
+              // TODO: Make sure to keep these lists updated when the
+              //       target framework names (or their abbreviations)
+              //       -OR- the processor architecture names (or their
+              //       platform names) change.
               //
+              if (targetFrameworkAbbreviations == null)
+              {
+                  targetFrameworkAbbreviations =
+                      new Dictionary<string, string>(
+                          StringComparer.OrdinalIgnoreCase);
+
+                  targetFrameworkAbbreviations.Add(
+                      ".NETFramework,Version=v2.0", "net20");
+
+                  targetFrameworkAbbreviations.Add(
+                      ".NETFramework,Version=v3.5", "net35");
+
+                  targetFrameworkAbbreviations.Add(
+                      ".NETFramework,Version=v4.0", "net40");
+
+                  targetFrameworkAbbreviations.Add(
+                      ".NETFramework,Version=v4.5", "net45");
+
+                  targetFrameworkAbbreviations.Add(
+                      ".NETFramework,Version=v4.5.1", "net451");
+
+                  targetFrameworkAbbreviations.Add(
+                      ".NETFramework,Version=v4.5.2", "net452");
+
+                  targetFrameworkAbbreviations.Add(
+                      ".NETFramework,Version=v4.6", "net46");
+
+                  targetFrameworkAbbreviations.Add(
+                      ".NETFramework,Version=v4.6.1", "net461");
+
+                  targetFrameworkAbbreviations.Add(
+                      ".NETFramework,Version=v4.6.2", "net462");
+
+                  targetFrameworkAbbreviations.Add(
+                      ".NETFramework,Version=v4.7", "net47");
+
+                  targetFrameworkAbbreviations.Add(
+                      ".NETFramework,Version=v4.7.1", "net471");
+
+                  targetFrameworkAbbreviations.Add(
+                      ".NETFramework,Version=v4.7.2", "net472");
+
+                  targetFrameworkAbbreviations.Add(
+                      ".NETFramework,Version=v4.8", "net48");
+
+                  targetFrameworkAbbreviations.Add(
+                      ".NETStandard,Version=v2.0", "netstandard2.0");
+
+                  targetFrameworkAbbreviations.Add(
+                      ".NETStandard,Version=v2.1", "netstandard2.1");
+              }
+
               if (processorArchitecturePlatforms == null)
               {
                   //
@@ -2036,7 +2097,7 @@ namespace System.Data.SQLite
       /// Accepts a long target framework attribute value and makes it into a
       /// much shorter version, suitable for use with NuGet packages.
       /// </summary>
-      /// <param name="value">
+      /// <param name="targetFramework">
       /// The long target framework attribute value to convert.
       /// </param>
       /// <returns>
@@ -2044,21 +2105,52 @@ namespace System.Data.SQLite
       /// be determined or converted.
       /// </returns>
       private static string AbbreviateTargetFramework(
-          string value
+          string targetFramework
           )
       {
-          if (String.IsNullOrEmpty(value))
-              return value;
+          if (!String.IsNullOrEmpty(targetFramework))
+          {
+              lock (staticSyncRoot)
+              {
+                  string abbreviation;
 
-          value = value.Replace(".NETFramework,Version=v", "net");
-          value = value.Replace(".", String.Empty);
+                  if (targetFrameworkAbbreviations != null)
+                  {
+                      if (targetFrameworkAbbreviations.TryGetValue(
+                              targetFramework, out abbreviation))
+                      {
+                          return abbreviation;
+                      }
+                  }
 
-          int index = value.IndexOf(',');
+                  //
+                  // HACK: *LEGACY* Fallback to the old method of
+                  //       abbreviating target framework names.
+                  //
+                  int index = targetFramework.IndexOf(
+                      ".NETFramework,Version=v");
 
-          if (index != -1)
-              value = value.Substring(0, index);
+                  if (index != -1)
+                  {
+                      abbreviation = targetFramework;
 
-          return value;
+                      abbreviation = abbreviation.Replace(
+                          ".NETFramework,Version=v", "net");
+
+                      abbreviation = abbreviation.Replace(
+                          ".", String.Empty);
+
+                      index = abbreviation.IndexOf(',');
+
+                      if (index != -1)
+                          return abbreviation.Substring(0, index);
+                      else
+                          return abbreviation;
+                  }
+              }
+          }
+
+          return targetFramework;
       }
 
       /////////////////////////////////////////////////////////////////////////
