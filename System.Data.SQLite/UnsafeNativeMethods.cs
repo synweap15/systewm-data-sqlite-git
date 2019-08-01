@@ -2110,10 +2110,10 @@ namespace System.Data.SQLite
       {
           if (!String.IsNullOrEmpty(targetFramework))
           {
+              string abbreviation;
+
               lock (staticSyncRoot)
               {
-                  string abbreviation;
-
                   if (targetFrameworkAbbreviations != null)
                   {
                       if (targetFrameworkAbbreviations.TryGetValue(
@@ -2122,31 +2122,31 @@ namespace System.Data.SQLite
                           return abbreviation;
                       }
                   }
+              }
 
-                  //
-                  // HACK: *LEGACY* Fallback to the old method of
-                  //       abbreviating target framework names.
-                  //
-                  int index = targetFramework.IndexOf(
-                      ".NETFramework,Version=v");
+              //
+              // HACK: *LEGACY* Fallback to the old method of
+              //       abbreviating target framework names.
+              //
+              int index = targetFramework.IndexOf(
+                  ".NETFramework,Version=v");
+
+              if (index != -1)
+              {
+                  abbreviation = targetFramework;
+
+                  abbreviation = abbreviation.Replace(
+                      ".NETFramework,Version=v", "net");
+
+                  abbreviation = abbreviation.Replace(
+                      ".", String.Empty);
+
+                  index = abbreviation.IndexOf(',');
 
                   if (index != -1)
-                  {
-                      abbreviation = targetFramework;
-
-                      abbreviation = abbreviation.Replace(
-                          ".NETFramework,Version=v", "net");
-
-                      abbreviation = abbreviation.Replace(
-                          ".", String.Empty);
-
-                      index = abbreviation.IndexOf(',');
-
-                      if (index != -1)
-                          return abbreviation.Substring(0, index);
-                      else
-                          return abbreviation;
-                  }
+                      return abbreviation.Substring(0, index);
+                  else
+                      return abbreviation;
               }
           }
 
