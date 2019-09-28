@@ -153,7 +153,11 @@ REM
 IF DEFINED NETCORE20ONLY (
   %_AECHO% Forcing the use of the .NET Core 2.0...
   IF NOT DEFINED YEAR (
-    SET YEAR=NetStandard20
+    IF DEFINED NETCORE20YEAR (
+      SET YEAR=%NETCORE20YEAR%
+    ) ELSE (
+      SET YEAR=NetStandard20
+    )
   )
   CALL :fn_VerifyDotNetCore
   IF ERRORLEVEL 1 GOTO errors
@@ -164,35 +168,65 @@ IF DEFINED NETCORE20ONLY (
 
 IF DEFINED NETFX20ONLY (
   %_AECHO% Forcing the use of the .NET Framework 2.0...
-  SET YEAR=2005
+  IF NOT DEFINED YEAR (
+    IF DEFINED NETFX20YEAR (
+      SET YEAR=%NETFX20YEAR%
+    ) ELSE (
+      SET YEAR=2005
+    )
+  )
   CALL :fn_CheckFrameworkDir v2.0.50727
   GOTO setup_buildToolDir
 )
 
 IF DEFINED NETFX35ONLY (
   %_AECHO% Forcing the use of the .NET Framework 3.5...
-  SET YEAR=2008
+  IF NOT DEFINED YEAR (
+    IF DEFINED NETFX35YEAR (
+      SET YEAR=%NETFX35YEAR%
+    ) ELSE (
+      SET YEAR=2008
+    )
+  )
   CALL :fn_CheckFrameworkDir v3.5
   GOTO setup_buildToolDir
 )
 
 IF DEFINED NETFX40ONLY (
   %_AECHO% Forcing the use of the .NET Framework 4.0...
-  SET YEAR=2010
+  IF NOT DEFINED YEAR (
+    IF DEFINED NETFX40YEAR (
+      SET YEAR=%NETFX40YEAR%
+    ) ELSE (
+      SET YEAR=2010
+    )
+  )
   CALL :fn_CheckFrameworkDir v4.0.30319
   GOTO setup_buildToolDir
 )
 
 IF DEFINED NETFX45ONLY (
   %_AECHO% Forcing the use of the .NET Framework 4.5...
-  SET YEAR=2012
+  IF NOT DEFINED YEAR (
+    IF DEFINED NETFX45YEAR (
+      SET YEAR=%NETFX45YEAR%
+    ) ELSE (
+      SET YEAR=2012
+    )
+  )
   CALL :fn_CheckFrameworkDir v4.0.30319
   GOTO setup_buildToolDir
 )
 
 IF DEFINED NETFX451ONLY (
   %_AECHO% Forcing the use of the .NET Framework 4.5.1...
-  SET YEAR=2013
+  IF NOT DEFINED YEAR (
+    IF DEFINED NETFX451YEAR (
+      SET YEAR=%NETFX451YEAR%
+    ) ELSE (
+      SET YEAR=2013
+    )
+  )
   CALL :fn_CheckFrameworkDir v4.0.30319
   CALL :fn_CheckMsBuildDir 12.0
   GOTO setup_buildToolDir
@@ -200,7 +234,13 @@ IF DEFINED NETFX451ONLY (
 
 IF DEFINED NETFX452ONLY (
   %_AECHO% Forcing the use of the .NET Framework 4.5.2...
-  SET YEAR=2013
+  IF NOT DEFINED YEAR (
+    IF DEFINED NETFX452YEAR (
+      SET YEAR=%NETFX452YEAR%
+    ) ELSE (
+      SET YEAR=2013
+    )
+  )
   CALL :fn_CheckFrameworkDir v4.0.30319
   CALL :fn_CheckMsBuildDir 12.0
   GOTO setup_buildToolDir
@@ -208,7 +248,13 @@ IF DEFINED NETFX452ONLY (
 
 IF DEFINED NETFX46ONLY (
   %_AECHO% Forcing the use of the .NET Framework 4.6...
-  SET YEAR=2015
+  IF NOT DEFINED YEAR (
+    IF DEFINED NETFX46YEAR (
+      SET YEAR=%NETFX46YEAR%
+    ) ELSE (
+      SET YEAR=2015
+    )
+  )
   CALL :fn_CheckFrameworkDir v4.0.30319
   CALL :fn_CheckMsBuildDir 14.0
   GOTO setup_buildToolDir
@@ -216,7 +262,13 @@ IF DEFINED NETFX46ONLY (
 
 IF DEFINED NETFX461ONLY (
   %_AECHO% Forcing the use of the .NET Framework 4.6.1...
-  SET YEAR=2015
+  IF NOT DEFINED YEAR (
+    IF DEFINED NETFX461YEAR (
+      SET YEAR=%NETFX461YEAR%
+    ) ELSE (
+      SET YEAR=2015
+    )
+  )
   CALL :fn_CheckFrameworkDir v4.0.30319
   CALL :fn_CheckMsBuildDir 14.0
   GOTO setup_buildToolDir
@@ -224,7 +276,13 @@ IF DEFINED NETFX461ONLY (
 
 IF DEFINED NETFX462ONLY (
   %_AECHO% Forcing the use of the .NET Framework 4.6.2...
-  SET YEAR=2015
+  IF NOT DEFINED YEAR (
+    IF DEFINED NETFX462YEAR (
+      SET YEAR=%NETFX462YEAR%
+    ) ELSE (
+      SET YEAR=2015
+    )
+  )
   CALL :fn_CheckFrameworkDir v4.0.30319
   CALL :fn_CheckMsBuildDir 14.0
   GOTO setup_buildToolDir
@@ -232,7 +290,13 @@ IF DEFINED NETFX462ONLY (
 
 IF DEFINED NETFX47ONLY (
   %_AECHO% Forcing the use of the .NET Framework 4.7...
-  SET YEAR=2017
+  IF NOT DEFINED YEAR (
+    IF DEFINED NETFX47YEAR (
+      SET YEAR=%NETFX47YEAR%
+    ) ELSE (
+      SET YEAR=2017
+    )
+  )
   CALL :fn_CheckFrameworkDir v4.0.30319
   CALL :fn_CheckMsBuildDir 14.0
   CALL :fn_CheckVisualStudioMsBuildDir 15.0 15.0
@@ -241,7 +305,13 @@ IF DEFINED NETFX47ONLY (
 
 IF DEFINED NETFX471ONLY (
   %_AECHO% Forcing the use of the .NET Framework 4.7.1...
-  SET YEAR=2017
+  IF NOT DEFINED YEAR (
+    IF DEFINED NETFX471YEAR (
+      SET YEAR=%NETFX471YEAR%
+    ) ELSE (
+      SET YEAR=2017
+    )
+  )
   CALL :fn_CheckFrameworkDir v4.0.30319
   CALL :fn_CheckMsBuildDir 14.0
   CALL :fn_CheckVisualStudioMsBuildDir 15.0 15.0
@@ -250,7 +320,13 @@ IF DEFINED NETFX471ONLY (
 
 IF DEFINED NETFX472ONLY (
   %_AECHO% Forcing the use of the .NET Framework 4.7.2...
-  SET YEAR=2017
+  IF NOT DEFINED YEAR (
+    IF DEFINED NETFX472YEAR (
+      SET YEAR=%NETFX472YEAR%
+    ) ELSE (
+      SET YEAR=2017
+    )
+  )
   CALL :fn_CheckFrameworkDir v4.0.30319
   CALL :fn_CheckMsBuildDir 14.0
   CALL :fn_CheckVisualStudioMsBuildDir 15.0 15.0
