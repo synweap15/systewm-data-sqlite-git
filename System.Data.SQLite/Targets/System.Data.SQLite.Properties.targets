@@ -163,8 +163,22 @@
             project using .NET Core 2.0 SDK (if necessary, it will typically
             be enabled from within the project file itself).
   -->
-  <PropertyGroup Condition="'$(IsDotNetStandard)' != 'false'">
+  <PropertyGroup Condition="'$(IsDotNetStandard)' != 'false' And
+                            ('$(TargetFramework)' == 'netstandard2.0' Or
+                             '$(TargetFramework)' == 'netcoreapp2.0')">
     <DefineConstants>$(DefineConstants);NET_STANDARD_20</DefineConstants>
+  </PropertyGroup>
+
+  <!--
+      NOTE: Only use functionality available in .NET Standard 2.1?  By default,
+            this is disabled.  This must be enabled to successfully build the
+            project using .NET Core 3.0 SDK (if necessary, it will typically
+            be enabled from within the project file itself).
+  -->
+  <PropertyGroup Condition="'$(IsDotNetStandard)' != 'false' And
+                            ('$(TargetFramework)' == 'netstandard2.1' Or
+                             '$(TargetFramework)' == 'netcoreapp2.1')">
+    <DefineConstants>$(DefineConstants);NET_STANDARD_21</DefineConstants>
   </PropertyGroup>
 
   <!--

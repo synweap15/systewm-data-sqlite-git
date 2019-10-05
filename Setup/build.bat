@@ -166,6 +166,22 @@ IF DEFINED NETCORE20ONLY (
   GOTO setup_buildToolDir
 )
 
+IF DEFINED NETCORE30ONLY (
+  %_AECHO% Forcing the use of the .NET Core 3.0...
+  IF NOT DEFINED YEAR (
+    IF DEFINED NETCORE30YEAR (
+      SET YEAR=%NETCORE30YEAR%
+    ) ELSE (
+      SET YEAR=NetStandard21
+    )
+  )
+  CALL :fn_VerifyDotNetCore
+  IF ERRORLEVEL 1 GOTO errors
+  SET NOBUILDTOOLDIR=1
+  SET USEDOTNET=1
+  GOTO setup_buildToolDir
+)
+
 IF DEFINED NETFX20ONLY (
   %_AECHO% Forcing the use of the .NET Framework 2.0...
   IF NOT DEFINED YEAR (

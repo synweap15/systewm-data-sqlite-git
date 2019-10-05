@@ -1163,7 +1163,7 @@ namespace System.Data.SQLite
       /// <returns>
       /// Zero for success and less than zero upon failure.
       /// </returns>
-#if NET_STANDARD_20
+#if NET_STANDARD_20 || NET_STANDARD_21
       [DllImport("libc",
 #else
       [DllImport("__Internal",
@@ -1187,7 +1187,7 @@ namespace System.Data.SQLite
       /// <returns>
       /// The native module handle upon success -OR- IntPtr.Zero on failure.
       /// </returns>
-#if NET_STANDARD_20
+#if NET_STANDARD_20 || NET_STANDARD_21
       [DllImport("libdl",
 #else
       [DllImport("__Internal",
@@ -1210,7 +1210,7 @@ namespace System.Data.SQLite
       /// <returns>
       /// Zero upon success -OR- non-zero on failure.
       /// </returns>
-#if NET_STANDARD_20
+#if NET_STANDARD_20 || NET_STANDARD_21
       [DllImport("libdl",
 #else
       [DllImport("__Internal",
@@ -2063,7 +2063,7 @@ namespace System.Data.SQLite
       {
           if (assembly != null)
           {
-#if NET_40 || NET_45 || NET_451 || NET_452 || NET_46 || NET_461 || NET_462 || NET_47 || NET_471 || NET_472 || NET_STANDARD_20
+#if NET_40 || NET_45 || NET_451 || NET_452 || NET_46 || NET_461 || NET_462 || NET_47 || NET_471 || NET_472 || NET_STANDARD_20 || NET_STANDARD_21
               try
               {
                   if (assembly.IsDefined(

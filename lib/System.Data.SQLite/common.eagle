@@ -204,12 +204,13 @@ namespace eval ::Eagle {
         #
         # NOTE: Running on .NET Core, prioritize its list of test years.
         #
-        return [list NetStandard20]
+        return [list NetStandard20 NetStandard21]
       } else {
         #
         # NOTE: Use the default list of test years (i.e. all).
         #
-        return [list 2005 2008 2010 2012 2013 2015 2017 NetStandard20]
+        return [list \
+            2005 2008 2010 2012 2013 2015 2017 NetStandard20 NetStandard21]
       }
     }
 
@@ -316,6 +317,9 @@ namespace eval ::Eagle {
             }
             NetStandard20 {
               return netStandard20
+            }
+            NetStandard21 {
+              return netStandard21
             }
             default {
               return netFx35; # TODO: Good "fallback" default?
@@ -515,7 +519,7 @@ namespace eval ::Eagle {
         # NOTE: Running on .NET Core, prioritize its test configuration
         #       suffixes for library files.
         #
-        return [list NetStandard20 ""]
+        return [list NetStandard20 NetStandard21 ""]
       } else {
         #
         # NOTE: Use the default list of test configurations suffixes.
@@ -4733,7 +4737,8 @@ namespace eval ::Eagle {
 
       #
       # NOTE: Check the current build configuration suffix.  This will
-      #       normally be either "NetStandard20" or an empty string.
+      #       normally be either "NetStandard20" or "NetStandard21" or
+      #       an empty string.
       #
       tputs $channel \
           "---- checking for System.Data.SQLite build configuration suffix... "
@@ -4847,8 +4852,8 @@ namespace eval ::Eagle {
             [file join EntityFramework lib [string map [list Fx ""] \
             [string map [list netFx451 netFx45 netFx452 netFx45 netFx46 \
             netFx45 netFx461 netFx45 netFx462 netFx45 netFx47 netFx45 \
-            netFx471 netFx45 netFx472 netFx45 netStandard20 netFx45] \
-            [getBuildNetFx]]] EntityFramework.dll]]
+            netFx471 netFx45 netFx472 netFx45 netStandard20 netFx45 \
+            netStandard21 netFx45] [getBuildNetFx]]] EntityFramework.dll]]
 
         #
         # NOTE: Build the list of native assembly files that we handle.
@@ -5502,10 +5507,10 @@ namespace eval ::Eagle {
             INTEROP_TOTYPE_EXTENSION INTEROP_VIRTUAL_TABLE \
             NET_20 NET_35 NET_40 NET_45 NET_451 NET_452 NET_46 NET_461 \
             NET_462 NET_47 NET_471 NET_472 NET_COMPACT_20 NET_STANDARD_20 \
-            PLATFORM_COMPACTFRAMEWORK PRELOAD_NATIVE_LIBRARY RETARGETABLE \
-            SQLITE_STANDARD THROW_ON_DISPOSED TRACE TRACE_CONNECTION \
-            TRACE_DETECTION TRACE_HANDLE TRACE_PRELOAD TRACE_SHARED \
-            TRACE_STATEMENT TRACE_WARNING TRACK_MEMORY_BYTES \
+            NET_STANDARD_21 PLATFORM_COMPACTFRAMEWORK PRELOAD_NATIVE_LIBRARY \
+            RETARGETABLE SQLITE_STANDARD THROW_ON_DISPOSED \
+            TRACE TRACE_CONNECTION TRACE_DETECTION TRACE_HANDLE TRACE_PRELOAD \
+            TRACE_SHARED TRACE_STATEMENT TRACE_WARNING TRACK_MEMORY_BYTES \
             USE_ENTITY_FRAMEWORK_6 USE_INTEROP_DLL USE_PREPARE_V2 WINDOWS] {
           #
           # NOTE: Check if the compile-time option is listed in the list of

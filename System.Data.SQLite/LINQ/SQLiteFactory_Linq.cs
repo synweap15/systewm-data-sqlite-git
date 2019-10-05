@@ -70,7 +70,7 @@ namespace System.Data.SQLite
       return null;
     }
 
-#if !NET_STANDARD_20
+#if !NET_STANDARD_20 || NET_STANDARD_21
     [ReflectionPermission(SecurityAction.Assert, MemberAccess = true)]
 #endif
     private object GetSQLiteProviderServicesInstance()
