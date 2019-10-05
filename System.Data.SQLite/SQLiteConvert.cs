@@ -1672,7 +1672,7 @@ namespace System.Data.SQLite
       typeof(string),        // ?? (24)
       typeof(string),        // Xml (25)
       typeof(DateTime),      // DateTime2 (26)
-#if !PLATFORM_COMPACTFRAMEWORK && (NET_35 || NET_40 || NET_45 || NET_451 || NET_452 || NET_46 || NET_461 || NET_462 || NET_47 || NET_471 || NET_472)
+#if !PLATFORM_COMPACTFRAMEWORK && (NET_35 || NET_40 || NET_45 || NET_451 || NET_452 || NET_46 || NET_461 || NET_462 || NET_47 || NET_471 || NET_472 || NET_STANDARD_20 || NET_STANDARD_21)
       //
       // NOTE: This type is only available on the
       //       .NET Framework 2.0 SP1 and later.

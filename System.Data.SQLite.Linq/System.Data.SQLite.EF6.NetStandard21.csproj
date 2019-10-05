@@ -7,7 +7,7 @@
  * Released to the public domain, use at your own risk!
  *
 -->
-<Project ToolsVersion="15.0">
+<Project ToolsVersion="16.0">
   <!--
   ******************************************************************************
   **                     Import .NET Core SDK Properties                      **
@@ -205,9 +205,9 @@
   -->
 
   <ItemGroup>
-    <ProjectReference Include="..\System.Data.SQLite\System.Data.SQLite.NetStandard20.csproj">
+    <ProjectReference Include="..\System.Data.SQLite\System.Data.SQLite.NetStandard21.csproj">
       <Project>{AC139952-261A-4463-B6FA-AEBC25283A66}</Project>
-      <Name>System.Data.SQLite.NetStandard20</Name>
+      <Name>System.Data.SQLite.NetStandard21</Name>
       <Private>False</Private>
     </ProjectReference>
   </ItemGroup>

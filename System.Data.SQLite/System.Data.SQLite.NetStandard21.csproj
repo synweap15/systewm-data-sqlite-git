@@ -7,7 +7,7 @@
  * Released to the public domain, use at your own risk!
  *
 -->
-<Project ToolsVersion="15.0">
+<Project ToolsVersion="16.0">
   <!--
   ******************************************************************************
   **                     Import .NET Core SDK Properties                      **

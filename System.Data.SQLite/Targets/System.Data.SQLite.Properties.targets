@@ -165,7 +165,9 @@
   -->
   <PropertyGroup Condition="'$(IsDotNetStandard)' != 'false' And
                             ('$(TargetFramework)' == 'netstandard2.0' Or
-                             '$(TargetFramework)' == 'netcoreapp2.0')">
+                             '$(TargetFramework)' == 'netcoreapp2.0' Or
+                             '$(TargetFramework)' == 'netcoreapp2.1' Or
+                             '$(TargetFramework)' == 'netcoreapp2.2')">
     <DefineConstants>$(DefineConstants);NET_STANDARD_20</DefineConstants>
   </PropertyGroup>
 
@@ -177,7 +179,7 @@
   -->
   <PropertyGroup Condition="'$(IsDotNetStandard)' != 'false' And
                             ('$(TargetFramework)' == 'netstandard2.1' Or
-                             '$(TargetFramework)' == 'netcoreapp2.1')">
+                             '$(TargetFramework)' == 'netcoreapp3.0')">
     <DefineConstants>$(DefineConstants);NET_STANDARD_21</DefineConstants>
   </PropertyGroup>
 
