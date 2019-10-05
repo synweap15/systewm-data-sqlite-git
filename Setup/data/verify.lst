@@ -806,6 +806,8 @@ set sds_manifests(source) {
   testlinq/2017/EF6/App.config
   testlinq/2017/LINQ/
   testlinq/2017/LINQ/App.config
+  testlinq/NetStandard21/EF6/
+  testlinq/NetStandard21/EF6/App.config
   testlinq/northwindEF.db
   testlinq/NorthwindModel.EF6.2010.Designer.cs
   testlinq/NorthwindModel.EF6.2010.edmx
@@ -817,6 +819,8 @@ set sds_manifests(source) {
   testlinq/NorthwindModel.EF6.2015.edmx
   testlinq/NorthwindModel.EF6.2017.Designer.cs
   testlinq/NorthwindModel.EF6.2017.edmx
+  testlinq/NorthwindModel.EF6.NetStandard21.Designer.cs
+  testlinq/NorthwindModel.EF6.NetStandard21.edmx
   testlinq/NorthwindModel.Linq.2008.Designer.cs
   testlinq/NorthwindModel.Linq.2008.edmx
   testlinq/NorthwindModel.Linq.2010.Designer.cs
@@ -842,6 +846,7 @@ set sds_manifests(source) {
   testlinq/testef6.2013.csproj
   testlinq/testef6.2015.csproj
   testlinq/testef6.2017.csproj
+  testlinq/testef6.NetStandard21.csproj
   testlinq/testlinq.2008.csproj
   testlinq/testlinq.2010.csproj
   testlinq/testlinq.2012.csproj

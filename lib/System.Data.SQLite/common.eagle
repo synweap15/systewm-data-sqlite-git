@@ -5726,7 +5726,12 @@ namespace eval ::Eagle {
 
           set testExeFile [getBuildFileName test.exe true]
           set testLinqExeFile [getBuildFileName testlinq.exe true]
-          set testEf6ExeFile [getBuildFileName testef6.exe true]
+
+          if {[isDotNetCore]} then {
+            set testEf6ExeFile [getBuildFileName testef6.dll true]
+          } else {
+            set testEf6ExeFile [getBuildFileName testef6.exe true]
+          }
 
           #
           # NOTE: Setup the variables that refer to the various data files

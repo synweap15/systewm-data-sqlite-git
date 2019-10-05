@@ -896,7 +896,11 @@ namespace testlinq
           string dateTimeFormat
           )
       {
+#if NET_40 || NET_45 || NET_451 || NET_452 || NET_46 || NET_461 || NET_462 || NET_47 || NET_471 || NET_472
           TraceListener listener = new ConsoleTraceListener();
+#else
+          TraceListener listener = new TextWriterTraceListener(Console.Out);
+#endif
 
           Trace.Listeners.Add(listener);
           Environment.SetEnvironmentVariable("SQLite_ForceLogPrepare", "1");
