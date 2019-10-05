@@ -84,6 +84,54 @@ namespace eval ::Eagle {
       return $result
     }
 
+    proc checkForSecurityProtocols { channel quiet } {
+      #
+      # HACK: There is at least one test and one build tool in this source
+      #       tree require using HTTPS.  Therefore, make sure all protocol
+      #       versions are enabled so we do not get spurious TLS failures.
+      #
+      if {![info exists ::no(checkSecurityProtocols)] && \
+          [llength [info commands object]] > 0} then {
+        set allSecurityProtocols ""
+
+        if {[catch {
+          set oldSecurityProtocols [object invoke \
+              System.Net.ServicePointManager SecurityProtocol]
+
+          set allSecurityProtocols [join [string map [list "  " " "] \
+              [string trim [string map [list SystemDefault ""] [object \
+              invoke Enum GetNames System.Net.SecurityProtocolType]]]] \
+              ", "]
+
+          object invoke System.Net.ServicePointManager SecurityProtocol \
+              $allSecurityProtocols
+
+          set newSecurityProtocols [object invoke \
+              System.Net.ServicePointManager SecurityProtocol]
+        } error] == 0} then {
+          if {!$quiet} then {
+            catch {
+              tqputs $channel [appendArgs \
+                  "---- forcibly enabled all HTTPS security protocols \"" \
+                  $allSecurityProtocols "\", old \"" $oldSecurityProtocols \
+                  "\", new \"" $newSecurityProtocols \"\n]
+            }
+          }
+        } else {
+          if {!$quiet} then {
+            catch {
+              tqputs $channel [appendArgs \
+                  "==== WARNING: could not forcibly enable all HTTPS " \
+                  "security protocols " [expr {[string length \
+                  $allSecurityProtocols] > 0 ? [appendArgs \" \
+                  $allSecurityProtocols \"] : "<unknown>"}] ", error: " \
+                  \n\t $error \n]
+            }
+          }
+        }
+      }
+    }
+
     proc refreshAutoPath {} {
       if {[llength [info commands debug]] > 0 && \
           [llength [info subcommands debug refreshautopath]] > 0 && \
@@ -441,6 +489,13 @@ namespace eval ::Eagle {
         setupInterpreterTestPath stdout $vendor_test_directory \
             [checkForVendorQuiet setupInterpreterTestPath]
       }
+
+      #
+      # NOTE: Check if the HTTPS security protocols need to be adjusted for
+      #       use with the test suite and/or build tools.
+      #
+      checkForSecurityProtocols stdout \
+          [checkForVendorQuiet checkForSecurityProtocols]
     }
 
     #
