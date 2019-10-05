@@ -188,6 +188,13 @@ if {[info exists argv] && \
   set verbose false
 }
 
+if {[info exists ::eagle_platform(frameworkVersion)] && \
+    [package vcompare $::eagle_platform(frameworkVersion) \
+        4.0.30319.42000] >= 0} then {
+  object invoke System.Net.ServicePointManager SecurityProtocol \
+      {Ssl3 Tls Tls12 Tls11}
+}
+
 foreach fileName $fileNames {
   set uri [file join $rootUri $fileName]
 
