@@ -767,6 +767,7 @@ struct Fts5Config {
   char *zContentExprlist;
   Fts5Tokenizer *pTok;
   fts5_tokenizer *pTokApi;
+  int bLock;                      /* True when table is preparing statement */
 
   /* Values loaded from the %_config table */
   int iCookie;                    /* Incremented when %_config is modified */
@@ -1283,6 +1284,7 @@ static int sqlite3Fts5ExprEof(Fts5Expr*);
 static i64 sqlite3Fts5ExprRowid(Fts5Expr*);
 
 static void sqlite3Fts5ExprFree(Fts5Expr*);
+static int sqlite3Fts5ExprAnd(Fts5Expr **pp1, Fts5Expr *p2);
 
 /* Called during startup to register a UDF with SQLite */
 static int sqlite3Fts5ExprInit(Fts5Global*, sqlite3*);
@@ -2148,15 +2150,18 @@ static fts5YYACTIONTYPE fts5yy_find_shift_action(
   do{
     i = fts5yy_shift_ofst[stateno];
     assert( i>=0 );
-    /* assert( i+fts5YYNFTS5TOKEN<=(int)fts5YY_NLOOKAHEAD ); */
+    assert( i<=fts5YY_ACTTAB_COUNT );
+    assert( i+fts5YYNFTS5TOKEN<=(int)fts5YY_NLOOKAHEAD );
     assert( iLookAhead!=fts5YYNOCODE );
     assert( iLookAhead < fts5YYNFTS5TOKEN );
     i += iLookAhead;
-    if( i>=fts5YY_NLOOKAHEAD || fts5yy_lookahead[i]!=iLookAhead ){
+    assert( i<(int)fts5YY_NLOOKAHEAD );
+    if( fts5yy_lookahead[i]!=iLookAhead ){
 #ifdef fts5YYFALLBACK
       fts5YYCODETYPE iFallback;            /* Fallback token */
-      if( iLookAhead<sizeof(fts5yyFallback)/sizeof(fts5yyFallback[0])
-             && (iFallback = fts5yyFallback[iLookAhead])!=0 ){
+      assert( iLookAhead<sizeof(fts5yyFallback)/sizeof(fts5yyFallback[0]) );
+      iFallback = fts5yyFallback[iLookAhead];
+      if( iFallback!=0 ){
 #ifndef NDEBUG
         if( fts5yyTraceFILE ){
           fprintf(fts5yyTraceFILE, "%sFALLBACK %s => %s\n",
@@ -2171,16 +2176,8 @@ static fts5YYACTIONTYPE fts5yy_find_shift_action(
 #ifdef fts5YYWILDCARD
       {
         int j = i - iLookAhead + fts5YYWILDCARD;
-        if( 
-#if fts5YY_SHIFT_MIN+fts5YYWILDCARD<0
-          j>=0 &&
-#endif
-#if fts5YY_SHIFT_MAX+fts5YYWILDCARD>=fts5YY_ACTTAB_COUNT
-          j<fts5YY_ACTTAB_COUNT &&
-#endif
-          j<(int)(sizeof(fts5yy_lookahead)/sizeof(fts5yy_lookahead[0])) &&
-          fts5yy_lookahead[j]==fts5YYWILDCARD && iLookAhead>0
-        ){
+        assert( j<(int)(sizeof(fts5yy_lookahead)/sizeof(fts5yy_lookahead[0])) );
+        if( fts5yy_lookahead[j]==fts5YYWILDCARD && iLookAhead>0 ){
 #ifndef NDEBUG
           if( fts5yyTraceFILE ){
             fprintf(fts5yyTraceFILE, "%sWILDCARD %s => %s\n",
@@ -2194,6 +2191,7 @@ static fts5YYACTIONTYPE fts5yy_find_shift_action(
 #endif /* fts5YYWILDCARD */
       return fts5yy_default[stateno];
     }else{
+      assert( i>=0 && i<sizeof(fts5yy_action)/sizeof(fts5yy_action[0]) );
       return fts5yy_action[i];
     }
   }while(1);
@@ -2247,7 +2245,7 @@ static void fts5yyStackOverflow(fts5yyParser *fts5yypParser){
 #line 36 "fts5parse.y"
 
   sqlite3Fts5ParseError(pParse, "fts5: parser stack overflow");
-#line 827 "fts5parse.c"
+#line 823 "fts5parse.c"
 /******** End %stack_overflow code ********************************************/
    sqlite3Fts5ParserARG_STORE /* Suppress warning about unused %extra_argument var */
    sqlite3Fts5ParserCTX_STORE
@@ -2469,26 +2467,26 @@ static fts5YYACTIONTYPE fts5yy_reduce(
       case 0: /* input ::= expr */
 #line 82 "fts5parse.y"
 { sqlite3Fts5ParseFinished(pParse, fts5yymsp[0].minor.fts5yy24); }
-#line 1049 "fts5parse.c"
+#line 1045 "fts5parse.c"
         break;
       case 1: /* colset ::= MINUS LCP colsetlist RCP */
 #line 97 "fts5parse.y"
 { 
     fts5yymsp[-3].minor.fts5yy11 = sqlite3Fts5ParseColsetInvert(pParse, fts5yymsp[-1].minor.fts5yy11);
 }
-#line 1056 "fts5parse.c"
+#line 1052 "fts5parse.c"
         break;
       case 2: /* colset ::= LCP colsetlist RCP */
 #line 100 "fts5parse.y"
 { fts5yymsp[-2].minor.fts5yy11 = fts5yymsp[-1].minor.fts5yy11; }
-#line 1061 "fts5parse.c"
+#line 1057 "fts5parse.c"
         break;
       case 3: /* colset ::= STRING */
 #line 101 "fts5parse.y"
 {
   fts5yylhsminor.fts5yy11 = sqlite3Fts5ParseColset(pParse, 0, &fts5yymsp[0].minor.fts5yy0);
 }
-#line 1068 "fts5parse.c"
+#line 1064 "fts5parse.c"
   fts5yymsp[0].minor.fts5yy11 = fts5yylhsminor.fts5yy11;
         break;
       case 4: /* colset ::= MINUS STRING */
@@ -2497,13 +2495,13 @@ static fts5YYACTIONTYPE fts5yy_reduce(
   fts5yymsp[-1].minor.fts5yy11 = sqlite3Fts5ParseColset(pParse, 0, &fts5yymsp[0].minor.fts5yy0);
   fts5yymsp[-1].minor.fts5yy11 = sqlite3Fts5ParseColsetInvert(pParse, fts5yymsp[-1].minor.fts5yy11);
 }
-#line 1077 "fts5parse.c"
+#line 1073 "fts5parse.c"
         break;
       case 5: /* colsetlist ::= colsetlist STRING */
 #line 109 "fts5parse.y"
 { 
   fts5yylhsminor.fts5yy11 = sqlite3Fts5ParseColset(pParse, fts5yymsp[-1].minor.fts5yy11, &fts5yymsp[0].minor.fts5yy0); }
-#line 1083 "fts5parse.c"
+#line 1079 "fts5parse.c"
   fts5yymsp[-1].minor.fts5yy11 = fts5yylhsminor.fts5yy11;
         break;
       case 6: /* colsetlist ::= STRING */
@@ -2511,7 +2509,7 @@ static fts5YYACTIONTYPE fts5yy_reduce(
 { 
   fts5yylhsminor.fts5yy11 = sqlite3Fts5ParseColset(pParse, 0, &fts5yymsp[0].minor.fts5yy0); 
 }
-#line 1091 "fts5parse.c"
+#line 1087 "fts5parse.c"
   fts5yymsp[0].minor.fts5yy11 = fts5yylhsminor.fts5yy11;
         break;
       case 7: /* expr ::= expr AND expr */
@@ -2519,7 +2517,7 @@ static fts5YYACTIONTYPE fts5yy_reduce(
 {
   fts5yylhsminor.fts5yy24 = sqlite3Fts5ParseNode(pParse, FTS5_AND, fts5yymsp[-2].minor.fts5yy24, fts5yymsp[0].minor.fts5yy24, 0);
 }
-#line 1099 "fts5parse.c"
+#line 1095 "fts5parse.c"
   fts5yymsp[-2].minor.fts5yy24 = fts5yylhsminor.fts5yy24;
         break;
       case 8: /* expr ::= expr OR expr */
@@ -2527,7 +2525,7 @@ static fts5YYACTIONTYPE fts5yy_reduce(
 {
   fts5yylhsminor.fts5yy24 = sqlite3Fts5ParseNode(pParse, FTS5_OR, fts5yymsp[-2].minor.fts5yy24, fts5yymsp[0].minor.fts5yy24, 0);
 }
-#line 1107 "fts5parse.c"
+#line 1103 "fts5parse.c"
   fts5yymsp[-2].minor.fts5yy24 = fts5yylhsminor.fts5yy24;
         break;
       case 9: /* expr ::= expr NOT expr */
@@ -2535,7 +2533,7 @@ static fts5YYACTIONTYPE fts5yy_reduce(
 {
   fts5yylhsminor.fts5yy24 = sqlite3Fts5ParseNode(pParse, FTS5_NOT, fts5yymsp[-2].minor.fts5yy24, fts5yymsp[0].minor.fts5yy24, 0);
 }
-#line 1115 "fts5parse.c"
+#line 1111 "fts5parse.c"
   fts5yymsp[-2].minor.fts5yy24 = fts5yylhsminor.fts5yy24;
         break;
       case 10: /* expr ::= colset COLON LP expr RP */
@@ -2544,19 +2542,19 @@ static fts5YYACTIONTYPE fts5yy_reduce(
   sqlite3Fts5ParseSetColset(pParse, fts5yymsp[-1].minor.fts5yy24, fts5yymsp[-4].minor.fts5yy11);
   fts5yylhsminor.fts5yy24 = fts5yymsp[-1].minor.fts5yy24;
 }
-#line 1124 "fts5parse.c"
+#line 1120 "fts5parse.c"
   fts5yymsp[-4].minor.fts5yy24 = fts5yylhsminor.fts5yy24;
         break;
       case 11: /* expr ::= LP expr RP */
 #line 129 "fts5parse.y"
 {fts5yymsp[-2].minor.fts5yy24 = fts5yymsp[-1].minor.fts5yy24;}
-#line 1130 "fts5parse.c"
+#line 1126 "fts5parse.c"
         break;
       case 12: /* expr ::= exprlist */
       case 13: /* exprlist ::= cnearset */ fts5yytestcase(fts5yyruleno==13);
 #line 130 "fts5parse.y"
 {fts5yylhsminor.fts5yy24 = fts5yymsp[0].minor.fts5yy24;}
-#line 1136 "fts5parse.c"
+#line 1132 "fts5parse.c"
   fts5yymsp[0].minor.fts5yy24 = fts5yylhsminor.fts5yy24;
         break;
       case 14: /* exprlist ::= exprlist cnearset */
@@ -2564,7 +2562,7 @@ static fts5YYACTIONTYPE fts5yy_reduce(
 {
   fts5yylhsminor.fts5yy24 = sqlite3Fts5ParseImplicitAnd(pParse, fts5yymsp[-1].minor.fts5yy24, fts5yymsp[0].minor.fts5yy24);
 }
-#line 1144 "fts5parse.c"
+#line 1140 "fts5parse.c"
   fts5yymsp[-1].minor.fts5yy24 = fts5yylhsminor.fts5yy24;
         break;
       case 15: /* cnearset ::= nearset */
@@ -2572,7 +2570,7 @@ static fts5YYACTIONTYPE fts5yy_reduce(
 { 
   fts5yylhsminor.fts5yy24 = sqlite3Fts5ParseNode(pParse, FTS5_STRING, 0, 0, fts5yymsp[0].minor.fts5yy46); 
 }
-#line 1152 "fts5parse.c"
+#line 1148 "fts5parse.c"
   fts5yymsp[0].minor.fts5yy24 = fts5yylhsminor.fts5yy24;
         break;
       case 16: /* cnearset ::= colset COLON nearset */
@@ -2581,13 +2579,13 @@ static fts5YYACTIONTYPE fts5yy_reduce(
   fts5yylhsminor.fts5yy24 = sqlite3Fts5ParseNode(pParse, FTS5_STRING, 0, 0, fts5yymsp[0].minor.fts5yy46); 
   sqlite3Fts5ParseSetColset(pParse, fts5yylhsminor.fts5yy24, fts5yymsp[-2].minor.fts5yy11);
 }
-#line 1161 "fts5parse.c"
+#line 1157 "fts5parse.c"
   fts5yymsp[-2].minor.fts5yy24 = fts5yylhsminor.fts5yy24;
         break;
       case 17: /* nearset ::= phrase */
 #line 151 "fts5parse.y"
 { fts5yylhsminor.fts5yy46 = sqlite3Fts5ParseNearset(pParse, 0, fts5yymsp[0].minor.fts5yy53); }
-#line 1167 "fts5parse.c"
+#line 1163 "fts5parse.c"
   fts5yymsp[0].minor.fts5yy46 = fts5yylhsminor.fts5yy46;
         break;
       case 18: /* nearset ::= CARET phrase */
@@ -2596,7 +2594,7 @@ static fts5YYACTIONTYPE fts5yy_reduce(
   sqlite3Fts5ParseSetCaret(fts5yymsp[0].minor.fts5yy53);
   fts5yymsp[-1].minor.fts5yy46 = sqlite3Fts5ParseNearset(pParse, 0, fts5yymsp[0].minor.fts5yy53); 
 }
-#line 1176 "fts5parse.c"
+#line 1172 "fts5parse.c"
         break;
       case 19: /* nearset ::= STRING LP nearphrases neardist_opt RP */
 #line 156 "fts5parse.y"
@@ -2605,7 +2603,7 @@ static fts5YYACTIONTYPE fts5yy_reduce(
   sqlite3Fts5ParseSetDistance(pParse, fts5yymsp[-2].minor.fts5yy46, &fts5yymsp[-1].minor.fts5yy0);
   fts5yylhsminor.fts5yy46 = fts5yymsp[-2].minor.fts5yy46;
 }
-#line 1185 "fts5parse.c"
+#line 1181 "fts5parse.c"
   fts5yymsp[-4].minor.fts5yy46 = fts5yylhsminor.fts5yy46;
         break;
       case 20: /* nearphrases ::= phrase */
@@ -2613,7 +2611,7 @@ static fts5YYACTIONTYPE fts5yy_reduce(
 { 
   fts5yylhsminor.fts5yy46 = sqlite3Fts5ParseNearset(pParse, 0, fts5yymsp[0].minor.fts5yy53); 
 }
-#line 1193 "fts5parse.c"
+#line 1189 "fts5parse.c"
   fts5yymsp[0].minor.fts5yy46 = fts5yylhsminor.fts5yy46;
         break;
       case 21: /* nearphrases ::= nearphrases phrase */
@@ -2621,25 +2619,25 @@ static fts5YYACTIONTYPE fts5yy_reduce(
 {
   fts5yylhsminor.fts5yy46 = sqlite3Fts5ParseNearset(pParse, fts5yymsp[-1].minor.fts5yy46, fts5yymsp[0].minor.fts5yy53);
 }
-#line 1201 "fts5parse.c"
+#line 1197 "fts5parse.c"
   fts5yymsp[-1].minor.fts5yy46 = fts5yylhsminor.fts5yy46;
         break;
       case 22: /* neardist_opt ::= */
 #line 172 "fts5parse.y"
 { fts5yymsp[1].minor.fts5yy0.p = 0; fts5yymsp[1].minor.fts5yy0.n = 0; }
-#line 1207 "fts5parse.c"
+#line 1203 "fts5parse.c"
         break;
       case 23: /* neardist_opt ::= COMMA STRING */
 #line 173 "fts5parse.y"
 { fts5yymsp[-1].minor.fts5yy0 = fts5yymsp[0].minor.fts5yy0; }
-#line 1212 "fts5parse.c"
+#line 1208 "fts5parse.c"
         break;
       case 24: /* phrase ::= phrase PLUS STRING star_opt */
 #line 185 "fts5parse.y"
 { 
   fts5yylhsminor.fts5yy53 = sqlite3Fts5ParseTerm(pParse, fts5yymsp[-3].minor.fts5yy53, &fts5yymsp[-1].minor.fts5yy0, fts5yymsp[0].minor.fts5yy4);
 }
-#line 1219 "fts5parse.c"
+#line 1215 "fts5parse.c"
   fts5yymsp[-3].minor.fts5yy53 = fts5yylhsminor.fts5yy53;
         break;
       case 25: /* phrase ::= STRING star_opt */
@@ -2647,18 +2645,18 @@ static fts5YYACTIONTYPE fts5yy_reduce(
 { 
   fts5yylhsminor.fts5yy53 = sqlite3Fts5ParseTerm(pParse, 0, &fts5yymsp[-1].minor.fts5yy0, fts5yymsp[0].minor.fts5yy4);
 }
-#line 1227 "fts5parse.c"
+#line 1223 "fts5parse.c"
   fts5yymsp[-1].minor.fts5yy53 = fts5yylhsminor.fts5yy53;
         break;
       case 26: /* star_opt ::= STAR */
 #line 196 "fts5parse.y"
 { fts5yymsp[0].minor.fts5yy4 = 1; }
-#line 1233 "fts5parse.c"
+#line 1229 "fts5parse.c"
         break;
       case 27: /* star_opt ::= */
 #line 197 "fts5parse.y"
 { fts5yymsp[1].minor.fts5yy4 = 0; }
-#line 1238 "fts5parse.c"
+#line 1234 "fts5parse.c"
         break;
       default:
         break;
@@ -2726,7 +2724,7 @@ static void fts5yy_syntax_error(
   sqlite3Fts5ParseError(
     pParse, "fts5: syntax error near \"%.*s\"",FTS5TOKEN.n,FTS5TOKEN.p
   );
-#line 1306 "fts5parse.c"
+#line 1302 "fts5parse.c"
 /************ End %syntax_error code ******************************************/
   sqlite3Fts5ParserARG_STORE /* Suppress warning about unused %extra_argument variable */
   sqlite3Fts5ParserCTX_STORE
@@ -2952,9 +2950,8 @@ static void sqlite3Fts5Parser(
 */
 static int sqlite3Fts5ParserFallback(int iToken){
 #ifdef fts5YYFALLBACK
-  if( iToken<(int)(sizeof(fts5yyFallback)/sizeof(fts5yyFallback[0])) ){
-    return fts5yyFallback[iToken];
-  }
+  assert( iToken<(int)(sizeof(fts5yyFallback)/sizeof(fts5yyFallback[0])) );
+  return fts5yyFallback[iToken];
 #else
   (void)iToken;
 #endif
@@ -4770,7 +4767,7 @@ static int sqlite3Fts5ConfigDeclareVtab(Fts5Config *pConfig){
     rc = sqlite3_declare_vtab(pConfig->db, zSql);
     sqlite3_free(zSql);
   }
-  
+ 
   return rc;
 }
 
@@ -5357,6 +5354,42 @@ static void sqlite3Fts5ExprFree(Fts5Expr *p){
     sqlite3_free(p->apExprPhrase);
     sqlite3_free(p);
   }
+}
+
+static int sqlite3Fts5ExprAnd(Fts5Expr **pp1, Fts5Expr *p2){
+  Fts5Parse sParse;
+  memset(&sParse, 0, sizeof(sParse));
+
+  if( *pp1 ){
+    Fts5Expr *p1 = *pp1;
+    int nPhrase = p1->nPhrase + p2->nPhrase;
+
+    p1->pRoot = sqlite3Fts5ParseNode(&sParse, FTS5_AND, p1->pRoot, p2->pRoot,0);
+    p2->pRoot = 0;
+
+    if( sParse.rc==SQLITE_OK ){
+      Fts5ExprPhrase **ap = (Fts5ExprPhrase**)sqlite3_realloc(
+          p1->apExprPhrase, nPhrase * sizeof(Fts5ExprPhrase*)
+      );
+      if( ap==0 ){
+        sParse.rc = SQLITE_NOMEM;
+      }else{
+        int i;
+        memmove(&ap[p2->nPhrase], ap, p1->nPhrase*sizeof(Fts5ExprPhrase*));
+        for(i=0; i<p2->nPhrase; i++){
+          ap[i] = p2->apExprPhrase[i];
+        }
+        p1->nPhrase = nPhrase;
+        p1->apExprPhrase = ap;
+      }
+    }
+    sqlite3_free(p2->apExprPhrase);
+    sqlite3_free(p2);
+  }else{
+    *pp1 = p2;
+  }
+
+  return sParse.rc;
 }
 
 /*
@@ -9157,6 +9190,7 @@ static Fts5Data *fts5DataRead(Fts5Index *p, i64 iRowid){
       }else{
         /* TODO1: Fix this */
         pRet->p[nByte] = 0x00;
+        pRet->p[nByte+1] = 0x00;
         pRet->szLeaf = fts5GetU16(&pRet->p[2]);
       }
     }
@@ -9179,7 +9213,7 @@ static void fts5DataRelease(Fts5Data *pData){
 static Fts5Data *fts5LeafRead(Fts5Index *p, i64 iRowid){
   Fts5Data *pRet = fts5DataRead(p, iRowid);
   if( pRet ){
-    if( pRet->szLeaf>pRet->nn ){
+    if( pRet->nn<4 || pRet->szLeaf>pRet->nn ){
       p->rc = FTS5_CORRUPT;
       fts5DataRelease(pRet);
       pRet = 0;
@@ -13463,9 +13497,12 @@ static void fts5MergePrefixLists(
         Fts5PoslistWriter writer;
         memset(&writer, 0, sizeof(writer));
 
+        /* See the earlier comment in this function for an explanation of why
+        ** corrupt input position lists might cause the output to consume
+        ** at most 20 bytes of unexpected space. */
         fts5MergeAppendDocid(&out, iLastRowid, i2.iRowid);
         fts5BufferZero(&tmp);
-        sqlite3Fts5BufferSize(&p->rc, &tmp, i1.nPoslist + i2.nPoslist);
+        sqlite3Fts5BufferSize(&p->rc, &tmp, i1.nPoslist + i2.nPoslist + 10 + 10);
         if( p->rc ) break;
 
         sqlite3Fts5PoslistNext64(a1, i1.nPoslist, &iOff1, &iPos1);
@@ -13513,6 +13550,12 @@ static void fts5MergePrefixLists(
         }
 
         /* WRITEPOSLISTSIZE */
+        assert_nc( tmp.n<=i1.nPoslist+i2.nPoslist );
+        assert( tmp.n<=i1.nPoslist+i2.nPoslist+10+10 );
+        if( tmp.n>i1.nPoslist+i2.nPoslist ){
+          if( p->rc==SQLITE_OK ) p->rc = FTS5_CORRUPT;
+          break;
+        }
         fts5BufferSafeAppendVarint(&out, tmp.n * 2);
         fts5BufferSafeAppendBlob(&out, tmp.p, tmp.n);
         fts5DoclistIterNext(&i1);
@@ -15515,16 +15558,38 @@ static void fts5SetUniqueFlag(sqlite3_index_info *pIdxInfo){
 ** Implementation of the xBestIndex method for FTS5 tables. Within the 
 ** WHERE constraint, it searches for the following:
 **
-**   1. A MATCH constraint against the special column.
+**   1. A MATCH constraint against the table column.
 **   2. A MATCH constraint against the "rank" column.
-**   3. An == constraint against the rowid column.
-**   4. A < or <= constraint against the rowid column.
-**   5. A > or >= constraint against the rowid column.
+**   3. A MATCH constraint against some other column.
+**   4. An == constraint against the rowid column.
+**   5. A < or <= constraint against the rowid column.
+**   6. A > or >= constraint against the rowid column.
 **
-** Within the ORDER BY, either:
+** Within the ORDER BY, the following are supported:
 **
 **   5. ORDER BY rank [ASC|DESC]
 **   6. ORDER BY rowid [ASC|DESC]
+**
+** Information for the xFilter call is passed via both the idxNum and 
+** idxStr variables. Specifically, idxNum is a bitmask of the following
+** flags used to encode the ORDER BY clause:
+**
+**     FTS5_BI_ORDER_RANK
+**     FTS5_BI_ORDER_ROWID
+**     FTS5_BI_ORDER_DESC
+**
+** idxStr is used to encode data from the WHERE clause. For each argument
+** passed to the xFilter method, the following is appended to idxStr:
+**
+**   Match against table column:            "m"
+**   Match against rank column:             "r"
+**   Match against other column:            "<column-number>"
+**   Equality constraint against the rowid: "="
+**   A < or <= against the rowid:           "<"
+**   A > or >= against the rowid:           ">"
+**
+** This function ensures that there is at most one "r" or "=". And that if
+** there exists an "=" then there is no "<" or ">".
 **
 ** Costs are assigned as follows:
 **
@@ -15553,32 +15618,18 @@ static int fts5BestIndexMethod(sqlite3_vtab *pVTab, sqlite3_index_info *pInfo){
   Fts5Config *pConfig = pTab->pConfig;
   const int nCol = pConfig->nCol;
   int idxFlags = 0;               /* Parameter passed through to xFilter() */
-  int bHasMatch;
-  int iNext;
   int i;
 
-  struct Constraint {
-    int op;                       /* Mask against sqlite3_index_constraint.op */
-    int fts5op;                   /* FTS5 mask for idxFlags */
-    int iCol;                     /* 0==rowid, 1==tbl, 2==rank */
-    int omit;                     /* True to omit this if found */
-    int iConsIndex;               /* Index in pInfo->aConstraint[] */
-  } aConstraint[] = {
-    {SQLITE_INDEX_CONSTRAINT_MATCH|SQLITE_INDEX_CONSTRAINT_EQ, 
-                                    FTS5_BI_MATCH,    1, 1, -1},
-    {SQLITE_INDEX_CONSTRAINT_MATCH|SQLITE_INDEX_CONSTRAINT_EQ, 
-                                    FTS5_BI_RANK,     2, 1, -1},
-    {SQLITE_INDEX_CONSTRAINT_EQ,    FTS5_BI_ROWID_EQ, 0, 0, -1},
-    {SQLITE_INDEX_CONSTRAINT_LT|SQLITE_INDEX_CONSTRAINT_LE, 
-                                    FTS5_BI_ROWID_LE, 0, 0, -1},
-    {SQLITE_INDEX_CONSTRAINT_GT|SQLITE_INDEX_CONSTRAINT_GE, 
-                                    FTS5_BI_ROWID_GE, 0, 0, -1},
-  };
+  char *idxStr;
+  int iIdxStr = 0;
+  int iCons = 0;
 
-  int aColMap[3];
-  aColMap[0] = -1;
-  aColMap[1] = nCol;
-  aColMap[2] = nCol+1;
+  int bSeenEq = 0;
+  int bSeenGt = 0;
+  int bSeenLt = 0;
+  int bSeenMatch = 0;
+  int bSeenRank = 0;
+
 
   assert( SQLITE_INDEX_CONSTRAINT_EQ<SQLITE_INDEX_CONSTRAINT_MATCH );
   assert( SQLITE_INDEX_CONSTRAINT_GT<SQLITE_INDEX_CONSTRAINT_MATCH );
@@ -15586,40 +15637,85 @@ static int fts5BestIndexMethod(sqlite3_vtab *pVTab, sqlite3_index_info *pInfo){
   assert( SQLITE_INDEX_CONSTRAINT_GE<SQLITE_INDEX_CONSTRAINT_MATCH );
   assert( SQLITE_INDEX_CONSTRAINT_LE<SQLITE_INDEX_CONSTRAINT_MATCH );
 
-  /* Set idxFlags flags for all WHERE clause terms that will be used. */
+  if( pConfig->bLock ){
+    pTab->base.zErrMsg = sqlite3_mprintf(
+        "recursively defined fts5 content table"
+    );
+    return SQLITE_ERROR;
+  }
+
+  idxStr = (char*)sqlite3_malloc(pInfo->nConstraint * 6 + 1);
+  if( idxStr==0 ) return SQLITE_NOMEM;
+  pInfo->idxStr = idxStr;
+  pInfo->needToFreeIdxStr = 1;
+
   for(i=0; i<pInfo->nConstraint; i++){
     struct sqlite3_index_constraint *p = &pInfo->aConstraint[i];
     int iCol = p->iColumn;
-
-    if( (p->op==SQLITE_INDEX_CONSTRAINT_MATCH && iCol>=0 && iCol<=nCol)
-     || (p->op==SQLITE_INDEX_CONSTRAINT_EQ && iCol==nCol)
+    if( p->op==SQLITE_INDEX_CONSTRAINT_MATCH
+     || (p->op==SQLITE_INDEX_CONSTRAINT_EQ && iCol>=nCol)
     ){
       /* A MATCH operator or equivalent */
-      if( p->usable ){
-        idxFlags = (idxFlags & 0xFFFF) | FTS5_BI_MATCH | (iCol << 16);
-        aConstraint[0].iConsIndex = i;
-      }else{
+      if( p->usable==0 || iCol<0 ){
         /* As there exists an unusable MATCH constraint this is an 
         ** unusable plan. Set a prohibitively high cost. */
         pInfo->estimatedCost = 1e50;
+        assert( iIdxStr < pInfo->nConstraint*6 + 1 );
+        idxStr[iIdxStr] = 0;
         return SQLITE_OK;
+      }else{
+        if( iCol==nCol+1 ){
+          if( bSeenRank ) continue;
+          idxStr[iIdxStr++] = 'r';
+          bSeenRank = 1;
+        }else{
+          bSeenMatch = 1;
+          idxStr[iIdxStr++] = 'm';
+          if( iCol<nCol ){
+            sqlite3_snprintf(6, &idxStr[iIdxStr], "%d", iCol);
+            idxStr += strlen(&idxStr[iIdxStr]);
+            assert( idxStr[iIdxStr]=='\0' );
+          }
+        }
+        pInfo->aConstraintUsage[i].argvIndex = ++iCons;
+        pInfo->aConstraintUsage[i].omit = 1;
       }
-    }else if( p->op<=SQLITE_INDEX_CONSTRAINT_MATCH ){
-      int j;
-      for(j=1; j<ArraySize(aConstraint); j++){
-        struct Constraint *pC = &aConstraint[j];
-        if( iCol==aColMap[pC->iCol] && (p->op & pC->op) && p->usable ){
-          pC->iConsIndex = i;
-          idxFlags |= pC->fts5op;
+    }
+    else if( p->usable && bSeenEq==0 
+      && p->op==SQLITE_INDEX_CONSTRAINT_EQ && iCol<0 
+    ){
+      idxStr[iIdxStr++] = '=';
+      bSeenEq = 1;
+      pInfo->aConstraintUsage[i].argvIndex = ++iCons;
+    }
+  }
+
+  if( bSeenEq==0 ){
+    for(i=0; i<pInfo->nConstraint; i++){
+      struct sqlite3_index_constraint *p = &pInfo->aConstraint[i];
+      if( p->iColumn<0 && p->usable ){
+        int op = p->op;
+        if( op==SQLITE_INDEX_CONSTRAINT_LT || op==SQLITE_INDEX_CONSTRAINT_LE ){
+          if( bSeenLt ) continue;
+          idxStr[iIdxStr++] = '<';
+          pInfo->aConstraintUsage[i].argvIndex = ++iCons;
+          bSeenLt = 1;
+        }else
+        if( op==SQLITE_INDEX_CONSTRAINT_GT || op==SQLITE_INDEX_CONSTRAINT_GE ){
+          if( bSeenGt ) continue;
+          idxStr[iIdxStr++] = '>';
+          pInfo->aConstraintUsage[i].argvIndex = ++iCons;
+          bSeenGt = 1;
         }
       }
     }
   }
+  idxStr[iIdxStr] = '\0';
 
   /* Set idxFlags flags for the ORDER BY clause */
   if( pInfo->nOrderBy==1 ){
     int iSort = pInfo->aOrderBy[0].iColumn;
-    if( iSort==(pConfig->nCol+1) && BitFlagTest(idxFlags, FTS5_BI_MATCH) ){
+    if( iSort==(pConfig->nCol+1) && bSeenMatch ){
       idxFlags |= FTS5_BI_ORDER_RANK;
     }else if( iSort==-1 ){
       idxFlags |= FTS5_BI_ORDER_ROWID;
@@ -15633,26 +15729,15 @@ static int fts5BestIndexMethod(sqlite3_vtab *pVTab, sqlite3_index_info *pInfo){
   }
 
   /* Calculate the estimated cost based on the flags set in idxFlags. */
-  bHasMatch = BitFlagTest(idxFlags, FTS5_BI_MATCH);
-  if( BitFlagTest(idxFlags, FTS5_BI_ROWID_EQ) ){
-    pInfo->estimatedCost = bHasMatch ? 100.0 : 10.0;
-    if( bHasMatch==0 ) fts5SetUniqueFlag(pInfo);
-  }else if( BitFlagAllTest(idxFlags, FTS5_BI_ROWID_LE|FTS5_BI_ROWID_GE) ){
-    pInfo->estimatedCost = bHasMatch ? 500.0 : 250000.0;
-  }else if( BitFlagTest(idxFlags, FTS5_BI_ROWID_LE|FTS5_BI_ROWID_GE) ){
-    pInfo->estimatedCost = bHasMatch ? 750.0 : 750000.0;
+  if( bSeenEq ){
+    pInfo->estimatedCost = bSeenMatch ? 100.0 : 10.0;
+    if( bSeenMatch==0 ) fts5SetUniqueFlag(pInfo);
+  }else if( bSeenLt && bSeenGt ){
+    pInfo->estimatedCost = bSeenMatch ? 500.0 : 250000.0;
+  }else if( bSeenLt || bSeenGt ){
+    pInfo->estimatedCost = bSeenMatch ? 750.0 : 750000.0;
   }else{
-    pInfo->estimatedCost = bHasMatch ? 1000.0 : 1000000.0;
-  }
-
-  /* Assign argvIndex values to each constraint in use. */
-  iNext = 1;
-  for(i=0; i<ArraySize(aConstraint); i++){
-    struct Constraint *pC = &aConstraint[i];
-    if( pC->iConsIndex>=0 ){
-      pInfo->aConstraintUsage[pC->iConsIndex].argvIndex = iNext++;
-      pInfo->aConstraintUsage[pC->iConsIndex].omit = (unsigned char)pC->omit;
-    }
+    pInfo->estimatedCost = bSeenMatch ? 1000.0 : 1000000.0;
   }
 
   pInfo->idxNum = idxFlags;
@@ -15975,7 +16060,7 @@ static int fts5CursorFirstSorted(
   **
   ** If SQLite a built-in statement cache, this wouldn't be a problem. */
   rc = fts5PrepareStatement(&pSorter->pStmt, pConfig,
-      "SELECT rowid, rank FROM %Q.%Q ORDER BY %s(%s%s%s) %s",
+      "SELECT rowid, rank FROM %Q.%Q ORDER BY %s(\"%w\"%s%s) %s",
       pConfig->zDb, pConfig->zName, zRank, pConfig->zName,
       (zRankArgs ? ", " : ""),
       (zRankArgs ? zRankArgs : ""),
@@ -16031,10 +16116,10 @@ static int fts5SpecialMatch(
   assert( pTab->p.base.zErrMsg==0 );
   pCsr->ePlan = FTS5_PLAN_SPECIAL;
 
-  if( 0==sqlite3_strnicmp("reads", z, n) ){
+  if( n==5 && 0==sqlite3_strnicmp("reads", z, n) ){
     pCsr->iSpecial = sqlite3Fts5IndexReads(pTab->p.pIndex);
   }
-  else if( 0==sqlite3_strnicmp("id", z, n) ){
+  else if( n==2 && 0==sqlite3_strnicmp("id", z, n) ){
     pCsr->iSpecial = pCsr->iCsrId;
   }
   else{
@@ -16175,7 +16260,7 @@ static i64 fts5GetRowidLimit(sqlite3_value *pVal, i64 iDefault){
 static int fts5FilterMethod(
   sqlite3_vtab_cursor *pCursor,   /* The cursor used for this query */
   int idxNum,                     /* Strategy index */
-  const char *zUnused,            /* Unused */
+  const char *idxStr,             /* Unused */
   int nVal,                       /* Number of elements in apVal */
   sqlite3_value **apVal           /* Arguments for the indexing scheme */
 ){
@@ -16183,19 +16268,17 @@ static int fts5FilterMethod(
   Fts5Config *pConfig = pTab->p.pConfig;
   Fts5Cursor *pCsr = (Fts5Cursor*)pCursor;
   int rc = SQLITE_OK;             /* Error code */
-  int iVal = 0;                   /* Counter for apVal[] */
   int bDesc;                      /* True if ORDER BY [rank|rowid] DESC */
   int bOrderByRank;               /* True if ORDER BY rank */
-  sqlite3_value *pMatch = 0;      /* <tbl> MATCH ? expression (or NULL) */
   sqlite3_value *pRank = 0;       /* rank MATCH ? expression (or NULL) */
   sqlite3_value *pRowidEq = 0;    /* rowid = ? expression (or NULL) */
   sqlite3_value *pRowidLe = 0;    /* rowid <= ? expression (or NULL) */
   sqlite3_value *pRowidGe = 0;    /* rowid >= ? expression (or NULL) */
   int iCol;                       /* Column on LHS of MATCH operator */
   char **pzErrmsg = pConfig->pzErrmsg;
-
-  UNUSED_PARAM(zUnused);
-  UNUSED_PARAM(nVal);
+  int i;
+  int iIdxStr = 0;
+  Fts5Expr *pExpr = 0;
 
   if( pCsr->ePlan ){
     fts5FreeCursorComponents(pCsr);
@@ -16208,23 +16291,60 @@ static int fts5FilterMethod(
   assert( pCsr->pRank==0 );
   assert( pCsr->zRank==0 );
   assert( pCsr->zRankArgs==0 );
+  assert( pTab->pSortCsr==0 || nVal==0 );
 
   assert( pzErrmsg==0 || pzErrmsg==&pTab->p.base.zErrMsg );
   pConfig->pzErrmsg = &pTab->p.base.zErrMsg;
 
-  /* Decode the arguments passed through to this function.
-  **
-  ** Note: The following set of if(...) statements must be in the same
-  ** order as the corresponding entries in the struct at the top of
-  ** fts5BestIndexMethod().  */
-  if( BitFlagTest(idxNum, FTS5_BI_MATCH) ) pMatch = apVal[iVal++];
-  if( BitFlagTest(idxNum, FTS5_BI_RANK) ) pRank = apVal[iVal++];
-  if( BitFlagTest(idxNum, FTS5_BI_ROWID_EQ) ) pRowidEq = apVal[iVal++];
-  if( BitFlagTest(idxNum, FTS5_BI_ROWID_LE) ) pRowidLe = apVal[iVal++];
-  if( BitFlagTest(idxNum, FTS5_BI_ROWID_GE) ) pRowidGe = apVal[iVal++];
-  iCol = (idxNum>>16);
-  assert( iCol>=0 && iCol<=pConfig->nCol );
-  assert( iVal==nVal );
+  /* Decode the arguments passed through to this function. */
+  for(i=0; i<nVal; i++){
+    switch( idxStr[iIdxStr++] ){
+      case 'r':
+        pRank = apVal[i];
+        break;
+      case 'm': {
+        const char *zText = (const char*)sqlite3_value_text(apVal[i]);
+        if( zText==0 ) zText = "";
+
+        if( idxStr[iIdxStr]>='0' && idxStr[iIdxStr]<='9' ){
+          iCol = 0;
+          do{
+            iCol = iCol*10 + (idxStr[iIdxStr]-'0');
+            iIdxStr++;
+          }while( idxStr[iIdxStr]>='0' && idxStr[iIdxStr]<='9' );
+        }else{
+          iCol = pConfig->nCol;
+        }
+
+        if( zText[0]=='*' ){
+          /* The user has issued a query of the form "MATCH '*...'". This
+          ** indicates that the MATCH expression is not a full text query,
+          ** but a request for an internal parameter.  */
+          rc = fts5SpecialMatch(pTab, pCsr, &zText[1]);
+          goto filter_out;
+        }else{
+          char **pzErr = &pTab->p.base.zErrMsg;
+          rc = sqlite3Fts5ExprNew(pConfig, iCol, zText, &pExpr, pzErr);
+          if( rc==SQLITE_OK ){
+            rc = sqlite3Fts5ExprAnd(&pCsr->pExpr, pExpr);
+            pExpr = 0;
+          }
+          if( rc!=SQLITE_OK ) goto filter_out;
+        }
+
+        break;
+      }
+      case '=':
+        pRowidEq = apVal[i];
+        break;
+      case '<':
+        pRowidLe = apVal[i];
+        break;
+      default: assert( idxStr[iIdxStr-1]=='>' );
+        pRowidGe = apVal[i];
+        break;
+    }
+  }
   bOrderByRank = ((idxNum & FTS5_BI_ORDER_RANK) ? 1 : 0);
   pCsr->bDesc = bDesc = ((idxNum & FTS5_BI_ORDER_DESC) ? 1 : 0);
 
@@ -16251,7 +16371,7 @@ static int fts5FilterMethod(
     ** (pCursor) is used to execute the query issued by function 
     ** fts5CursorFirstSorted() above.  */
     assert( pRowidEq==0 && pRowidLe==0 && pRowidGe==0 && pRank==0 );
-    assert( nVal==0 && pMatch==0 && bOrderByRank==0 && bDesc==0 );
+    assert( nVal==0 && bOrderByRank==0 && bDesc==0 );
     assert( pCsr->iLastRowid==LARGEST_INT64 );
     assert( pCsr->iFirstRowid==SMALLEST_INT64 );
     if( pTab->pSortCsr->bDesc ){
@@ -16264,29 +16384,15 @@ static int fts5FilterMethod(
     pCsr->ePlan = FTS5_PLAN_SOURCE;
     pCsr->pExpr = pTab->pSortCsr->pExpr;
     rc = fts5CursorFirst(pTab, pCsr, bDesc);
-  }else if( pMatch ){
-    const char *zExpr = (const char*)sqlite3_value_text(apVal[0]);
-    if( zExpr==0 ) zExpr = "";
-
+  }else if( pCsr->pExpr ){
     rc = fts5CursorParseRank(pConfig, pCsr, pRank);
     if( rc==SQLITE_OK ){
-      if( zExpr[0]=='*' ){
-        /* The user has issued a query of the form "MATCH '*...'". This
-        ** indicates that the MATCH expression is not a full text query,
-        ** but a request for an internal parameter.  */
-        rc = fts5SpecialMatch(pTab, pCsr, &zExpr[1]);
+      if( bOrderByRank ){
+        pCsr->ePlan = FTS5_PLAN_SORTED_MATCH;
+        rc = fts5CursorFirstSorted(pTab, pCsr, bDesc);
       }else{
-        char **pzErr = &pTab->p.base.zErrMsg;
-        rc = sqlite3Fts5ExprNew(pConfig, iCol, zExpr, &pCsr->pExpr, pzErr);
-        if( rc==SQLITE_OK ){
-          if( bOrderByRank ){
-            pCsr->ePlan = FTS5_PLAN_SORTED_MATCH;
-            rc = fts5CursorFirstSorted(pTab, pCsr, bDesc);
-          }else{
-            pCsr->ePlan = FTS5_PLAN_MATCH;
-            rc = fts5CursorFirst(pTab, pCsr, bDesc);
-          }
-        }
+        pCsr->ePlan = FTS5_PLAN_MATCH;
+        rc = fts5CursorFirst(pTab, pCsr, bDesc);
       }
     }
   }else if( pConfig->zContent==0 ){
@@ -16303,7 +16409,7 @@ static int fts5FilterMethod(
     );
     if( rc==SQLITE_OK ){
       if( pCsr->ePlan==FTS5_PLAN_ROWID ){
-        sqlite3_bind_value(pCsr->pStmt, 1, apVal[0]);
+        sqlite3_bind_value(pCsr->pStmt, 1, pRowidEq);
       }else{
         sqlite3_bind_int64(pCsr->pStmt, 1, pCsr->iFirstRowid);
         sqlite3_bind_int64(pCsr->pStmt, 2, pCsr->iLastRowid);
@@ -16312,6 +16418,8 @@ static int fts5FilterMethod(
     }
   }
 
+ filter_out:
+  sqlite3Fts5ExprFree(pExpr);
   pConfig->pzErrmsg = pzErrmsg;
   return rc;
 }
@@ -17282,7 +17390,7 @@ static void fts5ApiCallback(
   iCsrId = sqlite3_value_int64(argv[0]);
 
   pCsr = fts5CursorFromCsrid(pAux->pGlobal, iCsrId);
-  if( pCsr==0 ){
+  if( pCsr==0 || pCsr->ePlan==0 ){
     char *zErr = sqlite3_mprintf("no such cursor: %lld", iCsrId);
     sqlite3_result_error(context, zErr, -1);
     sqlite3_free(zErr);
@@ -17698,7 +17806,7 @@ static void fts5SourceIdFunc(
 ){
   assert( nArg==0 );
   UNUSED_PARAM2(nArg, apUnused);
-  sqlite3_result_text(pCtx, "fts5: 2019-07-10 17:32:03 fc82b73eaac8b36950e527f12c4b5dc1e147e6f4ad2217ae43ad82882a88bfa6", -1, SQLITE_TRANSIENT);
+  sqlite3_result_text(pCtx, "fts5: 2019-10-04 15:03:17 c20a35336432025445f9f7e289d0cc3e4003fb17f45a4ce74c6269c407c6e09f", -1, SQLITE_TRANSIENT);
 }
 
 /*
@@ -17971,7 +18079,9 @@ static int fts5StorageGetStmt(
     }else{
       int f = SQLITE_PREPARE_PERSISTENT;
       if( eStmt>FTS5_STMT_LOOKUP ) f |= SQLITE_PREPARE_NO_VTAB;
+      p->pConfig->bLock++;
       rc = sqlite3_prepare_v3(pC->db, zSql, -1, f, &p->aStmt[eStmt], 0);
+      p->pConfig->bLock--;
       sqlite3_free(zSql);
       if( rc!=SQLITE_OK && pzErrMsg ){
         *pzErrMsg = sqlite3_mprintf("%s", sqlite3_errmsg(pC->db));

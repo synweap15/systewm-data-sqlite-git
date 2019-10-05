@@ -1349,6 +1349,11 @@ runTest {test session-1.9 {apply change set (remote stream)} -setup {
   setupDb [set fileName session-1.9.db]
 
   cleanupSomeText
+
+  if {[isNetFx40]} then {
+    object invoke System.Net.ServicePointManager SecurityProtocol \
+        {Ssl3 Tls Tls12 Tls11}
+  }
 } -body {
   createTheSchema $db main
 
