@@ -18,21 +18,6 @@ namespace eval ::Eagle {
     ############################ BEGIN Eagle ONLY #############################
     ###########################################################################
 
-    proc isNetFx40 {} {
-      if {![info exists ::eagle_platform(frameworkVersion)]} then {
-        return false
-      }
-
-      set version 4.0.30319.42000; # .NET Framework 4.0 RTM
-
-      if {[package vcompare \
-          $::eagle_platform(frameworkVersion) $version] >= 0} then {
-        return true
-      } else {
-        return false
-      }
-    }
-
     proc getSQLiteDefineConstantPrefix {} {
       #
       # NOTE: See if the define constant prefix setting has been overridden

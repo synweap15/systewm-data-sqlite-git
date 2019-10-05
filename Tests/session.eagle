@@ -1350,7 +1350,9 @@ runTest {test session-1.9 {apply change set (remote stream)} -setup {
 
   cleanupSomeText
 
-  if {[isNetFx40]} then {
+  if {[info exists ::eagle_platform(frameworkVersion)] && \
+      [package vcompare $::eagle_platform(frameworkVersion) \
+          4.0.30319.42000] >= 0} then {
     object invoke System.Net.ServicePointManager SecurityProtocol \
         {Ssl3 Tls Tls12 Tls11}
   }
