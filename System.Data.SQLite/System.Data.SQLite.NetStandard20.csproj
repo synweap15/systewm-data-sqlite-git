@@ -43,7 +43,6 @@
     <RootNamespace>System.Data.SQLite</RootNamespace>
     <AssemblyName>System.Data.SQLite</AssemblyName>
     <SQLiteNetDir>$(MSBuildProjectDirectory)\..</SQLiteNetDir>
-    <NetFx461>true</NetFx461>
     <IsDotNetStandard>true</IsDotNetStandard>
     <ConfigurationYear>NetStandard20</ConfigurationYear>
   </PropertyGroup>
