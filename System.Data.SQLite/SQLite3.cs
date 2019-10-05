@@ -3077,6 +3077,12 @@ namespace System.Data.SQLite
             case SQLiteConfigDbOpsEnum.SQLITE_DBCONFIG_ENABLE_QPSG: // int int*
             case SQLiteConfigDbOpsEnum.SQLITE_DBCONFIG_TRIGGER_EQP: // int int*
             case SQLiteConfigDbOpsEnum.SQLITE_DBCONFIG_RESET_DATABASE: // int int*
+            case SQLiteConfigDbOpsEnum.SQLITE_DBCONFIG_DEFENSIVE: // int int*
+            case SQLiteConfigDbOpsEnum.SQLITE_DBCONFIG_WRITABLE_SCHEMA: // int int*
+            case SQLiteConfigDbOpsEnum.SQLITE_DBCONFIG_LEGACY_ALTER_TABLE: // int int*
+            case SQLiteConfigDbOpsEnum.SQLITE_DBCONFIG_DQS_DML: // int int*
+            case SQLiteConfigDbOpsEnum.SQLITE_DBCONFIG_DQS_DDL: // int int*
+            case SQLiteConfigDbOpsEnum.SQLITE_DBCONFIG_ENABLE_VIEW: // int int*
                 {
                     if (!(value is bool))
                     {

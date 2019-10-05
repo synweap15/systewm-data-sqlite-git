@@ -1606,7 +1606,61 @@ namespace System.Data.SQLite
       /// irreversible, the process requires the use of this obscure flag and
       /// multiple steps to help ensure that it does not happen by accident.
       /// </summary>
-      SQLITE_DBCONFIG_RESET_DATABASE = 1009 // int int*
+      SQLITE_DBCONFIG_RESET_DATABASE = 1009, // int int*
+
+      /// <summary>
+      /// This option activates or deactivates the "defensive" flag for a
+      /// database connection.  When the defensive flag is enabled, language
+      /// features that allow ordinary SQL to deliberately corrupt the database
+      /// file are disabled.  The disabled features include but are not limited
+      /// to the following:
+      /// <![CDATA[<ul>]]>
+      /// <![CDATA[<li>]]>
+      /// The PRAGMA writable_schema=ON statement.
+      /// <![CDATA[</li>]]>
+      /// <![CDATA[<li>]]>
+      /// The PRAGMA journal_mode=OFF statement.
+      /// <![CDATA[</li>]]>
+      /// <![CDATA[<li>]]>
+      /// Writes to the sqlite_dbpage virtual table.
+      /// <![CDATA[</li>]]>
+      /// <![CDATA[<li>]]>
+      /// Direct writes to shadow tables.
+      /// <![CDATA[</li>]]>
+      /// <![CDATA[</ul>]]>
+      /// </summary>
+      SQLITE_DBCONFIG_DEFENSIVE = 1010, // int int*
+
+      /// <summary>
+      /// This option activates or deactivates the "writable_schema" flag.
+      /// </summary>
+      SQLITE_DBCONFIG_WRITABLE_SCHEMA = 1011, // int int*
+
+      /// <summary>
+      /// This option activates or deactivates the legacy behavior of the ALTER
+      /// TABLE RENAME command such it behaves as it did prior to version 3.24.0
+      /// (2018-06-04).
+      /// </summary>
+      SQLITE_DBCONFIG_LEGACY_ALTER_TABLE = 1012, // int int*
+
+      /// <summary>
+      /// This option activates or deactivates the legacy double-quoted string
+      /// literal misfeature for DML statement only, that is DELETE, INSERT,
+      /// SELECT, and UPDATE statements.
+      /// </summary>
+      SQLITE_DBCONFIG_DQS_DML = 1013, // int int*
+
+      /// <summary>
+      /// This option activates or deactivates the legacy double-quoted string
+      /// literal misfeature for DDL statements, such as CREATE TABLE and CREATE
+      /// INDEX.
+      /// </summary>
+      SQLITE_DBCONFIG_DQS_DDL = 1014, // int int*
+
+      /// <summary>
+      /// This option is used to enable or disable CREATE VIEW.
+      /// </summary>
+      SQLITE_DBCONFIG_ENABLE_VIEW = 1015 // int int*
   }
 
   // These are the options to the internal sqlite3_config call.

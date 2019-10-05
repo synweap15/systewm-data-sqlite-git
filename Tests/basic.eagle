@@ -4961,6 +4961,13 @@ runTest {test data-1.95 {SetConfigurationOption method} -setup {
   lappend dbConfigs SQLITE_DBCONFIG_NO_CKPT_ON_CLOSE; # int int*
   lappend dbConfigs SQLITE_DBCONFIG_ENABLE_QPSG; # int int*
   lappend dbConfigs SQLITE_DBCONFIG_TRIGGER_EQP; # int int*
+  lappend dbConfigs SQLITE_DBCONFIG_RESET_DATABASE; # int int*
+  lappend dbConfigs SQLITE_DBCONFIG_DEFENSIVE; # int int*
+  lappend dbConfigs SQLITE_DBCONFIG_WRITABLE_SCHEMA; # int int*
+  lappend dbConfigs SQLITE_DBCONFIG_LEGACY_ALTER_TABLE; # int int*
+  lappend dbConfigs SQLITE_DBCONFIG_DQS_DML; # int int*
+  lappend dbConfigs SQLITE_DBCONFIG_DQS_DDL; # int int*
+  lappend dbConfigs SQLITE_DBCONFIG_ENABLE_VIEW; # int int*
 
   set connection [getDbConnection]
 
@@ -5035,7 +5042,7 @@ runTest {test data-1.95 {SetConfigurationOption method} -setup {
   unset -nocomplain connection db fileName
 } -constraints {eagle monoBug28 command.sql compile.DATA SQLite\
 System.Data.SQLite} -match regexp -result {^\{\} \{\} \{\} \{\} \{\} \{\} \{\}\
-\{\} \{\} \{\} Ok 0 0 Ok \d+ \d+ True True$}}
+\{\} \{\} \{\} \{\} \{\} \{\} \{\} \{\} \{\} \{\} Ok 0 0 Ok \d+ \d+ True True$}}
 
 ###############################################################################
 
