@@ -1006,6 +1006,7 @@ set sds_manifests(eagle) {
   Externals/Eagle/bin/netStandard20/Eagle.dll
   Externals/Eagle/bin/netStandard20/EagleShell.dll
   Externals/Eagle/bin/netStandard20/EagleShell.runtimeconfig.json
+  Externals/Eagle/bin/netStandard21/EagleShell.runtimeconfig.json
   Externals/Eagle/lib/Eagle1.0/auxiliary.eagle
   Externals/Eagle/lib/Eagle1.0/compat.eagle
   Externals/Eagle/lib/Eagle1.0/csharp.eagle
