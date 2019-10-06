@@ -896,7 +896,7 @@ namespace testlinq
           string dateTimeFormat
           )
       {
-#if NET_40 || NET_45 || NET_451 || NET_452 || NET_46 || NET_461 || NET_462 || NET_47 || NET_471 || NET_472
+#if !NET_STANDARD_20 && !NET_STANDARD_21
           TraceListener listener = new ConsoleTraceListener();
 #else
           TraceListener listener = new TextWriterTraceListener(Console.Out);
