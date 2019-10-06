@@ -98,10 +98,24 @@ namespace eval ::Eagle {
           set oldSecurityProtocols [object invoke \
               System.Net.ServicePointManager SecurityProtocol]
 
+          set allSecurityProtocols [object invoke \
+              Enum GetNames System.Net.SecurityProtocolType]
+
+          set allSecurityProtocols [string map \
+              [list SystemDefault ""] $allSecurityProtocols]
+
+          if {[isDotNetCore]} then {
+            #
+            # HACK: Including "Ssl3" will cause an exception to be thrown
+            #       in the ServicePointManager.ValidateSecurityProtocol()
+            #       method.
+            #
+            set allSecurityProtocols [string map \
+                [list Ssl3 ""] $allSecurityProtocols]
+          }
+
           set allSecurityProtocols [join [string map [list "  " " "] \
-              [string trim [string map [list SystemDefault ""] [object \
-              invoke Enum GetNames System.Net.SecurityProtocolType]]]] \
-              ", "]
+              [string trim $allSecurityProtocols]] ", "]
 
           object invoke System.Net.ServicePointManager SecurityProtocol \
               $allSecurityProtocols
