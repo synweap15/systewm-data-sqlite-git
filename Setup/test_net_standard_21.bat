@@ -183,7 +183,7 @@ GOTO no_errors
   SET CONFIGURATION=%CONFIGURATION:NativeOnly=%
   IF EXIST "bin\%YEAR%\%CONFIGURATION%NetStandard21\bin" (
     IF EXIST "bin\%NATIVE_YEAR%\%PLATFORM%\%NATIVE_CONFIGURATION%" (
-      %__ECHO% "%DOTNET%" %SUBCOMMANDS% "Externals\Eagle\bin\netStandard20\%EAGLESHELL%" %PREARGS% -anyInitialize "set test_year {%YEAR%}; set test_native_year {%NATIVE_YEAR%}; set test_configuration {%CONFIGURATION%}; set test_configuration_suffix NetStandard21" -initialize -postInitialize "unset -nocomplain no(deleteSqliteImplicitNativeFiles); unset -nocomplain no(copySqliteImplicitNativeFiles)" -file "%TEST_FILE%" %POSTARGS%
+      %__ECHO% "%DOTNET%" %SUBCOMMANDS% "Externals\Eagle\bin\netStandard20\%EAGLESHELL%" %PREARGS% -anyInitialize "set test_year {%YEAR%}; set test_native_year {%NATIVE_YEAR%}; set test_configuration {%CONFIGURATION%}; set test_configuration_suffix NetStandard21; set test_extra netstandard2.1" -initialize -postInitialize "unset -nocomplain no(deleteSqliteImplicitNativeFiles); unset -nocomplain no(copySqliteImplicitNativeFiles)" -file "%TEST_FILE%" %POSTARGS%
       IF ERRORLEVEL 1 (
         ECHO Testing of "%YEAR%/%NATIVE_YEAR%/%CONFIGURATION%" .NET Standard 2.1 assembly failed.
         CALL :fn_SetErrorLevel
