@@ -3599,7 +3599,8 @@ namespace eval ::Eagle {
 
       if {[catch {
         saveEnvironmentVariables [list \
-            quietFindInterpreterTestPath quietSetupInterpreterTestPath]
+            quietFindInterpreterTestPath quietSetupInterpreterTestPath \
+            quietCheckForSecurityProtocols]
 
         try {
           #
@@ -3608,6 +3609,7 @@ namespace eval ::Eagle {
           #
           set ::env(quietFindInterpreterTestPath) 1
           set ::env(quietSetupInterpreterTestPath) 1
+          set ::env(quietCheckForSecurityProtocols) 1
 
           #
           # NOTE: Make sure the script debugger and the isolated interpreter
@@ -3675,7 +3677,8 @@ namespace eval ::Eagle {
           }}
         } finally {
           restoreEnvironmentVariables [list \
-              quietFindInterpreterTestPath quietSetupInterpreterTestPath]
+              quietFindInterpreterTestPath quietSetupInterpreterTestPath \
+              quietCheckForSecurityProtocols]
         }
       } error] == 0} then {
         addConstraint interruptCallback.sqlite3
