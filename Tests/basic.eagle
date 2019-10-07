@@ -2444,7 +2444,7 @@ runTest {test data-1.51 {nullable value types} -setup {
 } -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
 System.Data.SQLite} -match regexp -result {^\{0 x System#DBNull#\d+ 1\
 \{System\.Reflection\.TargetInvocationException: Exception has been thrown by\
-the target of an invocation\. ---> System\.InvalidCastException:.*\}\
+the target of an invocation\.\s+---> System\.InvalidCastException:.*\}\
 System#DBNull#\d+\} \{0 x 1 0 1 1\}$}}
 
 ###############################################################################
