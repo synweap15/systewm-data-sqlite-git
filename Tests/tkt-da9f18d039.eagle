@@ -85,9 +85,9 @@ runTest {test tkt-da9f18d039-1.2 {EF6 DateTime handling} -body {
   set result
 } -cleanup {
   unset -nocomplain code output error result
-} -constraints {eagle monoToDo SQLite file_System.Data.SQLite.dll testExec\
-file_System.Data.SQLite.EF6.dll file_testef6.exe file_northwindEF.db} \
--result {0 {}}}
+} -constraints {eagle monoToDo SQLite file_EntityFramework.dll\
+file_System.Data.SQLite.dll testExec file_System.Data.SQLite.EF6.dll\
+file_testef6.exe file_northwindEF.db} -result {0 {}}}
 
 ###############################################################################
 
