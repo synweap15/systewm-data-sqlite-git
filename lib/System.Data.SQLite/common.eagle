@@ -5848,7 +5848,7 @@ namespace eval ::Eagle {
               # HACK: Hard-code the constraint name here to that of .NET
               #       Framework executable.  When compiled for .NET Core
               #       this will be a DLL; however, the tests use the EXE
-              #       file name.
+              #       file name as the constraint name.
               #
               checkForFile $test_channel $testEf6ExeFile testef6.exe
             }
