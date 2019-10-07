@@ -547,6 +547,17 @@ namespace eval ::Eagle {
     }
 
     #
+    # HACK: When using [compileCSharp] on .NET Core 3.0, it will produce
+    #       compiler warnings complaining about mismatched versions of the
+    #       .NET Standard reference assemblies, e.g. 2.0 versus 2.1; Since
+    #       the test suite considers these warnings to be an indication of
+    #       test failure, we disable them here.
+    #
+    if {![info exists no(disableWarning1701)] && [isDotNetCore]} then {
+      lappend ::eagle_platform(csharpOptions) nowarn:1701
+    }
+
+    #
     # HACK: Prevent the Eagle core test suite infrastructure from checking
     #       test constraints that are time-consuming and/or most likely to
     #       be superfluous to third-party test suites (i.e. those that are
