@@ -53,8 +53,6 @@
     <file src="shared\Core\content\config.install.xdt" target="content\net451\web.config.install.xdt" />
     <file src="shared\Core\content\config.install.xdt" target="content\net46\app.config.install.xdt" />
     <file src="shared\Core\content\config.install.xdt" target="content\net46\web.config.install.xdt" />
-    <file src="shared\Core\content\config.install.xdt" target="content\netstandard2.1\app.config.install.xdt" />
-    <file src="shared\Core\content\config.install.xdt" target="content\netstandard2.1\web.config.install.xdt" />
     <file src="net40\EF6\content\config.transform" target="content\net40\app.config.transform" />
     <file src="net40\EF6\content\config.transform" target="content\net40\web.config.transform" />
     <file src="net40\EF6\content\config.transform" target="content\net45\app.config.transform" />
@@ -63,12 +61,9 @@
     <file src="net40\EF6\content\config.transform" target="content\net451\web.config.transform" />
     <file src="net40\EF6\content\config.transform" target="content\net46\app.config.transform" />
     <file src="net40\EF6\content\config.transform" target="content\net46\web.config.transform" />
-    <file src="net40\EF6\content\config.transform" target="content\netstandard2.1\app.config.transform" />
-    <file src="net40\EF6\content\config.transform" target="content\netstandard2.1\web.config.transform" />
     <file src="net40\EF6\tools\provider.ps1" target="tools\net40\install.ps1" />
     <file src="net40\EF6\tools\provider.ps1" target="tools\net45\install.ps1" />
     <file src="net40\EF6\tools\provider.ps1" target="tools\net451\install.ps1" />
     <file src="net40\EF6\tools\provider.ps1" target="tools\net46\install.ps1" />
-    <file src="net40\EF6\tools\provider.ps1" target="tools\netstandard2.1\install.ps1" />
   </files>
 </package>
