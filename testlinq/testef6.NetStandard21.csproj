@@ -74,18 +74,12 @@
                      Exists('$(OutputPath)')"
           Inputs="$(TargetPath)"
           Outputs="$(TargetPath).CopyToNetStandard21.done">
-    <Copy SourceFiles="$(TargetPath)"
-          DestinationFolder="$(OutputPath)..\netstandard2.1"
-          ContinueOnError="true" />
+    <CreateItem Include="$(OutputPath)**">
+      <Output ItemName="OutputPathFiles" TaskParameter="Include" />
+    </CreateItem>
 
-    <Copy SourceFiles="$(OutputPath)$(TargetName).pdb"
-          DestinationFiles="$(OutputPath)..\netstandard2.1\$(TargetName).pdb"
-          ContinueOnError="true"
-          Condition="'$(_DebugSymbolsProduced)' == 'true'" />
-
-    <Copy SourceFiles="NetStandard21\EF6\App.config"
-          DestinationFiles="$(OutputPath)..\netstandard2.1\$(TargetName).dll.config"
-          ContinueOnError="true" />
+    <Copy SourceFiles="@(OutputPathFiles)"
+          DestinationFiles="@(OutputPathFiles -> '$(OutputPath)..\netstandard2.1\%(RecursiveDir)%(Filename)%(Extension)')" />
 
     <Touch AlwaysCreate="true"
            Files="$(TargetPath).CopyToNetStandard21.done" />
@@ -207,6 +201,20 @@
       <Generator>EntityModelCodeGenerator</Generator>
       <LastGenOutput>NorthwindModel.EF6.NetStandard21.Designer.cs</LastGenOutput>
     </EntityDeploy>
+  </ItemGroup>
+
+  <!--
+  ******************************************************************************
+  **                        Library Project References                        **
+  ******************************************************************************
+  -->
+
+  <ItemGroup>
+    <ProjectReference Include="..\System.Data.SQLite\System.Data.SQLite.NetStandard21.csproj">
+      <Project>{AC139952-261A-4463-B6FA-AEBC25283A66}</Project>
+      <Name>System.Data.SQLite.NetStandard21</Name>
+      <Private>False</Private>
+    </ProjectReference>
   </ItemGroup>
 
   <!--
