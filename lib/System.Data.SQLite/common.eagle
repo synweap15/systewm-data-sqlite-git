@@ -5809,7 +5809,7 @@ namespace eval ::Eagle {
 
             if {![haveConstraint [appendArgs file_ \
                 [file tail $installerExeFile]]]} then {
-              checkForFile $test_channel $installerExeFile Installer.exe
+              checkForFile $test_channel $installerExeFile
             }
 
             if {![haveConstraint [appendArgs file_ \
@@ -5834,16 +5834,22 @@ namespace eval ::Eagle {
 
             if {![haveConstraint [appendArgs file_ \
                 [file tail $testExeFile]]]} then {
-              checkForFile $test_channel $testExeFile test.exe
+              checkForFile $test_channel $testExeFile
             }
 
             if {![haveConstraint [appendArgs file_ \
                 [file tail $testLinqExeFile]]]} then {
-              checkForFile $test_channel $testLinqExeFile testlinq.exe
+              checkForFile $test_channel $testLinqExeFile
             }
 
             if {![haveConstraint [appendArgs file_ \
                 [file tail $testEf6ExeFile]]]} then {
+              #
+              # HACK: Hard-code the constraint name here to that of .NET
+              #       Framework executable.  When compiled for .NET Core
+              #       this will be a DLL; however, the tests use the EXE
+              #       file name.
+              #
               checkForFile $test_channel $testEf6ExeFile testef6.exe
             }
 
