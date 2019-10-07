@@ -63,6 +63,36 @@
 
   <!--
   ******************************************************************************
+  **                    .NET Standard 2.1 Specific Targets                    **
+  ******************************************************************************
+  -->
+
+  <Target Name="CopyToNetStandard21"
+          Condition="'$(CopyToNetStandard21)' != 'false' And
+                     '$(OutputPath)' != '' And
+                     HasTrailingSlash('$(OutputPath)') And
+                     Exists('$(OutputPath)')"
+          Inputs="$(TargetPath)"
+          Outputs="$(TargetPath).CopyToNetStandard21.done">
+    <Copy SourceFiles="$(TargetPath)"
+          DestinationFolder="$(OutputPath)..\netstandard2.1"
+          ContinueOnError="true" />
+
+    <Copy SourceFiles="$(OutputPath)$(TargetName).pdb"
+          DestinationFiles="$(OutputPath)..\netstandard2.1\$(TargetName).pdb"
+          ContinueOnError="true"
+          Condition="'$(_DebugSymbolsProduced)' == 'true'" />
+
+    <Copy SourceFiles="NetStandard21\EF6\App.config"
+          DestinationFiles="$(OutputPath)..\netstandard2.1\$(TargetName).dll.config"
+          ContinueOnError="true" />
+
+    <Touch AlwaysCreate="true"
+           Files="$(TargetPath).CopyToNetStandard21.done" />
+  </Target>
+
+  <!--
+  ******************************************************************************
   **    .NET Standard 2.1 Specific Strong Name Signing Property Overrides     **
   ******************************************************************************
   -->
@@ -221,12 +251,8 @@
       DetectBuildTool;
       DetectOperatingSystem;
       $(BuildDependsOn);
-      CopyConfigurations;
+      CopyToNetStandard21;
     </BuildDependsOn>
-    <CleanDependsOn>
-      $(CleanDependsOn);
-      CleanConfigurations;
-    </CleanDependsOn>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.
