@@ -565,7 +565,7 @@ namespace eval ::Eagle {
         # NOTE: Running on .NET Core, prioritize its extra output directory
         #       for library files.
         #
-        return [list netstandard2.0 ""]
+        return [list netstandard2.0 netstandard2.1 ""]
       } else {
         #
         # NOTE: Use default list of extra output directories, which is one
