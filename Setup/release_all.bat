@@ -40,10 +40,11 @@ IF ERRORLEVEL 1 (
 )
 
 REM
-REM NOTE: Precompiled binary packages for the .NET Standard 2.0 are handled
-REM       by another tool.
+REM NOTE: Precompiled binary packages for .NET Standard 2.0 and
+REM       .NET Standard 2.1 are handled by another tool.
 REM
 SET NONETSTANDARD20=1
+SET NONETSTANDARD21=1
 
 %__ECHO3% CALL "%TOOLS%\set_common.bat"
 

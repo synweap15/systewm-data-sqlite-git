@@ -463,4 +463,40 @@
       may be checked if any errors should occur.
     </li>
   </ol>
+
+  <a name="netStandard21"></a>
+  <h2>.NET Standard 2.1 Build</h2>
+
+  <ol>
+    <li>
+      Complete the applicable steps outlined in the <a href="#all">All Builds</a>
+      section (above).
+    </li>
+
+    <li>
+      Make sure the &quot;&lt;root&gt;\bin&quot; and &quot;&lt;root&gt;\obj&quot;
+      directories are completely free of all output files.  In theory, you should
+      be able to simply delete these directories.
+    </li>
+
+    <li>Open a normal command prompt window with &quot;cmd.exe&quot;.</li>
+
+    <li>Change the current directory to &quot;&lt;root&gt;\Setup&quot;.</li>
+
+    <li>
+      Enter the following command to build the managed-only binaries for .NET
+      Standard 2.1:
+      <br />
+      <br />
+      <b>build_net_standard_21.bat</b>
+      <br />
+      <br />
+    </li>
+
+    <li>
+      Make sure everything succeeds with no errors; the log file
+      &quot;%TEMP%\System.Data.SQLite.Build_ReleaseManagedOnly_Any CPU_NetStandard21_Unknown.log&quot;
+      may be checked if any errors should occur.
+    </li>
+  </ol>
 </nowiki>
