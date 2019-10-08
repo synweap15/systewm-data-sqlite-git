@@ -37,7 +37,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{F1B93C04-C4AE-4D6D-B353-417AEFDCEE7B}</ProjectGuid>
+    <ProjectGuid>{5C2DC333-3ADB-4AA7-BE56-0C675C8EE32E}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>System.Data.SQLite.EF6</RootNamespace>

@@ -210,9 +210,9 @@
   -->
 
   <ItemGroup>
-    <ProjectReference Include="..\System.Data.SQLite\System.Data.SQLite.NetStandard21.csproj">
-      <Project>{AC139952-261A-4463-B6FA-AEBC25283A66}</Project>
-      <Name>System.Data.SQLite.NetStandard21</Name>
+    <ProjectReference Include="..\System.Data.SQLite.Linq\System.Data.SQLite.EF6.NetStandard21.csproj">
+      <Project>{5C2DC333-3ADB-4AA7-BE56-0C675C8EE32E}</Project>
+      <Name>System.Data.SQLite.EF6.NetStandard21</Name>
       <Private>False</Private>
     </ProjectReference>
   </ItemGroup>

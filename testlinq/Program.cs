@@ -23,6 +23,10 @@ using System.Data.EntityClient;
 using System.Data.Objects;
 #endif
 
+#if NET_STANDARD_21
+using System.Data.SQLite.EF6;
+#endif
+
 namespace testlinq
 {
   class Program
@@ -46,6 +50,10 @@ namespace testlinq
 
               Debugger.Break();
           }
+
+#if NET_STANDARD_21
+          DbProviderFactories.RegisterFactory("System.Data.SQLite.EF6", SQLiteProviderFactory.Instance);
+#endif
 
           string arg = null;
 
