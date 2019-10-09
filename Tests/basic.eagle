@@ -70,7 +70,9 @@ runTest {test data-1.2 {unit tests from the 'testlinq' project} -setup {
   #       same as when the 'testlinq.out' file was created.
   #
   set savedEncoding [object invoke Console OutputEncoding]
-  set encoding [object invoke System.Text.Encoding GetEncoding Windows-1252]
+
+  set encoding [object invoke System.Text.Encoding GetEncoding \
+      [expr {[isDotNetCore] ? "iso-8859-1" : "Windows-1252"}]]
 
   object invoke Console OutputEncoding $encoding
 } -body {
@@ -95,7 +97,7 @@ runTest {test data-1.2 {unit tests from the 'testlinq' project} -setup {
 } -constraints \
 {eagle command.object monoToDo SQLite file_System.Data.SQLite.dll\
 file_System.Data.SQLite.Linq.dll file_testlinq.exe file_northwindEF.db\
-file_testlinq.out testExec !dotNetCore} -result {0 True {}}}
+file_testlinq.out testExec} -result {0 True {}}}
 
 ###############################################################################
 
