@@ -129,17 +129,6 @@
 
   <!--
   ******************************************************************************
-  **               Convert Project Settings To MSBuild Settings               **
-  ******************************************************************************
-  -->
-
-  <PropertyGroup Condition="'$(BinaryOutputPath)' != ''">
-    <OutputPath>$(BinaryOutputPath)</OutputPath>
-    <DocumentationFile>$(BinaryOutputPath)netstandard2.1\System.Data.SQLite.EF6.xml</DocumentationFile>
-  </PropertyGroup>
-
-  <!--
-  ******************************************************************************
   **                Project Configuration Specific Properties                 **
   ******************************************************************************
   -->
