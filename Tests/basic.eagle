@@ -53,6 +53,7 @@ runTest {test data-1.1 {unit tests from the 'test' project} -setup {
   list $code [expr {$code == 0 ? "" : $error}]
 } -cleanup {
   cleanupFile $fileName
+  catch {info previouspid true}
 
   unset -nocomplain totalCount failureCount successCount code output \
       error fileName
@@ -88,6 +89,7 @@ runTest {test data-1.2 {unit tests from the 'testlinq' project} -setup {
       [expr {$code == 0 ? "" : $error}]
 } -cleanup {
   catch {object invoke Console OutputEncoding $savedEncoding}
+  catch {info previouspid true}
 
   unset -nocomplain code output error savedEncoding encoding
 } -constraints \
@@ -124,6 +126,7 @@ runTest {test data-1.3.1 {unit tests from the 'testef6' project} -setup {
       [expr {$code == 0 ? "" : $error}]
 } -cleanup {
   catch {object invoke Console OutputEncoding $savedEncoding}
+  catch {info previouspid true}
 
   unset -nocomplain code output error savedEncoding encoding
 } -constraints [fixConstraints \
@@ -161,6 +164,7 @@ runTest {test data-1.3.2 {unit tests from the 'testef6' project} -setup {
       [expr {$code == 0 ? "" : $error}]
 } -cleanup {
   catch {object invoke Console OutputEncoding $savedEncoding}
+  catch {info previouspid true}
 
   unset -nocomplain code output error savedEncoding encoding
 } -constraints \
@@ -3256,6 +3260,8 @@ runTest {test data-1.70 {LINQ w/String.Substring Method} -body {
 
   set result
 } -cleanup {
+  catch {info previouspid true}
+
   unset -nocomplain code output error result
 } -constraints {eagle monoToDo SQLite file_System.Data.SQLite.dll testExec\
 file_System.Data.SQLite.Linq.dll file_testlinq.exe file_northwindEF.db} \

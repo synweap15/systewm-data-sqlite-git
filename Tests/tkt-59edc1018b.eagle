@@ -50,6 +50,8 @@ runTest {test tkt-59edc1018b-1.1 {LINQ with EndsWith} -body {
 
   set result
 } -cleanup {
+  catch {info previouspid true}
+
   unset -nocomplain code output error result value
 } -constraints \
 {eagle monoToDo defineConstant.System.Data.SQLite.USE_INTEROP_DLL\
@@ -89,6 +91,8 @@ runTest {test tkt-59edc1018b-1.2 {EF6 with EndsWith} -body {
 
   set result
 } -cleanup {
+  catch {info previouspid true}
+
   unset -nocomplain code output error result value
 } -constraints \
 {eagle monoToDo defineConstant.System.Data.SQLite.USE_INTEROP_DLL\
