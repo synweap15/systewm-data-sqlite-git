@@ -51,8 +51,8 @@ runTest {test tkt-69cf6e5dc8-1.1 {Julian DateTime precision} -setup {
 
   unset -nocomplain dateTime result db fileName
 } -constraints {eagle command.object monoBug28 monoBug42 command.sql\
-compile.DATA SQLite System.Data.SQLite} -result {2457712.53197917 {2016-11-20\
-00:46:03Z}}}
+compile.DATA SQLite System.Data.SQLite} -match regexp -result \
+{^(?:2457712\.53197917|2457712\.5319791664) \{2016-11-20 00:46:03Z\}$}}
 
 ###############################################################################
 
