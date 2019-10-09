@@ -581,6 +581,7 @@ IF NOT DEFINED NOPROPS (
       REM       value from working correctly when it refers to a property that
       REM       evaluates to an empty string.
       REM
+      %_CECHO% Externals\Eagle\bin\netFramework40\EagleShell.exe -evaluate "set fileName {SQLite.Interop/props/include.vsprops}; set data [readFile $fileName]; regsub -- {	InheritedPropertySheets=\"\"} $data {	InheritedPropertySheets=\"$^(INTEROP_EXTRA_PROPS_FILE^)\"} data; writeFile $fileName $data"
       %__ECHO% Externals\Eagle\bin\netFramework40\EagleShell.exe -evaluate "set fileName {SQLite.Interop/props/include.vsprops}; set data [readFile $fileName]; regsub -- {	InheritedPropertySheets=\"\"} $data {	InheritedPropertySheets=\"$^(INTEROP_EXTRA_PROPS_FILE^)\"} data; writeFile $fileName $data"
 
       IF ERRORLEVEL 1 (
@@ -599,6 +600,7 @@ IF NOT DEFINED NOPROPS (
 
 IF NOT DEFINED NOTAG (
   IF EXIST Externals\Eagle\bin\netFramework40\EagleShell.exe (
+    %_CECHO% Externals\Eagle\bin\netFramework40\EagleShell.exe -file Setup\sourceTag.eagle SourceIdMode SQLite.Interop\src\generic\interop.h
     %__ECHO% Externals\Eagle\bin\netFramework40\EagleShell.exe -file Setup\sourceTag.eagle SourceIdMode SQLite.Interop\src\generic\interop.h
 
     IF ERRORLEVEL 1 (
@@ -606,6 +608,7 @@ IF NOT DEFINED NOTAG (
       GOTO errors
     )
 
+    %_CECHO% Externals\Eagle\bin\netFramework40\EagleShell.exe -file Setup\sourceTag.eagle SourceIdMode System.Data.SQLite\SQLitePatchLevel.cs
     %__ECHO% Externals\Eagle\bin\netFramework40\EagleShell.exe -file Setup\sourceTag.eagle SourceIdMode System.Data.SQLite\SQLitePatchLevel.cs
 
     IF ERRORLEVEL 1 (

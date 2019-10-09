@@ -503,6 +503,16 @@ namespace eval ::Eagle {
       }
     }
 
+    proc getBuildNativeExtraForDotNetCore { extra } {
+      if {[isDotNetCore] && [isWindows]} then {
+        return ""
+      } elseif {[string length $extra] > 0} then {
+        return $extra
+      } else {
+        return [getBuildNativeExtra]
+      }
+    }
+
     proc getBuildConfigurationSuffixes {} {
       #
       # NOTE: See if the list of test configuration suffixes has been
@@ -572,6 +582,37 @@ namespace eval ::Eagle {
         #       empty string (no-op).
         #
         return [list ""]
+      }
+    }
+
+    proc getBuildNativeExtra {} {
+      if {[info exists ::test_native_extra] && \
+          [string length $::test_native_extra] > 0} then {
+        #
+        # NOTE: Use the specified native extra output directory.
+        #
+        return $::test_native_extra
+      } else {
+        #
+        # NOTE: No native extra output directory is required.
+        #
+        return ""
+      }
+    }
+
+    proc getBuildNativeExtras {} {
+      if {[info exists ::test_native_extras] && \
+          [llength $::test_native_extras] > 0} then {
+        #
+        # NOTE: Use the specified list of native extra output directories.
+        #
+        return $::test_native_extras
+      } else {
+        #
+        # NOTE: Use default list of native extra output directories, which
+        #       is none.
+        #
+        return [list]
       }
     }
 
@@ -1032,7 +1073,7 @@ namespace eval ::Eagle {
             [getBuildPlatform $native] [appendArgs [getBuildConfiguration] \
             [expr {$managedOnly ? [getBuildConfigurationSuffix] : \
             [getBuildNativeConfigurationSuffix]}]] [expr {$managedOnly ? \
-            [getBuildExtra] : ""}]]
+            [getBuildExtra] : [getBuildNativeExtra]}]]
       }
     }
 
@@ -2006,6 +2047,9 @@ namespace eval ::Eagle {
                         $suffix]
 
                     set ::test_extra $extra
+
+                    set ::test_native_extra \
+                        [getBuildNativeExtraForDotNetCore $extra]
 
                     tputs $channel [appendArgs \
                         "yes, selected (" [expr {$native ? "native/" : ""}] \
@@ -4786,6 +4830,23 @@ namespace eval ::Eagle {
         addConstraint buildExtra.none
         tputs $channel <none>\n
       }
+
+      #
+      # NOTE: Check the current build native extra directory.  This will
+      #       normally be an empty string.
+      #
+      tputs $channel \
+          "---- checking for System.Data.SQLite build native extra... "
+
+      set extra [getBuildNativeExtra]
+
+      if {[string length $extra] > 0} then {
+        addConstraint [appendArgs buildNativeExtra. $extra]
+        tputs $channel [appendArgs \" $extra \"\n]
+      } else {
+        addConstraint buildNativeExtra.none
+        tputs $channel <none>\n
+      }
     }
 
     proc runSQLiteTestPrologue {} {
@@ -4855,8 +4916,8 @@ namespace eval ::Eagle {
             [file join EntityFramework lib [string map [list Fx ""] \
             [string map [list netFx451 netFx45 netFx452 netFx45 netFx46 \
             netFx45 netFx461 netFx45 netFx462 netFx45 netFx47 netFx45 \
-            netFx471 netFx45 netFx472 netFx45 netStandard20 netFx45 \
-            netStandard21 netFx45] [getBuildNetFx]]] EntityFramework.dll]]
+            netFx471 netFx45 netFx472 netFx45] [getBuildNetFx]]] \
+            EntityFramework.dll]]
 
         #
         # NOTE: Build the list of native assembly files that we handle.

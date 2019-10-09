@@ -39,6 +39,11 @@ IF ERRORLEVEL 1 (
   GOTO errors
 )
 
+IF NOT DEFINED TEST_FILE (
+  %_AECHO% No test file specified, using default...
+  SET TEST_FILE=Tests\template\empty.eagle
+)
+
 IF NOT DEFINED PREARGS (
   %_AECHO% No pre-arguments specified, using default...
   SET PREARGS=-interactive -noExit -initialize
@@ -51,20 +56,14 @@ IF NOT DEFINED PREARGS (
   )
 )
 
-%_VECHO% PreArgs = '%PREARGS%'
-
-IF NOT DEFINED TEST_FILE (
-  %_AECHO% No test file specified, using default...
-  SET TEST_FILE=Tests\template\empty.eagle
-)
-
-%_VECHO% TestFile = '%TEST_FILE%'
-
 IF NOT DEFINED POSTARGS (
   %_AECHO% No post-arguments specified, using default...
   SET POSTARGS=-file "%TEST_FILE%"
 )
 
+%_VECHO% TestFile = '%TEST_FILE%'
+%_VECHO% PreArgs = '%PREARGS%'
+%_VECHO% MidArgs = '%MIDARGS%'
 %_VECHO% PostArgs = '%POSTARGS%'
 
 IF NOT DEFINED 32BITONLY (
@@ -75,8 +74,8 @@ IF NOT DEFINED 32BITONLY (
 
 %_VECHO% EagleShell = '%EAGLESHELL%'
 
-%_CECHO% "Externals\Eagle\bin\netFramework40\%EAGLESHELL%" %PREARGS% %* %POSTARGS%
-%__ECHO% "Externals\Eagle\bin\netFramework40\%EAGLESHELL%" %PREARGS% %* %POSTARGS%
+%_CECHO% "Externals\Eagle\bin\netFramework40\%EAGLESHELL%" %PREARGS% %* %MIDARGS% %POSTARGS%
+%__ECHO% "Externals\Eagle\bin\netFramework40\%EAGLESHELL%" %PREARGS% %* %MIDARGS% %POSTARGS%
 
 IF ERRORLEVEL 1 (
   ECHO Received non-zero return code from the Eagle Shell.
