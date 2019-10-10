@@ -1919,8 +1919,8 @@ runTest {test data-1.37 {sqlite3_win32_set_directory function} -setup {
 
   rename threadStart ""
 } -constraints {eagle command.object windows monoBug28 command.sql compile.DATA\
-SQLite System.Data.SQLite sqlite3_win32_set_directory} -result \
-{Ok Ok True True}}
+compile.THREADING SQLite System.Data.SQLite sqlite3_win32_set_directory} \
+-result {Ok Ok True True}}
 
 ###############################################################################
 
@@ -5225,7 +5225,8 @@ runTest {test data-1.98 {SQLiteLog initialize (enabled)} -setup {
   unset -nocomplain thread i count
 
   rename threadStart ""
-} -constraints {eagle command.object SQLite System.Data.SQLite} -result \
+} -constraints \
+{eagle command.object SQLite System.Data.SQLite compile.THREADING} -result \
 {20000 20000 1}}
 
 ###############################################################################
@@ -5299,7 +5300,8 @@ runTest {test data-1.99 {SQLiteLog initialize (disabled)} -setup {
   unset -nocomplain thread i count
 
   rename threadStart ""
-} -constraints {eagle command.object SQLite System.Data.SQLite} -result \
+} -constraints \
+{eagle command.object SQLite System.Data.SQLite compile.THREADING} -result \
 {20000 0 0}}
 
 ###############################################################################
@@ -5373,7 +5375,8 @@ runTest {test data-1.100 {SQLiteLog forced initialize (enabled)} -setup {
   unset -nocomplain thread i count
 
   rename threadStart ""
-} -constraints {eagle command.object SQLite System.Data.SQLite} -result \
+} -constraints \
+{eagle command.object SQLite System.Data.SQLite compile.THREADING} -result \
 {20000 20000 0}}
 
 ###############################################################################
@@ -5447,7 +5450,8 @@ runTest {test data-1.101 {SQLiteLog forced initialize (disabled)} -setup {
   unset -nocomplain thread i count
 
   rename threadStart ""
-} -constraints {eagle command.object SQLite System.Data.SQLite} -result \
+} -constraints \
+{eagle command.object SQLite System.Data.SQLite compile.THREADING} -result \
 {20000 0 0}}
 
 ###############################################################################
