@@ -5833,9 +5833,6 @@ namespace eval ::Eagle {
           set testLinqOutFile [file nativename [file join \
               [getSQLiteTestDataPath] testlinq.out]]
 
-          set testLinqOutUtf8File [file nativename [file join \
-              [getSQLiteTestDataPath] testlinq.utf8.out]]
-
           set northwindEfDbFile [file nativename [file join \
               [file dirname [file dirname [getSQLiteTestDataPath]]] \
               testlinq northwindEF.db]]
@@ -5952,11 +5949,6 @@ namespace eval ::Eagle {
             }
 
             if {![haveConstraint [appendArgs file_ \
-                [file tail $testLinqOutUtf8File]]]} then {
-              checkForFile $test_channel $testLinqOutUtf8File
-            }
-
-            if {![haveConstraint [appendArgs file_ \
                 [file tail $northwindEfDbFile]]]} then {
               checkForFile $test_channel $northwindEfDbFile
             }
@@ -6062,8 +6054,7 @@ namespace eval ::Eagle {
               testInstallVs2008LogFile testInstallVs2005LogFile
 
           unset -nocomplain \
-              northwindEfDbFile testLinqOutUtf8File testLinqOutFile \
-              walDbFile nonWalDbFile
+              northwindEfDbFile testLinqOutFile walDbFile nonWalDbFile
 
           unset -nocomplain \
               testEf6ExeFile testLinqExeFile \
