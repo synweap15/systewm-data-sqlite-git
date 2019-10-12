@@ -2707,6 +2707,28 @@ namespace eval ::Eagle {
           [sql execute -execute scalar $db "PRAGMA cache_size;"]]
     }
 
+    proc getOutputEncodingName {} {
+      #
+      # HACK: Account for differences between Console output encodings on
+      #       the .NET Framework versus .NET Core, on Windows and POSIX.
+      #       Mono is not supported by this procedure as it is only used
+      #       by tests that do not run on Mono.
+      #
+      if {[isDotNetCore]} then {
+        if {[isWindows]} then {
+          #
+          # TODO: The reported output encoding for the Console on Windows
+          #       is actually "Codepage - 437".  Why?
+          #
+          return iso-8859-1
+        } else {
+          return utf-8
+        }
+      } else {
+        return Windows-1252
+      }
+    }
+
     proc normalizeExceptionMessage { value } {
       if {[string length $value] == 0} then {return $value}
       return [string map [list \r\n " ==> " \n " ==> "] $value]
@@ -4909,15 +4931,22 @@ namespace eval ::Eagle {
 
         #
         # NOTE: Build the list of external files that we handle.  Some of
-        #       these files may be native and/or managed assemblies that are
-        #       required to perform various tests.
+        #       these files may be native and/or managed assemblies that
+        #       are required to perform various tests.
         #
-        set externalFileNames [list \
-            [file join EntityFramework lib [string map [list Fx ""] \
-            [string map [list netFx451 netFx45 netFx452 netFx45 netFx46 \
-            netFx45 netFx461 netFx45 netFx462 netFx45 netFx47 netFx45 \
-            netFx471 netFx45 netFx472 netFx45] [getBuildNetFx]]] \
-            EntityFramework.dll]]
+        if {[isDotNetCore]} then {
+          set externalFileNames [list \
+              [file join EntityFramework lib [string map [list \
+              netStandard21 netstandard2.1] [getBuildNetFx]] \
+              EntityFramework.dll]]
+        } else {
+          set externalFileNames [list \
+              [file join EntityFramework lib [string map [list \
+              Fx ""] [string map [list netFx451 netFx45 netFx452 \
+              netFx45 netFx46 netFx45 netFx461 netFx45 netFx462 \
+              netFx45 netFx47 netFx45 netFx471 netFx45 netFx472 \
+              netFx45] [getBuildNetFx]]] EntityFramework.dll]]
+        }
 
         #
         # NOTE: Build the list of native assembly files that we handle.
@@ -5804,6 +5833,9 @@ namespace eval ::Eagle {
           set testLinqOutFile [file nativename [file join \
               [getSQLiteTestDataPath] testlinq.out]]
 
+          set testLinqOutUtf8File [file nativename [file join \
+              [getSQLiteTestDataPath] testlinq-utf8.out]]
+
           set northwindEfDbFile [file nativename [file join \
               [file dirname [file dirname [getSQLiteTestDataPath]]] \
               testlinq northwindEF.db]]
@@ -5920,6 +5952,11 @@ namespace eval ::Eagle {
             }
 
             if {![haveConstraint [appendArgs file_ \
+                [file tail $testLinqOutUtf8File]]]} then {
+              checkForFile $test_channel $testLinqOutUtf8File
+            }
+
+            if {![haveConstraint [appendArgs file_ \
                 [file tail $northwindEfDbFile]]]} then {
               checkForFile $test_channel $northwindEfDbFile
             }
@@ -6025,7 +6062,7 @@ namespace eval ::Eagle {
               testInstallVs2008LogFile testInstallVs2005LogFile
 
           unset -nocomplain \
-              northwindEfDbFile testLinqOutFile \
+              northwindEfDbFile testLinqOutUtf8File testLinqOutFile \
               walDbFile nonWalDbFile
 
           unset -nocomplain \
