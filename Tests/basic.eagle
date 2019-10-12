@@ -110,7 +110,7 @@ runTest {test data-1.2 {unit tests from the 'testlinq' project} -setup {
 } -constraints \
 {eagle command.object monoToDo SQLite file_System.Data.SQLite.dll\
 file_System.Data.SQLite.Linq.dll file_testlinq.exe file_northwindEF.db\
-file_testlinq.out testExec} -result {0 True {}}}
+file_testlinq.out file_testlinq.utf8.out testExec} -result {0 True {}}}
 
 ###############################################################################
 
@@ -162,7 +162,8 @@ runTest {test data-1.3 {unit tests from the 'testef6' project} -setup {
 } -constraints \
 {eagle command.object monoToDo SQLite file_EntityFramework.dll\
 file_System.Data.SQLite.dll file_System.Data.SQLite.EF6.dll file_testef6.exe\
-file_northwindEF.db file_testlinq.out testExec} -result {0 True {}}}
+file_northwindEF.db file_testlinq.out file_testlinq.utf8.out testExec} -result \
+{0 True {}}}
 
 ###############################################################################
 

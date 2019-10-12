@@ -5834,7 +5834,7 @@ namespace eval ::Eagle {
               [getSQLiteTestDataPath] testlinq.out]]
 
           set testLinqOutUtf8File [file nativename [file join \
-              [getSQLiteTestDataPath] testlinq-utf8.out]]
+              [getSQLiteTestDataPath] testlinq.utf8.out]]
 
           set northwindEfDbFile [file nativename [file join \
               [file dirname [file dirname [getSQLiteTestDataPath]]] \
