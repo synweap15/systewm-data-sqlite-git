@@ -5269,6 +5269,11 @@ namespace eval ::Eagle {
 
                 foreach fileName $nativeFileNames {
                   tryCopyAssembly $fileName false
+
+                  if {[isDotNetCore] && ![file exists \
+                      [getBuildFileName $fileName true]]} then {
+                    tryCopyBinaryFile $fileName true
+                  }
                 }
               }
 
@@ -5281,6 +5286,12 @@ namespace eval ::Eagle {
 
                   foreach fileName $nativeFileNames {
                     tryCopyAssembly $fileName false $platform
+
+                    if {[isDotNetCore] && ![file exists \
+                        [getBuildFileName $fileName true \
+                        $platform]]} then {
+                      tryCopyBinaryFile $fileName true $platform
+                    }
                   }
                 }
 
@@ -5292,6 +5303,12 @@ namespace eval ::Eagle {
 
                   foreach fileName $nativeFileNames {
                     tryCopyAssembly $fileName false $architecture
+
+                    if {[isDotNetCore] && ![file exists \
+                        [getBuildFileName $fileName true \
+                        $architecture]]} then {
+                      tryCopyBinaryFile $fileName true $architecture
+                    }
                   }
                 }
 
