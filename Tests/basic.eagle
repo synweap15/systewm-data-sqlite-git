@@ -87,7 +87,8 @@ runTest {test data-1.2 {unit tests from the 'testlinq' project} -setup {
   tlog $output
   tlog "\n---- END STDOUT OUTPUT\n"
 
-  list $code [string equal $output [readFile $testLinqOutFile]] \
+  list $code [string equal [string map [list \r\n \n] $output] \
+      [string map [list \r\n \n] [readFile $testLinqOutFile]]] \
       [expr {$code == 0 ? "" : $error}]
 } -cleanup {
   catch {object invoke Console OutputEncoding $savedEncoding}
@@ -126,7 +127,8 @@ runTest {test data-1.3 {unit tests from the 'testef6' project} -setup {
   tlog $output
   tlog "\n---- END STDOUT OUTPUT\n"
 
-  list $code [string equal $output [readFile $testLinqOutFile]] \
+  list $code [string equal [string map [list \r\n \n] $output] \
+      [string map [list \r\n \n] [readFile $testLinqOutFile]]] \
       [expr {$code == 0 ? "" : $error}]
 } -cleanup {
   catch {object invoke Console OutputEncoding $savedEncoding}
