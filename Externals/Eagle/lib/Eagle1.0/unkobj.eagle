@@ -55,9 +55,9 @@ namespace eval ::Eagle {
       # NOTE: Attempt to merge the option and non-option arguments into a
       #       single list of arguments.
       #
-      set code [object invoke -alias -flags +NonPublic \
+      set code [object invoke -alias \
           Interpreter.GetActive MergeArguments $options $arguments1 \
-          $arguments2 2 1 false false arguments3 error]
+          $arguments2 2 1 false false false arguments3 error]
 
       #
       # NOTE: Was the argument merging process successful?

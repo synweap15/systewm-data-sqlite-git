@@ -47,6 +47,10 @@ if {![info exists test_all_path]} then {
       [file normalize [file dirname [info script]]]
 }
 
+if {![info exists test_suite_file]} then {
+  set test_suite_file [file normalize [info script]]
+}
+
 source [file join $test_all_path prologue.eagle]
 
 if {![info exists test_path]} then {

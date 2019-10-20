@@ -164,7 +164,13 @@ namespace eval ::Eagle {
   #       as an opaque object handle.
   #
   proc isObjectHandle { value } {
-    set pattern [string map [list \\ \\\\ \[ \\\[ \] \\\]] $value]
+    if {[catch {object exists $value} result] == 0 && $result} then {
+      return true
+    }
+
+    set pattern [string map \
+        [list \\ \\\\ * \\* - \\- ? \\? \[ \\\[ \] \\\]] $value]
+
     set objects [info objects $pattern]
 
     if {[llength $objects] == 1 && [lindex $objects 0] eq $value} then {
@@ -177,11 +183,24 @@ namespace eval ::Eagle {
   #
   # NOTE: This procedure returns non-zero if the specified value can be used
   #       as an opaque object handle -AND- the value does not represent a null
-  #       value.
+  #       object value.
   #
   proc isNonNullObjectHandle { value } {
+    if {![isObjectHandle $value]} then {
+      return false
+    }
+
     global null
-    return [expr {[isObjectHandle $value] && $value ne $null}]
+
+    if {$value eq $null} then {
+      return false
+    }
+
+    if {[catch {object isnull $value} result] == 0 && $result} then {
+      return false
+    }
+
+    return true
   }
 
   #
@@ -213,7 +232,7 @@ namespace eval ::Eagle {
         set type null
 
         set code [object invoke -create -alias -flags +NonPublic \
-            Value GetType "" $name null null None $cultureInfo type]
+            Value GetAnyType "" $name null null None $cultureInfo type]
 
         if {[$code ToString] eq "Ok"} then {
           if {[string length $varName] > 0} then {

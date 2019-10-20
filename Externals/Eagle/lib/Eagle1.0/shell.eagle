@@ -50,6 +50,23 @@ namespace eval ::Eagle {
       eval lappend command #help $args; debug icommand $command
     }
 
+    proc quit { args } {
+      # <help>
+      # Can be used to exit the interactive shell.  It does this by calling
+      # the built-in [exit] command.  It is allowed to perform cleanup and
+      # maintenance tasks.
+      # </help>
+
+      catch {
+        host result Break [appendArgs \
+            "WARNING: This command is not (simply) a synonym for the " \
+            "built-in [exit] command, primarily because it is allowed " \
+            "to perform additional cleanup and maintenance tasks."]
+      }
+
+      eval exit $args
+    }
+
     proc #support {} {
       # <help>
       # Shows the requirements for obtaining commercial support and/or

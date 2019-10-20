@@ -513,40 +513,6 @@ namespace eval ::Eagle {
     }
 
     #
-    # HACK: When the Eagle core test suite infrastructure is beta 44 or
-    #       lower, override the [getKnownMonoVersions] procedure to add
-    #       more "known" versions of the Mono runtime.  Eventually, this
-    #       override should be removed (i.e. once the Eagle core library
-    #       included in "Externals" is updated).
-    #
-    if {[package vcompare \
-        $::eagle_platform(patchLevel) 1.0.6848.11041] <= 0} then {
-      #
-      # NOTE: Arrange for this procedure to be redefined after it has
-      #       been defined by the Eagle.Test.Constraints package -AND-
-      #       before it has been used by the [checkForRuntimeVersion]
-      #       procedure.
-      #
-      set ::test_script(pre) {
-        proc getKnownMonoVersions { {force false} } {
-          if {$force || ![info exists ::no(monoVersions)]} then {
-            return [list \
-                [list 2 0] [list 2 2] [list 2 4] [list 2 6] \
-                [list 2 8] [list 2 10] [list 2 11] [list 3 0] \
-                [list 3 1] [list 3 2] [list 3 4] [list 3 6] \
-                [list 3 8] [list 3 10] [list 3 12] [list 4 0] \
-                [list 4 2] [list 4 4] [list 4 6] [list 4 8] \
-                [list 5 0] [list 5 2] [list 5 4] [list 5 8] \
-                [list 5 10] [list 5 12] [list 5 14] [list 5 16] \
-                [list 5 18] [list 5 20] [list 5 22]]
-          } else {
-            return [list]
-          }
-        }
-      }
-    }
-
-    #
     # HACK: Prevent the Eagle core test suite infrastructure from checking
     #       test constraints that are time-consuming and/or most likely to
     #       be superfluous to third-party test suites (i.e. those that are

@@ -53,7 +53,13 @@ namespace eval ::Eagle {
       lappend command mono \
           [appendArgs \" [file nativename [info nameofexecutable]] \"]
     } else {
-      lappend command [info nameofexecutable]
+      #
+      # NOTE: Assumes that the executable (e.g. "dotnet", "EagleShell",
+      #       etc) is somewhere along the PATH -OR- the value returned
+      #       from [info nameofexecutable] is fully qualified.
+      #
+      lappend command \
+          [appendArgs \" [file nativename [info nameofexecutable]] \"]
 
       #
       # HACK: When running on .NET Core, we need to insert the "exec"
@@ -84,7 +90,32 @@ namespace eval ::Eagle {
     # NOTE: Add command line arguments to the shell command, if any.
     #
     if {[llength $args] > 0} then {
-      eval lappend command $args
+      #
+      # HACK: For reasons which are still unexplained, .NET Core seems
+      #       to have trouble with preserving an argument value if it
+      #       is an empty string (i.e. they are simply dropped).  Work
+      #       around this.  Nothing fancy should be done here.  Simply
+      #       using a single space instead seems to work around their
+      #       problem (whatever it actually is).  Please refer to the
+      #       following GitHub issue for more information:
+      #
+      #       https://github.com/dotnet/cli/issues/8892
+      #
+      if {[isEagle] && [isDotNetCore]} then {
+        foreach arg $args {
+          #
+          # HACK: For now, only handle the cases where the argument is
+          #       specified as something like {""}.
+          #
+          if {$arg eq "\"\""} then {
+            lappend command "\" \""
+          } else {
+            lappend command $arg
+          }
+        }
+      } else {
+        eval lappend command $args
+      }
     }
 
     #
