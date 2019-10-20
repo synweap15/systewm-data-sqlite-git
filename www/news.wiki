@@ -49,6 +49,7 @@
 </p>
 <ul>
     <li>Updated to [https://www.sqlite.org/releaselog/3_30_0.html|SQLite 3.30.0].</li>
+    <li>Updated to [https://www.nuget.org/packages/EntityFramework/6.3.0|Entity Framework 6.3.0].</li>
     <li>Add support for new DBCONFIG options from the SQLite core library. Pursuant to [03b6b0edd7].</li>
 </ul>
 <p>
