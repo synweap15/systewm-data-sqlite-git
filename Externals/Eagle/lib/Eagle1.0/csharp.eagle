@@ -21,18 +21,134 @@
 #
 namespace eval ::Eagle {
   #
+  # NOTE: This procedure is used to log various stages of the C# compilation
+  #       lifecycle.  Under normal circumstances, this procedure will not do
+  #       anything.
+  #
+  proc csharpLog { string {object ""} } {
+    #
+    # NOTE: If the "enableCSharpLog" runtime option is enabled, this routine
+    #       will emit log output somewhere; otherwise, it will do nothing.
+    #
+    if {[llength [info commands hasRuntimeOption]] > 0 && \
+        [hasRuntimeOption enableCSharpLog]} then {
+      #
+      # NOTE: If the caller passed a valid opaque object handle, query its
+      #       list of properties and emit them with the log output.
+      #
+      if {[llength [info commands object]] > 0 && \
+          [isNonNullObjectHandle $object]} then {
+        #
+        # HACK: Attempt to dynamically query all public properties of the
+        #       specified object -AND- add them to the log output.
+        #
+        set list null; set error null
+
+        set code [object invoke -create -alias -flags +NonPublic \
+            Eagle._Components.Private.MarshalOps ListProperties \
+            "" $object null null true list error]
+
+        #
+        # HACK: Since -create was used above in the [object invoke] call,
+        #       the "code" variable must be converted to a string before
+        #       we can check it for success.
+        #
+        set code [getStringFromObjectHandle $code]
+
+        if {$code eq "Ok"} then {
+          #
+          # HACK: In theory, at this point, the "list" variable must be
+          #       a valid opaque object handle; however, to prevent any
+          #       future issues with the ListProperties method check it
+          #       just in case.
+          #
+          if {[isNonNullObjectHandle $list]} then {
+            #
+            # HACK: The [formatListAsDict] procedure will almost always
+            #       be available at this point; however, we do not want
+            #       to require it.
+            #
+            if {[llength [info commands formatListAsDict]] > 0} then {
+              set suffix [formatListAsDict [$list ToString]]
+            } else {
+              set suffix [$list ToString]
+            }
+          } else {
+            set suffix [appendArgs \
+                "invalid property list for object \"" $object \"]
+          }
+        } else {
+          set suffix [getStringFromObjectHandle $error]
+        }
+
+        set newString [appendArgs $string $suffix]
+      } else {
+        set newString $string
+      }
+
+      #
+      # NOTE: If the "testCSharpLog" runtime option is enabled, emit the
+      #       output to the test log.
+      #
+      if {[hasRuntimeOption testCSharpLog]} then {
+        #
+        # HACK: The [getTestChannelOrDefault] procedure will almost always
+        #       be available at this point; however, we can work around the
+        #       lack of it.
+        #
+        if {[llength [info commands getTestChannelOrDefault]] > 0} then {
+          set channel [getTestChannelOrDefault]
+        } else {
+          if {[info exists ::test_channel]} then {
+            set channel $::test_channel
+          } else {
+            set channel stdout
+          }
+        }
+
+        #
+        # HACK: The [tputs] procedure will almost always be available at
+        #       this point; however, we can work around the lack of it.
+        #
+        set newString [appendArgs "---- " $newString \n]
+
+        if {[llength [info commands tputs]] > 0} then {
+          tputs $channel $newString
+        } else {
+          tqputs $channel $newString
+        }
+      } else {
+        #
+        # TODO: Is there a better place to send this log output when the
+        #       test suite is not available?
+        #
+        tclLog $newString
+      }
+    }
+
+    return ""
+  }
+
+  #
   # NOTE: This procedure is used to determine the fully qualified path to the
   #       .NET Core SDK.  An empty string will be returned to indicate an
   #       error.  This procedure should not raise script errors.
   #
   proc getDotNetCoreSdkPath {} {
     if {[catch {exec -- dotnet --info} info] == 0} then {
+      csharpLog [appendArgs \
+          "getDotNetCoreSdkPath ok:\n\t" \
+          [string map [list \n \n\t] $info]]
+
       set info [string map [list \r\n \n] $info]
 
       if {[regexp -line -- \
           {^\s*Base Path:\s+([^\n]+)$} $info dummy path]} then {
         return [file normalize $path]
       }
+    } else {
+      csharpLog [appendArgs \
+          "getDotNetCoreSdkPath error: " $info]
     }
 
     return ""
@@ -45,35 +161,72 @@ namespace eval ::Eagle {
   #       procedure should not raise script errors.
   #
   proc getDotNetStandardReferencePath {
-          {packageVersion ""} {standardVersion netstandard2.0} } {
+          {packageVersion ""} {standardVersion ""} {useSdkVersion false} } {
     set path [getDotNetCoreSdkPath]
 
     if {[string length $path] > 0} then {
-      set libraryDirectory [file normalize [file join \
-          [file dirname $path] NuGetFallbackFolder netstandard.library]]
-
-      set buildReferenceSubDirectory [file join build $standardVersion ref]
-
-      if {[string length $packageVersion] > 0} then {
-        set assemblyDirectory [file normalize [file join \
-            $libraryDirectory $packageVersion $buildReferenceSubDirectory]]
-
-        if {[file exists $assemblyDirectory]} then {
-          return $assemblyDirectory
+      if {[string length $standardVersion] == 0} then {
+        if {!$useSdkVersion && \
+            [info exists ::eagle_platform(runtimeVersion)]} then {
+          set targetVersion $::eagle_platform(runtimeVersion)
+        } else {
+          set targetVersion [file tail $path]
         }
-      } else {
-        set globPathPattern [file join $libraryDirectory *]
 
-        set maybeVersions [lsort -decreasing -command [list package vsort] \
-            [lmap directory [glob -nocomplain -types {d} $globPathPattern] \
-            { file tail $directory }]]
+        if {[string match 3.* $targetVersion]} then {
+          set standardVersion netstandard2.1
+        } elseif {[string match 2.* $targetVersion]} then {
+          set standardVersion netstandard2.0
+        }
+      }
 
-        foreach maybeVersion $maybeVersions {
+      switch -exact -- $standardVersion {
+        netstandard2.0 {
+          set libraryDirectory [file normalize [file join [file dirname \
+              $path] NuGetFallbackFolder netstandard.library]]
+
+          set buildReferenceSubDirectory [file join build $standardVersion \
+              ref]
+        }
+        netstandard2.1 {
+          set libraryDirectory [file normalize [file join [file dirname \
+              [file dirname $path]] packs NETStandard.Library.Ref]]
+
+          set buildReferenceSubDirectory [file join ref $standardVersion]
+        }
+        default {
+          #
+          # TODO: Do something else here?  The version of the standard is
+          #       not known.  Perhaps do some kind of search?
+          #
+          set libraryDirectory ""
+          set buildReferenceSubDirectory ""
+        }
+      }
+
+      if {[string length $libraryDirectory] > 0 && \
+          [string length $buildReferenceSubDirectory] > 0} then {
+        if {[string length $packageVersion] > 0} then {
           set assemblyDirectory [file normalize [file join \
-              $libraryDirectory $maybeVersion $buildReferenceSubDirectory]]
+              $libraryDirectory $packageVersion $buildReferenceSubDirectory]]
 
           if {[file exists $assemblyDirectory]} then {
             return $assemblyDirectory
+          }
+        } else {
+          set globPathPattern [file join $libraryDirectory *]
+
+          set maybeVersions [lsort -decreasing -command [list package vsort] \
+              [lmap directory [glob -nocomplain -types {d} $globPathPattern] \
+              { file tail $directory }]]
+
+          foreach maybeVersion $maybeVersions {
+            set assemblyDirectory [file normalize [file join \
+                $libraryDirectory $maybeVersion $buildReferenceSubDirectory]]
+
+            if {[file exists $assemblyDirectory]} then {
+              return $assemblyDirectory
+            }
           }
         }
       }
@@ -91,11 +244,19 @@ namespace eval ::Eagle {
   #
   proc getCSharpTestProgram { {name ""} } {
     set prefix Test
-    set id [object invoke Interpreter.GetActive NextId]
 
-    set className [appendArgs \
-        $prefix Namespace $id [object invoke Type Delimiter] \
-        $prefix Class $id]
+    if {[llength [info commands object]] > 0} then {
+      set id [object invoke Interpreter.GetActive NextId]
+
+      set className [appendArgs \
+          $prefix Namespace $id [object invoke Type Delimiter] \
+          $prefix Class $id]
+    } else {
+      set id [string trimleft [expr {random()}] -]
+
+      set className [appendArgs \
+          $prefix Namespace $id . $prefix Class $id]
+    }
 
     return [list $className [subst {
       using System;
@@ -143,7 +304,7 @@ namespace eval ::Eagle {
     unset -nocomplain results local_errors
 
     if {[catch {
-      compileCSharp [lindex $program 1] true true true results local_errors
+      compileCSharp [lindex $program 1] true false true results local_errors
     } code]} then {
       set errors [list [appendArgs \
           "caught error while compiling \"" $name "\" test program: " \
@@ -155,7 +316,15 @@ namespace eval ::Eagle {
     if {$code ne "Ok"} then {
       set errors [list [appendArgs \
           "errors from compilation of \"" $name "\" test program: " \
-          $local_errors]]
+          [expr {[info exists local_errors] ? $local_errors : $code}]]]
+
+      return false
+    }
+
+    if {[llength [info commands object]] == 0} then {
+      set errors [list [appendArgs \
+          "cannot execute \"" $name \
+          "\" test program, missing \"object\" command"]]
 
       return false
     }
@@ -393,7 +562,7 @@ namespace eval ::Eagle {
           append result " "
         }
 
-        append result $csharpOption
+        append result $prefix $csharpOption
       }
     }
 
@@ -424,6 +593,7 @@ namespace eval ::Eagle {
     # NOTE: Evaluate the [exec] command constructed by our caller, in their
     #       context, and return the results, with line-endings normalized.
     #
+    csharpLog [appendArgs "running C# command: " $command]
     return [string map [list \r\n \n] [uplevel 1 $command]]
   }
 
@@ -498,7 +668,7 @@ namespace eval ::Eagle {
       #
       # NOTE: Return the overall result to the caller.
       #
-      return $code
+      return [list $code]
     }
 
     #
@@ -515,14 +685,15 @@ namespace eval ::Eagle {
 
     #
     # NOTE: Do we not want to persist the generated assembly to disk?
+    #       Either way, we must make sure the temporary file names used
+    #       are determinstic (i.e. from our perspective, so that we can
+    #       delete them later).
     #
-    set outputFileName ""
+    $parameters OutputAssembly [set outputFileName [appendArgs [set \
+        tempName(1) [file tempname]] .dll]]
 
     if {$memory} then {
       $parameters GenerateInMemory true
-    } else {
-      $parameters OutputAssembly [set outputFileName [appendArgs [set \
-          tempName(1) [file tempname]] .dll]]
     }
 
     #
@@ -563,8 +734,20 @@ namespace eval ::Eagle {
       # NOTE: Attempt to compile the specified string as C# and capture the
       #       results into the variable provided by the caller.
       #
-      set results [$provider -alias CompileAssemblyFromSource $parameters \
-          $string]
+      csharpLog "compileViaCSharpCodeProvider parameters: " $parameters
+
+      try {
+        if {[info exists ::compileCSharp(preProcess)]} then {
+          eval $::compileCSharp(preProcess); # pre-compilation HOOK
+        }
+
+        set results [$provider \
+            -alias CompileAssemblyFromSource $parameters $string]
+      } finally {
+        if {[info exists ::compileCSharp(postProcess)]} then {
+          eval $::compileCSharp(postProcess); # post-compilation HOOK
+        }
+      }
 
       #
       # NOTE: We no longer need the C# code provider object (i.e. the
@@ -635,7 +818,7 @@ namespace eval ::Eagle {
       # HACK: *BREAKING CHANGE* If there is an output file name, return it
       #       as well; otherwise, just return success.
       #
-      if {[string length $outputFileName] > 0} then {
+      if {!$memory && [string length $outputFileName] > 0} then {
         #
         # NOTE: Return a two element list: the first element is the overall
         #       result and the second element is the output file name.
@@ -645,16 +828,43 @@ namespace eval ::Eagle {
         #
         # NOTE: Return the overall result to the caller.
         #
-        return $code
+        return [list $code]
       }
     } finally {
       #
-      # NOTE: Make sure the dummy temporary files are cleaned up.
+      # NOTE: Make sure the created temporary files are cleaned up unless we
+      #       are forbidden from doing so.
       #
-      if {[array exists tempName]} then {
-        foreach tempFileName [array values tempName] {
-          if {[file exists $tempFileName]} then {
-            catch {file delete $tempFileName}
+      if {![info exists ::no(deleteCompileCSharpFiles)]} then {
+        #
+        # NOTE: Make sure the dummy temporary files are cleaned up.
+        #
+        if {[array exists tempName]} then {
+          foreach tempFileName [array values tempName] {
+            if {[string length $tempFileName] > 0} then {
+              if {$memory} then {
+                #
+                # NOTE: When operating in in-memory generation mode, delete
+                #       all the temporary files associated with the original
+                #       allocated temporary name.  This includes the ".dll",
+                #       the ".pdb" (if any), and the empty "dummy" file that
+                #       contains nothing.
+                #
+                foreach deleteFileName [glob -nocomplain \
+                    [appendArgs [file normalize $tempFileName] *]] {
+                  if {[file exists $deleteFileName]} then {
+                    catch {file delete $deleteFileName}
+                  }
+                }
+              } else {
+                #
+                # NOTE: Delete the empty "dummy" file that contains nothing.
+                #       The actual compiled assembly has a ".dll" suffix and
+                #       its symbols, if any, have a ".pdb" suffix.
+                #
+                catch {file delete $tempFileName}
+              }
+            }
           }
         }
       }
@@ -698,7 +908,7 @@ namespace eval ::Eagle {
       #
       # NOTE: Return the overall result to the caller.
       #
-      return $code
+      return [list $code]
     }
 
     #
@@ -791,7 +1001,17 @@ namespace eval ::Eagle {
       #       results are text, normalize line endings before extracting
       #       the compiler errors and/or warnings.
       #
-      set local_results [runDotNetCSharpCommand $command]
+      try {
+        if {[info exists ::compileCSharp(preProcess)]} then {
+          eval $::compileCSharp(preProcess); # pre-compilation HOOK
+        }
+
+        set local_results [runDotNetCSharpCommand $command]
+      } finally {
+        if {[info exists ::compileCSharp(postProcess)]} then {
+          eval $::compileCSharp(postProcess); # post-compilation HOOK
+        }
+      }
 
       #
       # NOTE: Extract the compiler errors (which may be empty).
@@ -856,30 +1076,133 @@ namespace eval ::Eagle {
         #       memory, try to do that now.
         #
         if {$memory} then {
-          object load -loadtype File $outputFileName
-        }
+          #
+          # HACK: In order to load the newly compiled assembly into memory,
+          #       the [object] command is required.  Generally, this is not
+          #       an issue; however, if the [object] command is not present
+          #       in the current interpreter (i.e. because it was explicitly
+          #       removed, etc), we cannot succeed.
+          #
+          if {[llength [info commands object]] > 0} then {
+            #
+            # NOTE: At this point, the output file must exist.  If not,
+            #       something is very wrong (i.e. C# compilation failed
+            #       and we somehow did not detect it).
+            #
+            if {[string length $outputFileName] > 0 && \
+                [file exists $outputFileName]} then {
+              try {
+                set stream [object create \
+                    System.IO.FileStream $outputFileName Open Read None]
 
-        #
-        # NOTE: Compilation of the assembly succeeded.
-        #
-        set code Ok
+                object load -loadtype Stream $stream
+              } finally {
+                if {[info exists stream]} then {
+                  unset -nocomplain stream
+                }
+              }
+
+              #
+              # NOTE: Compilation and loading of the assembly succeeded.
+              #
+              set code Ok
+            } else {
+              #
+              # NOTE: Compilation of the assembly may not have succeeded
+              #       because the output file is missing.
+              #
+              set code Error
+
+              #
+              # NOTE: Prepare to transfer error messages to the caller.
+              #
+              if {[string length $errorsVarName] > 0} then {
+                upvar 1 $errorsVarName local_errors
+              }
+
+              #
+              # NOTE: Inform caller why we could not load the compiled
+              #       assembly into memory.
+              #
+              lappend local_errors [appendArgs \
+                  "cannot load compiled assembly \"" $outputFileName \
+                  "\" into memory, compiled assembly file is missing"]
+            }
+          } else {
+            #
+            # NOTE: Compilation of the assembly succeeded; however, it
+            #       cannot be loaded, due to the [object] command being
+            #       missing.
+            #
+            set code Error
+
+            #
+            # NOTE: Prepare to transfer error messages to the caller.
+            #
+            if {[string length $errorsVarName] > 0} then {
+              upvar 1 $errorsVarName local_errors
+            }
+
+            #
+            # NOTE: Inform caller why we could not load the compiled
+            #       assembly into memory.
+            #
+            lappend local_errors [appendArgs \
+                "cannot load compiled assembly \"" $outputFileName \
+                "\" into memory, missing \"object\" command"]
+          }
+        } else {
+          #
+          # NOTE: Compilation of the assembly succeeded -AND- there is
+          #       no need to load it into memory.
+          #
+          set code Ok
+        }
       }
     } finally {
       #
-      # NOTE: Delete the temporary file name used to hold the source code.
+      # NOTE: Make sure the created temporary files are cleaned up unless we
+      #       are forbidden from doing so.
       #
-      if {[string length $sourceFileName] > 0 && \
-          [file exists $sourceFileName]} then {
-        catch {file delete $sourceFileName}
-      }
+      if {![info exists ::no(deleteCompileCSharpFiles)]} then {
+        #
+        # NOTE: Delete the temporary file name used to hold the source code.
+        #
+        if {[string length $sourceFileName] > 0 && \
+            [file exists $sourceFileName]} then {
+          catch {file delete $sourceFileName}
+        }
 
-      #
-      # NOTE: Make sure the dummy temporary files are cleaned up.
-      #
-      if {[array exists tempName]} then {
-        foreach tempFileName [array values tempName] {
-          if {[file exists $tempFileName]} then {
-            catch {file delete $tempFileName}
+        #
+        # NOTE: Make sure the dummy temporary files are cleaned up.  This is
+        #       done only if the caller requested in-memory generation.
+        #
+        if {[array exists tempName]} then {
+          foreach tempFileName [array values tempName] {
+            if {[string length $tempFileName] > 0} then {
+              if {$memory} then {
+                #
+                # NOTE: When operating in in-memory generation mode, delete
+                #       all the temporary files associated with the original
+                #       allocated temporary name.  This includes the ".dll",
+                #       the ".pdb" (if any), and the empty "dummy" file that
+                #       contains nothing.
+                #
+                foreach deleteFileName [glob -nocomplain \
+                    [appendArgs [file normalize $tempFileName] *]] {
+                  if {[file exists $deleteFileName]} then {
+                    catch {file delete $deleteFileName}
+                  }
+                }
+              } else {
+                #
+                # NOTE: Delete the empty "dummy" file that contains nothing.
+                #       The actual compiled assembly has a ".dll" suffix and
+                #       its symbols, if any, have a ".pdb" suffix.
+                #
+                catch {file delete $tempFileName}
+              }
+            }
           }
         }
       }
@@ -899,7 +1222,7 @@ namespace eval ::Eagle {
       #
       # NOTE: Return the overall result to the caller.
       #
-      return $code
+      return [list $code]
     }
   }
 

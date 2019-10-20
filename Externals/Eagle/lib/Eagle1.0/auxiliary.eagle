@@ -73,6 +73,12 @@ namespace eval ::Eagle {
   #
   proc exportAndImportPackageCommands { namespace exports forget force } {
     #
+    # NOTE: If the specified namespace is global, do nothing as this is a
+    #       no-op.
+    #
+    if {[string length [string trimleft $namespace :]] == 0} then {return}
+
+    #
     # NOTE: Forget any previous commands that were imported from
     #       this namespace into the global namespace?
     #

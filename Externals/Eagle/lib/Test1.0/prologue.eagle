@@ -46,6 +46,13 @@ if {![info exists no([file tail [info script]])]} then {
   }
 
   #
+  # NOTE: Set the location of the primary test suite file, if necessary.
+  #
+  if {![info exists test_suite_file]} then {
+    set test_suite_file [file normalize [info script]]
+  }
+
+  #
   # NOTE: Set the location of the test suite, if necessary.
   #
   if {![info exists test_path]} then {
@@ -688,6 +695,14 @@ if {![info exists no([file tail [info script]])]} then {
   #
   if {![info exists no(tclsh)]} then {
     #
+    # NOTE: By default, disable verbose output when using the native
+    #       Tcl shell within the test suite.
+    #
+    if {![info exists test_tclsh_verbose]} then {
+      set test_tclsh_verbose 0
+    }
+
+    #
     # NOTE: Set the Tcl shell executable to use for those specialized
     #       tests that may require it, if necessary.
     #
@@ -1094,6 +1109,11 @@ if {![info exists no([file tail [info script]])]} then {
   tputs $test_channel [appendArgs "---- native Tcl shell: " \
       [expr {[info exists test_tclsh] && [string length $test_tclsh] > 0 ? \
           [appendArgs \" $test_tclsh \"] : "<none>"}] \n]
+
+  tputs $test_channel [appendArgs \
+      "---- verbosity level for native Tcl shell: " [expr {[info exists \
+          test_tclsh_verbose] && [string length $test_tclsh_verbose] > 0 ? \
+          $test_tclsh_verbose : "<none>"}] \n]
 
   tputs $test_channel [appendArgs "---- disabled options: " \
       [formatList [lsort [array names no]] <none>] \n]
@@ -1563,6 +1583,17 @@ if {![info exists no([file tail [info script]])]} then {
         }
 
         #
+        # NOTE: Has script arguments stack support been enabled (at
+        #       compile-time)?
+        #
+        if {![info exists no(compileScriptArguments)]} then {
+          #
+          # NOTE: For test "debug-2.86".
+          #
+          checkForCompileOption $test_channel SCRIPT_ARGUMENTS
+        }
+
+        #
         # NOTE: Has script breakpoint support been enabled (at compile-time)?
         #
         if {![info exists no(compileBreakpoints)]} then {
@@ -1952,6 +1983,26 @@ if {![info exists no([file tail [info script]])]} then {
     #
     if {![info exists no(core)] && ![info exists no(test)]} then {
       #
+      # NOTE: Has UnknownCallback testing support been disabled?
+      #
+      if {![info exists no(testUnknownCallback)]} then {
+        #
+        # NOTE: For tests "unknown-*".
+        #
+        checkForObjectMember $test_channel Eagle._Tests.Default \
+            *TestSetUnknownSpyCallback*
+
+        checkForObjectMember $test_channel Eagle._Tests.Default \
+            *TestSetUnknownScriptObjectCallback*
+
+        checkForObjectMember $test_channel Eagle._Tests.Default \
+            *TestSetUnknownScriptCommandCallback*
+
+        checkForObjectMember $test_channel Eagle._Tests.Default \
+            *TestSetUnknownObjectInvokeCallback*
+      }
+
+      #
       # NOTE: Has PackageCallback testing support been disabled?
       #
       if {![info exists no(testPackageCallback)]} then {
@@ -1977,6 +2028,20 @@ if {![info exists no([file tail [info script]])]} then {
 
         checkForObjectMember $test_channel Eagle._Tests.Default \
             *TestExecuteCallback2*
+      }
+
+      #
+      # NOTE: Has SleepWaitCallback testing support been disabled?
+      #
+      if {![info exists no(testSleepWaitCallback)]} then {
+        #
+        # NOTE: For test "vwait-1.31".
+        #
+        checkForObjectMember $test_channel Eagle._Tests.Default \
+            *TestGetSleepWaitCallback*
+
+        checkForObjectMember $test_channel Eagle._Tests.Default \
+            *TestSetSleepWaitCallback*
       }
 
       #
@@ -2351,6 +2416,17 @@ if {![info exists no([file tail [info script]])]} then {
 
         checkForObjectMember $test_channel Eagle._Tests.Default \
             *TestUnsetVariableSystemArray*
+      }
+
+      #
+      # NOTE: Has reparse point testing support been disabled?
+      #
+      if {![info exists no(reparsePoints)]} then {
+        #
+        # NOTE: For tests "fileIO-14.*".
+        #
+        checkForObjectMember $test_channel Eagle._Tests.Default \
+            *TestProcessReparseData*
       }
 
       #
@@ -3521,6 +3597,10 @@ if {![info exists no([file tail [info script]])]} then {
     checkForWindowsVersion $test_channel
   }
 
+  if {![info exists no(getInstalledUpdates)]} then {
+    checkForGetInstalledUpdates $test_channel
+  }
+
   if {![info exists no(operatingSystemUpdates)]} then {
     if {[isEagle] && [info exists tcl_platform(osExtra)]} then {
       vwaitWithTimeout tcl_platform(osExtra) $test_timeout
@@ -3534,6 +3614,7 @@ if {![info exists no([file tail [info script]])]} then {
     checkForOperatingSystemUpdate $test_channel "Fall Creators Update"
     checkForOperatingSystemUpdate $test_channel "April 2018 Update"
     checkForOperatingSystemUpdate $test_channel "October 2018 Update"
+    checkForOperatingSystemUpdate $test_channel "May 2019 Update"
   }
 
   if {![info exists no(scriptLibrary)]} then {
@@ -3695,6 +3776,10 @@ if {![info exists no([file tail [info script]])]} then {
 
   if {![info exists no(nopCommand)]} then {
     checkForCommand $test_channel nop
+  }
+
+  if {![info exists no(nprocCommand)]} then {
+    checkForCommand $test_channel nproc
   }
 
   if {![info exists no(objectCommand)]} then {
@@ -3876,6 +3961,13 @@ if {![info exists no([file tail [info script]])]} then {
     # NOTE: For test "object-15.9".
     #
     checkForInteractiveCommand $test_channel args
+
+    #
+    # NOTE: For test "debug-10.1".
+    #
+    checkForInteractiveCommand $test_channel exit
+    checkForInteractiveCommand $test_channel pause
+    checkForInteractiveCommand $test_channel unpause
   }
 
   if {![info exists no(userInteraction)]} then {
@@ -4080,6 +4172,12 @@ if {![info exists no([file tail [info script]])]} then {
 
   tputs $test_channel [appendArgs "---- cached constraints: " \
       [formatList [lsort [getCachedConstraints]] <none>] \n]
+
+  #
+  # NOTE: Show the lists of "well known" metadata.
+  #
+  tputs $test_channel [appendArgs "---- well known metadata: " \
+      [formatListAsDict [array get test_well_known] <none>] \n]
 
   #
   # NOTE: Show the starting command count (for both Tcl and Eagle).

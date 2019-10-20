@@ -40,8 +40,8 @@ if {![info exists no([file tail [info script]])]} then {
   #
   # NOTE: Make sure all the variables used by this epilogue are unset.
   #
-  unset -nocomplain memory stack name count passedOrSkipped percent \
-      exitCode
+  unset -nocomplain memory stack name count passedOrSkipped \
+      passedSkippedOrDisabled percent exitCode
 
   #
   # NOTE: Show when the tests actually ended (now).
@@ -206,17 +206,28 @@ if {![info exists no([file tail [info script]])]} then {
       }
     }
 
+    if {$eagle_tests(Disabled) > 0} then {
+      tresult WhatIf [appendArgs "DISABLED: " $eagle_tests(Disabled) \n]
+    }
+
     if {$eagle_tests(Total) > 0} then {
       tresult Return [appendArgs "TOTAL: " $eagle_tests(Total) \n]
 
       if {$eagle_tests(Skipped) > 0} then {
-        set percent [getSkipPercentage]
+        set percent [getSkippedPercentage]
 
         tresult Break [appendArgs \
             "SKIP PERCENTAGE: " [formatDecimal $percent] %\n]
       }
 
-      set percent [getPassPercentage]
+      if {$eagle_tests(Disabled) > 0} then {
+        set percent [getDisabledPercentage]
+
+        tresult WhatIf [appendArgs \
+            "DISABLED PERCENTAGE: " [formatDecimal $percent] %\n]
+      }
+
+      set percent [getPassedPercentage]
 
       tresult Return [appendArgs \
           "PASS PERCENTAGE: " [formatDecimal $percent] %\n]
@@ -241,13 +252,16 @@ if {![info exists no([file tail [info script]])]} then {
       #       Check to make sure that all tests pass and then set the
       #       exit code to success; otherwise, we set it to failure.
       #
-      set passedOrSkipped [expr {$eagle_tests(Passed) + \
-          $eagle_tests(Skipped)}]
+      set passedSkippedOrDisabled [expr {$eagle_tests(Passed) + \
+          $eagle_tests(Skipped) + $eagle_tests(Disabled)}]
 
       if {![info exists test_suite_errors] && \
           ([info exists no(failLogStartSentry)] || $haveStartSentry) && \
-          $passedOrSkipped == $eagle_tests(Total)} then {
+          $passedSkippedOrDisabled == $eagle_tests(Total)} then {
         set exitCode Success
+
+        tresult Ok [appendArgs \
+            "OVERALL RESULT: " [getTestSuiteFullName] \n]
 
         if {$eagle_tests(Total) > 0} then {
           tresult Ok "OVERALL RESULT: SUCCESS\n"
@@ -256,6 +270,9 @@ if {![info exists no([file tail [info script]])]} then {
         }
       } else {
         set exitCode Failure
+
+        tresult Error [appendArgs \
+            "OVERALL RESULT: " [getTestSuiteFullName] \n]
 
         if {[info exists test_suite_errors]} then {
           tresult Error [appendArgs "OVERALL ERRORS: " \
@@ -266,7 +283,7 @@ if {![info exists no([file tail [info script]])]} then {
         tresult Error "OVERALL RESULT: FAILURE\n"
       }
 
-      unset passedOrSkipped
+      unset passedSkippedOrDisabled
     } else {
       #
       # NOTE: They specified a non-default test pass threshold.  Check to
@@ -277,6 +294,9 @@ if {![info exists no([file tail [info script]])]} then {
           ([info exists no(failLogStartSentry)] || $haveStartSentry) && \
           $percent >= $test_threshold} then {
         set exitCode Success
+
+        tresult Ok [appendArgs \
+            "OVERALL RESULT: " [getTestSuiteFullName] \n]
 
         if {$eagle_tests(Total) > 0} then {
           tresult Ok [appendArgs \
@@ -289,6 +309,9 @@ if {![info exists no([file tail [info script]])]} then {
         }
       } else {
         set exitCode Failure
+
+        tresult Error [appendArgs \
+            "OVERALL RESULT: " [getTestSuiteFullName] \n]
 
         if {[info exists test_suite_errors]} then {
           tresult Error [appendArgs "OVERALL ERRORS: " \
@@ -333,13 +356,13 @@ if {![info exists no([file tail [info script]])]} then {
           "TOTAL: " $::tcltest::numTests(Total) \n]
 
       if {$::tcltest::numTests(Skipped) > 0} then {
-        set percent [getSkipPercentage]
+        set percent [getSkippedPercentage]
 
         tputs $test_channel [appendArgs \
             "SKIP PERCENTAGE: " [formatDecimal $percent] %\n]
       }
 
-      set percent [getPassPercentage]
+      set percent [getPassedPercentage]
 
       tputs $test_channel [appendArgs \
           "PASS PERCENTAGE: " [formatDecimal $percent] %\n]
@@ -368,6 +391,9 @@ if {![info exists no([file tail [info script]])]} then {
           $passedOrSkipped == $::tcltest::numTests(Total)} then {
         set exitCode 0; # Success.
 
+        tputs $test_channel [appendArgs \
+            "OVERALL RESULT: " [getTestSuiteFullName] \n]
+
         if {$::tcltest::numTests(Total) > 0} then {
           tputs $test_channel "OVERALL RESULT: SUCCESS\n"
         } else {
@@ -375,6 +401,9 @@ if {![info exists no([file tail [info script]])]} then {
         }
       } else {
         set exitCode 1; # Failure.
+
+        tputs $test_channel [appendArgs \
+            "OVERALL RESULT: " [getTestSuiteFullName] \n]
 
         if {[info exists test_suite_errors]} then {
           tputs $test_channel [appendArgs "OVERALL ERRORS: " \
@@ -397,6 +426,9 @@ if {![info exists no([file tail [info script]])]} then {
           $percent >= $test_threshold} then {
         set exitCode 0; # Success.
 
+        tputs $test_channel [appendArgs \
+            "OVERALL RESULT: " [getTestSuiteFullName] \n]
+
         if {$::tcltest::numTests(Total) > 0} then {
           tputs $test_channel [appendArgs \
               "OVERALL RESULT: SUCCESS (" $percent "% >= " $test_threshold %)\n]
@@ -406,6 +438,9 @@ if {![info exists no([file tail [info script]])]} then {
         }
       } else {
         set exitCode 1; # Failure.
+
+        tputs $test_channel [appendArgs \
+            "OVERALL RESULT: " [getTestSuiteFullName] \n]
 
         if {[info exists test_suite_errors]} then {
           tputs $test_channel [appendArgs "OVERALL ERRORS: " \
