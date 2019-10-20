@@ -58,7 +58,7 @@
   </ItemGroup>
   <ItemGroup Condition="'$(UseEntityFramework6)' != 'false'">
     <Reference Include="EntityFramework">
-      <HintPath>$(SQLiteNetDir)\Externals\EntityFramework\lib\net40\EntityFramework.dll</HintPath>
+      <HintPath>$(SQLiteNetDir)\Externals\EntityFramework\v6.2\lib\net40\EntityFramework.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
