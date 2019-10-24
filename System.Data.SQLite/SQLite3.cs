@@ -2862,6 +2862,54 @@ namespace System.Data.SQLite
 
     /// <summary>
     /// Builds an error message string fragment containing the
+    /// defined values of the <see cref="SQLiteLimitOpsEnum" />
+    /// enumeration.
+    /// </summary>
+    /// <returns>
+    /// The built string fragment.
+    /// </returns>
+    private static string GetLimitOpsNames()
+    {
+        StringBuilder builder = new StringBuilder();
+
+#if !PLATFORM_COMPACTFRAMEWORK
+        foreach (string name in Enum.GetNames(
+                typeof(SQLiteLimitOpsEnum)))
+        {
+            if (String.IsNullOrEmpty(name))
+                continue;
+
+            if (builder.Length > 0)
+                builder.Append(", ");
+
+            builder.Append(name);
+        }
+#else
+        //
+        // TODO: Update this list if the available values in the
+        //       "SQLiteLimitOpsEnum" enumeration change.
+        //
+        builder.AppendFormat(CultureInfo.InvariantCulture,
+            "{0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}, {11}",
+            SQLiteConfigDbOpsEnum.SQLITE_LIMIT_LENGTH,
+            SQLiteConfigDbOpsEnum.SQLITE_LIMIT_SQL_LENGTH,
+            SQLiteConfigDbOpsEnum.SQLITE_LIMIT_COLUMN,
+            SQLiteConfigDbOpsEnum.SQLITE_LIMIT_EXPR_DEPTH,
+            SQLiteConfigDbOpsEnum.SQLITE_LIMIT_COMPOUND_SELECT,
+            SQLiteConfigDbOpsEnum.SQLITE_LIMIT_VDBE_OP,
+            SQLiteConfigDbOpsEnum.SQLITE_LIMIT_FUNCTION_ARG,
+            SQLiteConfigDbOpsEnum.SQLITE_LIMIT_ATTACHED,
+            SQLiteConfigDbOpsEnum.SQLITE_LIMIT_LIKE_PATTERN_LENGTH,
+            SQLiteConfigDbOpsEnum.SQLITE_LIMIT_VARIABLE_NUMBER,
+            SQLiteConfigDbOpsEnum.SQLITE_LIMIT_TRIGGER_DEPTH,
+            SQLiteConfigDbOpsEnum.SQLITE_LIMIT_WORKER_THREADS);
+#endif
+
+        return builder.ToString();
+    }
+
+    /// <summary>
+    /// Builds an error message string fragment containing the
     /// defined values of the <see cref="SQLiteConfigDbOpsEnum" />
     /// enumeration.
     /// </summary>
@@ -2890,7 +2938,8 @@ namespace System.Data.SQLite
         //       "SQLiteConfigDbOpsEnum" enumeration change.
         //
         builder.AppendFormat(CultureInfo.InvariantCulture,
-            "{0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}",
+            "{0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, " +
+            "{9}, {10}, {11}, {12}, {13}, {14}, {15}, {16}",
             SQLiteConfigDbOpsEnum.SQLITE_DBCONFIG_NONE,
             SQLiteConfigDbOpsEnum.SQLITE_DBCONFIG_MAINDBNAME,
             SQLiteConfigDbOpsEnum.SQLITE_DBCONFIG_LOOKASIDE,
@@ -2900,7 +2949,14 @@ namespace System.Data.SQLite
             SQLiteConfigDbOpsEnum.SQLITE_DBCONFIG_ENABLE_LOAD_EXTENSION,
             SQLiteConfigDbOpsEnum.SQLITE_DBCONFIG_NO_CKPT_ON_CLOSE,
             SQLiteConfigDbOpsEnum.SQLITE_DBCONFIG_ENABLE_QPSG,
-            SQLiteConfigDbOpsEnum.SQLITE_DBCONFIG_TRIGGER_EQP);
+            SQLiteConfigDbOpsEnum.SQLITE_DBCONFIG_TRIGGER_EQP,
+            SQLiteConfigDbOpsEnum.SQLITE_DBCONFIG_RESET_DATABASE,
+            SQLiteConfigDbOpsEnum.SQLITE_DBCONFIG_DEFENSIVE,
+            SQLiteConfigDbOpsEnum.SQLITE_DBCONFIG_WRITABLE_SCHEMA,
+            SQLiteConfigDbOpsEnum.SQLITE_DBCONFIG_LEGACY_ALTER_TABLE,
+            SQLiteConfigDbOpsEnum.SQLITE_DBCONFIG_DQS_DML,
+            SQLiteConfigDbOpsEnum.SQLITE_DBCONFIG_DQS_DDL,
+            SQLiteConfigDbOpsEnum.SQLITE_DBCONFIG_ENABLE_VIEW);
 #endif
 
         return builder.ToString();
@@ -2945,8 +3001,35 @@ namespace System.Data.SQLite
     }
 
     /// <summary>
+    /// Change a limit value for the database.
+    /// </summary>
+    /// <param name="option">
+    /// The database limit to change.
+    /// </param>
+    /// <param name="value">
+    /// The new value for the specified limit.
+    /// </param>
+    /// <returns>
+    /// A standard SQLite return code.
+    /// </returns>
+    internal override SQLiteErrorCode SetLimitOption(
+        SQLiteLimitOpsEnum option,
+        int value
+        )
+    {
+        if (!Enum.IsDefined(typeof(SQLiteLimitOpsEnum), option))
+        {
+            throw new SQLiteException(HelperMethods.StringFormat(
+                CultureInfo.CurrentCulture,
+                "unrecognized limit option, must be: {0}",
+                GetLimitOpsNames()));
+        }
+
+        return UnsafeNativeMethods.sqlite3_limit(_sql, option, value);
+    }
+
+    /// <summary>
     /// Change a configuration option value for the database.
-    /// connection.
     /// </summary>
     /// <param name="option">
     /// The database configuration option to change.

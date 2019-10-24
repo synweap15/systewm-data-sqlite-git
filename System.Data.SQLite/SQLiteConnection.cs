@@ -3933,6 +3933,34 @@ namespace System.Data.SQLite
     }
 
     /// <summary>
+    /// Change a limit value for the database.
+    /// </summary>
+    /// <param name="option">
+    /// The database limit to change.
+    /// </param>
+    /// <param name="value">
+    /// The new value for the specified limit.
+    /// </param>
+    public void SetLimitOption(
+        SQLiteLimitOpsEnum option,
+        int value
+        )
+    {
+        CheckDisposed();
+
+        if (_sql == null)
+        {
+            throw new InvalidOperationException(
+                "Database connection not valid for changing a limit option.");
+        }
+
+        SQLiteErrorCode rc = _sql.SetLimitOption(option, value);
+
+        if (rc != SQLiteErrorCode.Ok)
+            throw new SQLiteException(rc, null);
+    }
+
+    /// <summary>
     /// Change a configuration option value for the database.
     /// </summary>
     /// <param name="option">
