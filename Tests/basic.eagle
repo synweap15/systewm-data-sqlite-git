@@ -5505,7 +5505,7 @@ runTest {test data-1.102 {Target Framework Abbreviations} -body {
 
 ###############################################################################
 
-runTest {test data-1.103 { method} -setup {
+runTest {test data-1.103 {SetLimitOption method} -setup {
   setupDb [set fileName data-1.103.db]
 } -body {
   set limits [list]
