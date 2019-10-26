@@ -53,6 +53,7 @@ runTest {test data-1.1 {unit tests from the 'test' project} -setup {
   list $code [expr {$code == 0 ? "" : $error}]
 } -cleanup {
   cleanupFile $fileName
+  catch {info previouspid true}
 
   unset -nocomplain totalCount failureCount successCount code output \
       error fileName
@@ -69,7 +70,9 @@ runTest {test data-1.2 {unit tests from the 'testlinq' project} -setup {
   #       same as when the 'testlinq.out' file was created.
   #
   set savedEncoding [object invoke Console OutputEncoding]
-  set encoding [object invoke System.Text.Encoding GetEncoding Windows-1252]
+
+  set encoding [object invoke System.Text.Encoding GetEncoding \
+      [getOutputEncodingName]]
 
   object invoke Console OutputEncoding $encoding
 } -body {
@@ -84,10 +87,12 @@ runTest {test data-1.2 {unit tests from the 'testlinq' project} -setup {
   tlog $output
   tlog "\n---- END STDOUT OUTPUT\n"
 
-  list $code [string equal $output [readFile $testLinqOutFile]] \
+  list $code [string equal [string map [list \r\n \n] $output] \
+      [string map [list \r\n \n] [readFile $testLinqOutFile]]] \
       [expr {$code == 0 ? "" : $error}]
 } -cleanup {
   catch {object invoke Console OutputEncoding $savedEncoding}
+  catch {info previouspid true}
 
   unset -nocomplain code output error savedEncoding encoding
 } -constraints \
@@ -105,7 +110,9 @@ runTest {test data-1.3 {unit tests from the 'testef6' project} -setup {
   #       same as when the 'testlinq.out' file was created.
   #
   set savedEncoding [object invoke Console OutputEncoding]
-  set encoding [object invoke System.Text.Encoding GetEncoding Windows-1252]
+
+  set encoding [object invoke System.Text.Encoding GetEncoding \
+      [getOutputEncodingName]]
 
   object invoke Console OutputEncoding $encoding
 } -body {
@@ -120,10 +127,12 @@ runTest {test data-1.3 {unit tests from the 'testef6' project} -setup {
   tlog $output
   tlog "\n---- END STDOUT OUTPUT\n"
 
-  list $code [string equal $output [readFile $testLinqOutFile]] \
+  list $code [string equal [string map [list \r\n \n] $output] \
+      [string map [list \r\n \n] [readFile $testLinqOutFile]]] \
       [expr {$code == 0 ? "" : $error}]
 } -cleanup {
   catch {object invoke Console OutputEncoding $savedEncoding}
+  catch {info previouspid true}
 
   unset -nocomplain code output error savedEncoding encoding
 } -constraints \
@@ -1912,8 +1921,8 @@ runTest {test data-1.37 {sqlite3_win32_set_directory function} -setup {
 
   rename threadStart ""
 } -constraints {eagle command.object windows monoBug28 command.sql compile.DATA\
-SQLite System.Data.SQLite sqlite3_win32_set_directory} -result \
-{Ok Ok True True}}
+compile.THREADING SQLite System.Data.SQLite sqlite3_win32_set_directory} \
+-result {Ok Ok True True}}
 
 ###############################################################################
 
@@ -2444,7 +2453,7 @@ runTest {test data-1.51 {nullable value types} -setup {
 } -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
 System.Data.SQLite} -match regexp -result {^\{0 x System#DBNull#\d+ 1\
 \{System\.Reflection\.TargetInvocationException: Exception has been thrown by\
-the target of an invocation\. ---> System\.InvalidCastException:.*\}\
+the target of an invocation\.\s+---> System\.InvalidCastException:.*\}\
 System#DBNull#\d+\} \{0 x 1 0 1 1\}$}}
 
 ###############################################################################
@@ -3219,6 +3228,8 @@ runTest {test data-1.70 {LINQ w/String.Substring Method} -body {
 
   set result
 } -cleanup {
+  catch {info previouspid true}
+
   unset -nocomplain code output error result
 } -constraints {eagle monoToDo SQLite file_System.Data.SQLite.dll testExec\
 file_System.Data.SQLite.Linq.dll file_testlinq.exe file_northwindEF.db} \
@@ -5216,7 +5227,8 @@ runTest {test data-1.98 {SQLiteLog initialize (enabled)} -setup {
   unset -nocomplain thread i count
 
   rename threadStart ""
-} -constraints {eagle command.object SQLite System.Data.SQLite} -result \
+} -constraints \
+{eagle command.object SQLite System.Data.SQLite compile.THREADING} -result \
 {20000 20000 1}}
 
 ###############################################################################
@@ -5290,7 +5302,8 @@ runTest {test data-1.99 {SQLiteLog initialize (disabled)} -setup {
   unset -nocomplain thread i count
 
   rename threadStart ""
-} -constraints {eagle command.object SQLite System.Data.SQLite} -result \
+} -constraints \
+{eagle command.object SQLite System.Data.SQLite compile.THREADING} -result \
 {20000 0 0}}
 
 ###############################################################################
@@ -5364,7 +5377,8 @@ runTest {test data-1.100 {SQLiteLog forced initialize (enabled)} -setup {
   unset -nocomplain thread i count
 
   rename threadStart ""
-} -constraints {eagle command.object SQLite System.Data.SQLite} -result \
+} -constraints \
+{eagle command.object SQLite System.Data.SQLite compile.THREADING} -result \
 {20000 20000 0}}
 
 ###############################################################################
@@ -5438,7 +5452,8 @@ runTest {test data-1.101 {SQLiteLog forced initialize (disabled)} -setup {
   unset -nocomplain thread i count
 
   rename threadStart ""
-} -constraints {eagle command.object SQLite System.Data.SQLite} -result \
+} -constraints \
+{eagle command.object SQLite System.Data.SQLite compile.THREADING} -result \
 {20000 0 0}}
 
 ###############################################################################

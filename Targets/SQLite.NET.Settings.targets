@@ -444,7 +444,7 @@
     <IsCompactFramework Condition="'$(IsCompactFramework)' == ''">false</IsCompactFramework>
 
     <!--
-        NOTE: Is the project being built to support .NET Standard 2.0?
+        NOTE: Is the project being built to support .NET Standard 2.0 / 2.1?
     -->
     <IsDotNetStandard Condition="'$(IsDotNetStandard)' == ''">false</IsDotNetStandard>
 

@@ -39,6 +39,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		System.Data.SQLite\Targets\System.Data.SQLite.References.targets = System.Data.SQLite\Targets\System.Data.SQLite.References.targets
 		Targets\SQLite.NET.Mono.Settings.targets = Targets\SQLite.NET.Mono.Settings.targets
 		Targets\SQLite.NET.NetStandard20.Settings.targets = Targets\SQLite.NET.NetStandard20.Settings.targets
+		Targets\SQLite.NET.NetStandard21.Settings.targets = Targets\SQLite.NET.NetStandard21.Settings.targets
 		Targets\SQLite.NET.Platform.Settings.targets = Targets\SQLite.NET.Platform.Settings.targets
 		Targets\SQLite.NET.Settings.targets = Targets\SQLite.NET.Settings.targets
 		Targets\SQLite.NET.Settings.targets.netFx35 = Targets\SQLite.NET.Settings.targets.netFx35

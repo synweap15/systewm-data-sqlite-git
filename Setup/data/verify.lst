@@ -270,12 +270,15 @@ set sds_manifests(source) {
   Setup/build-mono-release.sh
   Setup/build-netstandard20-debug.sh
   Setup/build-netstandard20-release.sh
+  Setup/build-netstandard21-debug.sh
+  Setup/build-netstandard21-release.sh
   Setup/build.bat
   Setup/build_all.bat
   Setup/build_ce_200x.bat
   Setup/build_ce_2013.bat
   Setup/build_mono.bat
   Setup/build_net_standard_20.bat
+  Setup/build_net_standard_21.bat
   Setup/build_nuget.bat
   Setup/clean.bat
   Setup/compile-interop-assembly-debug.sh
@@ -292,11 +295,14 @@ set sds_manifests(source) {
   Setup/release_ce_2013.bat
   Setup/release_mono.bat
   Setup/release_net_standard_20.bat
+  Setup/release_net_standard_21.bat
   Setup/release_static.bat
   Setup/run-mono-tests-debug.sh
   Setup/run-mono-tests-release.sh
   Setup/run-netstandard20-tests-debug.sh
   Setup/run-netstandard20-tests-release.sh
+  Setup/run-netstandard21-tests-debug.sh
+  Setup/run-netstandard21-tests-release.sh
   Setup/set_common.bat
   Setup/set_Debug.bat
   Setup/set_Debug_ARMV7.bat
@@ -319,6 +325,7 @@ set sds_manifests(source) {
   Setup/set_Debug_x86_2015.bat
   Setup/set_Debug_x86_2017.bat
   Setup/set_Debug_x86_NetStandard20.bat
+  Setup/set_Debug_x86_NetStandard21.bat
   Setup/set_DebugNativeOnly.bat
   Setup/set_DebugNativeOnly_ARMV7.bat
   "Setup/set_DebugNativeOnly_CEPC DevPlatform.bat"
@@ -340,6 +347,7 @@ set sds_manifests(source) {
   Setup/set_DebugNativeOnly_x86_2015.bat
   Setup/set_DebugNativeOnly_x86_2017.bat
   Setup/set_DebugNativeOnly_x86_NetStandard20.bat
+  Setup/set_DebugNativeOnly_x86_NetStandard21.bat
   Setup/set_netFx20.bat
   Setup/set_netFx35.bat
   Setup/set_netFx40.bat
@@ -353,6 +361,7 @@ set sds_manifests(source) {
   Setup/set_netFx471.bat
   Setup/set_netFx472.bat
   Setup/set_netStandard20.bat
+  Setup/set_netStandard21.bat
   Setup/set_Release.bat
   Setup/set_Release_ARMV7.bat
   "Setup/set_Release_CEPC DevPlatform.bat"
@@ -374,6 +383,7 @@ set sds_manifests(source) {
   Setup/set_Release_x86_2015.bat
   Setup/set_Release_x86_2017.bat
   Setup/set_Release_x86_NetStandard20.bat
+  Setup/set_Release_x86_NetStandard21.bat
   Setup/set_ReleaseNativeOnly.bat
   Setup/set_ReleaseNativeOnly_ARMV7.bat
   "Setup/set_ReleaseNativeOnly_CEPC DevPlatform.bat"
@@ -395,6 +405,7 @@ set sds_manifests(source) {
   Setup/set_ReleaseNativeOnly_x86_2015.bat
   Setup/set_ReleaseNativeOnly_x86_2017.bat
   Setup/set_ReleaseNativeOnly_x86_NetStandard20.bat
+  Setup/set_ReleaseNativeOnly_x86_NetStandard21.bat
   Setup/set_x64_2005.bat
   Setup/set_x64_2008.bat
   Setup/set_x64_2010.bat
@@ -410,6 +421,7 @@ set sds_manifests(source) {
   Setup/set_x86_2015.bat
   Setup/set_x86_2017.bat
   Setup/set_x86_NetStandard20.bat
+  Setup/set_x86_NetStandard21.bat
   Setup/set_year_2005.bat
   Setup/set_year_2008.bat
   Setup/set_year_2010.bat
@@ -418,11 +430,13 @@ set sds_manifests(source) {
   Setup/set_year_2015.bat
   Setup/set_year_2017.bat
   Setup/set_year_NetStandard20.bat
+  Setup/set_year_NetStandard21.bat
   Setup/sourceTag.eagle
   Setup/test.bat
   Setup/test_all.bat
   Setup/test_ce_200x.bat
   Setup/test_net_standard_20.bat
+  Setup/test_net_standard_21.bat
   Setup/updateFileInfo.tcl
   Setup/verify.eagle
   Setup/vsSp.bat
@@ -586,7 +600,9 @@ set sds_manifests(source) {
   SQLite.NET.2017.MSBuild.sln
   SQLite.NET.2017.sln
   SQLite.NET.NetStandard20.MSBuild.sln
+  SQLite.NET.NetStandard21.MSBuild.sln
   SQLite.NET.NetStandard20.sln
+  SQLite.NET.NetStandard21.sln
   System.Data.SQLite.url
   System.Data.SQLite/
   System.Data.SQLite/AssemblyInfo.cs
@@ -660,6 +676,7 @@ set sds_manifests(source) {
   System.Data.SQLite/System.Data.SQLite.Module.2015.csproj
   System.Data.SQLite/System.Data.SQLite.Module.2017.csproj
   System.Data.SQLite/System.Data.SQLite.NetStandard20.csproj
+  System.Data.SQLite/System.Data.SQLite.NetStandard21.csproj
   System.Data.SQLite/Targets/
   System.Data.SQLite/Targets/System.Data.SQLite.Files.targets
   System.Data.SQLite/Targets/System.Data.SQLite.Properties.targets
@@ -714,6 +731,7 @@ set sds_manifests(source) {
   System.Data.SQLite.Linq/System.Data.SQLite.EF6.2013.csproj
   System.Data.SQLite.Linq/System.Data.SQLite.EF6.2015.csproj
   System.Data.SQLite.Linq/System.Data.SQLite.EF6.2017.csproj
+  System.Data.SQLite.Linq/System.Data.SQLite.EF6.NetStandard21.csproj
   System.Data.SQLite.Linq/System.Data.SQLite.Linq.2008.csproj
   System.Data.SQLite.Linq/System.Data.SQLite.Linq.2010.csproj
   System.Data.SQLite.Linq/System.Data.SQLite.Linq.2012.csproj
@@ -723,6 +741,7 @@ set sds_manifests(source) {
   Targets/
   Targets/SQLite.NET.Mono.Settings.targets
   Targets/SQLite.NET.NetStandard20.Settings.targets
+  Targets/SQLite.NET.NetStandard21.Settings.targets
   Targets/SQLite.NET.Platform.Settings.targets
   Targets/SQLite.NET.Settings.targets
   Targets/SQLite.NET.Settings.targets.netFx35
@@ -787,6 +806,8 @@ set sds_manifests(source) {
   testlinq/2017/EF6/App.config
   testlinq/2017/LINQ/
   testlinq/2017/LINQ/App.config
+  testlinq/NetStandard21/EF6/
+  testlinq/NetStandard21/EF6/App.config
   testlinq/northwindEF.db
   testlinq/NorthwindModel.EF6.2010.Designer.cs
   testlinq/NorthwindModel.EF6.2010.edmx
@@ -798,6 +819,8 @@ set sds_manifests(source) {
   testlinq/NorthwindModel.EF6.2015.edmx
   testlinq/NorthwindModel.EF6.2017.Designer.cs
   testlinq/NorthwindModel.EF6.2017.edmx
+  testlinq/NorthwindModel.EF6.NetStandard21.Designer.cs
+  testlinq/NorthwindModel.EF6.NetStandard21.edmx
   testlinq/NorthwindModel.Linq.2008.Designer.cs
   testlinq/NorthwindModel.Linq.2008.edmx
   testlinq/NorthwindModel.Linq.2010.Designer.cs
@@ -823,6 +846,7 @@ set sds_manifests(source) {
   testlinq/testef6.2013.csproj
   testlinq/testef6.2015.csproj
   testlinq/testef6.2017.csproj
+  testlinq/testef6.NetStandard21.csproj
   testlinq/testlinq.2008.csproj
   testlinq/testlinq.2010.csproj
   testlinq/testlinq.2012.csproj
@@ -982,6 +1006,9 @@ set sds_manifests(eagle) {
   Externals/Eagle/bin/netStandard20/Eagle.dll
   Externals/Eagle/bin/netStandard20/EagleShell.dll
   Externals/Eagle/bin/netStandard20/EagleShell.runtimeconfig.json
+  Externals/Eagle/bin/netStandard21/Eagle.dll
+  Externals/Eagle/bin/netStandard21/EagleShell.dll
+  Externals/Eagle/bin/netStandard21/EagleShell.runtimeconfig.json
   Externals/Eagle/lib/Eagle1.0/auxiliary.eagle
   Externals/Eagle/lib/Eagle1.0/compat.eagle
   Externals/Eagle/lib/Eagle1.0/csharp.eagle
@@ -2224,6 +2251,14 @@ set manifests(sqlite-netFx472-setup-bundle-x64-2017-.exe) [list sds \
 ###############################################################################
 
 set manifests(sqlite-netStandard20-binary-.zip) [list sds binaryCore]
+
+###############################################################################
+################### Visual Studio 2019 / .NET Standard 2.1 ####################
+############################### Binary Packages ###############################
+###############################################################################
+
+set manifests(sqlite-netStandard21-binary-.zip) [list sds binaryCore \
+    binaryEf6]
 
 ###############################################################################
 ############################### NuGet Packages ################################

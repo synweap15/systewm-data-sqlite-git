@@ -50,6 +50,8 @@ runTest {test tkt-00f86f9739-1.1 {LINQ with StartsWith} -body {
 
   set result
 } -cleanup {
+  catch {info previouspid true}
+
   unset -nocomplain code output error result value
 } -constraints \
 {eagle monoToDo defineConstant.System.Data.SQLite.USE_INTEROP_DLL\
@@ -90,6 +92,8 @@ runTest {test tkt-00f86f9739-1.2 {EF6 with StartsWith} -body {
 
   set result
 } -cleanup {
+  catch {info previouspid true}
+
   unset -nocomplain code output error result value
 } -constraints \
 {eagle monoToDo defineConstant.System.Data.SQLite.USE_INTEROP_DLL\

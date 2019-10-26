@@ -425,12 +425,13 @@ namespace eval ::Eagle {
         test_clr_v2 test_clr_v4 test_configuration test_configurations \
         test_configuration_suffix test_configuration_suffixes \
         test_constraints test_extra test_extras test_machine test_native \
-        test_native_configuration_suffix test_native_year test_net_fx \
-        test_net_fx_2005 test_net_fx_2008 test_net_fx_2010 test_net_fx_2012 \
-        test_net_fx_2013 test_net_fx_2015 test_net_fx_2017 test_overrides \
-        test_platform test_suite test_year test_years test_year_clr_v2 \
-        test_year_clr_v4 vendor_directory vendor_test_directory]}] \
-        [checkForVendorQuiet checkForTestOverrides]
+        test_native_configuration_suffix test_native_extra \
+        test_native_extras test_native_year test_net_fx test_net_fx_2005 \
+        test_net_fx_2008 test_net_fx_2010 test_net_fx_2012 test_net_fx_2013 \
+        test_net_fx_2015 test_net_fx_2017 test_overrides test_platform \
+        test_suite test_year test_years test_year_clr_v2 test_year_clr_v4 \
+        vendor_directory vendor_test_directory]}] [checkForVendorQuiet \
+        checkForTestOverrides]
 
     #
     # NOTE: Set the name of the running test suite, if necessary.
@@ -510,6 +511,17 @@ namespace eval ::Eagle {
       #
       checkForSecurityProtocols stdout \
           [checkForVendorQuiet checkForSecurityProtocols]
+    }
+
+    #
+    # HACK: When using [compileCSharp] on .NET Core 3.0, it will produce
+    #       compiler warnings complaining about mismatched versions of the
+    #       .NET Standard reference assemblies, e.g. 2.0 versus 2.1; Since
+    #       the test suite considers these warnings to be an indication of
+    #       test failure, we disable them here.
+    #
+    if {![info exists no(disableWarning1701)] && [isDotNetCore]} then {
+      lappend ::eagle_platform(csharpOptions) nowarn:1701
     }
 
     #

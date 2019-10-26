@@ -22,16 +22,19 @@
     <copyright>Public Domain</copyright>
     <dependencies>
       <group targetFramework="net40">
-        <dependency id="EntityFramework" version="6.2.0" />
+        <dependency id="EntityFramework" version="6.3.0" />
       </group>
       <group targetFramework="net45">
-        <dependency id="EntityFramework" version="6.2.0" />
+        <dependency id="EntityFramework" version="6.3.0" />
       </group>
       <group targetFramework="net451">
-        <dependency id="EntityFramework" version="6.2.0" />
+        <dependency id="EntityFramework" version="6.3.0" />
       </group>
       <group targetFramework="net46">
-        <dependency id="EntityFramework" version="6.2.0" />
+        <dependency id="EntityFramework" version="6.3.0" />
+      </group>
+      <group targetFramework="netstandard2.1">
+        <dependency id="EntityFramework" version="6.3.0" />
       </group>
     </dependencies>
   </metadata>
@@ -40,6 +43,8 @@
     <file src="..\bin\2012\Release\bin\System.Data.SQLite.EF6.dll" target="lib\net45" />
     <file src="..\bin\2013\Release\bin\System.Data.SQLite.EF6.dll" target="lib\net451" />
     <file src="..\bin\2015\Release\bin\System.Data.SQLite.EF6.dll" target="lib\net46" />
+    <file src="..\bin\NetStandard21\ReleaseNetStandard21\bin\netstandard2.1\System.Data.SQLite.EF6.dll" target="lib\netstandard2.1" />
+    <file src="..\bin\NetStandard21\ReleaseNetStandard21\bin\netstandard2.1\System.Data.SQLite.EF6.xml" target="lib\netstandard2.1" />
     <file src="shared\Core\content\config.install.xdt" target="content\net40\app.config.install.xdt" />
     <file src="shared\Core\content\config.install.xdt" target="content\net40\web.config.install.xdt" />
     <file src="shared\Core\content\config.install.xdt" target="content\net45\app.config.install.xdt" />

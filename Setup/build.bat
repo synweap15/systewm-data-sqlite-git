@@ -166,6 +166,22 @@ IF DEFINED NETCORE20ONLY (
   GOTO setup_buildToolDir
 )
 
+IF DEFINED NETCORE30ONLY (
+  %_AECHO% Forcing the use of the .NET Core 3.0...
+  IF NOT DEFINED YEAR (
+    IF DEFINED NETCORE30YEAR (
+      SET YEAR=%NETCORE30YEAR%
+    ) ELSE (
+      SET YEAR=NetStandard21
+    )
+  )
+  CALL :fn_VerifyDotNetCore
+  IF ERRORLEVEL 1 GOTO errors
+  SET NOBUILDTOOLDIR=1
+  SET USEDOTNET=1
+  GOTO setup_buildToolDir
+)
+
 IF DEFINED NETFX20ONLY (
   %_AECHO% Forcing the use of the .NET Framework 2.0...
   IF NOT DEFINED YEAR (
@@ -565,6 +581,7 @@ IF NOT DEFINED NOPROPS (
       REM       value from working correctly when it refers to a property that
       REM       evaluates to an empty string.
       REM
+      %_CECHO% Externals\Eagle\bin\netFramework40\EagleShell.exe -evaluate "set fileName {SQLite.Interop/props/include.vsprops}; set data [readFile $fileName]; regsub -- {	InheritedPropertySheets=\"\"} $data {	InheritedPropertySheets=\"$^(INTEROP_EXTRA_PROPS_FILE^)\"} data; writeFile $fileName $data"
       %__ECHO% Externals\Eagle\bin\netFramework40\EagleShell.exe -evaluate "set fileName {SQLite.Interop/props/include.vsprops}; set data [readFile $fileName]; regsub -- {	InheritedPropertySheets=\"\"} $data {	InheritedPropertySheets=\"$^(INTEROP_EXTRA_PROPS_FILE^)\"} data; writeFile $fileName $data"
 
       IF ERRORLEVEL 1 (
@@ -583,6 +600,7 @@ IF NOT DEFINED NOPROPS (
 
 IF NOT DEFINED NOTAG (
   IF EXIST Externals\Eagle\bin\netFramework40\EagleShell.exe (
+    %_CECHO% Externals\Eagle\bin\netFramework40\EagleShell.exe -file Setup\sourceTag.eagle SourceIdMode SQLite.Interop\src\generic\interop.h
     %__ECHO% Externals\Eagle\bin\netFramework40\EagleShell.exe -file Setup\sourceTag.eagle SourceIdMode SQLite.Interop\src\generic\interop.h
 
     IF ERRORLEVEL 1 (
@@ -590,6 +608,7 @@ IF NOT DEFINED NOTAG (
       GOTO errors
     )
 
+    %_CECHO% Externals\Eagle\bin\netFramework40\EagleShell.exe -file Setup\sourceTag.eagle SourceIdMode System.Data.SQLite\SQLitePatchLevel.cs
     %__ECHO% Externals\Eagle\bin\netFramework40\EagleShell.exe -file Setup\sourceTag.eagle SourceIdMode System.Data.SQLite\SQLitePatchLevel.cs
 
     IF ERRORLEVEL 1 (
@@ -621,6 +640,7 @@ IF DEFINED USEDOTNET (
 %_VECHO% MsBuildArgsCfg = '%MSBUILD_ARGS_CFG%'
 
 IF NOT DEFINED NOBUILD (
+  %_CECHO% "%MSBUILD%" %BUILD_SUBCOMMANDS% "%SOLUTION%" "/target:%TARGET%" "/property:Configuration=%MSBUILD_CONFIGURATION%" "/property:Platform=%PLATFORM%" %LOGGING% %BUILD_ARGS% %MSBUILD_ARGS% %MSBUILD_ARGS_CFG%
   %__ECHO% "%MSBUILD%" %BUILD_SUBCOMMANDS% "%SOLUTION%" "/target:%TARGET%" "/property:Configuration=%MSBUILD_CONFIGURATION%" "/property:Platform=%PLATFORM%" %LOGGING% %BUILD_ARGS% %MSBUILD_ARGS% %MSBUILD_ARGS_CFG%
 
   IF ERRORLEVEL 1 (

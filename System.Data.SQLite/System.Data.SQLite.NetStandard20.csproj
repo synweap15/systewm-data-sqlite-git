@@ -43,7 +43,6 @@
     <RootNamespace>System.Data.SQLite</RootNamespace>
     <AssemblyName>System.Data.SQLite</AssemblyName>
     <SQLiteNetDir>$(MSBuildProjectDirectory)\..</SQLiteNetDir>
-    <NetFx461>true</NetFx461>
     <IsDotNetStandard>true</IsDotNetStandard>
     <ConfigurationYear>NetStandard20</ConfigurationYear>
   </PropertyGroup>
@@ -63,7 +62,7 @@
 
   <!--
   ******************************************************************************
-  ** .NET Standard 2.0 Specific Eagle Strong Name Signing Property Overrides  **
+  **    .NET Standard 2.0 Specific Strong Name Signing Property Overrides     **
   ******************************************************************************
   -->
 

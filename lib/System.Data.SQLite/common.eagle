@@ -204,12 +204,13 @@ namespace eval ::Eagle {
         #
         # NOTE: Running on .NET Core, prioritize its list of test years.
         #
-        return [list NetStandard20]
+        return [list NetStandard20 NetStandard21]
       } else {
         #
         # NOTE: Use the default list of test years (i.e. all).
         #
-        return [list 2005 2008 2010 2012 2013 2015 2017 NetStandard20]
+        return [list \
+            2005 2008 2010 2012 2013 2015 2017 NetStandard20 NetStandard21]
       }
     }
 
@@ -316,6 +317,9 @@ namespace eval ::Eagle {
             }
             NetStandard20 {
               return netStandard20
+            }
+            NetStandard21 {
+              return netStandard21
             }
             default {
               return netFx35; # TODO: Good "fallback" default?
@@ -499,6 +503,16 @@ namespace eval ::Eagle {
       }
     }
 
+    proc getBuildNativeExtraForDotNetCore { extra } {
+      if {[isDotNetCore] && [isWindows]} then {
+        return ""
+      } elseif {[string length $extra] > 0} then {
+        return $extra
+      } else {
+        return [getBuildNativeExtra]
+      }
+    }
+
     proc getBuildConfigurationSuffixes {} {
       #
       # NOTE: See if the list of test configuration suffixes has been
@@ -515,7 +529,7 @@ namespace eval ::Eagle {
         # NOTE: Running on .NET Core, prioritize its test configuration
         #       suffixes for library files.
         #
-        return [list NetStandard20 ""]
+        return [list NetStandard20 NetStandard21 ""]
       } else {
         #
         # NOTE: Use the default list of test configurations suffixes.
@@ -561,13 +575,44 @@ namespace eval ::Eagle {
         # NOTE: Running on .NET Core, prioritize its extra output directory
         #       for library files.
         #
-        return [list netstandard2.0 ""]
+        return [list netstandard2.0 netstandard2.1 ""]
       } else {
         #
         # NOTE: Use default list of extra output directories, which is one
         #       empty string (no-op).
         #
         return [list ""]
+      }
+    }
+
+    proc getBuildNativeExtra {} {
+      if {[info exists ::test_native_extra] && \
+          [string length $::test_native_extra] > 0} then {
+        #
+        # NOTE: Use the specified native extra output directory.
+        #
+        return $::test_native_extra
+      } else {
+        #
+        # NOTE: No native extra output directory is required.
+        #
+        return ""
+      }
+    }
+
+    proc getBuildNativeExtras {} {
+      if {[info exists ::test_native_extras] && \
+          [llength $::test_native_extras] > 0} then {
+        #
+        # NOTE: Use the specified list of native extra output directories.
+        #
+        return $::test_native_extras
+      } else {
+        #
+        # NOTE: Use default list of native extra output directories, which
+        #       is none.
+        #
+        return [list]
       }
     }
 
@@ -1028,7 +1073,7 @@ namespace eval ::Eagle {
             [getBuildPlatform $native] [appendArgs [getBuildConfiguration] \
             [expr {$managedOnly ? [getBuildConfigurationSuffix] : \
             [getBuildNativeConfigurationSuffix]}]] [expr {$managedOnly ? \
-            [getBuildExtra] : ""}]]
+            [getBuildExtra] : [getBuildNativeExtra]}]]
       }
     }
 
@@ -2003,6 +2048,9 @@ namespace eval ::Eagle {
 
                     set ::test_extra $extra
 
+                    set ::test_native_extra \
+                        [getBuildNativeExtraForDotNetCore $extra]
+
                     tputs $channel [appendArgs \
                         "yes, selected (" [expr {$native ? "native/" : ""}] \
                         [expr {[string length $platform] > 0 ? [appendArgs \
@@ -2657,6 +2705,28 @@ namespace eval ::Eagle {
       return [list \
           [sql execute -execute scalar $db "PRAGMA page_size;"] \
           [sql execute -execute scalar $db "PRAGMA cache_size;"]]
+    }
+
+    proc getOutputEncodingName {} {
+      #
+      # HACK: Account for differences between Console output encodings on
+      #       the .NET Framework versus .NET Core, on Windows and POSIX.
+      #       Mono is not supported by this procedure as it is only used
+      #       by tests that do not run on Mono.
+      #
+      if {[isDotNetCore]} then {
+        if {[isWindows]} then {
+          #
+          # TODO: The reported output encoding for the Console on Windows
+          #       is actually "Codepage - 437".  Why?
+          #
+          return iso-8859-1
+        } else {
+          return utf-8
+        }
+      } else {
+        return Windows-1252
+      }
     }
 
     proc normalizeExceptionMessage { value } {
@@ -4736,7 +4806,8 @@ namespace eval ::Eagle {
 
       #
       # NOTE: Check the current build configuration suffix.  This will
-      #       normally be either "NetStandard20" or an empty string.
+      #       normally be either "NetStandard20" or "NetStandard21" or
+      #       an empty string.
       #
       tputs $channel \
           "---- checking for System.Data.SQLite build configuration suffix... "
@@ -4779,6 +4850,23 @@ namespace eval ::Eagle {
         tputs $channel [appendArgs \" $extra \"\n]
       } else {
         addConstraint buildExtra.none
+        tputs $channel <none>\n
+      }
+
+      #
+      # NOTE: Check the current build native extra directory.  This will
+      #       normally be an empty string.
+      #
+      tputs $channel \
+          "---- checking for System.Data.SQLite build native extra... "
+
+      set extra [getBuildNativeExtra]
+
+      if {[string length $extra] > 0} then {
+        addConstraint [appendArgs buildNativeExtra. $extra]
+        tputs $channel [appendArgs \" $extra \"\n]
+      } else {
+        addConstraint buildNativeExtra.none
         tputs $channel <none>\n
       }
     }
@@ -4843,15 +4931,22 @@ namespace eval ::Eagle {
 
         #
         # NOTE: Build the list of external files that we handle.  Some of
-        #       these files may be native and/or managed assemblies that are
-        #       required to perform various tests.
+        #       these files may be native and/or managed assemblies that
+        #       are required to perform various tests.
         #
-        set externalFileNames [list \
-            [file join EntityFramework lib [string map [list Fx ""] \
-            [string map [list netFx451 netFx45 netFx452 netFx45 netFx46 \
-            netFx45 netFx461 netFx45 netFx462 netFx45 netFx47 netFx45 \
-            netFx471 netFx45 netFx472 netFx45 netStandard20 netFx45] \
-            [getBuildNetFx]]] EntityFramework.dll]]
+        if {[isDotNetCore]} then {
+          set externalFileNames [list \
+              [file join EntityFramework v6.3 lib [string map [list \
+              netStandard21 netstandard2.1] [getBuildNetFx]] \
+              EntityFramework.dll]]
+        } else {
+          set externalFileNames [list \
+              [file join EntityFramework v6.2 lib [string map [list \
+              Fx ""] [string map [list netFx451 netFx45 netFx452 \
+              netFx45 netFx46 netFx45 netFx461 netFx45 netFx462 \
+              netFx45 netFx47 netFx45 netFx471 netFx45 netFx472 \
+              netFx45] [getBuildNetFx]]] EntityFramework.dll]]
+        }
 
         #
         # NOTE: Build the list of native assembly files that we handle.
@@ -5174,6 +5269,11 @@ namespace eval ::Eagle {
 
                 foreach fileName $nativeFileNames {
                   tryCopyAssembly $fileName false
+
+                  if {[isDotNetCore] && ![file exists \
+                      [getBuildFileName $fileName true]]} then {
+                    tryCopyBinaryFile $fileName true
+                  }
                 }
               }
 
@@ -5186,6 +5286,12 @@ namespace eval ::Eagle {
 
                   foreach fileName $nativeFileNames {
                     tryCopyAssembly $fileName false $platform
+
+                    if {[isDotNetCore] && ![file exists \
+                        [getBuildFileName $fileName true \
+                        $platform]]} then {
+                      tryCopyBinaryFile $fileName true $platform
+                    }
                   }
                 }
 
@@ -5197,6 +5303,12 @@ namespace eval ::Eagle {
 
                   foreach fileName $nativeFileNames {
                     tryCopyAssembly $fileName false $architecture
+
+                    if {[isDotNetCore] && ![file exists \
+                        [getBuildFileName $fileName true \
+                        $architecture]]} then {
+                      tryCopyBinaryFile $fileName true $architecture
+                    }
                   }
                 }
 
@@ -5505,10 +5617,10 @@ namespace eval ::Eagle {
             INTEROP_TOTYPE_EXTENSION INTEROP_VIRTUAL_TABLE \
             NET_20 NET_35 NET_40 NET_45 NET_451 NET_452 NET_46 NET_461 \
             NET_462 NET_47 NET_471 NET_472 NET_COMPACT_20 NET_STANDARD_20 \
-            PLATFORM_COMPACTFRAMEWORK PRELOAD_NATIVE_LIBRARY RETARGETABLE \
-            SQLITE_STANDARD THROW_ON_DISPOSED TRACE TRACE_CONNECTION \
-            TRACE_DETECTION TRACE_HANDLE TRACE_PRELOAD TRACE_SHARED \
-            TRACE_STATEMENT TRACE_WARNING TRACK_MEMORY_BYTES \
+            NET_STANDARD_21 PLATFORM_COMPACTFRAMEWORK PRELOAD_NATIVE_LIBRARY \
+            RETARGETABLE SQLITE_STANDARD THROW_ON_DISPOSED \
+            TRACE TRACE_CONNECTION TRACE_DETECTION TRACE_HANDLE TRACE_PRELOAD \
+            TRACE_SHARED TRACE_STATEMENT TRACE_WARNING TRACK_MEMORY_BYTES \
             USE_ENTITY_FRAMEWORK_6 USE_INTEROP_DLL USE_PREPARE_V2 WINDOWS] {
           #
           # NOTE: Check if the compile-time option is listed in the list of
@@ -5724,7 +5836,12 @@ namespace eval ::Eagle {
 
           set testExeFile [getBuildFileName test.exe true]
           set testLinqExeFile [getBuildFileName testlinq.exe true]
-          set testEf6ExeFile [getBuildFileName testef6.exe true]
+
+          if {[isDotNetCore]} then {
+            set testEf6ExeFile [getBuildFileName testef6.dll true]
+          } else {
+            set testEf6ExeFile [getBuildFileName testef6.exe true]
+          }
 
           #
           # NOTE: Setup the variables that refer to the various data files
@@ -5799,7 +5916,7 @@ namespace eval ::Eagle {
 
             if {![haveConstraint [appendArgs file_ \
                 [file tail $installerExeFile]]]} then {
-              checkForFile $test_channel $installerExeFile Installer.exe
+              checkForFile $test_channel $installerExeFile
             }
 
             if {![haveConstraint [appendArgs file_ \
@@ -5824,16 +5941,22 @@ namespace eval ::Eagle {
 
             if {![haveConstraint [appendArgs file_ \
                 [file tail $testExeFile]]]} then {
-              checkForFile $test_channel $testExeFile test.exe
+              checkForFile $test_channel $testExeFile
             }
 
             if {![haveConstraint [appendArgs file_ \
                 [file tail $testLinqExeFile]]]} then {
-              checkForFile $test_channel $testLinqExeFile testlinq.exe
+              checkForFile $test_channel $testLinqExeFile
             }
 
             if {![haveConstraint [appendArgs file_ \
                 [file tail $testEf6ExeFile]]]} then {
+              #
+              # HACK: Hard-code the constraint name here to that of .NET
+              #       Framework executable.  When compiled for .NET Core
+              #       this will be a DLL; however, the tests use the EXE
+              #       file name as the constraint name.
+              #
               checkForFile $test_channel $testEf6ExeFile testef6.exe
             }
 
@@ -5948,8 +6071,7 @@ namespace eval ::Eagle {
               testInstallVs2008LogFile testInstallVs2005LogFile
 
           unset -nocomplain \
-              northwindEfDbFile testLinqOutFile \
-              walDbFile nonWalDbFile
+              northwindEfDbFile testLinqOutFile walDbFile nonWalDbFile
 
           unset -nocomplain \
               testEf6ExeFile testLinqExeFile \

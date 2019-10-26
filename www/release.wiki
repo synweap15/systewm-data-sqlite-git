@@ -260,6 +260,32 @@
   </li>
 </ol>
 
+<a name="buildNetStandard21Binaries"></a>
+<h2>Build .NET Standard 2.1 Binaries</h2>
+
+<ol>
+  <li>Open a normal command prompt window with &quot;cmd.exe&quot;.</li>
+
+  <li>Change the current directory to &quot;&lt;root&gt;\Setup&quot;.</li>
+
+  <li>
+    Enter the following commands to build all the binaries available for .NET
+    Standard 2.1:
+    <br />
+    <br />
+    <b>SET BUILD_FULL=</b>
+    <br />
+    <b>SET BUILD_DEBUG=1</b>
+    <br />
+    <b>build_net_standard_21.bat</b>
+  </li>
+
+  <li>
+    Make sure everything succeeds with no errors; the console output may be
+    checked if any errors should occur.
+  </li>
+</ol>
+
 <a name="testNetStandard20Binaries"></a>
 <h2>Test .NET Standard 2.0 Binaries</h2>
 
@@ -276,6 +302,30 @@
     <b>SET TEST_DEBUG=1</b>
     <br />
     <b>test_net_standard_20.bat</b>
+  </li>
+
+  <li>
+    Make sure everything succeeds with no errors; the console output may be
+    checked if any errors should occur.
+  </li>
+</ol>
+
+<a name="testNetStandard21Binaries"></a>
+<h2>Test .NET Standard 2.1 Binaries</h2>
+
+<ol>
+  <li>Open a normal command prompt window with &quot;cmd.exe&quot;.</li>
+
+  <li>Change the current directory to &quot;&lt;root&gt;\Setup&quot;.</li>
+
+  <li>
+    Enter the following commands to test all the binaries available for .NET
+    Standard 2.1:
+    <br />
+    <br />
+    <b>SET TEST_DEBUG=1</b>
+    <br />
+    <b>test_net_standard_21.bat</b>
   </li>
 
   <li>
@@ -501,6 +551,29 @@
     <b>SET RELEASE_DEBUG=1</b>
     <br />
     <b>release_net_standard_20.bat</b>
+  </li>
+
+  <li>
+    Make sure everything succeeds with no errors; the console output may be
+    checked if any errors should occur.
+  </li>
+</ol>
+
+<a name="buildNetStandard21BinaryPackages"></a>
+<h2>Build .NET Standard 2.1 Release Packages</h2>
+
+<ol>
+  <li>Open a normal command prompt window with &quot;cmd.exe&quot;.</li>
+
+  <li>Change the current directory to &quot;&lt;root&gt;\Setup&quot;.</li>
+
+  <li>
+    Enter the following commands to build all the Mono release packages:
+    <br />
+    <br />
+    <b>SET RELEASE_DEBUG=1</b>
+    <br />
+    <b>release_net_standard_21.bat</b>
   </li>
 
   <li>

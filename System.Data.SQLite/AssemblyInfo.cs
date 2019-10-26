@@ -42,20 +42,20 @@ using System.Runtime.ConstrainedExecution;
 [assembly: CLSCompliant(true)]
 [assembly: InternalsVisibleTo("System.Data.SQLite.Linq, PublicKey=" + System.Data.SQLite.SQLite3.PublicKey)]
 
-#if NET_40 || NET_45 || NET_451 || NET_452 || NET_46 || NET_461 || NET_462 || NET_47 || NET_471 || NET_472
+#if NET_40 || NET_45 || NET_451 || NET_452 || NET_46 || NET_461 || NET_462 || NET_47 || NET_471 || NET_472 || NET_STANDARD_20 || NET_STANDARD_21
 [assembly: InternalsVisibleTo("System.Data.SQLite.EF6, PublicKey=" + System.Data.SQLite.SQLite3.PublicKey)]
 #endif
 
 [assembly: NeutralResourcesLanguage("en")]
 
 #if !PLATFORM_COMPACTFRAMEWORK
-#if !NET_40 && !NET_45 && !NET_451 && !NET_452 && !NET_46 && !NET_461 && !NET_462 && !NET_47 && !NET_471 && !NET_472
+#if !NET_40 && !NET_45 && !NET_451 && !NET_452 && !NET_46 && !NET_461 && !NET_462 && !NET_47 && !NET_471 && !NET_472 && !NET_STANDARD_20 && !NET_STANDARD_21
 [assembly: AllowPartiallyTrustedCallers]
 #endif
 
 [assembly: ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
 
-#if NET_40 || NET_45 || NET_451 || NET_452 || NET_46 || NET_461 || NET_462 || NET_47 || NET_471 || NET_472 || NET_STANDARD_20
+#if NET_40 || NET_45 || NET_451 || NET_452 || NET_46 || NET_461 || NET_462 || NET_47 || NET_471 || NET_472 || NET_STANDARD_20 || NET_STANDARD_21
 //
 // NOTE: This attribute is only available in .NET Framework 4.0 or higher.
 //

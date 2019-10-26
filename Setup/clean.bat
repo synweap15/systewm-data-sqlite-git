@@ -243,7 +243,7 @@ IF EXIST "%SOURCE%\Doc\SQLite.NET.chw" (
   %_AECHO%.
 )
 
-FOR %%D IN (netFramework40 netStandard20) DO (
+FOR %%D IN (netFramework40 netStandard20 netStandard21) DO (
   IF EXIST "%SOURCE%\Externals\Eagle\bin\%%D\EntityFramework.*" (
     %__ECHO% DEL /Q "%SOURCE%\Externals\Eagle\bin\%%D\EntityFramework.*"
 

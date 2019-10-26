@@ -57,7 +57,7 @@
   <ItemGroup Condition="'$(UseEntityFramework6)' != 'false'">
     <Reference Include="EntityFramework"
                Condition="'$(NetFx40)' != 'false'">
-      <HintPath>$(SQLiteNetDir)\Externals\EntityFramework\lib\net40\EntityFramework.dll</HintPath>
+      <HintPath>$(SQLiteNetDir)\Externals\EntityFramework\v6.2\lib\net40\EntityFramework.dll</HintPath>
     </Reference>
     <Reference Include="EntityFramework"
                Condition="'$(NetFx45)' != 'false' Or
@@ -69,7 +69,7 @@
                           '$(NetFx47)' != 'false' Or
                           '$(NetFx471)' != 'false' Or
                           '$(NetFx472)' != 'false'">
-      <HintPath>$(SQLiteNetDir)\Externals\EntityFramework\lib\net45\EntityFramework.dll</HintPath>
+      <HintPath>$(SQLiteNetDir)\Externals\EntityFramework\v6.2\lib\net45\EntityFramework.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

@@ -218,9 +218,9 @@ Components: Application\LINQ and Application\Symbols; Source: ..\..\bin\{#Year}\
 
 #if Year != "2005" && Year != "2008"
 #if Year == "2010"
-Components: Application\EF6; Source: ..\..\Externals\EntityFramework\lib\net40\EntityFramework.dll; DestDir: {app}\bin; Flags: restartreplace uninsrestartdelete
+Components: Application\EF6; Source: ..\..\Externals\EntityFramework\v6.2\lib\net40\EntityFramework.dll; DestDir: {app}\bin; Flags: restartreplace uninsrestartdelete
 #elif Year == "2012" || Year == "2013" || Year == "2015"
-Components: Application\EF6; Source: ..\..\Externals\EntityFramework\lib\net45\EntityFramework.dll; DestDir: {app}\bin; Flags: restartreplace uninsrestartdelete
+Components: Application\EF6; Source: ..\..\Externals\EntityFramework\v6.2\lib\net45\EntityFramework.dll; DestDir: {app}\bin; Flags: restartreplace uninsrestartdelete
 #endif
 
 #if Pos("NativeOnly", AppConfiguration) == 0

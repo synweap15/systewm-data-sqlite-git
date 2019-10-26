@@ -1646,6 +1646,31 @@
 
     <tr>
       <td colspan="4">
+        <b>Precompiled Binaries for the .NET Standard 2.1 (.NET Core 3.0)</b>
+      </td>
+    </tr>
+
+    <tr>
+      <td width="10">&nbsp;</td>
+      <td width="30%" valign="top" align="right">
+        <a name="sqlite-netStandard21-binary"></a>
+        <a href="/downloads/1.0.111.0/sqlite-netStandard21-binary-1.0.111.0.zip">sqlite-netStandard21-binary-1.0.111.0.zip</a>
+        <br />
+        (0.00 MiB)
+      </td>
+      <td width="5"></td>
+      <td valign="top">
+        This binary package contains all the managed binaries for the .NET
+        Standard 2.1 version of the System.Data.SQLite 1.0.111.0 (3.28.0)
+        package.  The <a href="https://dotnet.github.io/">.NET Core</a>
+        runtime (3.0 or higher) is required.
+        <br />
+        (sha1: 0000000000000000000000000000000000000000)
+      </td>
+    </tr>
+
+    <tr>
+      <td colspan="4">
         <b>Precompiled Statically-Linked Binaries for 32-bit Windows (.NET Framework 2.0 SP2)</b>
       </td>
     </tr>
@@ -2560,7 +2585,8 @@
 
   <p>
     The <b>year</b> in templates (5), (6), (7), (8), (9), and (10) will be
-    one of 2005, 2008, 2010, 2012, 2013, 2015, 2017, 20XX, NetStandard20.
+    one of 2005, 2008, 2010, 2012, 2013, 2015, 2017, 20XX, NetStandard20,
+    NetStandard21.
   </p>
 
   <p>
