@@ -5505,6 +5505,46 @@ runTest {test data-1.102 {Target Framework Abbreviations} -body {
 
 ###############################################################################
 
+runTest {test data-1.103 { method} -setup {
+  setupDb [set fileName data-1.103.db]
+} -body {
+  set limits [list]
+
+  lappend limits SQLITE_LIMIT_NONE
+  lappend limits SQLITE_LIMIT_LENGTH
+  lappend limits SQLITE_LIMIT_SQL_LENGTH
+  lappend limits SQLITE_LIMIT_COLUMN
+  lappend limits SQLITE_LIMIT_EXPR_DEPTH
+  lappend limits SQLITE_LIMIT_COMPOUND_SELECT
+  lappend limits SQLITE_LIMIT_VDBE_OP
+  lappend limits SQLITE_LIMIT_FUNCTION_ARG
+  lappend limits SQLITE_LIMIT_ATTACHED
+  lappend limits SQLITE_LIMIT_LIKE_PATTERN_LENGTH
+  lappend limits SQLITE_LIMIT_VARIABLE_NUMBER
+  lappend limits SQLITE_LIMIT_TRIGGER_DEPTH
+  lappend limits SQLITE_LIMIT_WORKER_THREADS
+
+  set connection [getDbConnection]
+
+  foreach limit $limits {
+    lappend result [$connection SetLimitOption $limit 1]
+    lappend result [$connection SetLimitOption $limit 2]
+  }
+
+  set result
+} -cleanup {
+  cleanupDb $fileName
+
+  freeDbConnection
+
+  unset -nocomplain value result limit limits
+  unset -nocomplain connection db fileName
+} -constraints {eagle monoBug28 command.sql compile.DATA SQLite\
+System.Data.SQLite} -result {-1 -1 1000000000 1 1000000000 1 2000 1 1000 1 500\
+1 250000000 1 127 1 10 1 50000 1 999 1 1000 1 0 1}}
+
+###############################################################################
+
 reportSQLiteResources $test_channel
 
 ###############################################################################

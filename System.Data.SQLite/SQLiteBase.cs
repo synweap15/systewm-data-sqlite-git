@@ -403,9 +403,10 @@ namespace System.Data.SQLite
     /// The new value for the specified limit.
     /// </param>
     /// <returns>
-    /// A standard SQLite return code.
+    /// The old value for the specified limit -OR- negative one if an error
+    /// occurs.
     /// </returns>
-    internal abstract SQLiteErrorCode SetLimitOption(SQLiteLimitOpsEnum option, int value);
+    internal abstract int SetLimitOption(SQLiteLimitOpsEnum option, int value);
     /// <summary>
     /// Change a configuration option value for the database.
     /// </summary>
@@ -1726,6 +1727,11 @@ namespace System.Data.SQLite
   /// </summary>
   public enum SQLiteLimitOpsEnum
   {
+      /// <summary>
+      /// This value represents an unknown (or invalid) limit, do not use it.
+      /// </summary>
+      SQLITE_LIMIT_NONE = -1,
+
       /// <summary>
       /// The maximum size of any string or BLOB or table row, in bytes.
       /// </summary>

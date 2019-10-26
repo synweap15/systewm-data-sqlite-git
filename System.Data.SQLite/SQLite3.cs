@@ -3010,9 +3010,10 @@ namespace System.Data.SQLite
     /// The new value for the specified limit.
     /// </param>
     /// <returns>
-    /// A standard SQLite return code.
+    /// The old value for the specified limit -OR- negative one if an error
+    /// occurs.
     /// </returns>
-    internal override SQLiteErrorCode SetLimitOption(
+    internal override int SetLimitOption(
         SQLiteLimitOpsEnum option,
         int value
         )

@@ -3941,7 +3941,11 @@ namespace System.Data.SQLite
     /// <param name="value">
     /// The new value for the specified limit.
     /// </param>
-    public void SetLimitOption(
+    /// <returns>
+    /// The old value for the specified limit -OR- negative one if an error
+    /// occurs.
+    /// </returns>
+    public int SetLimitOption(
         SQLiteLimitOpsEnum option,
         int value
         )
@@ -3954,10 +3958,7 @@ namespace System.Data.SQLite
                 "Database connection not valid for changing a limit option.");
         }
 
-        SQLiteErrorCode rc = _sql.SetLimitOption(option, value);
-
-        if (rc != SQLiteErrorCode.Ok)
-            throw new SQLiteException(rc, null);
+        return _sql.SetLimitOption(option, value);
     }
 
     /// <summary>

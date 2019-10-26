@@ -4312,7 +4312,7 @@ namespace System.Data.SQLite
 #else
     [DllImport(SQLITE_DLL)]
 #endif
-    internal static extern SQLiteErrorCode sqlite3_limit(IntPtr db, SQLiteLimitOpsEnum op, int value);
+    internal static extern int sqlite3_limit(IntPtr db, SQLiteLimitOpsEnum op, int value);
 
     // Since sqlite3_config() takes a variable argument list, we have to overload declarations
     // for all possible calls that we want to use.
