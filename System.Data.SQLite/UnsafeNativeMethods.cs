@@ -1519,12 +1519,14 @@ namespace System.Data.SQLite
       private static readonly object staticSyncRoot = new object();
 
       /////////////////////////////////////////////////////////////////////////
+#if !PLATFORM_COMPACTFRAMEWORK
       /// <summary>
       /// This dictionary stores the mappings between target framework names
       /// and their associated (NuGet) abbreviations.  These mappings are only
       /// used by the <see cref="AbbreviateTargetFramework" /> method.
       /// </summary>
       private static Dictionary<string, string> targetFrameworkAbbreviations;
+#endif
 
       /////////////////////////////////////////////////////////////////////////
       /// <summary>
@@ -1623,6 +1625,7 @@ namespace System.Data.SQLite
 
           lock (staticSyncRoot)
           {
+#if !PLATFORM_COMPACTFRAMEWORK
               //
               // TODO: Make sure to keep these lists updated when the
               //       target framework names (or their abbreviations)
@@ -1680,6 +1683,7 @@ namespace System.Data.SQLite
                   targetFrameworkAbbreviations.Add(
                       ".NETStandard,Version=v2.1", "netstandard2.1");
               }
+#endif
 
               if (processorArchitecturePlatforms == null)
               {
