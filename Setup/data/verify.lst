@@ -806,6 +806,7 @@ set sds_manifests(source) {
   testlinq/2017/EF6/App.config
   testlinq/2017/LINQ/
   testlinq/2017/LINQ/App.config
+  testlinq/NetStandard21/
   testlinq/NetStandard21/EF6/
   testlinq/NetStandard21/EF6/App.config
   testlinq/northwindEF.db
@@ -1006,6 +1007,7 @@ set sds_manifests(eagle) {
   Externals/Eagle/bin/netStandard20/Eagle.dll
   Externals/Eagle/bin/netStandard20/EagleShell.dll
   Externals/Eagle/bin/netStandard20/EagleShell.runtimeconfig.json
+  Externals/Eagle/bin/netStandard21/
   Externals/Eagle/bin/netStandard21/Eagle.dll
   Externals/Eagle/bin/netStandard21/EagleShell.dll
   Externals/Eagle/bin/netStandard21/EagleShell.runtimeconfig.json
