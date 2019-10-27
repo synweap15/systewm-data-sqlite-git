@@ -312,6 +312,8 @@ runTest {test tkt-0e48e80333-1.2 {delegate MDA on pooled close} -setup {
   catch {file delete $scriptFileName}
   catch {file delete $configFileName}
 
+  catch {info previouspid true}
+
   unset -nocomplain dummy count
   unset -nocomplain code output error scriptFileName configFileName
   unset -nocomplain db fileName
