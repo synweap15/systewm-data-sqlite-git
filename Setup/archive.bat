@@ -93,6 +93,7 @@ IF DEFINED ARCHIVE_FULL (
 %_VECHO% ExcludeSrc = '%EXCLUDE_SRC%'
 %_VECHO% Prefix = '%PREFIX%'
 
+%_CECHO% zip.exe -v -r "Setup\Output\%PREFIX%-%VERSION%.zip" * -x "%EXCLUDE_SRC%"
 %__ECHO% zip.exe -v -r "Setup\Output\%PREFIX%-%VERSION%.zip" * -x "%EXCLUDE_SRC%"
 
 IF ERRORLEVEL 1 (
