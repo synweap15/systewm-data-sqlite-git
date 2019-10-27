@@ -1097,8 +1097,8 @@ set sds_manifests(binaryLinq) {
 ###############################################################################
 #
 # NOTE: This is the list of extra files that should be present in all binary
-#       archives that support EF6 (i.e. available with the desktop .NET
-#       Framework 4.0 and later).
+#       archives that support EF6 on desktop versions of the .NET Framework
+#       4.0 and later.
 #
 set sds_manifests(binaryEf6) {
   System.Data.SQLite.EF6.dll
@@ -1106,6 +1106,21 @@ set sds_manifests(binaryEf6) {
   System.Data.SQLite.EF6.xml
   testef6.exe
   testef6.exe.config
+  testef6.pdb
+}
+
+###############################################################################
+#
+# NOTE: This is the list of extra files that should be present in all binary
+#       archives that support EF6 on .NET Core 3.0 and later.
+#
+set sds_manifests(binaryEf6NetCore) {
+  System.Data.SQLite.EF6.dll
+  System.Data.SQLite.EF6.pdb
+  System.Data.SQLite.EF6.xml
+  northwindEF.db
+  testef6.dll
+  testef6.dll.config
   testef6.pdb
 }
 
@@ -1475,6 +1490,7 @@ set sds_manifests(nuGetEf6) {
   lib/net45/System.Data.SQLite.EF6.dll
   lib/net451/System.Data.SQLite.EF6.dll
   lib/net46/System.Data.SQLite.EF6.dll
+  lib/netstandard2.1/System.Data.SQLite.EF6.dll
   tools/net40/install.ps1
   tools/net45/install.ps1
   tools/net451/install.ps1
@@ -2260,7 +2276,7 @@ set manifests(sqlite-netStandard20-binary-.zip) [list sds binaryCore]
 ###############################################################################
 
 set manifests(sqlite-netStandard21-binary-.zip) [list sds binaryCore \
-    binaryEf6]
+    binaryEf6NetCore]
 
 ###############################################################################
 ############################### NuGet Packages ################################
