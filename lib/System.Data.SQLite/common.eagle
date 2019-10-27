@@ -2592,12 +2592,12 @@ namespace eval ::Eagle {
         #
         # NOTE: Create the base command to evaluate and add the property
         #       settings that are almost always needed by our unit tests
-        #       (i.e. the System and System.Data assembly references).
+        #       (e.g. System and System.Data assembly references, etc).
         #
         set command [list \
-            compileCSharp $text $memory $symbols $strict results \
-            errors $add System.dll $add System.Data.dll $add \
-            System.Transactions.dll $add System.Xml.dll]
+            compileCSharp $text $memory $symbols $strict results errors \
+            $add System.dll $add System.Data.dll $add System.Xml.dll \
+            $add System.Transactions.dll]
 
         #
         # NOTE: Add all the provided file names as assembly references.
