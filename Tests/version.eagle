@@ -37,6 +37,15 @@ set version(revision)          0
 ###############################################################################
 
 #
+# NOTE: What is the full version of the included SQLite core library?  This
+#       must be kept synchronized with the version numbers for the associated
+#       source code and property files.
+#
+set version(core) 3.30.1.0
+
+###############################################################################
+
+#
 # NOTE: What is the full version of the EntityFramework NuGet package (which
 #       is not [necessarily] the same version as the assembly itself) in use
 #       by the System.Data.SQLite NuGet packages?
@@ -845,6 +854,24 @@ lappend patterns \
         $version(full)] </INTEROP_RC_VERSION>]
 
 ###############################################################################
+# sqlite3.props
+###############################################################################
+
+lappend patterns \
+    [appendArgs <SQLITE_MANIFEST_VERSION> [string map [list . \\.] \
+        $version(core)] </SQLITE_MANIFEST_VERSION>] \
+    [appendArgs <SQLITE_RC_VERSION> [string map [list . ,] \
+        $version(core)] </SQLITE_RC_VERSION>]
+
+###############################################################################
+# sqlite3.vsprops
+###############################################################################
+
+lappend patterns \
+    [appendArgs Value=\" [string map [list . \\.] $version(core)] \"] \
+    [appendArgs Value=\" [string map [list . ,] $version(core)] \"]
+
+###############################################################################
 # interop.h
 ###############################################################################
 
@@ -1220,6 +1247,10 @@ set fileNames [list \
     [file join SQLite.Interop props SQLite.Interop.2017.props] \
     [file join SQLite.Interop props SQLite.Interop.2017.props] \
     [file join SQLite.Interop props SQLite.Interop.2017.props] \
+    [file join SQLite.Interop props sqlite3.props] \
+    [file join SQLite.Interop props sqlite3.props] \
+    [file join SQLite.Interop props sqlite3.vsprops] \
+    [file join SQLite.Interop props sqlite3.vsprops] \
     [file join SQLite.Interop src generic interop.h] \
     [file join System.Data.SQLite AssemblyInfo.cs] \
     [file join System.Data.SQLite AssemblyInfo.cs] \
