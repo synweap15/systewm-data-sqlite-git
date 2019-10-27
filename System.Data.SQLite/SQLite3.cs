@@ -2891,18 +2891,18 @@ namespace System.Data.SQLite
         //
         builder.AppendFormat(CultureInfo.InvariantCulture,
             "{0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}, {11}",
-            SQLiteConfigDbOpsEnum.SQLITE_LIMIT_LENGTH,
-            SQLiteConfigDbOpsEnum.SQLITE_LIMIT_SQL_LENGTH,
-            SQLiteConfigDbOpsEnum.SQLITE_LIMIT_COLUMN,
-            SQLiteConfigDbOpsEnum.SQLITE_LIMIT_EXPR_DEPTH,
-            SQLiteConfigDbOpsEnum.SQLITE_LIMIT_COMPOUND_SELECT,
-            SQLiteConfigDbOpsEnum.SQLITE_LIMIT_VDBE_OP,
-            SQLiteConfigDbOpsEnum.SQLITE_LIMIT_FUNCTION_ARG,
-            SQLiteConfigDbOpsEnum.SQLITE_LIMIT_ATTACHED,
-            SQLiteConfigDbOpsEnum.SQLITE_LIMIT_LIKE_PATTERN_LENGTH,
-            SQLiteConfigDbOpsEnum.SQLITE_LIMIT_VARIABLE_NUMBER,
-            SQLiteConfigDbOpsEnum.SQLITE_LIMIT_TRIGGER_DEPTH,
-            SQLiteConfigDbOpsEnum.SQLITE_LIMIT_WORKER_THREADS);
+            SQLiteLimitOpsEnum.SQLITE_LIMIT_LENGTH,
+            SQLiteLimitOpsEnum.SQLITE_LIMIT_SQL_LENGTH,
+            SQLiteLimitOpsEnum.SQLITE_LIMIT_COLUMN,
+            SQLiteLimitOpsEnum.SQLITE_LIMIT_EXPR_DEPTH,
+            SQLiteLimitOpsEnum.SQLITE_LIMIT_COMPOUND_SELECT,
+            SQLiteLimitOpsEnum.SQLITE_LIMIT_VDBE_OP,
+            SQLiteLimitOpsEnum.SQLITE_LIMIT_FUNCTION_ARG,
+            SQLiteLimitOpsEnum.SQLITE_LIMIT_ATTACHED,
+            SQLiteLimitOpsEnum.SQLITE_LIMIT_LIKE_PATTERN_LENGTH,
+            SQLiteLimitOpsEnum.SQLITE_LIMIT_VARIABLE_NUMBER,
+            SQLiteLimitOpsEnum.SQLITE_LIMIT_TRIGGER_DEPTH,
+            SQLiteLimitOpsEnum.SQLITE_LIMIT_WORKER_THREADS);
 #endif
 
         return builder.ToString();

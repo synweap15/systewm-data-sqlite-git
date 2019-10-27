@@ -45,7 +45,7 @@
 <div align="center"><h2><b>Version History</b></h2></div>
 
 <p>
-    <b>1.0.112.0 - October XX, 2019 <font color="red">(release scheduled)</font></b>
+    <b>1.0.112.0 - October 28, 2019</b>
 </p>
 <ul>
     <li>Updated to [https://www.sqlite.org/releaselog/3_30_1.html|SQLite 3.30.1].</li>

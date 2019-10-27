@@ -533,6 +533,13 @@ namespace eval ::Eagle {
     set no(core) 1
 
     #
+    # HACK: The custom test prologue already shows the final list of test
+    #       constraints; there is no need to repeat them.
+    #
+    set no(showActiveConstraints) 1
+    set no(showCachedConstraints) 1
+
+    #
     # HACK: Prevent the Eagle core test suite infrastructure from checking
     #       for a usable instance of Excel because it can be quite slow to
     #       do so.
