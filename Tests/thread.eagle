@@ -464,7 +464,7 @@ runTest {test thread-1.1 {Thread.Abort() impact on native resources} -setup {
 
   unset -nocomplain result results errors code sql dataSource id db fileName
 } -time true -constraints [fixConstraints {eagle command.object monoBug28\
-monoCrash211 monoCrash42 monoBug46 command.sql compile.DATA SQLite\
+monoCrash211 monoCrash42 monoBug46 monoCrash64 command.sql compile.DATA SQLite\
 System.Data.SQLite compileCSharp !dotNetCore}] -match regexp -result \
 [appendArgs "^Ok System#CodeDom#Compiler#CompilerResults#\\d+ \\{\\} 0 \\{\\d+\
 \\d+ " $count(1) "\\} \\{\\} \\{" $handle_counts "\\} " $memory_used \$]}
