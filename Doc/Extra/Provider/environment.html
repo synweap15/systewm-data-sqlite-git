@@ -272,6 +272,12 @@
           associated connection.</td>
         </tr>
         <tr valign="top">
+          <td>SQLite_ForceLogLifecycle</td>
+          <td>If this environment variable is set [to anything], calls into
+          key members pertaining to the lifecycle of connections and their
+          associated classes (e.g. LINQ, EF6, etc) will be logged.</td>
+        </tr>
+        <tr valign="top">
           <td>TypeName_SQLiteProviderServices</td>
           <td>If this environment variable is set [to anything], it will be
           used by the System.Data.SQLite.SQLiteFactory class as the type name

@@ -9,7 +9,18 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <!--
   ******************************************************************************
-  **                             Define Constants                             **
+  **                           Platform Properties                            **
+  ******************************************************************************
+  -->
+
+  <PropertyGroup>
+    <NetStandard21 Condition="'$(NetStandard21)' == '' And ('$(IsDotNetStandard)' == 'false' Or ('$(TargetFramework)' != 'netstandard2.1' And '$(TargetFramework)' != 'netcoreapp3.0'))">false</NetStandard21>
+    <NetStandard21 Condition="'$(NetStandard21)' == '' And ('$(IsDotNetStandard)' != 'false' And ('$(TargetFramework)' == 'netstandard2.1' Or '$(TargetFramework)' == 'netcoreapp3.0'))">true</NetStandard21>
+  </PropertyGroup>
+
+  <!--
+  ******************************************************************************
+  **                        Platform Define Constants                         **
   ******************************************************************************
   -->
 

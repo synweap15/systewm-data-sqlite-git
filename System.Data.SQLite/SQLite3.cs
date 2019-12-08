@@ -1347,6 +1347,15 @@ namespace System.Data.SQLite
     ///////////////////////////////////////////////////////////////////////////////////////////////
 
     /// <summary>
+    /// This field is used to keep track of whether or not the
+    /// "SQLite_ForceLogLifecycle" environment variable has been queried.  If
+    /// so, it will only be non-zero if the environment variable was present.
+    /// </summary>
+    private static bool? forceLogLifecycle = null;
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+
+    /// <summary>
     /// Determines if all calls to prepare a SQL query will be logged,
     /// regardless of the flags for the associated connection.
     /// </summary>
@@ -1371,6 +1380,38 @@ namespace System.Data.SQLite
             }
 
             return (bool)forceLogPrepare;
+        }
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+
+    /// <summary>
+    /// Determines if calls into key members pertaining to the lifecycle of
+    /// connections and their associated classes will be logged, regardless
+    /// of the flags for the associated connection.
+    /// </summary>
+    /// <returns>
+    /// Non-zero to log calls into key members pertaining to the lifecycle of
+    /// connections and their associated classes (e.g. LINQ, EF6, etc).
+    /// </returns>
+    internal static bool ForceLogLifecycle()
+    {
+        lock (syncRoot)
+        {
+            if (forceLogLifecycle == null)
+            {
+                if (UnsafeNativeMethods.GetSettingValue(
+                        "SQLite_ForceLogLifecycle", null) != null)
+                {
+                    forceLogLifecycle = true;
+                }
+                else
+                {
+                    forceLogLifecycle = false;
+                }
+            }
+
+            return (bool)forceLogLifecycle;
         }
     }
     #endregion

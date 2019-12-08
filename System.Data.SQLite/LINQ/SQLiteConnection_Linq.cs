@@ -7,6 +7,7 @@
 
 namespace System.Data.SQLite
 {
+  using System.Globalization;
   using System.Data.Common;
 
   public sealed partial class SQLiteConnection
@@ -16,7 +17,20 @@ namespace System.Data.SQLite
     /// </summary>
     protected override DbProviderFactory DbProviderFactory
     {
-      get { return SQLiteFactory.Instance; }
+      get
+      {
+        DbProviderFactory result = SQLiteFactory.Instance;
+
+        if (SQLite3.ForceLogLifecycle())
+        {
+          SQLiteLog.LogMessage(HelperMethods.StringFormat(
+            CultureInfo.CurrentCulture,
+            "Returning \"{0}\" from SQLiteConnection.DbProviderFactory...",
+            (result != null) ? result.ToString() : "<null>"));
+        }
+
+        return result;
+      }
     }
   }
 }

@@ -141,18 +141,27 @@ namespace System.Data.SQLite.Linq
             if ((serviceType == typeof(ISQLiteSchemaExtensions)) ||
                 (serviceType == typeof(DbProviderServices)))
             {
-                SQLiteLog.LogMessage(HelperMethods.StringFormat(
-                    CultureInfo.CurrentCulture,
-                    "IServiceProvider.GetService for type \"{0}\" (success).",
-                    serviceType));
+                object result = SQLiteProviderServices.Instance;
 
-                return SQLiteProviderServices.Instance;
+                if (SQLite3.ForceLogLifecycle())
+                {
+                    SQLiteLog.LogMessage(HelperMethods.StringFormat(
+                        CultureInfo.CurrentCulture,
+                        "Success of \"{0}\" from SQLiteProviderFactory.GetService(\"{1}\")...",
+                        (result != null) ? result.ToString() : "<null>",
+                        (serviceType != null) ? serviceType.ToString() : "<null>"));
+                }
+
+                return result;
             }
 
-            SQLiteLog.LogMessage(HelperMethods.StringFormat(
-                CultureInfo.CurrentCulture,
-                "IServiceProvider.GetService for type \"{0}\" (failure).",
-                serviceType));
+            if (SQLite3.ForceLogLifecycle())
+            {
+                SQLiteLog.LogMessage(HelperMethods.StringFormat(
+                    CultureInfo.CurrentCulture,
+                    "Failure of SQLiteProviderFactory.GetService(\"{0}\")...",
+                    (serviceType != null) ? serviceType.ToString() : "<null>"));
+            }
 
             return null;
         }
