@@ -144,6 +144,7 @@ runTest {test tkt-ae5267b863-1.1 {segfault during command GC} -setup {
       } result] : [set result ""]}] $result
 } -cleanup {
   cleanupDb $fileName
+  collectGarbage $::test_channel
 
   unset -nocomplain result code results errors sql dataSource id db fileName
 } -constraints [fixConstraints {eagle command.object monoBug28 monoBug211\
