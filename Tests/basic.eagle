@@ -1702,8 +1702,9 @@ runTest {test data-1.33 {SQLiteConnection.Open with SetDefaults=False} -setup {
 
   unset -nocomplain result db fileName
 } -constraints \
-{eagle monoBug28 command.sql compile.DATA SQLite System.Data.SQLite} -result \
-[list [getDbDefaultPageSize] 1073741823 0 2 [getDbDefaultCacheSize] delete 0]}
+{eagle monoBug28 command.sql compile.DATA SQLite System.Data.SQLite} -match \
+regexp -result [appendArgs ^ [getDbDefaultPageSize] " 1073741823 " \
+{(?:\{\}|0)} " 2 " [getDbDefaultCacheSize] " delete 0\$"]}
 
 ###############################################################################
 
@@ -1726,8 +1727,9 @@ runTest {test data-1.34 {SQLiteConnection.Open with SetDefaults=True} -setup {
 
   unset -nocomplain result db fileName
 } -constraints \
-{eagle monoBug28 command.sql compile.DATA SQLite System.Data.SQLite} -result \
-[list [getDbDefaultPageSize] 1073741823 0 2 [getDbDefaultCacheSize] delete 0]}
+{eagle monoBug28 command.sql compile.DATA SQLite System.Data.SQLite} -match \
+regexp -result [appendArgs ^ [getDbDefaultPageSize] " 1073741823 " \
+{(?:\{\}|1)} " 2 " [getDbDefaultCacheSize] " delete 0\$"]}
 
 ###############################################################################
 
@@ -1750,8 +1752,9 @@ runTest {test data-1.35 {SQLiteConnection.Open without SetDefaults} -setup {
 
   unset -nocomplain result db fileName
 } -constraints \
-{eagle monoBug28 command.sql compile.DATA SQLite System.Data.SQLite} -result \
-[list [getDbDefaultPageSize] 1073741823 0 2 [getDbDefaultCacheSize] delete 0]}
+{eagle monoBug28 command.sql compile.DATA SQLite System.Data.SQLite} -match \
+regexp -result [appendArgs ^ [getDbDefaultPageSize] " 1073741823 " \
+{(?:\{\}|0)} " 2 " [getDbDefaultCacheSize] " delete 0\$"]}
 
 ###############################################################################
 
@@ -1781,8 +1784,8 @@ runTest {test data-1.36 {SQLiteConnection.Open with PRAGMA overrides} -setup {
 
   unset -nocomplain result db fileName
 } -constraints \
-{eagle monoBug28 command.sql compile.DATA SQLite System.Data.SQLite} -result \
-{4096 2048 1 1 4096 wal 1}}
+{eagle monoBug28 command.sql compile.DATA SQLite System.Data.SQLite} -match \
+regexp -result {^4096 2048 (?:\{\}|1) 1 4096 wal 1$}}
 
 ###############################################################################
 

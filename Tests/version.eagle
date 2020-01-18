@@ -41,8 +41,8 @@ set version(revision)          0
 #       must be kept synchronized with the version numbers for the associated
 #       source code and property files.
 #
-set version(core,full) 3.30.1.0
-set version(core,short) 3.30.1
+set version(core,full) 3.31.0.0
+set version(core,short) 3.31.0
 
 ###############################################################################
 
@@ -251,10 +251,12 @@ unset -nocomplain patterns
 ###############################################################################
 
 lappend patterns \
-    [appendArgs "Using <a href=\"https://www\\.sqlite\\.org/releaselog/" \
+    [appendArgs \
+        "Using <a href=\"https://www\\.sqlite\\.org/(?:draft/)?releaselog/" \
         [string map [list . _] $version(core,short)] "\\.html\">SQLite " \
         [string map [list . \\.] $version(core,short)] </a>] \
-    [appendArgs " to <a href=\"https://www\\.sqlite\\.org/releaselog/" \
+    [appendArgs \
+        " to <a href=\"https://www\\.sqlite\\.org/(?:draft/)?releaselog/" \
         [string map [list . _] $version(core,short)] "\\.html\">SQLite " \
         [string map [list . \\.] $version(core,short)] </a>] \
     [appendArgs Version " " [string map [list . \\.] $version(full)] " "] \
@@ -273,7 +275,8 @@ lappend patterns \
 ###############################################################################
 
 lappend patterns \
-    [appendArgs " to <a href=\"https://www\\.sqlite\\.org/releaselog/" \
+    [appendArgs \
+        " to <a href=\"https://www\\.sqlite\\.org/(?:draft/)?releaselog/" \
         [string map [list . _] $version(core,short)] "\\.html\">SQLite " \
         [string map [list . \\.] $version(core,short)] </a>] \
     [appendArgs <b> [string map [list . \\.] $version(full)] " - "]

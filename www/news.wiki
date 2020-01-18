@@ -45,9 +45,10 @@
 <div align="center"><h2><b>Version History</b></h2></div>
 
 <p>
-    <b>1.0.113.0 - January XX, 2020 <font color="red">(release scheduled)</font></b>
+    <b>1.0.113.0 - February XX, 2020 <font color="red">(release scheduled)</font></b>
 </p>
 <ul>
+    <li>Updated to [https://www.sqlite.org/draft/releaselog/3_31_0.html|SQLite 3.31.0].</li>
     <li>Include the &quot;LINQ&quot; partial classes in the primary managed assembly for .NET Standard 2.1. Fix for [ad28d8e026].</li>
     <li>Add SQLite_ForceLogLifecycle environment variable to force logging of calls into key members pertaining to the lifecycle of connections and their associated classes (e.g. LINQ, EF6, etc).</li>
 </ul>
