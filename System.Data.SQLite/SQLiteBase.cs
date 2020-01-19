@@ -1540,7 +1540,18 @@ namespace System.Data.SQLite
       /// DBSTATUS_CACHE_USED. The highwater mark associated with
       /// SQLITE_DBSTATUS_CACHE_USED_SHARED is always 0.
       /// </summary>
-      SQLITE_DBSTATUS_CACHE_USED_SHARED = 11
+      SQLITE_DBSTATUS_CACHE_USED_SHARED = 11,
+
+      /// <summary>
+      /// This parameter returns the number of dirty cache entries that have
+      /// been written to disk in the middle of a transaction due to the page
+      /// cache overflowing. Transactions are more efficient if they are
+      /// written to disk all at once. When pages spill mid-transaction, that
+      /// introduces additional overhead. This parameter can be used help
+      /// identify inefficiencies that can be resolved by increasing the cache
+      /// size.
+      /// </summary>
+      SQLITE_DBSTATUS_CACHE_SPILL = 12
   }
 
   /// <summary>
@@ -1674,7 +1685,36 @@ namespace System.Data.SQLite
       /// <summary>
       /// This option is used to enable or disable CREATE VIEW.
       /// </summary>
-      SQLITE_DBCONFIG_ENABLE_VIEW = 1015 // int int*
+      SQLITE_DBCONFIG_ENABLE_VIEW = 1015, // int int*
+
+      /// <summary>
+      /// This option activates or deactivates the legacy file format flag.
+      /// </summary>
+      SQLITE_DBCONFIG_LEGACY_FILE_FORMAT = 1016, // int int*
+
+      /// <summary>
+      /// This option tells SQLite to assume that database schemas (i.e. the
+      /// contents of the sqlite_master tables) are untainted by malicious
+      /// content.  When the trusted schema option is disabled, SQLite takes
+      /// additional defensive steps to protect the application from harm
+      /// including:
+      /// <![CDATA[<ul>]]>
+      /// <![CDATA[<li>]]>
+      /// Prohibit the use of SQL functions inside triggers, views, CHECK
+      /// constraints, DEFAULT clauses, expression indexes, partial indexes,
+      /// or generated columns unless those functions are tagged with
+      /// SQLITE_INNOCUOUS.
+      /// <![CDATA[</li>]]>
+      /// <![CDATA[<li>]]>
+      /// Prohibit the use of virtual tables inside of triggers or views
+      /// unless those virtual tables are tagged with SQLITE_VTAB_INNOCUOUS.
+      /// <![CDATA[</ul>]]>
+      /// This setting defaults to "on" for legacy compatibility, however
+      /// all applications are advised to turn it off if possible.  This
+      /// setting can also be controlled using the PRAGMA trusted_schema
+      /// statement.
+      /// </summary>
+      SQLITE_DBCONFIG_TRUSTED_SCHEMA = 1017 // int int*
   }
 
   // These are the options to the internal sqlite3_config call.
@@ -1705,7 +1745,11 @@ namespace System.Data.SQLite
     SQLITE_CONFIG_MMAP_SIZE = 22, // sqlite3_int64, sqlite3_int64
     SQLITE_CONFIG_WIN32_HEAPSIZE = 23, // int nByte
     SQLITE_CONFIG_PCACHE_HDRSZ = 24, // int *psz
-    SQLITE_CONFIG_PMASZ = 25 // unsigned int szPma
+    SQLITE_CONFIG_PMASZ = 25, // unsigned int szPma
+    SQLITE_CONFIG_STMTJRNL_SPILL = 26, // int nByte
+    SQLITE_CONFIG_SMALL_MALLOC = 27, // boolean
+    SQLITE_CONFIG_SORTERREF_SIZE = 28, // int nByte
+    SQLITE_CONFIG_MEMDB_MAXSIZE = 29  // sqlite3_int64
   }
 
   /// <summary>

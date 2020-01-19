@@ -1409,6 +1409,8 @@ namespace System.Data.SQLite
           MSIL = 8,
           AMD64 = 9,
           IA32_on_Win64 = 10,
+          Neutral = 11,
+          ARM64 = 12,
           Unknown = 0xFFFF
       }
 
