@@ -178,7 +178,13 @@ set specialFileNames [list \
 ###############################################################################
 
 set path [file dirname [info script]]
-set rootUri https://www.sqlite.org
+
+if {[info exists draft] && $draft} then {
+  set rootUri https://www.sqlite.org/draft
+} else {
+  set rootUri https://www.sqlite.org
+}
+
 set rootDirectory [file join $path]
 
 if {[info exists argv] && \
