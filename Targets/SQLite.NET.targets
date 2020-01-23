@@ -175,11 +175,11 @@
                      HasTrailingSlash('$(OutputPath)') And
                      Exists('$(OutputPath)')">
     <CreateItem Include="$(OutputPath)*.config">
-      <Output ItemName="ConfigurationFiles" TaskParameter="Include" />
+      <Output ItemName="CleanConfigurationsItem" TaskParameter="Include" />
     </CreateItem>
 
-    <Delete Condition="'@(ConfigurationFiles)' != ''"
-            Files="@(ConfigurationFiles)" />
+    <Delete Condition="'@(CleanConfigurationsItem)' != ''"
+            Files="@(CleanConfigurationsItem)" />
   </Target>
 
   <!--
@@ -194,10 +194,10 @@
           Inputs="$(TargetPath)"
           Outputs="$(TargetPath).CopyConfigurations.done">
     <CreateItem Include="Configurations\*.config" Exclude="Configurations\no_*">
-      <Output ItemName="ConfigurationFiles" TaskParameter="Include" />
+      <Output ItemName="CopyConfigurationsItem" TaskParameter="Include" />
     </CreateItem>
 
-    <Copy SourceFiles="@(ConfigurationFiles)"
+    <Copy SourceFiles="@(CopyConfigurationsItem)"
           DestinationFolder="$(OutputPath)" />
 
     <Touch AlwaysCreate="true"

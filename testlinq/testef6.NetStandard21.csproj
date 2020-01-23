@@ -75,11 +75,11 @@
           Inputs="$(TargetPath)"
           Outputs="$(TargetPath).CopyToNetStandard21.done">
     <CreateItem Include="$(OutputPath)**">
-      <Output ItemName="OutputPathFiles" TaskParameter="Include" />
+      <Output ItemName="CopyToNetStandard21Item" TaskParameter="Include" />
     </CreateItem>
 
-    <Copy SourceFiles="@(OutputPathFiles)"
-          DestinationFiles="@(OutputPathFiles -> '$(OutputPath)..\netstandard2.1\%(RecursiveDir)%(Filename)%(Extension)')" />
+    <Copy SourceFiles="@(CopyToNetStandard21Item)"
+          DestinationFiles="@(CopyToNetStandard21Item -> '$(OutputPath)..\netstandard2.1\%(RecursiveDir)%(Filename)%(Extension)')" />
 
     <Touch AlwaysCreate="true"
            Files="$(TargetPath).CopyToNetStandard21.done" />
