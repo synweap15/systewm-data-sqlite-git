@@ -125,7 +125,7 @@ extern "C" {
 */
 #define SQLITE_VERSION        "3.31.0"
 #define SQLITE_VERSION_NUMBER 3031000
-#define SQLITE_SOURCE_ID      "2020-01-18 23:52:45 535afe150939d06342fbbed4ca1b6a1472fde51ac9edd4b4b583b87d90f509c2"
+#define SQLITE_SOURCE_ID      "2020-01-23 15:00:18 14331989fcaf6591336290ed1548e9c90f0f153e27f456f4c30c966f9c23aa6e"
 
 /*
 ** CAPI3REF: Run-Time Library Version Numbers
@@ -9010,14 +9010,20 @@ SQLITE_API int sqlite3_wal_checkpoint_v2(
 ** If this interface is invoked outside the context of an xConnect or
 ** xCreate virtual table method then the behavior is undefined.
 **
-** At present, there is only one option that may be configured using
-** this function. (See [SQLITE_VTAB_CONSTRAINT_SUPPORT].)  Further options
-** may be added in the future.
+** In the call sqlite3_vtab_config(D,C,...) the D parameter is the
+** [database connection] in which the virtual table is being created and
+** which is passed in as the first argument to the [xConnect] or [xCreate]
+** method that is invoking sqlite3_vtab_config().  The C parameter is one
+** of the [virtual table configuration options].  The presence and meaning
+** of parameters after C depend on which [virtual table configuration option]
+** is used.
 */
 SQLITE_API int sqlite3_vtab_config(sqlite3*, int op, ...);
 
 /*
 ** CAPI3REF: Virtual Table Configuration Options
+** KEYWORDS: {virtual table configuration options} 
+** KEYWORDS: {virtual table configuration option}
 **
 ** These macros define the various options to the
 ** [sqlite3_vtab_config()] interface that [virtual table] implementations

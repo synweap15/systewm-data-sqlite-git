@@ -14249,8 +14249,8 @@ static int fts5QueryCksum(
 ** contain valid utf-8, return non-zero.
 */
 static int fts5TestUtf8(const char *z, int n){
-  assert_nc( n>0 );
   int i = 0;
+  assert_nc( n>0 );
   while( i<n ){
     if( (z[i] & 0x80)==0x00 ){
       i++;
@@ -17890,7 +17890,7 @@ static void fts5SourceIdFunc(
 ){
   assert( nArg==0 );
   UNUSED_PARAM2(nArg, apUnused);
-  sqlite3_result_text(pCtx, "fts5: 2020-01-18 23:52:45 535afe150939d06342fbbed4ca1b6a1472fde51ac9edd4b4b583b87d90f509c2", -1, SQLITE_TRANSIENT);
+  sqlite3_result_text(pCtx, "fts5: 2020-01-23 15:00:18 14331989fcaf6591336290ed1548e9c90f0f153e27f456f4c30c966f9c23aa6e", -1, SQLITE_TRANSIENT);
 }
 
 /*
