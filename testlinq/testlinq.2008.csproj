@@ -64,7 +64,7 @@
   <ItemGroup>
     <None Include="2008\LINQ\App.config" />
     <None Include="northwindEF.db">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <EntityDeploy Include="NorthwindModel.Linq.2008.edmx">
       <Generator>EntityModelCodeGenerator</Generator>

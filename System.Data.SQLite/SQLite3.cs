@@ -2883,7 +2883,8 @@ namespace System.Data.SQLite
         //       "SQLiteConfigDbOpsEnum" enumeration change.
         //
         builder.AppendFormat(CultureInfo.InvariantCulture,
-            "{0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}, {11}",
+            "{0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, " +
+            "{10}, {11}, {12}",
             SQLiteStatusOpsEnum.SQLITE_DBSTATUS_LOOKASIDE_USED,
             SQLiteStatusOpsEnum.SQLITE_DBSTATUS_CACHE_USED,
             SQLiteStatusOpsEnum.SQLITE_DBSTATUS_SCHEMA_USED,
@@ -2895,7 +2896,8 @@ namespace System.Data.SQLite
             SQLiteStatusOpsEnum.SQLITE_DBSTATUS_CACHE_MISS,
             SQLiteStatusOpsEnum.SQLITE_DBSTATUS_CACHE_WRITE,
             SQLiteStatusOpsEnum.SQLITE_DBSTATUS_DEFERRED_FKS,
-            SQLiteStatusOpsEnum.SQLITE_DBSTATUS_CACHE_USED_SHARED);
+            SQLiteStatusOpsEnum.SQLITE_DBSTATUS_CACHE_USED_SHARED,
+            SQLiteStatusOpsEnum.SQLITE_DBSTATUS_CACHE_SPILL);
 #endif
 
         return builder.ToString();
@@ -2979,8 +2981,8 @@ namespace System.Data.SQLite
         //       "SQLiteConfigDbOpsEnum" enumeration change.
         //
         builder.AppendFormat(CultureInfo.InvariantCulture,
-            "{0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, " +
-            "{9}, {10}, {11}, {12}, {13}, {14}, {15}, {16}",
+            "{0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, " +
+            "{10}, {11}, {12}, {13}, {14}, {15}, {16}, {17}, {18}",
             SQLiteConfigDbOpsEnum.SQLITE_DBCONFIG_NONE,
             SQLiteConfigDbOpsEnum.SQLITE_DBCONFIG_MAINDBNAME,
             SQLiteConfigDbOpsEnum.SQLITE_DBCONFIG_LOOKASIDE,
@@ -2997,7 +2999,9 @@ namespace System.Data.SQLite
             SQLiteConfigDbOpsEnum.SQLITE_DBCONFIG_LEGACY_ALTER_TABLE,
             SQLiteConfigDbOpsEnum.SQLITE_DBCONFIG_DQS_DML,
             SQLiteConfigDbOpsEnum.SQLITE_DBCONFIG_DQS_DDL,
-            SQLiteConfigDbOpsEnum.SQLITE_DBCONFIG_ENABLE_VIEW);
+            SQLiteConfigDbOpsEnum.SQLITE_DBCONFIG_ENABLE_VIEW,
+            SQLiteConfigDbOpsEnum.SQLITE_DBCONFIG_LEGACY_FILE_FORMAT,
+            SQLiteConfigDbOpsEnum.SQLITE_DBCONFIG_TRUSTED_SCHEMA);
 #endif
 
         return builder.ToString();
@@ -3208,6 +3212,8 @@ namespace System.Data.SQLite
             case SQLiteConfigDbOpsEnum.SQLITE_DBCONFIG_DQS_DML: // int int*
             case SQLiteConfigDbOpsEnum.SQLITE_DBCONFIG_DQS_DDL: // int int*
             case SQLiteConfigDbOpsEnum.SQLITE_DBCONFIG_ENABLE_VIEW: // int int*
+            case SQLiteConfigDbOpsEnum.SQLITE_DBCONFIG_LEGACY_FILE_FORMAT: // int int*
+            case SQLiteConfigDbOpsEnum.SQLITE_DBCONFIG_TRUSTED_SCHEMA: // int int*
                 {
                     if (!(value is bool))
                     {

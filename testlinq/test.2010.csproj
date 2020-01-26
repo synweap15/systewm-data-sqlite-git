@@ -95,7 +95,7 @@
                      '$(TargetFrameworkVersion)' == 'v4.0'"
           Include="2010\EF6\App.config" />
     <None Include="northwindEF.db">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <EntityDeploy Condition="'$(TargetFrameworkVersion)' == 'v3.5'"
                   Include="NorthwindModel.Linq.2008.edmx">

@@ -20,6 +20,10 @@
 #endif
 #endif
 
+#ifndef SQLITE_MAX_ATTACHED
+#define SQLITE_MAX_ATTACHED 30
+#endif
+
 #if defined(INTEROP_INCLUDE_SEE)
 #include "../ext/see-prefix.txt"
 #endif
