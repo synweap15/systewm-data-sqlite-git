@@ -929,6 +929,90 @@ namespace System.Data.SQLite
     }
 
     /// <summary>
+    /// This method executes a query using the given execution type and command
+    /// behavior and returns the results.
+    /// </summary>
+    /// <param name="commandText">
+    /// The text of the command to be executed.
+    /// </param>
+    /// <param name="executeType">
+    /// The execution type for the command.  This is used to determine which method
+    /// of the command object to call, which then determines the type of results
+    /// returned, if any.
+    /// </param>
+    /// <param name="commandBehavior">
+    /// The command behavior flags for the command.
+    /// </param>
+    /// <param name="connection">
+    /// The connection used to create and execute the command.
+    /// </param>
+    /// <param name="args">
+    /// The SQL parameter values to be used when building the command object to be
+    /// executed, if any.
+    /// </param>
+    /// <returns>
+    /// The results of the query -OR- null if no results were produced from the
+    /// given execution type.
+    /// </returns>
+    public static object Execute(
+        string commandText,
+        SQLiteExecuteType executeType,
+        CommandBehavior commandBehavior,
+        SQLiteConnection connection,
+        params object[] args
+        )
+    {
+        SQLiteConnection.Check(connection);
+
+        using (SQLiteCommand command = connection.CreateCommand())
+        {
+            command.CommandText = commandText;
+
+            if (args != null)
+            {
+                foreach (object arg in args)
+                {
+                    SQLiteParameter parameter = arg as SQLiteParameter;
+
+                    if (parameter == null)
+                    {
+                        parameter = command.CreateParameter();
+                        parameter.DbType = DbType.Object;
+                        parameter.Value = arg;
+                    }
+
+                    command.Parameters.Add(parameter);
+                }
+            }
+
+            switch (executeType)
+            {
+                case SQLiteExecuteType.None:
+                    {
+                        //
+                        // NOTE: Do nothing.
+                        //
+                        break;
+                    }
+                case SQLiteExecuteType.NonQuery:
+                    {
+                        return command.ExecuteNonQuery(commandBehavior);
+                    }
+                case SQLiteExecuteType.Scalar:
+                    {
+                        return command.ExecuteScalar(commandBehavior);
+                    }
+                case SQLiteExecuteType.Reader:
+                    {
+                        return command.ExecuteReader(commandBehavior);
+                    }
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>
     /// Overrides the default behavior to return a SQLiteDataReader specialization class
     /// </summary>
     /// <param name="behavior">The flags to be associated with the reader.</param>
