@@ -138,23 +138,38 @@ proc transformCoreDocumentationFile { fileName url } {
   #       "match" property does not work in the CHM viewer.  Use the literal
   #       string syntax supported by the regular expression engine here.
   #
-  set pattern(1) "***=!location.origin.match(/http/)"
+  set pattern(1) "***=!location.origin.match || !location.origin.match(/http/)"
   set subSpec(1) 1
+
+  #
+  # NOTE: In Internet Explorer, you cannot set the innerHTML property for
+  #       some DOM elements, e.g. <tr>; therefore, remove those elements.
+  #
+  set pattern(2) "<table id='(.*?)' width='100%'></table>"
+  set subSpec(2) {<div id='\1'></div>}
+  set pattern(3) {***="<tr><td><ul class='multicol_list'>"}
+  set subSpec(3) {"<ul class='multicol_list'>"}
+  set pattern(4) {***="</ul></td>\n<td><ul class='multicol_list'>\n"}
+  set subSpec(4) {""}
 
   #
   # NOTE: Perform the replacements, if any, keeping track of how many were
   #       done.
   #
   incr count [regsub -all -- $pattern(1) $data $subSpec(1) data]
+  incr count [regsub -all -- $pattern(2) $data $subSpec(2) data]
+  incr count [regsub -all -- $pattern(3) $data $subSpec(3) data]
+  incr count [regsub -all -- $pattern(4) $data $subSpec(4) data]
 
   #
   # NOTE: Process all "href" attribute values from the data.  This pattern is
   #       not univeral; however, as of this writing (Feb 2014), the core docs
   #       are using it consistently.
   #
-  set pattern(2) {href=['"](.*?)['"]}
+  set hrefCount 0
+  set pattern(5) {href=['"](.*?)['"]}
 
-  foreach {dummy href} [regexp -all -inline -nocase -- $pattern(2) $data] {
+  foreach {dummy href} [regexp -all -inline -nocase -- $pattern(5) $data] {
     #
     # NOTE: Skip all references to other items on this page.
     #
@@ -204,21 +219,52 @@ proc transformCoreDocumentationFile { fileName url } {
     #       with [regsub].  Use the literal string syntax supported by the
     #       regular expression engine here.
     #
-    set pattern(3) "***=$dummy"
-    set subSpec(3) "href=\"[escapeSubSpec $url$href]\""
+    set pattern(6) "***=$dummy"
+    set subSpec(6) "href=\"[escapeSubSpec $url$href]\""
 
     #
     # NOTE: Perform the replacements, if any, keeping track of how many were
     #       done.
     #
-    incr count [regsub -all -- $pattern(3) $data $subSpec(3) data]
+    incr hrefCount [regsub -all -- $pattern(6) $data $subSpec(6) data]
   }
 
   #
   # NOTE: Issue a warning if the "href" pattern was not matched.
   #
-  if {$count == 0} then {
+  if {$hrefCount > 0} then {
+    incr count $hrefCount
+  } else {
     puts stdout "*WARNING* File \"$fileName\" does not match: href=\"(.*?)\""
+  }
+
+  #
+  # NOTE: Process all "src" attribute values from the data.  This pattern is
+  #       not univeral; however, as of this writing (Feb 2020), the core docs
+  #       are using it consistently.
+  #
+  set pattern(7) {src=['"](.*?)['"]}
+
+  foreach {dummy src} [regexp -all -inline -nocase -- $pattern(7) $data] {
+    #
+    # NOTE: Skip all absolute HTTP/HTTPS references.
+    #
+    if {[string range $src 0 6] eq "http://" || \
+        [string range $src 0 7] eq "https://"} then {
+      continue
+    }
+
+    #
+    # NOTE: If the referenced file name exists locally, skip it.
+    #
+    if {[file exists [file join $directory $src]]} then {
+      continue
+    }
+
+    #
+    # NOTE: Issue a warning if the "src" file was not found locally.
+    #
+    puts stdout "*WARNING* File \"$fileName\" has missing source: $src"
   }
 
   #
