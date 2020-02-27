@@ -611,7 +611,7 @@
 
               both for the corresponding version(s) of Visual Studio.
     -->
-    <InteropCodec Condition="'$(InteropCodec)' == ''">true</InteropCodec>
+    <InteropCodec Condition="'$(InteropCodec)' == ''">false</InteropCodec>
 
     <!--
         NOTE: Enable including SEE with the custom built interop DLL (i.e.

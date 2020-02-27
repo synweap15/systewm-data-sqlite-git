@@ -2,15 +2,19 @@
 
 <div align="center"><h2><b>Community Support Policies</b></h2></div>
 <div align="center"><h3><b>Effective May 1, 2017</b></h3></div>
+<div align="center"><h3><b>Updated February 27, 2020</b></h3></div>
 
 <h4>Legacy CryptoAPI Codec</h4>
 
 <ul>
   <li>
-    It will be disabled in all default build configurations.
+    It is unsupported.
   </li>
   <li>
-    However, it will still be possible to build binaries with it enabled.
+    It is disabled in all default build configurations.
+  </li>
+  <li>
+    However, it may still be possible to build binaries with it enabled.
   </li>
 </ul>
 
