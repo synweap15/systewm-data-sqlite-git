@@ -3021,6 +3021,19 @@ namespace eval ::Eagle {
       }
     }
 
+    proc getDbFileHeader {} {
+      return "SQLite format 3\0"
+    }
+
+    proc readDbFileHeader { fileName } {
+      set channel [open $fileName RDONLY]
+      makeBinaryChannel $channel
+      set header [getDbFileHeader]
+      set result [read $channel [string length $header]]
+      close $channel
+      return $result
+    }
+
     proc setupDb {
             fileName {mode ""} {dateTimeFormat ""} {dateTimeKind ""} {flags ""}
             {extra ""} {qualify true} {delete true} {uri false}
@@ -5660,7 +5673,7 @@ namespace eval ::Eagle {
           if {[haveSQLiteCompileOption CODEC] || \
               [haveSQLiteCompileOption INCLUDE_SEE]} then {
             #
-            # NOTE: Finally, check if the SQLite core library was compiled
+            # NOTE: Next, check if the SQLite core library was compiled
             #       with support for encrypted databases.
             #
             if {[haveSQLiteCompileOption HAS_CODEC]} then {
@@ -5668,6 +5681,19 @@ namespace eval ::Eagle {
               # NOTE: Yes, add constraint for use by the test suite.
               #
               addConstraint System.Data.SQLite.Encryption
+
+              #
+              # NOTE: Next, chck if the SQLite core library was compiled
+              #       with SEE.
+              #
+              if {[haveSQLiteDefineConstant INTEROP_INCLUDE_SEE] && \
+                  [haveSQLiteCompileOption INCLUDE_SEE]} then {
+                #
+                # NOTE: Finally, when compiled with SEE, add the
+                #       appropriate constraint.
+                #
+                addConstraint System.Data.SQLite.SEE
+              }
             }
           }
         }

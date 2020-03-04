@@ -2069,13 +2069,21 @@ runTest {test data-1.41 {encrypted database, password w/start-space} -setup {
   lappend result [catch {sql execute -execute scalar $db \
       "SELECT COUNT(*) FROM t1;"} error] $error
 
+  cleanupDb $fileName db true false false
+
+  lappend result [expr {
+      [haveConstraint System.Data.SQLite.SEE] || [string equal \
+      [readDbFileHeader [file join [getDatabaseDirectory] $fileName]] \
+      [getDbFileHeader]] == ![info exists env(SQLite_EncryptPage1)]
+  }]
+
   set result
 } -cleanup {
   cleanupDb $fileName
 
   unset -nocomplain error result db fileName
 } -constraints {eagle System.Data.SQLite.Encryption monoBug28 command.sql\
-compile.DATA SQLite System.Data.SQLite} -result {0 1 0 1 0 1 0 3}}
+compile.DATA SQLite System.Data.SQLite} -result {0 1 0 1 0 1 0 3 True}}
 
 ###############################################################################
 
@@ -2189,13 +2197,21 @@ runTest {test data-1.44 {encrypted database, password w/end-space} -setup {
   lappend result [catch {sql execute -execute scalar $db \
       "SELECT COUNT(*) FROM t1;"} error] $error
 
+  cleanupDb $fileName db true false false
+
+  lappend result [expr {
+      [haveConstraint System.Data.SQLite.SEE] || [string equal \
+      [readDbFileHeader [file join [getDatabaseDirectory] $fileName]] \
+      [getDbFileHeader]] == ![info exists env(SQLite_EncryptPage1)]
+  }]
+
   set result
 } -cleanup {
   cleanupDb $fileName
 
   unset -nocomplain error result db fileName
 } -constraints {eagle System.Data.SQLite.Encryption monoBug28 command.sql\
-compile.DATA SQLite System.Data.SQLite} -result {0 1 0 1 0 1 0 3}}
+compile.DATA SQLite System.Data.SQLite} -result {0 1 0 1 0 1 0 3 True}}
 
 ###############################################################################
 
@@ -2280,6 +2296,14 @@ runTest {test data-1.46 {encrypted database, password via builder} -setup {
   lappend result [catch {sql execute -execute scalar $db \
       "SELECT COUNT(*) FROM t1;"} error] $error
 
+  cleanupDb $fileName db true false false
+
+  lappend result [expr {
+      [haveConstraint System.Data.SQLite.SEE] || [string equal \
+      [readDbFileHeader [file join [getDatabaseDirectory] $fileName]] \
+      [getDbFileHeader]] == ![info exists env(SQLite_EncryptPage1)]
+  }]
+
   set result
 } -cleanup {
   unset -nocomplain connection
@@ -2288,7 +2312,8 @@ runTest {test data-1.46 {encrypted database, password via builder} -setup {
 
   unset -nocomplain connectionStringBuilder error result db fileName
 } -constraints {eagle command.object System.Data.SQLite.Encryption monoBug28\
-command.sql compile.DATA SQLite System.Data.SQLite} -result {0 1 0 1 0 1 0 3}}
+command.sql compile.DATA SQLite System.Data.SQLite} -result \
+{0 1 0 1 0 1 0 3 True}}
 
 ###############################################################################
 

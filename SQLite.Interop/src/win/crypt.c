@@ -24,6 +24,12 @@ typedef struct _CRYPTBLOCK
   DWORD     dwCryptSize;  /* Equal to or greater than dwPageSize.  If larger, pvCrypt is valid and this is its size */
 } CRYPTBLOCK, *LPCRYPTBLOCK;
 
+#define CRYPT_PAGE1_UNKNOWN  (0)
+#define CRYPT_PAGE1_ENABLED  (1)
+#define CRYPT_PAGE1_DISABLED (2)
+
+BOOL g_bEncryptPage1 = CRYPT_PAGE1_UNKNOWN;
+
 HCRYPTPROV g_hProvider = 0; /* Global instance of the cryptographic provider */
 
 #define SQLITECRYPTERROR_PROVIDER "Cryptographic provider not available"
@@ -154,7 +160,38 @@ static void *sqlite3Codec(void *pArg, void *data, Pgno nPageNum, int nMode)
   DWORD dwPageSize;
   LPVOID pvTemp = NULL;
 
+  if (g_bEncryptPage1 == CRYPT_PAGE1_UNKNOWN)
+  {
+    WCHAR aBuf[2];
+    memset(aBuf, 0, sizeof(aBuf));
+    if ((GetEnvironmentVariableW(L"SQLite_EncryptPage1", aBuf, sizeof(aBuf)) != 0)
+     || (GetLastError() != ERROR_ENVVAR_NOT_FOUND))
+    {
+      g_bEncryptPage1 = CRYPT_PAGE1_ENABLED;
+    } else {
+      g_bEncryptPage1 = CRYPT_PAGE1_DISABLED;
+    }
+  }
+
   if (!pBlock) return data;
+  if (g_bEncryptPage1 == CRYPT_PAGE1_DISABLED)
+  {
+    if (nPageNum == 1) // BUGFIX: Skip first page as it contains metadata
+                       //         necessary to initialize the pager.  For
+                       //         backward compatibility, decrypt page #1
+                       //         for any existing databases.
+    {
+      //
+      // NOTE: If this is page #1 and it starts with the file header, it
+      //       should not be encrypted; so, do nothing to it; otherwise,
+      //       it is encrypted and must be decrypted.
+      //
+      if (memcmp(data, zMagicHeader, sizeof(zMagicHeader)) == 0)
+      {
+        return data;
+      }
+    }
+  }
   if (pBlock->pvCrypt == NULL) return NULL; /* This only happens if CreateCryptBlock() failed to make scratch space */
 
   switch(nMode)
