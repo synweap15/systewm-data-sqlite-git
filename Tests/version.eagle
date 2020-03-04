@@ -41,8 +41,8 @@ set version(revision)          0
 #       must be kept synchronized with the version numbers for the associated
 #       source code and property files.
 #
-set version(core,full) 3.31.0.0
-set version(core,short) 3.31.0
+set version(core,full) 3.31.1.0
+set version(core,short) 3.31.1
 
 ###############################################################################
 

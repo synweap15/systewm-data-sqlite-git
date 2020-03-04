@@ -1995,8 +1995,9 @@ runTest {test data-1.39 {unencrypted database, with password} -setup {
 
   unset -nocomplain error result db fileName
 } -constraints {eagle System.Data.SQLite.Encryption monoBug28 command.sql\
-compile.DATA SQLite System.Data.SQLite} -result {1 {file is not a database} 1\
-{file is not a database} 0 1 0 2}}
+compile.DATA SQLite System.Data.SQLite} -match regexp -result {^1 \{(?:file is\
+not a database|database disk image is malformed)\} 1 \{(?:file is not a\
+database|database disk image is malformed)\} 0 1 0 2$}}
 
 ###############################################################################
 
@@ -2036,8 +2037,9 @@ runTest {test data-1.40 {encrypted database, wrong password} -setup {
 
   unset -nocomplain error result db fileName
 } -constraints {eagle System.Data.SQLite.Encryption monoBug28 command.sql\
-compile.DATA SQLite System.Data.SQLite} -result {1 {file is not a database} 1\
-{file is not a database} 0 1 0 2}}
+compile.DATA SQLite System.Data.SQLite} -match regexp -result {^1 \{(?:file is\
+not a database|database disk image is malformed)\} 1 \{(?:file is not a\
+database|database disk image is malformed)\} 0 1 0 2$}}
 
 ###############################################################################
 
@@ -2113,8 +2115,9 @@ runTest {test data-1.42 {encrypted database, w/quoted-start-space} -setup {
 
   unset -nocomplain error result db fileName
 } -constraints {eagle System.Data.SQLite.Encryption monoBug28 command.sql\
-compile.DATA SQLite System.Data.SQLite} -result {1 {file is not a database} 1\
-{file is not a database} 0 1 0 2}}
+compile.DATA SQLite System.Data.SQLite} -match regexp -result {^1 \{(?:file is\
+not a database|database disk image is malformed)\} 1 \{(?:file is not a\
+database|database disk image is malformed)\} 0 1 0 2$}}
 
 ###############################################################################
 
@@ -2154,8 +2157,9 @@ runTest {test data-1.43 {encrypted database, password w/mid-space} -setup {
 
   unset -nocomplain error result db fileName
 } -constraints {eagle System.Data.SQLite.Encryption monoBug28 command.sql\
-compile.DATA SQLite System.Data.SQLite} -result {1 {file is not a database} 1\
-{file is not a database} 0 1 0 2}}
+compile.DATA SQLite System.Data.SQLite} -match regexp -result {^1 \{(?:file is\
+not a database|database disk image is malformed)\} 1 \{(?:file is not a\
+database|database disk image is malformed)\} 0 1 0 2$}}
 
 ###############################################################################
 
@@ -2231,8 +2235,9 @@ runTest {test data-1.45 {encrypted database, w/quoted-end-space} -setup {
 
   unset -nocomplain error result db fileName
 } -constraints {eagle System.Data.SQLite.Encryption monoBug28 command.sql\
-compile.DATA SQLite System.Data.SQLite} -result {1 {file is not a database} 1\
-{file is not a database} 0 1 0 2}}
+compile.DATA SQLite System.Data.SQLite} -match regexp -result {^1 \{(?:file is\
+not a database|database disk image is malformed)\} 1 \{(?:file is not a\
+database|database disk image is malformed)\} 0 1 0 2$}}
 
 ###############################################################################
 
