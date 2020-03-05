@@ -164,7 +164,7 @@ static void *sqlite3Codec(void *pArg, void *data, Pgno nPageNum, int nMode)
   {
     WCHAR aBuf[2];
     memset(aBuf, 0, sizeof(aBuf));
-    if ((GetEnvironmentVariableW(L"SQLite_EncryptPage1", aBuf, sizeof(aBuf)) != 0)
+    if ((GetEnvironmentVariableW(L"SQLite_LegacyEncryptPage1", aBuf, sizeof(aBuf)) != 0)
      || (GetLastError() != ERROR_ENVVAR_NOT_FOUND))
     {
       g_bEncryptPage1 = CRYPT_PAGE1_ENABLED;

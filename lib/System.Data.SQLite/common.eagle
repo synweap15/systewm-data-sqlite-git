@@ -3034,6 +3034,18 @@ namespace eval ::Eagle {
       return $result
     }
 
+    proc page1MustBeEncrypted {} {
+      if {[haveConstraint System.Data.SQLite.SEE]} then {
+        return true
+      }
+
+      if {[info exists ::env(SQLite_LegacyEncryptPage1)]} then {
+        return true
+      }
+
+      return false
+    }
+
     proc setupDb {
             fileName {mode ""} {dateTimeFormat ""} {dateTimeKind ""} {flags ""}
             {extra ""} {qualify true} {delete true} {uri false}

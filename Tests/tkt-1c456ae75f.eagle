@@ -92,9 +92,9 @@ runTest {test tkt-1c456ae75f-1.2 {database, hex password} -setup {
   cleanupDb $fileName db true false false
 
   lappend result [expr {
-      [haveConstraint System.Data.SQLite.SEE] || [string equal \
-      [readDbFileHeader [file join [getDatabaseDirectory] $fileName]] \
-      [getDbFileHeader]] == ![info exists env(SQLite_EncryptPage1)]
+      [string equal [readDbFileHeader [file join \
+      [getDatabaseDirectory] $fileName]] \
+      [getDbFileHeader]] == ![page1MustBeEncrypted]
   }]
 
   set result
@@ -193,9 +193,9 @@ runTest {test tkt-1c456ae75f-1.4 {database, hex password via builder} -setup {
   cleanupDb $fileName db true false false
 
   lappend result [expr {
-      [haveConstraint System.Data.SQLite.SEE] || [string equal \
-      [readDbFileHeader [file join [getDatabaseDirectory] $fileName]] \
-      [getDbFileHeader]] == ![info exists env(SQLite_EncryptPage1)]
+      [string equal [readDbFileHeader [file join \
+      [getDatabaseDirectory] $fileName]] \
+      [getDbFileHeader]] == ![page1MustBeEncrypted]
   }]
 
   set result

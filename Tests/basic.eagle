@@ -2072,9 +2072,9 @@ runTest {test data-1.41 {encrypted database, password w/start-space} -setup {
   cleanupDb $fileName db true false false
 
   lappend result [expr {
-      [haveConstraint System.Data.SQLite.SEE] || [string equal \
-      [readDbFileHeader [file join [getDatabaseDirectory] $fileName]] \
-      [getDbFileHeader]] == ![info exists env(SQLite_EncryptPage1)]
+      [string equal [readDbFileHeader [file join \
+      [getDatabaseDirectory] $fileName]] \
+      [getDbFileHeader]] == ![page1MustBeEncrypted]
   }]
 
   set result
@@ -2200,9 +2200,9 @@ runTest {test data-1.44 {encrypted database, password w/end-space} -setup {
   cleanupDb $fileName db true false false
 
   lappend result [expr {
-      [haveConstraint System.Data.SQLite.SEE] || [string equal \
-      [readDbFileHeader [file join [getDatabaseDirectory] $fileName]] \
-      [getDbFileHeader]] == ![info exists env(SQLite_EncryptPage1)]
+      [string equal [readDbFileHeader [file join \
+      [getDatabaseDirectory] $fileName]] \
+      [getDbFileHeader]] == ![page1MustBeEncrypted]
   }]
 
   set result
@@ -2299,9 +2299,9 @@ runTest {test data-1.46 {encrypted database, password via builder} -setup {
   cleanupDb $fileName db true false false
 
   lappend result [expr {
-      [haveConstraint System.Data.SQLite.SEE] || [string equal \
-      [readDbFileHeader [file join [getDatabaseDirectory] $fileName]] \
-      [getDbFileHeader]] == ![info exists env(SQLite_EncryptPage1)]
+      [string equal [readDbFileHeader [file join \
+      [getDatabaseDirectory] $fileName]] \
+      [getDbFileHeader]] == ![page1MustBeEncrypted]
   }]
 
   set result
