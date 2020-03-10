@@ -360,6 +360,7 @@ set sds_manifests(source) {
   Setup/set_netFx47.bat
   Setup/set_netFx471.bat
   Setup/set_netFx472.bat
+  Setup/set_netFx48.bat
   Setup/set_netStandard20.bat
   Setup/set_netStandard21.bat
   Setup/set_Release.bat
@@ -2260,6 +2261,76 @@ set manifests(sqlite-netFx472-setup-bundle-x86-2017-.exe) [list sds \
 ###############################################################################
 
 set manifests(sqlite-netFx472-setup-bundle-x64-2017-.exe) [list sds \
+    setupCore setupBundle setupLinqCore setupEf6Core setupLinqBundle \
+    setupEf6Bundle setupX64Vs2017]
+
+###############################################################################
+################### Visual Studio 2017 / .NET Framework 4.8 ###################
+############################### Binary Packages ###############################
+###############################################################################
+
+set manifests(sqlite-netFx48-binary-Win32-2017-.zip) [list sds \
+    binaryCore binaryLinq binaryEf6 binaryExtra binaryInterop]
+
+###############################################################################
+
+set manifests(sqlite-netFx48-binary-x64-2017-.zip) [list sds \
+    binaryCore binaryLinq binaryEf6 binaryExtra binaryInterop]
+
+###############################################################################
+
+set manifests(sqlite-netFx48-binary-bundle-Win32-2017-.zip) [list sds \
+    binaryCore binaryLinq binaryEf6 binaryExtra]
+
+###############################################################################
+
+set manifests(sqlite-netFx48-binary-bundle-x64-2017-.zip) [list sds \
+    binaryCore binaryLinq binaryEf6 binaryExtra]
+
+###############################################################################
+
+set manifests(sqlite-netFx48-static-binary-Win32-2017-.zip) [list sds \
+    binaryCore binaryLinq binaryEf6 binaryExtra binaryInterop]
+
+###############################################################################
+
+set manifests(sqlite-netFx48-static-binary-x64-2017-.zip) [list sds \
+    binaryCore binaryLinq binaryEf6 binaryExtra binaryInterop]
+
+###############################################################################
+
+set manifests(sqlite-netFx48-static-binary-bundle-Win32-2017-.zip) [list sds \
+    binaryCore binaryLinq binaryEf6 binaryExtra]
+
+###############################################################################
+
+set manifests(sqlite-netFx48-static-binary-bundle-x64-2017-.zip) [list sds \
+    binaryCore binaryLinq binaryEf6 binaryExtra]
+
+###############################################################################
+################### Visual Studio 2017 / .NET Framework 4.8 ###################
+############################### Setup Packages ################################
+###############################################################################
+
+set manifests(sqlite-netFx48-setup-x86-2017-.exe) [list sds \
+    setupCore setupInterop setupLinqCore setupEf6Core setupLinqInterop \
+    setupEf6Interop setupX86Vs2017]
+
+###############################################################################
+
+set manifests(sqlite-netFx48-setup-x64-2017-.exe) [list sds \
+    setupCore setupInterop setupLinqCore setupEf6Core setupLinqInterop \
+    setupEf6Interop setupX64Vs2017]
+
+###############################################################################
+
+set manifests(sqlite-netFx48-setup-bundle-x86-2017-.exe) [list sds \
+    setupCore setupBundle setupLinqCore setupEf6Core setupLinqBundle \
+    setupEf6Bundle setupX86Vs2017]
+
+###############################################################################
+
+set manifests(sqlite-netFx48-setup-bundle-x64-2017-.exe) [list sds \
     setupCore setupBundle setupLinqCore setupEf6Core setupLinqBundle \
     setupEf6Bundle setupX64Vs2017]
 

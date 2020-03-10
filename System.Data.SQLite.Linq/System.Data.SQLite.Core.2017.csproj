@@ -67,7 +67,10 @@
                           '$(NetFx46)' != 'false' Or
                           '$(NetFx461)' != 'false' Or
                           '$(NetFx462)' != 'false' Or
-                          '$(NetFx47)' != 'false'">
+                          '$(NetFx47)' != 'false' Or
+                          '$(NetFx471)' != 'false' Or
+                          '$(NetFx472)' != 'false' Or
+                          '$(NetFx48)' != 'false'">
       <HintPath>$(SQLiteNetDir)\Externals\EntityFramework\v6.3\lib\net45\EntityFramework.dll</HintPath>
     </Reference>
   </ItemGroup>

@@ -1,7 +1,7 @@
 /********************************************************
  * ADO.NET 2.0 Data Provider for SQLite Version 3.X
  * Written by Robert Simpson (robert@blackcastlesoft.com)
- * 
+ *
  * Released to the public domain, use at your own risk!
  ********************************************************/
 
@@ -28,7 +28,7 @@ namespace System.Data.SQLite.Linq
     static SqlChecker()
     {
         string version =
-#if NET_40 || NET_45 || NET_451 || NET_452 || NET_46 || NET_461 || NET_462 || NET_47 || NET_471 || NET_472 || NET_STANDARD_20 || NET_STANDARD_21
+#if NET_40 || NET_45 || NET_451 || NET_452 || NET_46 || NET_461 || NET_462 || NET_47 || NET_471 || NET_472 || NET_48 || NET_STANDARD_20 || NET_STANDARD_21
             "4.0.0.0";
 #else
             "3.5.0.0";
@@ -44,13 +44,13 @@ namespace System.Data.SQLite.Linq
 
 #if false
     /// <summary>
-    /// SQLite doesn't support things like SKIP and a few other things.  
+    /// SQLite doesn't support things like SKIP and a few other things.
     /// So determine if the query has to be rewritten
     /// </summary>
     /// <remarks>
-    /// Microsoft went to all the trouble of making things like SKIP work 
+    /// Microsoft went to all the trouble of making things like SKIP work
     /// on Sql Server 2000 by doing a rewrite of the commandtree.
-    /// However, all that fancy stuff is hidden from us.  Thanks to 
+    /// However, all that fancy stuff is hidden from us.  Thanks to
     /// reflection however, we can go ahead and use the Sql 2000 rewriter code
     /// they made.
     /// </remarks>
@@ -62,7 +62,7 @@ namespace System.Data.SQLite.Linq
       if (tree.Query.Accept<bool>(visitor))
       {
         tree = sql8rewriter.InvokeMember("Rewrite", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.InvokeMethod | System.Reflection.BindingFlags.Static, null, null, new object[] { tree }) as DbQueryCommandTree;
-      }      
+      }
       return tree;
     }
 #endif

@@ -104,6 +104,11 @@
                      ('$(NetFx472Settings)' == '' Or '$(NetFx472Settings)' != 'false') And
                      Exists('$(SQLiteNetDir)\Targets\SQLite.NET.Settings.targets.netFx472')" />
 
+  <Import Project="$(SQLiteNetDir)\Targets\SQLite.NET.Settings.targets.netFx48"
+          Condition="'$(NetFx48)' != '' And '$(NetFx48)' != 'false' And
+                     ('$(NetFx48Settings)' == '' Or '$(NetFx48Settings)' != 'false') And
+                     Exists('$(SQLiteNetDir)\Targets\SQLite.NET.Settings.targets.netFx48')" />
+
   <!--
   ******************************************************************************
   **                       [Fairly] Generic Properties                        **
@@ -256,6 +261,15 @@
     <NetFx472 Condition="'$(NetFx472)' == ''">false</NetFx472>
 
     <!--
+        NOTE: Only use functionality available in the .NET Framework 4.8?  By
+              default, this is disabled.  This must be enabled to successfully
+              build the project using Visual Studio 2017 and/or the .NET
+              Framework 4.8 (if necessary, it will typically be enabled from
+              within the project file itself).
+    -->
+    <NetFx48 Condition="'$(NetFx48)' == ''">false</NetFx48>
+
+    <!--
         NOTE: Load the version-specific settings for the .NET Framework 2.0?
               By default, this is disabled.  If this is enabled when compiling
               for the .NET Framework 2.0, the version-specific settings file
@@ -374,6 +388,16 @@
               processed.
     -->
     <NetFx472Settings Condition="'$(NetFx472Settings)' == ''">false</NetFx472Settings>
+
+    <!--
+        NOTE: Load the version-specific settings for the .NET Framework 4.8?
+              By default, this is disabled.  If this is enabled when compiling
+              for the .NET Framework 4.8, the version-specific settings file
+              "SQLite.NET.Settings.targets.netFx48" will be loaded if it is
+              actually present, before any other settings in this file are
+              processed.
+    -->
+    <NetFx48Settings Condition="'$(NetFx48Settings)' == ''">false</NetFx48Settings>
   </PropertyGroup>
 
   <!--

@@ -21,7 +21,8 @@
           Condition="('$(ConfigurationYear)' == '2010' Or
                       '$(ConfigurationYear)' == '2012' Or
                       '$(ConfigurationYear)' == '2013' Or
-                      '$(ConfigurationYear)' == '2015') And
+                      '$(ConfigurationYear)' == '2015' Or
+                      '$(ConfigurationYear)' == '2017') And
                      Exists('$(SQLiteNetDir)\Targets\SQLite.NET.Settings.targets.netFx40.user')" />
 
   <!--
@@ -31,7 +32,8 @@
   <PropertyGroup Condition="'$(ConfigurationYear)' == '2010' Or
                             '$(ConfigurationYear)' == '2012' Or
                             '$(ConfigurationYear)' == '2013' Or
-                            '$(ConfigurationYear)' == '2015'">
+                            '$(ConfigurationYear)' == '2015' Or
+                            '$(ConfigurationYear)' == '2017'">
     <NetFx20>false</NetFx20>
     <NetFx35>false</NetFx35>
     <NetFx40>true</NetFx40>
@@ -44,6 +46,7 @@
     <NetFx47>false</NetFx47>
     <NetFx471>false</NetFx471>
     <NetFx472>false</NetFx472>
+    <NetFx48>false</NetFx48>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <Prefer32Bit>false</Prefer32Bit>
     <!-- <PlatformToolset>v100</PlatformToolset> -->

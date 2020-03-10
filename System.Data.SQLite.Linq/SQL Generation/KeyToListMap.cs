@@ -1,7 +1,7 @@
 /********************************************************
  * ADO.NET 2.0 Data Provider for SQLite Version 3.X
  * Written by Robert Simpson (robert@blackcastlesoft.com)
- * 
+ *
  * Released to the public domain, use at your own risk!
  ********************************************************/
 
@@ -10,7 +10,7 @@ using System.Text;
 using System.Collections.ObjectModel;
 using System.Collections;
 
-#if NET_40 || NET_45 || NET_451 || NET_452 || NET_46 || NET_461 || NET_462 || NET_47 || NET_471 || NET_472 || NET_STANDARD_20 || NET_STANDARD_21
+#if NET_40 || NET_45 || NET_451 || NET_452 || NET_46 || NET_461 || NET_462 || NET_47 || NET_471 || NET_472 || NET_48 || NET_STANDARD_20 || NET_STANDARD_21
 using System.Runtime;
 #endif
 
@@ -123,7 +123,7 @@ namespace System.Data.SQLite.Linq
 
 		internal IEnumerable<KeyValuePair<TKey, List<TValue>>> KeyValuePairs
 		{
-#if NET_40 || NET_45 || NET_451 || NET_452 || NET_46 || NET_461 || NET_462 || NET_47 || NET_471 || NET_472 || NET_STANDARD_20 || NET_STANDARD_21
+#if NET_40 || NET_45 || NET_451 || NET_452 || NET_46 || NET_461 || NET_462 || NET_47 || NET_471 || NET_472 || NET_48 || NET_STANDARD_20 || NET_STANDARD_21
 			[TargetedPatchingOptOut("Performance critical to inline this type of method across NGen image boundaries")]
 #endif
 			get

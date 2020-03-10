@@ -182,7 +182,7 @@ namespace testlinq
 
                       return BinaryGuidTest(value);
                   }
-#if NET_40 || NET_45 || NET_451 || NET_452 || NET_46 || NET_461 || NET_462 || NET_47 || NET_471 || NET_472 || NET_STANDARD_21
+#if NET_40 || NET_45 || NET_451 || NET_452 || NET_46 || NET_461 || NET_462 || NET_47 || NET_471 || NET_472 || NET_48 || NET_STANDARD_21
               case "binaryguid2":
                   {
                       bool value = false;
@@ -202,7 +202,7 @@ namespace testlinq
                       return BinaryGuidTest2(value);
                   }
 #endif
-#if NET_40 || NET_45 || NET_451 || NET_452 || NET_46 || NET_461 || NET_462 || NET_47 || NET_471 || NET_472 || NET_STANDARD_21
+#if NET_40 || NET_45 || NET_451 || NET_452 || NET_46 || NET_461 || NET_462 || NET_47 || NET_471 || NET_472 || NET_48 || NET_STANDARD_21
               case "round":
                   {
                       return RoundTest();
@@ -504,7 +504,7 @@ namespace testlinq
 
                       try
                       {
-#if NET_40 || NET_45 || NET_451 || NET_452 || NET_46 || NET_461 || NET_462 || NET_47 || NET_471 || NET_472 || NET_STANDARD_21
+#if NET_40 || NET_45 || NET_451 || NET_452 || NET_46 || NET_461 || NET_462 || NET_47 || NET_471 || NET_472 || NET_48 || NET_STANDARD_21
                           db.SaveChanges(SaveOptions.None);
 #else
                           db.SaveChanges(false);
@@ -527,7 +527,7 @@ namespace testlinq
               using (northwindEFEntities db = new northwindEFEntities())
               {
                   bool once = false;
-#if NET_40 || NET_45 || NET_451 || NET_452 || NET_46 || NET_461 || NET_462 || NET_47 || NET_471 || NET_472 || NET_STANDARD_21
+#if NET_40 || NET_45 || NET_451 || NET_452 || NET_46 || NET_461 || NET_462 || NET_47 || NET_471 || NET_472 || NET_48 || NET_STANDARD_21
                   var query = from t in db.Territories
                     where territoryIds.AsQueryable<long>().Contains<long>(t.TerritoryID)
                     orderby t.TerritoryID
@@ -740,7 +740,7 @@ namespace testlinq
           return 0;
       }
 
-#if NET_40 || NET_45 || NET_451 || NET_452 || NET_46 || NET_461 || NET_462 || NET_47 || NET_471 || NET_472 || NET_STANDARD_21
+#if NET_40 || NET_45 || NET_451 || NET_452 || NET_46 || NET_461 || NET_462 || NET_47 || NET_471 || NET_472 || NET_48 || NET_STANDARD_21
       //
       // NOTE: Used to test the BinaryGUID connection string property with
       //       the Contains() function (ticket [a4d9c7ee94]).  We cannot
@@ -937,7 +937,7 @@ namespace testlinq
           Trace.Listeners.Remove(listener);
       }
 
-#if NET_40 || NET_45 || NET_451 || NET_452 || NET_46 || NET_461 || NET_462 || NET_47 || NET_471 || NET_472 || NET_STANDARD_21
+#if NET_40 || NET_45 || NET_451 || NET_452 || NET_46 || NET_461 || NET_462 || NET_47 || NET_471 || NET_472 || NET_48 || NET_STANDARD_21
       //
       // NOTE: Used to test the ROUND fix (i.e. being able to properly handle
       //       the two argument form).
