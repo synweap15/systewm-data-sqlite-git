@@ -335,7 +335,7 @@
 
               https://stackoverflow.com/questions/8938679
     -->
-    <Exec ConsoleToMSBuild="true" Command="&quot;$(MSBuildProjectDirectory)\..\Externals\vswhere\vswhere.exe&quot; -version 15.0 -products * -requires Microsoft.VisualStudio.Component.VSSDK -property installationPath"
+    <Exec ConsoleToMSBuild="true" Command="&quot;$(MSBuildProjectDirectory)\..\Externals\vswhere\vswhere.exe&quot; -version 15.0 -products * -requires Microsoft.VisualStudio.Component.VSSDK -property installationPath -latest"
           WorkingDirectory="$(MSBuildProjectDirectory)\..\Externals\vswhere">
       <Output TaskParameter="ConsoleOutput" PropertyName="VS150INSTALLATIONPATH" />
     </Exec>
