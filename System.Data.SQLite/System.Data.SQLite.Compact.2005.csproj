@@ -62,9 +62,9 @@
   <Import Project="$(MSBuildProjectDirectory)\Targets\System.Data.SQLite.References.targets" />
   <Import Project="$(MSBuildProjectDirectory)\Targets\System.Data.SQLite.Properties.targets" />
   <Import Project="$(MSBuildProjectDirectory)\Targets\System.Data.SQLite.Files.targets" />
-  <Import Condition="'$(TargetFrameworkVersion)' == 'v1.0'" Project="$(MSBuildBinPath)\Microsoft.CompactFramework.CSharp.v1.targets" />
-  <Import Condition="'$(TargetFrameworkVersion)' == 'v2.0'" Project="$(MSBuildBinPath)\Microsoft.CompactFramework.CSharp.targets" />
-  <Import Condition="'$(TargetFrameworkVersion)' == 'v3.5'" Project="$(MSBuildBinPath)\Microsoft.CompactFramework.CSharp.targets" />
+  <Import Condition="'$(TargetFrameworkVersion)' == 'v1.0' And Exists('$(MSBuildBinPath)\Microsoft.CompactFramework.CSharp.v1.targets')" Project="$(MSBuildBinPath)\Microsoft.CompactFramework.CSharp.v1.targets" />
+  <Import Condition="'$(TargetFrameworkVersion)' == 'v2.0' And Exists('$(MSBuildBinPath)\Microsoft.CompactFramework.CSharp.targets')" Project="$(MSBuildBinPath)\Microsoft.CompactFramework.CSharp.targets" />
+  <Import Condition="'$(TargetFrameworkVersion)' == 'v3.5' And Exists('$(MSBuildBinPath)\Microsoft.CompactFramework.CSharp.targets')" Project="$(MSBuildBinPath)\Microsoft.CompactFramework.CSharp.targets" />
   <PropertyGroup>
     <BuildDependsOn>
       $(BuildDependsOn);
