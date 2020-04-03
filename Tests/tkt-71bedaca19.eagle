@@ -49,15 +49,18 @@ Busy_Recovery 261
 Busy_Snapshot 517
 CantOpen 14
 CantOpen_ConvPath 1038
+CantOpen_DirtyWal 1294
 CantOpen_FullPath 782
 CantOpen_IsDir 526
 CantOpen_NoTempDir 270
+CantOpen_SymLink 1550
 Constraint 19
 Constraint_Check 275
 Constraint_CommitHook 531
 Constraint_ForeignKey 787
 Constraint_Function 1043
 Constraint_NotNull 1299
+Constraint_Pinned 2835
 Constraint_PrimaryKey 1555
 Constraint_RowId 2579
 Constraint_Trigger 1811
@@ -71,6 +74,7 @@ Empty 16
 Error 1
 Error_Missing_CollSeq 257
 Error_Retry 513
+Error_Snapshot 769
 Format 24
 Full 13
 Internal 2
@@ -121,6 +125,7 @@ Notice_Recover_Rollback 539
 Notice_Recover_Wal 283
 Ok 0
 Ok_Load_Permanently 256
+Ok_SymLink 512
 Perm 3
 Protocol 15
 Range 25

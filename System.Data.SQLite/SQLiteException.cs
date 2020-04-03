@@ -597,6 +597,10 @@ namespace System.Data.SQLite
       /// </summary>
       Error_Retry = (Error | (2 << 8)),
       /// <summary>
+      /// The specified snapshot has been overwritten by a checkpoint.
+      /// </summary>
+      Error_Snapshot = (Error | (3 << 8)),
+      /// <summary>
       /// A file read operation failed.
       /// </summary>
       IoErr_Read = (IoErr | (1 << 8)),
@@ -753,6 +757,14 @@ namespace System.Data.SQLite
       /// </summary>
       CantOpen_ConvPath = (CantOpen | (4 << 8)),
       /// <summary>
+      /// No longer used.
+      /// </summary>
+      CantOpen_DirtyWal = (CantOpen | (5 << 8)),
+      /// <summary>
+      /// A database file is a symbolic link and cannot be opened.
+      /// </summary>
+      CantOpen_SymLink = (CantOpen | (6 << 8)),
+      /// <summary>
       /// A virtual table is malformed.
       /// </summary>
       Corrupt_Vtab = (Corrupt | (1 << 8)),
@@ -829,6 +841,10 @@ namespace System.Data.SQLite
       /// </summary>
       Constraint_RowId = (Constraint | (10 << 8)),
       /// <summary>
+      /// A database cursor is busy and cannot be moved.
+      /// </summary>
+      Constraint_Pinned = (Constraint |(11 << 8)),
+      /// <summary>
       /// Frames were recovered from the WAL log file.
       /// </summary>
       Notice_Recover_Wal = (Notice | (1 << 8)),
@@ -848,6 +864,10 @@ namespace System.Data.SQLite
       /// Success.  Prevents the extension from unloading until the process
       /// terminates.
       /// </summary>
-      Ok_Load_Permanently = (Ok | (1 << 8))
+      Ok_Load_Permanently = (Ok | (1 << 8)),
+      /// <summary>
+      /// Success.  The specified file name refers to a symbolic link.
+      /// </summary>
+      Ok_SymLink = (Ok | (2 << 8))
   }
 }
