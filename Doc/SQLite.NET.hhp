@@ -55,6 +55,7 @@ Core\syntax\attach-stmt.html
 Core\syntax\begin-stmt.html
 Core\syntax\column-constraint.html
 Core\syntax\column-def.html
+Core\syntax\column-name-list.html
 Core\syntax\comment-syntax.html
 Core\syntax\commit-stmt.html
 Core\syntax\common-table-expression.html
