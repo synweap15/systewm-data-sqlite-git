@@ -13,7 +13,7 @@ proc usage { error } {
   if {[string length $error] > 0} then {puts stdout $error}
 
   puts stdout "usage:\
-[file tail [info nameofexecutable]]\
+[file tail [getShellExecutableName]]\
 [file tail [info script]] <directory> <withHashes> \[failHashes\]"
 
   #
@@ -286,10 +286,12 @@ if {$argc >= 2 && $argc <= 3} then {
     }
 
     if {![info exists manifests($manifest)]} then {
-      puts stdout [appendArgs \
-          "WARNING: Cannot find master manifest \"" \
-          $manifest "\" for archive \"" $archiveFileName \
-          "\", skipped."]
+      if {![info exists no(warn)]} then {
+        puts stdout [appendArgs \
+            "WARNING: Cannot find master manifest \"" \
+            $manifest "\" for archive \"" $archiveFileName \
+            "\", skipped."]
+      }
 
       continue
     }
