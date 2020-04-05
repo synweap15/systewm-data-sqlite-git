@@ -53,7 +53,7 @@
     <li>Add preliminary support for the .NET Framework 4.8.</li>
 </ul>
 <p>
-    <b>1.0.112.1 - April XX, 2020 <font color="red">(release scheduled)</font></b>
+    <b>1.0.112.1 - April 6, 2020</b>
 </p>
 <ul>
     <li>Updated to [https://www.sqlite.org/releaselog/3_31_1.html|SQLite 3.31.1].</li>
