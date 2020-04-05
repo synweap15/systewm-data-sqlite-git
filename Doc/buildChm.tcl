@@ -276,18 +276,7 @@ proc transformCoreDocumentationFile { fileName url } {
   }
 }
 
-#
-# HACK: Copy our local [fixed] copy of the MSDN documenter assembly into the
-#       installed location of NDoc3, if necessary.  Actually copying the file
-#       will require elevated administrator privileges; otherwise, it will
-#       fail.  Any errors encountered while copying the file are reported via
-#       the console; however, they will not halt further processing (i.e. the
-#       CHM file will probably still get built, but it may contain some links
-#       to built-in types that are blank).
-#
-proc copyMsdnDocumenter { sourceDirectory destinationDirectory } {
-  set fileNameOnly NDoc3.Documenter.Msdn.dll
-
+proc copyFile { sourceDirectory destinationDirectory fileNameOnly } {
   set sourceFileName [file join $sourceDirectory bin $fileNameOnly]
   set destinationFileName [file join $destinationDirectory bin $fileNameOnly]
 
@@ -319,16 +308,24 @@ proc copyMsdnDocumenter { sourceDirectory destinationDirectory } {
 # NOTE: This is the entry point for this script.
 #
 set path [file normalize [file dirname [info script]]]
-
 set nDocExtPath [file join [file dirname $path] Externals NDoc3]
-set nDocInstPath [file join $env(ProgramFiles) NDoc3]
+
+if {[info exists env(ProgramFiles\(x86\))]} then {
+  set programFiles $env(ProgramFiles\(x86\))
+  set needConsoleExe true
+} else {
+  set programFiles $env(ProgramFiles)
+  set needConsoleExe false
+}
+
+set nDocInstPath [file join $programFiles NDoc3]
 
 if {![file isdirectory $nDocInstPath]} then {
   puts stdout "NDoc3 must be installed to: $nDocInstPath"
   exit 1
 }
 
-set hhcPath [file join $env(ProgramFiles) "HTML Help Workshop"]
+set hhcPath [file join $programFiles "HTML Help Workshop"]
 
 if {![file isdirectory $hhcPath]} then {
   puts stdout "HTML Help Workshop must be installed to: $hhcPath"
@@ -389,8 +386,26 @@ set corePath [file join $temporaryPath Core]
 set coreSyntaxPath [file join $corePath syntax]
 set providerPath [file join $temporaryPath Provider]
 
+#
+# HACK: Copy our local [fixed] copy of the MSDN documenter assembly into the
+#       installed location of NDoc3, if necessary.  Actually copying the file
+#       will require elevated administrator privileges; otherwise, it will
+#       fail.  Any errors encountered while copying the file are reported via
+#       the console; however, they will not halt further processing (i.e. the
+#       CHM file will probably still get built, but it may contain some links
+#       to built-in types that are blank).
+#
 if {[file isdirectory $nDocExtPath]} then {
-  copyMsdnDocumenter $nDocExtPath $nDocInstPath
+  copyFile $nDocExtPath $nDocInstPath NDoc3.Documenter.Msdn.dll
+}
+
+#
+# HACK: If necessary, copy our 32-bit only version of the NDoc3 executable;
+#       without this, it will be unable to locate the "HTML Help Workshop"
+#       directory within the "Program Files (x86)" directory.
+#
+if {$needConsoleExe} then {
+  copyFile $nDocExtPath $nDocInstPath NDoc3Console.exe
 }
 
 set code [catch {exec [file join $nDocInstPath bin NDoc3Console.exe] \
