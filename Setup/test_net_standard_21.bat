@@ -46,6 +46,8 @@ SET TOOLS=%TOOLS:~0,-1%
 
 CALL :fn_ResetErrorLevel
 
+SET NONETSTANDARD20=1
+
 %__ECHO3% CALL "%TOOLS%\set_common.bat"
 
 IF ERRORLEVEL 1 (
