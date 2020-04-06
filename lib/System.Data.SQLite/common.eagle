@@ -5883,6 +5883,13 @@ namespace eval ::Eagle {
             set testEf6ExeFile [getBuildFileName testef6.exe true]
           }
 
+          set testEf6DepsJsonFile \
+              [getBuildFileName testef6.deps.json true]
+
+          set testEf6DepsJsonBackupFile \
+              [getBuildFileName [appendArgs testef6.deps.json . \
+              [generateUniqueId "" 4]] true]
+
           #
           # NOTE: Setup the variables that refer to the various data files
           #       required by the tests in this file.
@@ -6001,6 +6008,16 @@ namespace eval ::Eagle {
             }
 
             if {![haveConstraint [appendArgs file_ \
+                [file tail $testEf6DepsJsonFile]]]} then {
+              checkForFile $test_channel $testEf6DepsJsonFile
+            }
+
+            if {![haveConstraint [appendArgs file_ \
+                [file tail $testEf6DepsJsonBackupFile]]]} then {
+              checkForFile $test_channel $testEf6DepsJsonBackupFile
+            }
+
+            if {![haveConstraint [appendArgs file_ \
                 [file tail $testLinqOutFile]]]} then {
               checkForFile $test_channel $testLinqOutFile
             }
@@ -6094,6 +6111,70 @@ namespace eval ::Eagle {
       }
     }
 
+    proc runSQLiteTestExtraPrologue {} {
+      #
+      # NOTE: Skip running our custom files prologue if the main one has been
+      #       skipped.
+      #
+      if {![info exists ::no(prologue.eagle)]} then {
+        uplevel 1 {
+          if {![info exists ::no(saveTestEf6Files)]} then {
+            if {[haveConstraint [appendArgs file_ \
+                [file tail $testEf6DepsJsonFile]]] && \
+                ![haveConstraint [appendArgs file_ \
+                [file tail $testEf6DepsJsonBackupFile]]]} then {
+              file rename $testEf6DepsJsonFile $testEf6DepsJsonBackupFile
+
+              tputs $test_channel [appendArgs \
+                  "---- moved \"" $testEf6DepsJsonFile "\" to \"" \
+                  $testEf6DepsJsonBackupFile \"\n]
+
+              removeConstraint [appendArgs \
+                  file_ [file tail $testEf6DepsJsonFile]]
+
+              removeConstraint [appendArgs \
+                  file_ [file tail $testEf6DepsJsonBackupFile]]
+
+              checkForFile $test_channel $testEf6DepsJsonFile
+              checkForFile $test_channel $testEf6DepsJsonBackupFile
+            }
+          }
+        }
+      }
+    }
+
+    proc runSQLiteTestExtraEpilogue {} {
+      #
+      # NOTE: Skip running our custom files epilogue if the main one has been
+      #       skipped.
+      #
+      if {![info exists ::no(epilogue.eagle)]} then {
+        uplevel 1 {
+          if {![info exists ::no(restoreTestEf6Files)]} then {
+            if {![haveConstraint [appendArgs file_ \
+                [file tail $testEf6DepsJsonFile]]] && \
+                [haveConstraint [appendArgs file_ \
+                [file tail $testEf6DepsJsonBackupFile]]]} then {
+              file rename $testEf6DepsJsonBackupFile $testEf6DepsJsonFile
+
+              tputs $test_channel [appendArgs \
+                  "---- moved \"" $testEf6DepsJsonBackupFile "\" to \"" \
+                  $testEf6DepsJsonFile \"\n]
+
+              removeConstraint [appendArgs \
+                  file_ [file tail $testEf6DepsJsonFile]]
+
+              removeConstraint [appendArgs \
+                  file_ [file tail $testEf6DepsJsonBackupFile]]
+
+              checkForFile $test_channel $testEf6DepsJsonFile
+              checkForFile $test_channel $testEf6DepsJsonBackupFile
+            }
+          }
+        }
+      }
+    }
+
     proc runSQLiteTestFilesEpilogue {} {
       #
       # NOTE: Skip running our custom files epilogue if the main one has been
@@ -6114,6 +6195,7 @@ namespace eval ::Eagle {
               northwindEfDbFile testLinqOutFile walDbFile nonWalDbFile
 
           unset -nocomplain \
+              testEf6DepsJsonFile testEf6DepsJsonBackupFile \
               testEf6ExeFile testLinqExeFile \
               testExeFile systemDataSQLiteEf6DllFile \
               systemDataSQLiteLinqDllFile systemDataSQLiteDllFile \

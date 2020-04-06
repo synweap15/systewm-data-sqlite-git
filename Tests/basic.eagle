@@ -18,6 +18,7 @@ runTestPrologue
 package require System.Data.SQLite.Test
 runSQLiteTestPrologue
 runSQLiteTestFilesPrologue
+runSQLiteTestExtraPrologue
 
 ###############################################################################
 
@@ -5600,6 +5601,7 @@ reportSQLiteResources $test_channel
 
 ###############################################################################
 
+runSQLiteTestExtraEpilogue
 runSQLiteTestFilesEpilogue
 runSQLiteTestEpilogue
 runTestEpilogue
