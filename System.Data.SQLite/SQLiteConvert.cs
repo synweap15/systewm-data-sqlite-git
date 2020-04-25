@@ -1779,6 +1779,8 @@ namespace System.Data.SQLite
             new SQLiteDbTypeMapping("LONGCHAR", DbType.String, false),
             new SQLiteDbTypeMapping("LONGTEXT", DbType.String, false),
             new SQLiteDbTypeMapping("LONGVARCHAR", DbType.String, false),
+            new SQLiteDbTypeMapping("MEDIUMINT", DbType.Int32, false),
+            new SQLiteDbTypeMapping("MEDIUMUINT", DbType.UInt32, false),
             new SQLiteDbTypeMapping("MEMO", DbType.String, false),
             new SQLiteDbTypeMapping("MONEY", DbType.Decimal, false),
             new SQLiteDbTypeMapping("NCHAR", DbType.StringFixedLength, true),

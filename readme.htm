@@ -213,6 +213,7 @@ released versions of System.Data.SQLite.
 <ul>
     <li>Add SQLite_ForceLogLifecycle environment variable to force logging of calls into key members pertaining to the lifecycle of connections and their associated classes (e.g. LINQ, EF6, etc).</li>
     <li>When using the (unsupported) legacy CryptoAPI based codec, skip encrypting page #1 because that can lead to database corruption and other malfunctions.</li>
+    <li>Support automatic value conversions for columns with a declared type of MEDIUMINT or MEDIUMUINT.  Pursuant to [515cb60b10].</li>
     <li>Add preliminary support for the .NET Framework 4.8.</li>
 </ul>
 <p>
