@@ -1429,6 +1429,8 @@ set sds_manifests(nuGetCoreCommon) {
 set sds_manifests(nuGetCoreManagedOnly) {
   lib/netstandard2.0/System.Data.SQLite.dll
   lib/netstandard2.0/System.Data.SQLite.xml
+  lib/netstandard2.1/System.Data.SQLite.dll
+  lib/netstandard2.1/System.Data.SQLite.xml
 }
 
 ###############################################################################
@@ -1458,10 +1460,15 @@ set sds_manifests(nuGetCoreNative) {
   lib/net451/System.Data.SQLite.dll.config
   lib/net46/System.Data.SQLite.dll.config
   lib/netstandard2.0/System.Data.SQLite.dll.config
+  lib/netstandard2.1/System.Data.SQLite.dll.config
   runtimes/win-x86/native/netstandard2.0/SQLite.Interop.dll
   runtimes/win-x64/native/netstandard2.0/SQLite.Interop.dll
   runtimes/linux-x64/native/netstandard2.0/SQLite.Interop.dll
   runtimes/osx-x64/native/netstandard2.0/SQLite.Interop.dll
+  runtimes/win-x86/native/netstandard2.1/SQLite.Interop.dll
+  runtimes/win-x64/native/netstandard2.1/SQLite.Interop.dll
+  runtimes/linux-x64/native/netstandard2.1/SQLite.Interop.dll
+  runtimes/osx-x64/native/netstandard2.1/SQLite.Interop.dll
 }
 
 ###############################################################################
