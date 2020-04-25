@@ -42,6 +42,8 @@
     <file src="..\bin\2015\Release\bin\System.Data.SQLite.xml" target="lib\net46" />
     <file src="..\bin\NetStandard20\ReleaseNetStandard20\bin\netstandard2.0\System.Data.SQLite.dll" target="lib\netstandard2.0" />
     <file src="..\bin\NetStandard20\ReleaseNetStandard20\bin\netstandard2.0\System.Data.SQLite.xml" target="lib\netstandard2.0" />
+    <file src="..\bin\NetStandard21\ReleaseNetStandard21\bin\netstandard2.1\System.Data.SQLite.dll" target="lib\netstandard2.1" />
+    <file src="..\bin\NetStandard21\ReleaseNetStandard21\bin\netstandard2.1\System.Data.SQLite.xml" target="lib\netstandard2.1" />
     <file src="..\bin\2008\Win32\ReleaseNativeOnlyStatic\SQLite.Interop.dll" target="build\net20\x86" />
     <file src="..\bin\2008\x64\ReleaseNativeOnlyStatic\SQLite.Interop.dll" target="build\net20\x64" />
     <file src="..\bin\2010\Win32\ReleaseNativeOnlyStatic\SQLite.Interop.dll" target="build\net40\x86" />
