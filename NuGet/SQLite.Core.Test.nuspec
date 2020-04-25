@@ -27,6 +27,7 @@
       <group targetFramework="net451" />
       <group targetFramework="net46" />
       <group targetFramework="netstandard2.0" />
+      <group targetFramework="netstandard2.1" />
     </dependencies>
   </metadata>
   <files>

@@ -39,6 +39,9 @@
       <group targetFramework="netstandard2.0">
         <dependency id="System.Data.SQLite.Core.Beta" version="1.0.113.0" />
       </group>
+      <group targetFramework="netstandard2.1">
+        <dependency id="System.Data.SQLite.Core.Beta" version="1.0.113.0" />
+      </group>
       <group targetFramework="net20">
         <dependency id="System.Data.SQLite.Linq.Beta" version="1.0.113.0" />
       </group>
@@ -64,6 +67,9 @@
         <dependency id="System.Data.SQLite.EF6.Beta" version="1.0.113.0" />
       </group>
       <group targetFramework="net46">
+        <dependency id="System.Data.SQLite.EF6.Beta" version="1.0.113.0" />
+      </group>
+      <group targetFramework="netstandard2.1">
         <dependency id="System.Data.SQLite.EF6.Beta" version="1.0.113.0" />
       </group>
     </dependencies>
