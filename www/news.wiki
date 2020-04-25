@@ -50,8 +50,14 @@
 <ul>
     <li>Add SQLite_ForceLogLifecycle environment variable to force logging of calls into key members pertaining to the lifecycle of connections and their associated classes (e.g. LINQ, EF6, etc).</li>
     <li>When using the (unsupported) legacy CryptoAPI based codec, skip encrypting page #1 because that can lead to database corruption and other malfunctions.</li>
-    <li>Support automatic value conversions for columns with a declared type of MEDIUMINT or MEDIUMUINT.  Pursuant to [515cb60b10].</li>
+    <li>Support automatic value conversions for columns with a declared type of MEDIUMINT or MEDIUMUINT. Pursuant to [515cb60b10].</li>
     <li>Add preliminary support for the .NET Framework 4.8.</li>
+</ul>
+<p>
+    <b>1.0.112.2 - April 27, 2020</b>
+</p>
+<ul>
+    <li>Fix NuGet packaging for .NET Standard 2.1. Fix for [7c73262e6f].</li>
 </ul>
 <p>
     <b>1.0.112.1 - April 6, 2020</b>
