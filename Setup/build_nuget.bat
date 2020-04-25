@@ -37,7 +37,12 @@ SET TOOLS=%TOOLS:~0,-1%
 %_VECHO% Tools = '%TOOLS%'
 
 IF NOT DEFINED NUGET (
-  SET NUGET=NuGet4.exe
+  REM
+  REM WARNING: This batch tool relies upon a custom fork of the NuGet client that
+  REM          implements the "-VerbatimVersion" option.  For further information,
+  REM          please see "https://github.com/NuGet/Home/issues/3050".
+  REM
+  SET NUGET=%ROOT%\Externals\NuGet\NuGet.exe
 )
 
 %_VECHO% NuGet = '%NUGET%'
@@ -97,11 +102,13 @@ IF NOT DEFINED NO_NUGET_XPLATFORM (
   )
 )
 
-%__ECHO% "%NUGET%" pack -VerbatimVersion "%ROOT%\NuGet\SQLite.nuspec"
+IF NOT DEFINED NUGET_CORE_ONLY (
+  %__ECHO% "%NUGET%" pack -VerbatimVersion "%ROOT%\NuGet\SQLite.nuspec"
 
-IF ERRORLEVEL 1 (
-  ECHO The "%ROOT%\NuGet\SQLite.nuspec" package could not be built.
-  GOTO usage
+  IF ERRORLEVEL 1 (
+    ECHO The "%ROOT%\NuGet\SQLite.nuspec" package could not be built.
+    GOTO usage
+  )
 )
 
 %__ECHO% "%NUGET%" pack -VerbatimVersion "%ROOT%\NuGet\SQLite.Core.nuspec"
@@ -111,11 +118,13 @@ IF ERRORLEVEL 1 (
   GOTO usage
 )
 
-%__ECHO% "%NUGET%" pack -VerbatimVersion "%ROOT%\NuGet\SQLite.Core.MSIL.nuspec"
+IF NOT DEFINED NUGET_CORE_ONLY (
+  %__ECHO% "%NUGET%" pack -VerbatimVersion "%ROOT%\NuGet\SQLite.Core.MSIL.nuspec"
 
-IF ERRORLEVEL 1 (
-  ECHO The "%ROOT%\NuGet\SQLite.Core.MSIL.nuspec" package could not be built.
-  GOTO usage
+  IF ERRORLEVEL 1 (
+    ECHO The "%ROOT%\NuGet\SQLite.Core.MSIL.nuspec" package could not be built.
+    GOTO usage
+  )
 )
 
 %__ECHO% "%NUGET%" pack -VerbatimVersion "%ROOT%\NuGet\SQLite.EF6.nuspec"
@@ -132,25 +141,27 @@ IF ERRORLEVEL 1 (
   GOTO usage
 )
 
-%__ECHO% "%NUGET%" pack -VerbatimVersion "%ROOT%\NuGet\SQLite.MSIL.nuspec"
+IF NOT DEFINED NUGET_CORE_ONLY (
+  %__ECHO% "%NUGET%" pack -VerbatimVersion "%ROOT%\NuGet\SQLite.MSIL.nuspec"
 
-IF ERRORLEVEL 1 (
-  ECHO The "%ROOT%\NuGet\SQLite.MSIL.nuspec" package could not be built.
-  GOTO usage
-)
+  IF ERRORLEVEL 1 (
+    ECHO The "%ROOT%\NuGet\SQLite.MSIL.nuspec" package could not be built.
+    GOTO usage
+  )
 
-%__ECHO% "%NUGET%" pack -VerbatimVersion "%ROOT%\NuGet\SQLite.x86.nuspec"
+  %__ECHO% "%NUGET%" pack -VerbatimVersion "%ROOT%\NuGet\SQLite.x86.nuspec"
 
-IF ERRORLEVEL 1 (
-  ECHO The "%ROOT%\NuGet\SQLite.x86.nuspec" package could not be built.
-  GOTO usage
-)
+  IF ERRORLEVEL 1 (
+    ECHO The "%ROOT%\NuGet\SQLite.x86.nuspec" package could not be built.
+    GOTO usage
+  )
 
-%__ECHO% "%NUGET%" pack -VerbatimVersion "%ROOT%\NuGet\SQLite.x64.nuspec"
+  %__ECHO% "%NUGET%" pack -VerbatimVersion "%ROOT%\NuGet\SQLite.x64.nuspec"
 
-IF ERRORLEVEL 1 (
-  ECHO The "%ROOT%\NuGet\SQLite.x64.nuspec" package could not be built.
-  GOTO usage
+  IF ERRORLEVEL 1 (
+    ECHO The "%ROOT%\NuGet\SQLite.x64.nuspec" package could not be built.
+    GOTO usage
+  )
 )
 
 %__ECHO% MOVE *.nupkg "%ROOT%\Setup\Output"
