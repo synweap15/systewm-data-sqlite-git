@@ -102,13 +102,11 @@ IF NOT DEFINED NO_NUGET_XPLATFORM (
   )
 )
 
-IF NOT DEFINED NUGET_CORE_ONLY (
-  %__ECHO% "%NUGET%" pack -VerbatimVersion "%ROOT%\NuGet\SQLite.nuspec"
+%__ECHO% "%NUGET%" pack -VerbatimVersion "%ROOT%\NuGet\SQLite.nuspec"
 
-  IF ERRORLEVEL 1 (
-    ECHO The "%ROOT%\NuGet\SQLite.nuspec" package could not be built.
-    GOTO usage
-  )
+IF ERRORLEVEL 1 (
+  ECHO The "%ROOT%\NuGet\SQLite.nuspec" package could not be built.
+  GOTO usage
 )
 
 %__ECHO% "%NUGET%" pack -VerbatimVersion "%ROOT%\NuGet\SQLite.Core.nuspec"
