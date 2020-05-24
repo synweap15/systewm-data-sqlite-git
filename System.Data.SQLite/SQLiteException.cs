@@ -725,6 +725,10 @@ namespace System.Data.SQLite
       /// </summary>
       IoErr_Rollback_Atomic = (IoErr | (31 << 8)),
       /// <summary>
+      /// Data read from the file system appears to be incorrect.
+      /// </summary>
+      IoErr_Data = (IoErr | (32 << 8)),
+      /// <summary>
       /// A database table is locked in shared-cache mode.
       /// </summary>
       Locked_SharedCache = (Locked | (1 << 8)),
@@ -740,6 +744,10 @@ namespace System.Data.SQLite
       /// A database file is locked due to snapshot semantics.
       /// </summary>
       Busy_Snapshot = (Busy | (2 << 8)),
+      /// <summary>
+      /// An internal timeout was encountered while waiting for a database lock.
+      /// </summary>
+      Busy_Timeout = (Busy | (3 << 8)),
       /// <summary>
       /// A database file cannot be opened because no temporary directory is available.
       /// </summary>
@@ -772,6 +780,10 @@ namespace System.Data.SQLite
       /// A required sequence table is missing or corrupt.
       /// </summary>
       Corrupt_Sequence = (Corrupt | (2 << 8)),
+      /// <summary>
+      /// An index entry that should be present is missing.
+      /// </summary>
+      Corrupt_Index = (Corrupt | (3 << 8)),
       /// <summary>
       /// A database file is read-only due to a recovery operation.
       /// </summary>
