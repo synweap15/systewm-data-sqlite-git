@@ -213,9 +213,14 @@ released versions of System.Data.SQLite.
 <ul>
     <li>Updated to <a href="https://www.sqlite.org/releaselog/3_32_0.html">SQLite 3.32.0</a>.</li>
     <li>Add SQLite_ForceLogLifecycle environment variable to force logging of calls into key members pertaining to the lifecycle of connections and their associated classes (e.g. LINQ, EF6, etc).</li>
-    <li>When using the (unsupported) legacy CryptoAPI based codec, skip encrypting page #1 because that can lead to database corruption and other malfunctions.</li>
     <li>Support automatic value conversions for columns with a declared type of MEDIUMINT or MEDIUMUINT. Pursuant to [515cb60b10].</li>
     <li>Add preliminary support for the .NET Framework 4.8.</li>
+</ul>
+<p>
+    <b>1.0.112.3 - Xxxx XX, 2020</b>
+</p>
+<ul>
+    <li>When using the (unsupported) legacy CryptoAPI based codec, skip encrypting page #1 because that can lead to database corruption and other malfunctions.</li>
 </ul>
 <p>
     <b>1.0.112.2 - April 27, 2020</b>
