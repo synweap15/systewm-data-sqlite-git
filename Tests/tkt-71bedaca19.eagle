@@ -47,6 +47,7 @@ Auth_User 279
 Busy 5
 Busy_Recovery 261
 Busy_Snapshot 517
+Busy_Timeout 773
 CantOpen 14
 CantOpen_ConvPath 1038
 CantOpen_DirtyWal 1294
@@ -67,6 +68,7 @@ Constraint_Trigger 1811
 Constraint_Unique 2067
 Constraint_Vtab 2323
 Corrupt 11
+Corrupt_Index 779
 Corrupt_Sequence 523
 Corrupt_Vtab 267
 Done 101
@@ -88,6 +90,7 @@ IoErr_CheckReservedLock 3594
 IoErr_Close 4106
 IoErr_Commit_Atomic 7690
 IoErr_ConvPath 6666
+IoErr_Data 8202
 IoErr_Delete 2570
 IoErr_Delete_NoEnt 5898
 IoErr_Dir_Close 4362
