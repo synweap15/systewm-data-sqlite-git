@@ -514,6 +514,24 @@ namespace eval ::Eagle {
     }
 
     #
+    # HACK: When the Eagle core test suite infrastructure is beta 45 or
+    #       lower, override the list of "known" Mono runtime versions.
+    #       Eventually, this override should be removed (i.e. once the
+    #       Eagle core library included in "Externals" is updated).
+    #
+    if {[package vcompare \
+        $eagle_platform(patchLevel) 1.0.7213.50727] <= 0} then {
+      set test_well_known(monoVersions) [list \
+          [list 2 0] [list 2 2] [list 2 4] [list 2 6] [list 2 8] \
+          [list 2 10] [list 2 11] [list 3 0] [list 3 1] [list 3 2] \
+          [list 3 4] [list 3 6] [list 3 8] [list 3 10] [list 3 12] \
+          [list 4 0] [list 4 2] [list 4 4] [list 4 6] [list 4 8] \
+          [list 5 0] [list 5 2] [list 5 4] [list 5 8] [list 5 10] \
+          [list 5 12] [list 5 14] [list 5 16] [list 5 18] [list 5 20] \
+          [list 6 0] [list 6 4] [list 6 6] [list 6 8] [list 6 10]]
+    }
+
+    #
     # HACK: When using [compileCSharp] on .NET Core 3.0, it will produce
     #       compiler warnings complaining about mismatched versions of the
     #       .NET Standard reference assemblies, e.g. 2.0 versus 2.1; Since
@@ -521,7 +539,7 @@ namespace eval ::Eagle {
     #       test failure, we disable them here.
     #
     if {![info exists no(disableWarning1701)] && [isDotNetCore]} then {
-      lappend ::eagle_platform(csharpOptions) nowarn:1701
+      lappend eagle_platform(csharpOptions) nowarn:1701
     }
 
     #
