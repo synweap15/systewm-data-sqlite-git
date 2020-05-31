@@ -27,6 +27,7 @@ set sds_manifests(source) {
   Doc/Extra/Core/images/
   Doc/Extra/Core/images/sqlite370_banner.gif
   Doc/Extra/Core/images/syntax/
+  Doc/Extra/Core/images/syntax/aggregate-function-invocation.gif
   Doc/Extra/Core/images/syntax/alter-table-stmt.gif
   Doc/Extra/Core/images/syntax/analyze-stmt.gif
   Doc/Extra/Core/images/syntax/attach-stmt.gif
@@ -55,6 +56,8 @@ set sds_manifests(source) {
   Doc/Extra/Core/images/syntax/drop-view-stmt.gif
   Doc/Extra/Core/images/syntax/expr.gif
   Doc/Extra/Core/images/syntax/factored-select-stmt.gif
+  Doc/Extra/Core/images/syntax/filter-clause.gif
+  Doc/Extra/Core/images/syntax/frame-spec.gif
   Doc/Extra/Core/images/syntax/foreign-key-clause.gif
   Doc/Extra/Core/images/syntax/indexed-column.gif
   Doc/Extra/Core/images/syntax/insert-stmt.gif
@@ -64,6 +67,7 @@ set sds_manifests(source) {
   Doc/Extra/Core/images/syntax/literal-value.gif
   Doc/Extra/Core/images/syntax/numeric-literal.gif
   Doc/Extra/Core/images/syntax/ordering-term.gif
+  Doc/Extra/Core/images/syntax/over-clause.gif
   Doc/Extra/Core/images/syntax/pragma-stmt.gif
   Doc/Extra/Core/images/syntax/pragma-value.gif
   Doc/Extra/Core/images/syntax/qualified-table-name.gif
@@ -77,6 +81,7 @@ set sds_manifests(source) {
   Doc/Extra/Core/images/syntax/select-core.gif
   Doc/Extra/Core/images/syntax/select-stmt.gif
   Doc/Extra/Core/images/syntax/signed-number.gif
+  Doc/Extra/Core/images/syntax/simple-function-invocation.gif
   Doc/Extra/Core/images/syntax/simple-select-stmt.gif
   Doc/Extra/Core/images/syntax/sql-stmt-list.gif
   Doc/Extra/Core/images/syntax/sql-stmt.gif
@@ -87,6 +92,8 @@ set sds_manifests(source) {
   Doc/Extra/Core/images/syntax/update-stmt.gif
   Doc/Extra/Core/images/syntax/upsert-clause.gif
   Doc/Extra/Core/images/syntax/vacuum-stmt.gif
+  Doc/Extra/Core/images/syntax/window-defn.gif
+  Doc/Extra/Core/images/syntax/window-function-invocation.gif
   Doc/Extra/Core/images/syntax/with-clause.gif
   Doc/Extra/Core/lang.html
   Doc/Extra/Core/lang_aggfunc.html
