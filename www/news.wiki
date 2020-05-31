@@ -49,7 +49,7 @@
 <div align="center"><h2><b>Version History</b></h2></div>
 
 <p>
-    <b>1.0.113.0 - June XX, 2020 <font color="red">(release scheduled)</font></b>
+    <b>1.0.113.0 - June 1, 2020</b>
 </p>
 <ul>
     <li>Updated to [https://www.sqlite.org/releaselog/3_32_1.html|SQLite 3.32.1].</li>
