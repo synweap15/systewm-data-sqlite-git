@@ -47,7 +47,55 @@ IF NOT DEFINED NUGET (
 
 %_VECHO% NuGet = '%NUGET%'
 
+REM
+REM NOTE: If the Eagle binaries do not appear to be available, skip doing
+REM       things in this batch tool that require them.
+REM
+IF NOT EXIST "%ROOT%\Externals\Eagle\bin\netFramework40\EagleShell.exe" (
+  SET NO_NUGET_VERSION=1
+  SET NO_NUGET_XPLATFORM=1
+)
+
 CALL :fn_ResetErrorLevel
+
+IF DEFINED NUGET_VERSION GOTO skip_nuGetVersion
+
+IF DEFINED NO_NUGET_VERSION (
+  SET NUGET_VERSION=1.0.0.0
+  GOTO skip_nuGetVersion
+)
+
+%__ECHO2% PUSHD "%ROOT%\Externals\Eagle\bin\netFramework40"
+
+IF ERRORLEVEL 1 (
+  ECHO Could not change directory to "%ROOT%\Externals\Eagle\bin\netFramework40".
+  GOTO errors
+)
+
+SET GET_NUGET_VERSION_CMD=EagleShell.exe -initialize -postInitialize setToolVariables -evaluate "puts stdout [regexp -inline -skip 1 -- $nuget_version_pattern [readFile {%ROOT%\NuGet\SQLite.Core.nuspec}]]"
+
+IF DEFINED __ECHO (
+  %__ECHO% %GET_NUGET_VERSION_CMD%
+  SET NUGET_VERSION=1.0.X.0
+) ELSE (
+  FOR /F %%T IN ('%GET_NUGET_VERSION_CMD%') DO (SET NUGET_VERSION=%%T)
+)
+
+IF NOT DEFINED NUGET_VERSION (
+  ECHO The NUGET_VERSION environment variable could not be set.
+  GOTO errors
+)
+
+%__ECHO2% POPD
+
+IF ERRORLEVEL 1 (
+  ECHO Could not restore directory.
+  GOTO errors
+)
+
+:skip_nuGetVersion
+
+%_VECHO% NuGetVersion = '%NUGET_VERSION%'
 
 IF NOT EXIST "%ROOT%\Setup\Output" (
   %__ECHO% MKDIR "%ROOT%\Setup\Output"
@@ -59,7 +107,7 @@ IF NOT EXIST "%ROOT%\Setup\Output" (
 )
 
 IF NOT DEFINED LINUX_URI (
-  SET LINUX_URI=https://system.data.sqlite.org/index.html/uv/linux-x64/SQLite.Interop.dll
+  SET LINUX_URI=https://system.data.sqlite.org/index.html/uv/%NUGET_VERSION%/linux-x64/SQLite.Interop.dll
 )
 
 IF NOT DEFINED LINUX_DIRECTORY (
@@ -70,7 +118,7 @@ IF NOT DEFINED LINUX_DIRECTORY (
 %_VECHO% LinuxDirectory = '%LINUX_DIRECTORY%'
 
 IF NOT DEFINED MACOS_URI (
-  SET MACOS_URI=https://system.data.sqlite.org/index.html/uv/osx-x64/SQLite.Interop.dll
+  SET MACOS_URI=https://system.data.sqlite.org/index.html/uv/%NUGET_VERSION%/osx-x64/SQLite.Interop.dll
 )
 
 IF NOT DEFINED MACOS_DIRECTORY (

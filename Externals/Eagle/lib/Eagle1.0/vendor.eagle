@@ -33,6 +33,19 @@
 #
 namespace eval ::Eagle {
   if {[isEagle]} then {
+    #
+    # NOTE: This procedure is designed to make it easy to use strings from
+    #       the various batch tools that may contain characters or strings
+    #       that cannot be (easily) escaped in Win32 batch files.
+    #
+    proc setToolVariables {} {
+      #
+      # NOTE: This [regexp] pattern is used by the "build_nuget.bat" batch
+      #       tool.
+      #
+      set ::nuget_version_pattern {<version>(\d+\.\d+\.\d+\.\d+)</version>}
+    }
+
     proc checkForVendorQuiet { {name ""} } {
       if {![interp issafe]} then {
         if {[info exists ::env(checkForVendorQuiet)]} then {
