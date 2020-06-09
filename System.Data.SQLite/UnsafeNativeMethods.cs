@@ -1466,18 +1466,33 @@ namespace System.Data.SQLite
 
       /////////////////////////////////////////////////////////////////////////
       /// <summary>
-      /// The file extension used for the XML configuration file.
+      /// The primary file extension used for the XML configuration file.
       /// </summary>
       private static readonly string ConfigFileExtension = ".config";
 
       /////////////////////////////////////////////////////////////////////////
       /// <summary>
-      /// This is the name of the XML configuration file specific to the
-      /// System.Data.SQLite assembly.
+      /// The secondary file extension used for the XML configuration file.
+      /// </summary>
+      private static readonly string AltConfigFileExtension = ".altconfig";
+
+      /////////////////////////////////////////////////////////////////////////
+      /// <summary>
+      /// This is the name of the primary XML configuration file specific
+      /// to the System.Data.SQLite assembly.
       /// </summary>
       private static readonly string XmlConfigFileName =
           typeof(UnsafeNativeMethods).Namespace + DllFileExtension +
           ConfigFileExtension;
+
+      /////////////////////////////////////////////////////////////////////////
+      /// <summary>
+      /// This is the name of the secondary XML configuration file specific
+      /// to the System.Data.SQLite assembly.
+      /// </summary>
+      private static readonly string XmlAltConfigFileName =
+          typeof(UnsafeNativeMethods).Namespace + DllFileExtension +
+          AltConfigFileExtension;
 
       /////////////////////////////////////////////////////////////////////////
       /// <summary>
@@ -1863,10 +1878,34 @@ namespace System.Data.SQLite
 
               return fileName;
           }
+
+          fileName = MaybeCombinePath(directory, XmlAltConfigFileName);
+
+          if (File.Exists(fileName))
+          {
+              lock (staticSyncRoot)
+              {
+                  cachedXmlConfigFileName = fileName;
+              }
+
+              return fileName;
+          }
 #endif
 
           directory = GetCachedAssemblyDirectory();
           fileName = MaybeCombinePath(directory, XmlConfigFileName);
+
+          if (File.Exists(fileName))
+          {
+              lock (staticSyncRoot)
+              {
+                  cachedXmlConfigFileName = fileName;
+              }
+
+              return fileName;
+          }
+
+          fileName = MaybeCombinePath(directory, XmlAltConfigFileName);
 
           if (File.Exists(fileName))
           {
@@ -2499,9 +2538,35 @@ namespace System.Data.SQLite
                   {
                       Trace.WriteLine(HelperMethods.StringFormat(
                           CultureInfo.CurrentCulture,
-                          "Native library pre-loader found XML configuration file " +
-                          "via code base for currently executing assembly: \"{0}\"",
+                          "Native library pre-loader found primary XML " +
+                          "configuration file via code base for currently " +
+                          "executing assembly: \"{0}\"",
                           xmlConfigFileName)); /* throw */
+                  }
+                  catch
+                  {
+                      // do nothing.
+                  }
+#endif
+
+                  fileName = localFileName;
+                  return true;
+              }
+
+              string xmlAltConfigFileName = MaybeCombinePath(
+                  directory, XmlAltConfigFileName);
+
+              if (File.Exists(xmlAltConfigFileName))
+              {
+#if !NET_COMPACT_20 && TRACE_DETECTION
+                  try
+                  {
+                      Trace.WriteLine(HelperMethods.StringFormat(
+                          CultureInfo.CurrentCulture,
+                          "Native library pre-loader found secondary XML " +
+                          "configuration file via code base for currently " +
+                          "executing assembly: \"{0}\"",
+                          xmlAltConfigFileName)); /* throw */
                   }
                   catch
                   {
