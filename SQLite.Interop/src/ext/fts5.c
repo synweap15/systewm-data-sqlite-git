@@ -10838,11 +10838,11 @@ static void fts5LeafSeek(
   }
 
  search_success:
-  pIter->iLeafOffset = iOff + nNew;
-  if( pIter->iLeafOffset>n || nNew<1 ){
+  if( (i64)iOff+nNew>n || nNew<1 ){
     p->rc = FTS5_CORRUPT;
     return;
   }
+  pIter->iLeafOffset = iOff + nNew;
   pIter->iTermLeafOffset = pIter->iLeafOffset;
   pIter->iTermLeafPgno = pIter->iLeafPgno;
 
@@ -17890,7 +17890,7 @@ static void fts5SourceIdFunc(
 ){
   assert( nArg==0 );
   UNUSED_PARAM2(nArg, apUnused);
-  sqlite3_result_text(pCtx, "fts5: 2020-05-25 16:19:56 0c1fcf4711a2e66c813aed38cf41cd3e2123ee8eb6db98118086764c4ba83350", -1, SQLITE_TRANSIENT);
+  sqlite3_result_text(pCtx, "fts5: 2020-08-14 13:23:32 fca8dc8b578f215a969cd899336378966156154710873e68b3d9ac5881b0ff3f", -1, SQLITE_TRANSIENT);
 }
 
 /*

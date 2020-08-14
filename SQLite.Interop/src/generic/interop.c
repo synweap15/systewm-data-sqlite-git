@@ -1043,7 +1043,9 @@ SQLITE_API int WINAPI sqlite3_cursor_rowid_interop(sqlite3_stmt *pstmt, int curs
   Vdbe *p = (Vdbe *)pstmt;
   sqlite3 *db = (p == NULL) ? NULL : p->db;
   VdbeCursor *pC;
-#if SQLITE_VERSION_NUMBER >= 3011000
+#if SQLITE_VERSION_NUMBER >= 3033000
+  u32 p2 = 0;
+#elif SQLITE_VERSION_NUMBER >= 3011000
   int p2 = 0;
 #endif
   int ret = SQLITE_OK;
