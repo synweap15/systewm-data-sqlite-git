@@ -24,11 +24,18 @@
 #define SQLITE_MAX_ATTACHED 30
 #endif
 
+#if SQLITE_VERSION_NUMBER >= 3032000
+#if defined(INTEROP_INCLUDE_SEE)
+#include "../core/sqlite3-see.c"
+#else
+#include "../core/sqlite3.c"
+#endif
+#else
 #if defined(INTEROP_INCLUDE_SEE)
 #include "../ext/see-prefix.txt"
 #endif
-
 #include "../core/sqlite3.c"
+#endif
 
 #if !SQLITE_OS_WIN
 #include <wchar.h>
@@ -42,7 +49,7 @@
 #include "../ext/cerod.c"
 #endif
 
-#if defined(INTEROP_INCLUDE_SEE)
+#if SQLITE_VERSION_NUMBER < 3032000 && defined(INTEROP_INCLUDE_SEE)
 #include "../ext/see.c"
 #endif
 
@@ -1043,7 +1050,9 @@ SQLITE_API int WINAPI sqlite3_cursor_rowid_interop(sqlite3_stmt *pstmt, int curs
   Vdbe *p = (Vdbe *)pstmt;
   sqlite3 *db = (p == NULL) ? NULL : p->db;
   VdbeCursor *pC;
-#if SQLITE_VERSION_NUMBER >= 3011000
+#if SQLITE_VERSION_NUMBER >= 3033000
+  Pgno p2 = 0;
+#elif SQLITE_VERSION_NUMBER >= 3011000
   int p2 = 0;
 #endif
   int ret = SQLITE_OK;
