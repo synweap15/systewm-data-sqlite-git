@@ -1951,36 +1951,39 @@ namespace System.Data.SQLite
           {
               if (!String.IsNullOrEmpty(fileName))
               {
-                  try
+                  if (value.IndexOf(XmlConfigDirectoryToken) != -1)
                   {
-                      string directory = Path.GetDirectoryName(fileName);
-
-                      if (!String.IsNullOrEmpty(directory))
-                      {
-                          value = value.Replace(
-                              XmlConfigDirectoryToken, directory);
-                      }
-                  }
-#if !NET_COMPACT_20 && TRACE_SHARED
-                  catch (Exception e)
-#else
-                  catch (Exception)
-#endif
-                  {
-#if !NET_COMPACT_20 && TRACE_SHARED
                       try
                       {
-                          Trace.WriteLine(HelperMethods.StringFormat(
-                              CultureInfo.CurrentCulture, "Native library " +
-                              "pre-loader failed to replace XML " +
-                              "configuration file \"{0}\" tokens: {1}",
-                              fileName, e)); /* throw */
+                          string directory = Path.GetDirectoryName(fileName);
+
+                          if (!String.IsNullOrEmpty(directory))
+                          {
+                              value = value.Replace(
+                                  XmlConfigDirectoryToken, directory);
+                          }
                       }
-                      catch
-                      {
-                          // do nothing.
-                      }
+#if !NET_COMPACT_20 && TRACE_SHARED
+                      catch (Exception e)
+#else
+                      catch (Exception)
 #endif
+                      {
+#if !NET_COMPACT_20 && TRACE_SHARED
+                          try
+                          {
+                              Trace.WriteLine(HelperMethods.StringFormat(
+                                  CultureInfo.CurrentCulture, "Native " +
+                                  "library pre-loader failed to replace XML " +
+                                  "configuration file \"{0}\" tokens: {1}",
+                                  fileName, e)); /* throw */
+                          }
+                          catch
+                          {
+                              // do nothing.
+                          }
+#endif
+                      }
                   }
               }
           }
@@ -2009,6 +2012,11 @@ namespace System.Data.SQLite
       /// the setting value to be returned.  This has no effect on the .NET
       /// Compact Framework.
       /// </param>
+      /// <param name="tokens">
+      /// Non-zero to replace any special token references contained in the
+      /// setting value to be returned.  This has no effect on the .NET Compact
+      /// Framework.
+      /// </param>
       /// <returns>
       /// The value of the setting -OR- the default value specified by
       /// <paramref name="default" /> if it has not been set explicitly or
@@ -2018,7 +2026,8 @@ namespace System.Data.SQLite
           string fileName, /* in */
           string name,     /* in */
           string @default, /* in */
-          bool expand      /* in */
+          bool expand,     /* in */
+          bool tokens      /* in */
           )
       {
           try
@@ -2048,10 +2057,12 @@ namespace System.Data.SQLite
                       if (expand)
                           value = Environment.ExpandEnvironmentVariables(value);
 
-                      value = ReplaceEnvironmentVariableTokens(value);
+                      if (tokens)
+                          value = ReplaceEnvironmentVariableTokens(value);
 #endif
 
-                      value = ReplaceXmlConfigFileTokens(fileName, value);
+                      if (tokens)
+                          value = ReplaceXmlConfigFileTokens(fileName, value);
                   }
 
                   if (value != null)
@@ -2218,14 +2229,47 @@ namespace System.Data.SQLite
       {
           if (!String.IsNullOrEmpty(value))
           {
-              string directory = GetCachedAssemblyDirectory();
-
-              if (!String.IsNullOrEmpty(directory))
+              if (value.IndexOf(AssemblyDirectoryToken) != -1)
               {
+                  string directory = GetCachedAssemblyDirectory();
+
+                  if (!String.IsNullOrEmpty(directory))
+                  {
+                      try
+                      {
+                          value = value.Replace(
+                              AssemblyDirectoryToken, directory);
+                      }
+#if !NET_COMPACT_20 && TRACE_SHARED
+                      catch (Exception e)
+#else
+                      catch (Exception)
+#endif
+                      {
+#if !NET_COMPACT_20 && TRACE_SHARED
+                          try
+                          {
+                              Trace.WriteLine(HelperMethods.StringFormat(
+                                  CultureInfo.CurrentCulture, "Native library " +
+                                  "pre-loader failed to replace assembly " +
+                                  "directory token: {0}", e)); /* throw */
+                          }
+                          catch
+                          {
+                              // do nothing.
+                          }
+#endif
+                      }
+                  }
+              }
+
+              if (value.IndexOf(TargetFrameworkToken) != -1)
+              {
+                  Assembly assembly = null;
+
                   try
                   {
-                      value = value.Replace(
-                          AssemblyDirectoryToken, directory);
+                      assembly = Assembly.GetExecutingAssembly();
                   }
 #if !NET_COMPACT_20 && TRACE_SHARED
                   catch (Exception e)
@@ -2238,8 +2282,8 @@ namespace System.Data.SQLite
                       {
                           Trace.WriteLine(HelperMethods.StringFormat(
                               CultureInfo.CurrentCulture, "Native library " +
-                              "pre-loader failed to replace assembly " +
-                              "directory token: {0}", e)); /* throw */
+                              "pre-loader failed to obtain executing " +
+                              "assembly: {0}", e)); /* throw */
                       }
                       catch
                       {
@@ -2247,64 +2291,37 @@ namespace System.Data.SQLite
                       }
 #endif
                   }
-              }
 
-              Assembly assembly = null;
+                  string targetFramework = AbbreviateTargetFramework(
+                      GetAssemblyTargetFramework(assembly));
 
-              try
-              {
-                  assembly = Assembly.GetExecutingAssembly();
-              }
-#if !NET_COMPACT_20 && TRACE_SHARED
-              catch (Exception e)
-#else
-              catch (Exception)
-#endif
-              {
-#if !NET_COMPACT_20 && TRACE_SHARED
-                  try
+                  if (!String.IsNullOrEmpty(targetFramework))
                   {
-                      Trace.WriteLine(HelperMethods.StringFormat(
-                          CultureInfo.CurrentCulture, "Native library " +
-                          "pre-loader failed to obtain executing " +
-                          "assembly: {0}", e)); /* throw */
-                  }
-                  catch
-                  {
-                      // do nothing.
-                  }
-#endif
-              }
-
-              string targetFramework = AbbreviateTargetFramework(
-                  GetAssemblyTargetFramework(assembly));
-
-              if (!String.IsNullOrEmpty(targetFramework))
-              {
-                  try
-                  {
-                      value = value.Replace(
-                          TargetFrameworkToken, targetFramework);
-                  }
-#if !NET_COMPACT_20 && TRACE_SHARED
-                  catch (Exception e)
-#else
-                  catch (Exception)
-#endif
-                  {
-#if !NET_COMPACT_20 && TRACE_SHARED
                       try
                       {
-                          Trace.WriteLine(HelperMethods.StringFormat(
-                              CultureInfo.CurrentCulture, "Native library " +
-                              "pre-loader failed to replace target " +
-                              "framework token: {0}", e)); /* throw */
+                          value = value.Replace(
+                              TargetFrameworkToken, targetFramework);
                       }
-                      catch
-                      {
-                          // do nothing.
-                      }
+#if !NET_COMPACT_20 && TRACE_SHARED
+                      catch (Exception e)
+#else
+                      catch (Exception)
 #endif
+                      {
+#if !NET_COMPACT_20 && TRACE_SHARED
+                          try
+                          {
+                              Trace.WriteLine(HelperMethods.StringFormat(
+                                  CultureInfo.CurrentCulture, "Native library " +
+                                  "pre-loader failed to replace target " +
+                                  "framework token: {0}", e)); /* throw */
+                          }
+                          catch
+                          {
+                              // do nothing.
+                          }
+#endif
+                      }
                   }
               }
           }
@@ -2374,6 +2391,7 @@ namespace System.Data.SQLite
           /////////////////////////////////////////////////////////////////////
 
           bool expand = true; /* SHARED: Environment -AND- XML config file. */
+          bool tokens = true; /* SHARED: Environment -AND- XML config file. */
 
           /////////////////////////////////////////////////////////////////////
 
@@ -2391,6 +2409,17 @@ namespace System.Data.SQLite
               expand = false;
           }
 
+          if (Environment.GetEnvironmentVariable("No_Tokens") != null)
+          {
+              tokens = false;
+          }
+          else if (Environment.GetEnvironmentVariable(
+                  HelperMethods.StringFormat(CultureInfo.InvariantCulture,
+                  "No_Tokens_{0}", name)) != null)
+          {
+              tokens = false;
+          }
+
           value = Environment.GetEnvironmentVariable(name);
 
           if (!String.IsNullOrEmpty(value))
@@ -2398,7 +2427,8 @@ namespace System.Data.SQLite
               if (expand)
                   value = Environment.ExpandEnvironmentVariables(value);
 
-              value = ReplaceEnvironmentVariableTokens(value);
+              if (tokens)
+                  value = ReplaceEnvironmentVariableTokens(value);
           }
 
           if (value != null)
@@ -2432,7 +2462,7 @@ namespace System.Data.SQLite
           /////////////////////////////////////////////////////////////////////
 
           return GetSettingValueViaXmlConfigFile(
-              GetCachedXmlConfigFileName(), name, @default, expand);
+              GetCachedXmlConfigFileName(), name, @default, expand, tokens);
       }
 
       /////////////////////////////////////////////////////////////////////////
