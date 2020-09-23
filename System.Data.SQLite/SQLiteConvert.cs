@@ -247,6 +247,11 @@ namespace System.Data.SQLite
     public static string UTF8ToString(IntPtr nativestring, int nativestringlen)
     {
       if (nativestring == IntPtr.Zero || nativestringlen == 0) return String.Empty;
+#if NET_STANDARD_21
+      return (nativestringlen < 0) ?
+        Marshal.PtrToStringUTF8(nativestring) :
+        Marshal.PtrToStringUTF8(nativestring, nativestringlen);
+#else
       if (nativestringlen < 0)
       {
         nativestringlen = 0;
@@ -262,6 +267,7 @@ namespace System.Data.SQLite
       Marshal.Copy(nativestring, byteArray, 0, nativestringlen);
 
       return _utf8.GetString(byteArray, 0, nativestringlen);
+#endif
     }
     #endregion
 
