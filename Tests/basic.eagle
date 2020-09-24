@@ -5220,15 +5220,21 @@ runTest {test data-1.98 {SQLiteLog initialize (enabled)} -setup {
   set count(2) [object invoke -flags +NonPublic \
       System.Data.SQLite.SQLiteLog _attemptedInitialize]
 
-  tputs $test_channel [appendArgs \
-      "---- starting with call count " $count(1) " and attempt count " \
-      $count(2) \n]
+  set count(3) [object invoke -flags +NonPublic \
+      System.Data.SQLite.SQLiteLog _initializeDoneCount]
+
+  tputs $test_channel [appendArgs "---- starting with call count " \
+      $count(1) ", attempt count " $count(2) ", and done count " \
+      $count(3) \n]
 
   object invoke -flags +NonPublic \
       System.Data.SQLite.SQLiteLog _initializeCallCount 0
 
   object invoke -flags +NonPublic \
       System.Data.SQLite.SQLiteLog _attemptedInitialize 0
+
+  object invoke -flags +NonPublic \
+      System.Data.SQLite.SQLiteLog _initializeDoneCount 0
 
   for {set i 0} {$i < 20} {incr i} {
     set thread($i) [createThread threadStart false 1048576]
@@ -5245,9 +5251,12 @@ runTest {test data-1.98 {SQLiteLog initialize (enabled)} -setup {
     $thread($i) Join
   }
 
-  list $count(0) [object invoke -flags +NonPublic \
-      System.Data.SQLite.SQLiteLog _initializeCallCount] [object invoke \
-      -flags +NonPublic System.Data.SQLite.SQLiteLog _attemptedInitialize]
+  list $count(0) [expr {[object invoke -flags +NonPublic \
+      System.Data.SQLite.SQLiteLog _initializeCallCount] > 0}] \
+      [object invoke -flags +NonPublic System.Data.SQLite.SQLiteLog \
+      _attemptedInitialize] \
+      [object invoke -flags +NonPublic System.Data.SQLite.SQLiteLog \
+      _initializeDoneCount]
 } -cleanup {
   restoreEnvironmentVariables [list No_SQLiteLog Initialize_SQLiteLog] savedEnv
 
@@ -5266,7 +5275,7 @@ runTest {test data-1.98 {SQLiteLog initialize (enabled)} -setup {
   rename threadStart ""
 } -constraints \
 {eagle command.object SQLite System.Data.SQLite compile.THREADING} -result \
-{20000 20000 1}}
+{20000 True 1 1}}
 
 ###############################################################################
 
@@ -5295,15 +5304,21 @@ runTest {test data-1.99 {SQLiteLog initialize (disabled)} -setup {
   set count(2) [object invoke -flags +NonPublic \
       System.Data.SQLite.SQLiteLog _attemptedInitialize]
 
-  tputs $test_channel [appendArgs \
-      "---- starting with call count " $count(1) " and attempt count " \
-      $count(2) \n]
+  set count(3) [object invoke -flags +NonPublic \
+      System.Data.SQLite.SQLiteLog _initializeDoneCount]
+
+  tputs $test_channel [appendArgs "---- starting with call count " \
+      $count(1) ", attempt count " $count(2) ", and done count " \
+      $count(3) \n]
 
   object invoke -flags +NonPublic \
       System.Data.SQLite.SQLiteLog _initializeCallCount 0
 
   object invoke -flags +NonPublic \
       System.Data.SQLite.SQLiteLog _attemptedInitialize 0
+
+  object invoke -flags +NonPublic \
+      System.Data.SQLite.SQLiteLog _initializeDoneCount 0
 
   for {set i 0} {$i < 20} {incr i} {
     set thread($i) [createThread threadStart false 1048576]
@@ -5320,9 +5335,12 @@ runTest {test data-1.99 {SQLiteLog initialize (disabled)} -setup {
     $thread($i) Join
   }
 
-  list $count(0) [object invoke -flags +NonPublic \
-      System.Data.SQLite.SQLiteLog _initializeCallCount] [object invoke \
-      -flags +NonPublic System.Data.SQLite.SQLiteLog _attemptedInitialize]
+  list $count(0) [expr {[object invoke -flags +NonPublic \
+      System.Data.SQLite.SQLiteLog _initializeCallCount] > 0}] \
+      [object invoke -flags +NonPublic System.Data.SQLite.SQLiteLog \
+      _attemptedInitialize] \
+      [object invoke -flags +NonPublic System.Data.SQLite.SQLiteLog \
+      _initializeDoneCount]
 } -cleanup {
   restoreEnvironmentVariables [list No_SQLiteLog Initialize_SQLiteLog] savedEnv
 
@@ -5341,7 +5359,7 @@ runTest {test data-1.99 {SQLiteLog initialize (disabled)} -setup {
   rename threadStart ""
 } -constraints \
 {eagle command.object SQLite System.Data.SQLite compile.THREADING} -result \
-{20000 0 0}}
+{20000 False 0 0}}
 
 ###############################################################################
 
@@ -5370,15 +5388,21 @@ runTest {test data-1.100 {SQLiteLog forced initialize (enabled)} -setup {
   set count(2) [object invoke -flags +NonPublic \
       System.Data.SQLite.SQLiteLog _attemptedInitialize]
 
-  tputs $test_channel [appendArgs \
-      "---- starting with call count " $count(1) " and attempt count " \
-      $count(2) \n]
+  set count(3) [object invoke -flags +NonPublic \
+      System.Data.SQLite.SQLiteLog _initializeDoneCount]
+
+  tputs $test_channel [appendArgs "---- starting with call count " \
+      $count(1) ", attempt count " $count(2) ", and done count " \
+      $count(3) \n]
 
   object invoke -flags +NonPublic \
       System.Data.SQLite.SQLiteLog _initializeCallCount 0
 
   object invoke -flags +NonPublic \
       System.Data.SQLite.SQLiteLog _attemptedInitialize 0
+
+  object invoke -flags +NonPublic \
+      System.Data.SQLite.SQLiteLog _initializeDoneCount 0
 
   for {set i 0} {$i < 20} {incr i} {
     set thread($i) [createThread threadStart false 1048576]
@@ -5395,9 +5419,12 @@ runTest {test data-1.100 {SQLiteLog forced initialize (enabled)} -setup {
     $thread($i) Join
   }
 
-  list $count(0) [object invoke -flags +NonPublic \
-      System.Data.SQLite.SQLiteLog _initializeCallCount] [object invoke \
-      -flags +NonPublic System.Data.SQLite.SQLiteLog _attemptedInitialize]
+  list $count(0) [expr {[object invoke -flags +NonPublic \
+      System.Data.SQLite.SQLiteLog _initializeCallCount] > 0}] \
+      [object invoke -flags +NonPublic System.Data.SQLite.SQLiteLog \
+      _attemptedInitialize] \
+      [object invoke -flags +NonPublic System.Data.SQLite.SQLiteLog \
+      _initializeDoneCount]
 } -cleanup {
   restoreEnvironmentVariables [list No_SQLiteLog Initialize_SQLiteLog] savedEnv
 
@@ -5416,7 +5443,7 @@ runTest {test data-1.100 {SQLiteLog forced initialize (enabled)} -setup {
   rename threadStart ""
 } -constraints \
 {eagle command.object SQLite System.Data.SQLite compile.THREADING} -result \
-{20000 20000 0}}
+{20000 True 0 1}}
 
 ###############################################################################
 
@@ -5445,15 +5472,21 @@ runTest {test data-1.101 {SQLiteLog forced initialize (disabled)} -setup {
   set count(2) [object invoke -flags +NonPublic \
       System.Data.SQLite.SQLiteLog _attemptedInitialize]
 
-  tputs $test_channel [appendArgs \
-      "---- starting with call count " $count(1) " and attempt count " \
-      $count(2) \n]
+  set count(3) [object invoke -flags +NonPublic \
+      System.Data.SQLite.SQLiteLog _initializeDoneCount]
+
+  tputs $test_channel [appendArgs "---- starting with call count " \
+      $count(1) ", attempt count " $count(2) ", and done count " \
+      $count(3) \n]
 
   object invoke -flags +NonPublic \
       System.Data.SQLite.SQLiteLog _initializeCallCount 0
 
   object invoke -flags +NonPublic \
       System.Data.SQLite.SQLiteLog _attemptedInitialize 0
+
+  object invoke -flags +NonPublic \
+      System.Data.SQLite.SQLiteLog _initializeDoneCount 0
 
   for {set i 0} {$i < 20} {incr i} {
     set thread($i) [createThread threadStart false 1048576]
@@ -5470,9 +5503,12 @@ runTest {test data-1.101 {SQLiteLog forced initialize (disabled)} -setup {
     $thread($i) Join
   }
 
-  list $count(0) [object invoke -flags +NonPublic \
-      System.Data.SQLite.SQLiteLog _initializeCallCount] [object invoke \
-      -flags +NonPublic System.Data.SQLite.SQLiteLog _attemptedInitialize]
+  list $count(0) [expr {[object invoke -flags +NonPublic \
+      System.Data.SQLite.SQLiteLog _initializeCallCount] > 0}] \
+      [object invoke -flags +NonPublic System.Data.SQLite.SQLiteLog \
+      _attemptedInitialize] \
+      [object invoke -flags +NonPublic System.Data.SQLite.SQLiteLog \
+      _initializeDoneCount]
 } -cleanup {
   restoreEnvironmentVariables [list No_SQLiteLog Initialize_SQLiteLog] savedEnv
 
@@ -5491,7 +5527,7 @@ runTest {test data-1.101 {SQLiteLog forced initialize (disabled)} -setup {
   rename threadStart ""
 } -constraints \
 {eagle command.object SQLite System.Data.SQLite compile.THREADING} -result \
-{20000 0 0}}
+{20000 False 0 0}}
 
 ###############################################################################
 

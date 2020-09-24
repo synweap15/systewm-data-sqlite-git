@@ -1612,6 +1612,23 @@ namespace System.Data.SQLite
       /// </summary>
       internal static void Initialize()
       {
+#if SQLITE_STANDARD || USE_INTEROP_DLL || PLATFORM_COMPACTFRAMEWORK
+#if PRELOAD_NATIVE_LIBRARY
+          //
+          // NOTE: If this method has already fully completed at least once
+          //       (and pre-loaded a native library), there is no reason to
+          //       continue.
+          //
+          lock (staticSyncRoot)
+          {
+              if (_SQLiteNativeModuleHandle != IntPtr.Zero)
+                  return;
+          }
+#endif
+#endif
+
+          /////////////////////////////////////////////////////////////////////
+
           #region Debug Build Only
 #if DEBUG
           //
@@ -1622,6 +1639,8 @@ namespace System.Data.SQLite
           DebugData.Initialize();
 #endif
           #endregion
+
+          /////////////////////////////////////////////////////////////////////
 
           //
           // NOTE: Check if a debugger needs to be attached before doing any
@@ -1639,6 +1658,8 @@ namespace System.Data.SQLite
               return;
 #endif
 #endif
+
+          /////////////////////////////////////////////////////////////////////
 
           lock (staticSyncRoot)
           {
@@ -1702,6 +1723,8 @@ namespace System.Data.SQLite
               }
 #endif
 
+              /////////////////////////////////////////////////////////////////
+
               if (processorArchitecturePlatforms == null)
               {
                   //
@@ -1723,6 +1746,8 @@ namespace System.Data.SQLite
                   processorArchitecturePlatforms.Add("IA64", "Itanium");
                   processorArchitecturePlatforms.Add("ARM", "WinCE");
               }
+
+              /////////////////////////////////////////////////////////////////
 
 #if SQLITE_STANDARD || USE_INTEROP_DLL || PLATFORM_COMPACTFRAMEWORK
 #if PRELOAD_NATIVE_LIBRARY

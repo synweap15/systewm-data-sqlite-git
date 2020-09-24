@@ -124,11 +124,20 @@ namespace System.Data.SQLite
 
         /// <summary>
         /// The number of times that the <see cref="Initialize(string)" />
-        /// has been called when the logging subystem was actually eligible
-        /// to be initialized (i.e. without the "No_SQLiteLog" environment
-        /// variable being set).
+        /// method has been called when the logging subystem was actually
+        /// eligible to be initialized (i.e. without the "No_SQLiteLog"
+        /// environment variable being set).
         /// </summary>
         private static int _initializeCallCount;
+
+        ///////////////////////////////////////////////////////////////////////
+
+        /// <summary>
+        /// The number of times that the <see cref="Initialize(string)" />
+        /// method has been completed (i.e. without the "No_SQLiteLog"
+        /// environment variable being set).
+        /// </summary>
+        private static int _initializeDoneCount;
 
         ///////////////////////////////////////////////////////////////////////
 
@@ -169,16 +178,56 @@ namespace System.Data.SQLite
             )
         {
             //
+            // NOTE: Before doing anything else, see if this method was
+            //       fully completed before.  If so, do nothing.
+            //
+            if (Interlocked.Increment(ref _initializeDoneCount) == 1)
+            {
+                bool success = false;
+
+                try
+                {
+                    success = PrivateInitialize(className);
+                }
+                finally
+                {
+                    if (!success)
+                        Interlocked.Decrement(ref _initializeDoneCount);
+                }
+            }
+            else
+            {
+                Interlocked.Decrement(ref _initializeDoneCount);
+            }
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+
+        /// <summary>
+        /// Initializes the SQLite logging facilities.
+        /// </summary>
+        /// <param name="className">
+        /// The name of the managed class that called this method.  This
+        /// parameter may be null.
+        /// </param>
+        /// <returns>
+        /// Non-zero if everything was fully initialized successfully.
+        /// </returns>
+        private static bool PrivateInitialize(
+            string className
+            )
+        {
+            //
             // NOTE: See if the logging subsystem has been totally disabled.
             //       If so, do nothing.
             //
             if (UnsafeNativeMethods.GetSettingValue(
                     "No_SQLiteLog", null) != null)
             {
-                return;
+                return false;
             }
 
-            ///////////////////////////////////////////////////////////////
+            ///////////////////////////////////////////////////////////////////
 
             //
             // NOTE: Keep track of exactly how many times this method is
@@ -186,7 +235,7 @@ namespace System.Data.SQLite
             //
             Interlocked.Increment(ref _initializeCallCount);
 
-            ///////////////////////////////////////////////////////////////
+            ///////////////////////////////////////////////////////////////////
 
             //
             // NOTE: First, check if the managed logging subsystem is always
@@ -202,7 +251,7 @@ namespace System.Data.SQLite
                 if (Interlocked.Increment(ref _attemptedInitialize) > 1)
                 {
                     Interlocked.Decrement(ref _attemptedInitialize);
-                    return;
+                    return false;
                 }
             }
 
@@ -214,7 +263,7 @@ namespace System.Data.SQLite
             //         the process (see ticket [2ce0870fad]).
             //
             if (SQLite3.StaticIsInitialized())
-                return;
+                return false;
 
             ///////////////////////////////////////////////////////////////////
 
@@ -232,7 +281,7 @@ namespace System.Data.SQLite
             if (!AppDomain.CurrentDomain.IsDefaultAppDomain() &&
                 UnsafeNativeMethods.GetSettingValue("Force_SQLiteLog", null) == null)
             {
-                return;
+                return false;
             }
 #endif
 
@@ -326,6 +375,10 @@ namespace System.Data.SQLite
                 //
                 AddDefaultHandler();
             }
+
+            ///////////////////////////////////////////////////////////////////
+
+            return true;
         }
 
         ///////////////////////////////////////////////////////////////////////
