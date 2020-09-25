@@ -1380,6 +1380,8 @@ namespace System.Data.SQLite
     private const bool DefaultEnlist = true;
     private const bool DefaultSetDefaults = true;
     internal const int DefaultPrepareRetries = 3;
+    private static readonly DbType? _DefaultDbType = null;
+    private const string _DefaultTypeName = null;
     private const string DefaultVfsName = null;
     private const int DefaultProgressOps = 0;
 
@@ -1578,13 +1580,13 @@ namespace System.Data.SQLite
     /// <summary>
     /// Default command timeout
     /// </summary>
-    private int _defaultTimeout = DefaultConnectionTimeout;
+    private int _defaultTimeout;
 
     /// <summary>
     /// The default busy timeout to use with the SQLite core library.  This is
     /// only used when opening a connection.
     /// </summary>
-    private int _busyTimeout = DefaultBusyTimeout;
+    private int _busyTimeout;
 
 #if !PLATFORM_COMPACTFRAMEWORK
     /// <summary>
@@ -1593,7 +1595,7 @@ namespace System.Data.SQLite
     /// prior to enlisting in a transaction, and then only when the appropriate
     /// connection flag is set.
     /// </summary>
-    private int _waitTimeout = DefaultWaitTimeout;
+    private int _waitTimeout;
 #endif
 
     /// <summary>
@@ -1601,7 +1603,7 @@ namespace System.Data.SQLite
     /// normally only applies to preparation errors resulting from the database
     /// schema being changed.
     /// </summary>
-    internal int _prepareRetries = DefaultPrepareRetries;
+    internal int _prepareRetries;
 
     /// <summary>
     /// The approximate number of virtual machine instructions between progress
@@ -1609,7 +1611,7 @@ namespace System.Data.SQLite
     /// must be added to the <see cref="SQLiteConnection.Progress" /> event as
     /// well.  This value will only be used when opening the database.
     /// </summary>
-    private int _progressOps = DefaultProgressOps;
+    private int _progressOps;
 
     /// <summary>
     /// Non-zero if the built-in (i.e. framework provided) connection string
@@ -1749,6 +1751,25 @@ namespace System.Data.SQLite
 #endif
 
     /// <summary>
+    /// Initializes user-settable properties with their default values.
+    /// This method is only intended to be used from the constructor.
+    /// </summary>
+    private void InitializeDefaults()
+    {
+        _defaultDbType = _DefaultDbType;
+        _defaultTypeName = _DefaultTypeName;
+        _vfsName = DefaultVfsName;
+        _defaultTimeout = DefaultConnectionTimeout;
+        _busyTimeout = DefaultBusyTimeout;
+        _waitTimeout = DefaultWaitTimeout;
+        _prepareRetries = DefaultPrepareRetries;
+        _progressOps = DefaultProgressOps;
+        _defaultIsolation = DefaultIsolationLevel;
+        _baseSchemaName = DefaultBaseSchemaName;
+        _binaryGuid = DefaultBinaryGUID;
+    }
+
+    /// <summary>
     /// Initializes the connection with the specified connection string.
     /// </summary>
     /// <param name="connectionString">
@@ -1799,9 +1820,9 @@ namespace System.Data.SQLite
       _typeCallbacks = new SQLiteTypeCallbacksMap();
       _parseViaFramework = parseViaFramework;
       _flags = SQLiteConnectionFlags.None;
-      _defaultDbType = null;
-      _defaultTypeName = null;
-      _vfsName = null;
+
+      InitializeDefaults();
+
       _connectionState = ConnectionState.Closed;
       _connectionString = null;
 
@@ -4288,7 +4309,15 @@ namespace System.Data.SQLite
       SortedList<string, string> opts = ParseConnectionString(
           this, _connectionString, _parseViaFramework, false);
 
-      object enumValue = TryParseEnum(typeof(SQLiteConnectionFlags), FindKey(opts, "Flags", null), true);
+      string stringValue;
+      object enumValue;
+
+      stringValue = FindKey(opts, "Flags", null);
+
+      if (stringValue != null)
+          enumValue = TryParseEnum(typeof(SQLiteConnectionFlags), stringValue, true);
+      else
+          enumValue = null;
 
       //
       // BUGFIX: Always preserve the pre-existing instance flags.  This is OK
@@ -4353,8 +4382,13 @@ namespace System.Data.SQLite
           SQLiteConnectionEventType.ConnectionString, null, null, null, null,
           null, eventArgConnectionString, new object[] { eventArgOpts }));
 
-      enumValue = TryParseEnum(typeof(DbType), FindKey(opts, "DefaultDbType", null), true);
-      _defaultDbType = (enumValue is DbType) ? (DbType)enumValue : (DbType?)null;
+      stringValue = FindKey(opts, "DefaultDbType", null);
+
+      if (stringValue != null)
+      {
+          enumValue = TryParseEnum(typeof(DbType), stringValue, true);
+          _defaultDbType = (enumValue is DbType) ? (DbType)enumValue : (DbType?)null;
+      }
 
       //
       // NOTE: Nullable values types are not supported by the .NET Framework
@@ -4366,8 +4400,15 @@ namespace System.Data.SQLite
       if ((_defaultDbType != null) && ((DbType)_defaultDbType == BadDbType))
         _defaultDbType = null;
 
-      _defaultTypeName = FindKey(opts, "DefaultTypeName", null);
-      _vfsName = FindKey(opts, "VfsName", DefaultVfsName);
+      stringValue = FindKey(opts, "DefaultTypeName", null);
+
+      if (stringValue != null)
+        _defaultTypeName = stringValue;
+
+      stringValue = FindKey(opts, "VfsName", null);
+
+      if (stringValue != null)
+        _vfsName = stringValue;
 
 #if !NET_COMPACT_20 && TRACE_WARNING
       bool uri = false;
@@ -4468,24 +4509,50 @@ namespace System.Data.SQLite
         bool usePooling = SQLiteConvert.ToBoolean(FindKey(opts, "Pooling", GetDefaultPooling().ToString()));
         int maxPoolSize = Convert.ToInt32(FindKey(opts, "Max Pool Size", SQLiteConvert.ToString(DefaultMaxPoolSize)), CultureInfo.InvariantCulture);
 
-        _defaultTimeout = Convert.ToInt32(FindKey(opts, "Default Timeout", SQLiteConvert.ToString(DefaultConnectionTimeout)), CultureInfo.InvariantCulture);
-        _busyTimeout = Convert.ToInt32(FindKey(opts, "BusyTimeout", SQLiteConvert.ToString(DefaultBusyTimeout)), CultureInfo.InvariantCulture);
+        stringValue = FindKey(opts, "Default Timeout", null);
+
+        if (stringValue != null)
+            _defaultTimeout = Convert.ToInt32(stringValue, CultureInfo.InvariantCulture);
+
+        stringValue = FindKey(opts, "BusyTimeout", null);
+
+        if (stringValue != null)
+            _busyTimeout = Convert.ToInt32(stringValue, CultureInfo.InvariantCulture);
 
 #if !PLATFORM_COMPACTFRAMEWORK
-        _waitTimeout = Convert.ToInt32(FindKey(opts, "WaitTimeout", SQLiteConvert.ToString(DefaultWaitTimeout)), CultureInfo.InvariantCulture);
+        stringValue = FindKey(opts, "WaitTimeout", null);
+
+        if (stringValue != null)
+            _waitTimeout = Convert.ToInt32(stringValue, CultureInfo.InvariantCulture);
 #endif
 
-        _prepareRetries = Convert.ToInt32(FindKey(opts, "PrepareRetries", SQLiteConvert.ToString(DefaultPrepareRetries)), CultureInfo.InvariantCulture);
-        _progressOps = Convert.ToInt32(FindKey(opts, "ProgressOps", SQLiteConvert.ToString(DefaultProgressOps)), CultureInfo.InvariantCulture);
+        stringValue = FindKey(opts, "PrepareRetries", null);
 
-        enumValue = TryParseEnum(typeof(IsolationLevel), FindKey(opts, "Default IsolationLevel", DefaultIsolationLevel.ToString()), true);
-        _defaultIsolation = (enumValue is IsolationLevel) ? (IsolationLevel)enumValue : DefaultIsolationLevel;
-        _defaultIsolation = GetEffectiveIsolationLevel(_defaultIsolation);
+        if (stringValue != null)
+            _prepareRetries = Convert.ToInt32(stringValue, CultureInfo.InvariantCulture);
 
-        if (_defaultIsolation != ImmediateIsolationLevel && _defaultIsolation != DeferredIsolationLevel)
-          throw new NotSupportedException("Invalid Default IsolationLevel specified");
+        stringValue = FindKey(opts, "ProgressOps", null);
 
-        _baseSchemaName = FindKey(opts, "BaseSchemaName", DefaultBaseSchemaName);
+        if (stringValue != null)
+            _progressOps = Convert.ToInt32(stringValue, CultureInfo.InvariantCulture);
+
+        stringValue = FindKey(opts, "Default IsolationLevel", null);
+
+        if (stringValue != null)
+        {
+            enumValue = TryParseEnum(typeof(IsolationLevel), stringValue, true);
+            _defaultIsolation = (enumValue is IsolationLevel) ? (IsolationLevel)enumValue : DefaultIsolationLevel;
+        }
+
+        IsolationLevel isolationLevel = GetEffectiveIsolationLevel(_defaultIsolation);
+
+        if (isolationLevel != ImmediateIsolationLevel && isolationLevel != DeferredIsolationLevel)
+            throw new NotSupportedException("Invalid Default IsolationLevel specified");
+
+        stringValue = FindKey(opts, "BaseSchemaName", null);
+
+        if (stringValue != null)
+            _baseSchemaName = stringValue;
 
         if (_sql == null)
         {
@@ -4513,7 +4580,10 @@ namespace System.Data.SQLite
 
         _sql.Open(fileName, _vfsName, _flags, flags, maxPoolSize, usePooling);
 
-        _binaryGuid = SQLiteConvert.ToBoolean(FindKey(opts, "BinaryGUID", DefaultBinaryGUID.ToString()));
+        stringValue = FindKey(opts, "BinaryGUID", null);
+
+        if (stringValue != null)
+            _binaryGuid = SQLiteConvert.ToBoolean(stringValue);
 
 #if INTEROP_CODEC || INTEROP_INCLUDE_SEE
         string hexPassword = FindKey(opts, "HexPassword", DefaultHexPassword);
@@ -4548,6 +4618,8 @@ namespace System.Data.SQLite
             {
                 _sql.SetPassword(_password);
             }
+
+            password = null;
         }
 
         hexPassword = null; /* IMMUTABLE */
@@ -4564,7 +4636,7 @@ namespace System.Data.SQLite
             _connectionString = BuildConnectionString(opts);
         }
 #else
-        if (FindKey(opts, "HexPassword", DefaultHexPassword) != null)
+        if (FindKey(opts, "HexPassword", null) != null)
         {
             throw new SQLiteException(SQLiteErrorCode.Error,
                 "Cannot use \"HexPassword\" connection string property: " +
@@ -4572,7 +4644,7 @@ namespace System.Data.SQLite
                 "see \"https://www.sqlite.org/see\" for more information");
         }
 
-        if (FindKey(opts, "Password", DefaultPassword) != null)
+        if (FindKey(opts, "Password", null) != null)
         {
             throw new SQLiteException(SQLiteErrorCode.Error,
                 "Cannot use \"Password\" connection string property: " +
@@ -4593,11 +4665,14 @@ namespace System.Data.SQLite
 
         try
         {
-          string strValue;
           bool boolValue;
 
-          strValue = FindKey(opts, "SetDefaults", DefaultSetDefaults.ToString());
-          boolValue = SQLiteConvert.ToBoolean(strValue);
+          stringValue = FindKey(opts, "SetDefaults", null);
+
+          if (stringValue != null)
+              boolValue = SQLiteConvert.ToBoolean(stringValue);
+          else
+              boolValue = DefaultSetDefaults;
 
           if (boolValue)
           {
@@ -4613,76 +4688,102 @@ namespace System.Data.SQLite
 
                   if (!fullUri && !isMemory)
                   {
-                      strValue = FindKey(opts, "Page Size", SQLiteConvert.ToString(DefaultPageSize));
-                      intValue = Convert.ToInt32(strValue, CultureInfo.InvariantCulture);
-                      if (intValue != DefaultPageSize)
+                      stringValue = FindKey(opts, "Page Size", null);
+                      if (stringValue != null)
                       {
-                          cmd.CommandText = HelperMethods.StringFormat(CultureInfo.InvariantCulture, "PRAGMA page_size={0}", intValue);
+                          intValue = Convert.ToInt32(stringValue, CultureInfo.InvariantCulture);
+                          if (intValue != DefaultPageSize)
+                          {
+                              cmd.CommandText = HelperMethods.StringFormat(CultureInfo.InvariantCulture, "PRAGMA page_size={0}", intValue);
+                              cmd.ExecuteNonQuery();
+                          }
+                      }
+                  }
+
+                  stringValue = FindKey(opts, "Max Page Count", null);
+                  if (stringValue != null)
+                  {
+                      intValue = Convert.ToInt32(stringValue, CultureInfo.InvariantCulture);
+                      if (intValue != DefaultMaxPageCount)
+                      {
+                          cmd.CommandText = HelperMethods.StringFormat(CultureInfo.InvariantCulture, "PRAGMA max_page_count={0}", intValue);
                           cmd.ExecuteNonQuery();
                       }
                   }
 
-                  strValue = FindKey(opts, "Max Page Count", SQLiteConvert.ToString(DefaultMaxPageCount));
-                  intValue = Convert.ToInt32(strValue, CultureInfo.InvariantCulture);
-                  if (intValue != DefaultMaxPageCount)
+                  stringValue = FindKey(opts, "Legacy Format", null);
+                  if (stringValue != null)
                   {
-                      cmd.CommandText = HelperMethods.StringFormat(CultureInfo.InvariantCulture, "PRAGMA max_page_count={0}", intValue);
-                      cmd.ExecuteNonQuery();
+                      boolValue = SQLiteConvert.ToBoolean(stringValue);
+                      if (boolValue != DefaultLegacyFormat)
+                      {
+                          cmd.CommandText = HelperMethods.StringFormat(CultureInfo.InvariantCulture, "PRAGMA legacy_file_format={0}", boolValue ? "ON" : "OFF");
+                          cmd.ExecuteNonQuery();
+                      }
                   }
 
-                  strValue = FindKey(opts, "Legacy Format", DefaultLegacyFormat.ToString());
-                  boolValue = SQLiteConvert.ToBoolean(strValue);
-                  if (boolValue != DefaultLegacyFormat)
+                  stringValue = FindKey(opts, "Synchronous", null);
+                  if (stringValue != null)
                   {
-                      cmd.CommandText = HelperMethods.StringFormat(CultureInfo.InvariantCulture, "PRAGMA legacy_file_format={0}", boolValue ? "ON" : "OFF");
-                      cmd.ExecuteNonQuery();
+                      enumValue = TryParseEnum(typeof(SQLiteSynchronousEnum), stringValue, true);
+                      if (!(enumValue is SQLiteSynchronousEnum) ||
+                          ((SQLiteSynchronousEnum)enumValue != DefaultSynchronous))
+                      {
+                          cmd.CommandText = HelperMethods.StringFormat(CultureInfo.InvariantCulture, "PRAGMA synchronous={0}", stringValue);
+                          cmd.ExecuteNonQuery();
+                      }
                   }
 
-                  strValue = FindKey(opts, "Synchronous", DefaultSynchronous.ToString());
-                  enumValue = TryParseEnum(typeof(SQLiteSynchronousEnum), strValue, true);
-                  if (!(enumValue is SQLiteSynchronousEnum) || ((SQLiteSynchronousEnum)enumValue != DefaultSynchronous))
+                  stringValue = FindKey(opts, "Cache Size", null);
+                  if (stringValue != null)
                   {
-                      cmd.CommandText = HelperMethods.StringFormat(CultureInfo.InvariantCulture, "PRAGMA synchronous={0}", strValue);
-                      cmd.ExecuteNonQuery();
+                      intValue = Convert.ToInt32(stringValue, CultureInfo.InvariantCulture);
+                      if (intValue != DefaultCacheSize)
+                      {
+                          cmd.CommandText = HelperMethods.StringFormat(CultureInfo.InvariantCulture, "PRAGMA cache_size={0}", intValue);
+                          cmd.ExecuteNonQuery();
+                      }
                   }
 
-                  strValue = FindKey(opts, "Cache Size", SQLiteConvert.ToString(DefaultCacheSize));
-                  intValue = Convert.ToInt32(strValue, CultureInfo.InvariantCulture);
-                  if (intValue != DefaultCacheSize)
+                  stringValue = FindKey(opts, "Journal Mode", null);
+                  if (stringValue != null)
                   {
-                      cmd.CommandText = HelperMethods.StringFormat(CultureInfo.InvariantCulture, "PRAGMA cache_size={0}", intValue);
-                      cmd.ExecuteNonQuery();
-                  }
-
-                  strValue = FindKey(opts, "Journal Mode", DefaultJournalMode.ToString());
-                  enumValue = TryParseEnum(typeof(SQLiteJournalModeEnum), strValue, true);
-                  if (!(enumValue is SQLiteJournalModeEnum) || ((SQLiteJournalModeEnum)enumValue != DefaultJournalMode))
-                  {
-                      string pragmaStr = "PRAGMA journal_mode={0}";
+                      enumValue = TryParseEnum(typeof(SQLiteJournalModeEnum), stringValue, true);
+                      if (!(enumValue is SQLiteJournalModeEnum) ||
+                          ((SQLiteJournalModeEnum)enumValue != DefaultJournalMode))
+                      {
+                          string pragmaStr = "PRAGMA journal_mode={0}";
 
 #if INTEROP_INCLUDE_ZIPVFS
-                      if (useZipVfs)
-                          pragmaStr = "PRAGMA zipvfs_journal_mode={0}";
+                          if (useZipVfs)
+                              pragmaStr = "PRAGMA zipvfs_journal_mode={0}";
 #endif
 
-                      cmd.CommandText = HelperMethods.StringFormat(CultureInfo.InvariantCulture, pragmaStr, strValue);
-                      cmd.ExecuteNonQuery();
+                          cmd.CommandText = HelperMethods.StringFormat(CultureInfo.InvariantCulture, pragmaStr, stringValue);
+                          cmd.ExecuteNonQuery();
+                      }
                   }
 
-                  strValue = FindKey(opts, "Foreign Keys", DefaultForeignKeys.ToString());
-                  boolValue = SQLiteConvert.ToBoolean(strValue);
-                  if (boolValue != DefaultForeignKeys)
+                  stringValue = FindKey(opts, "Foreign Keys", null);
+                  if (stringValue != null)
                   {
-                      cmd.CommandText = HelperMethods.StringFormat(CultureInfo.InvariantCulture, "PRAGMA foreign_keys={0}", boolValue ? "ON" : "OFF");
-                      cmd.ExecuteNonQuery();
+                      boolValue = SQLiteConvert.ToBoolean(stringValue);
+                      if (boolValue != DefaultForeignKeys)
+                      {
+                          cmd.CommandText = HelperMethods.StringFormat(CultureInfo.InvariantCulture, "PRAGMA foreign_keys={0}", boolValue ? "ON" : "OFF");
+                          cmd.ExecuteNonQuery();
+                      }
                   }
 
-                  strValue = FindKey(opts, "Recursive Triggers", DefaultRecursiveTriggers.ToString());
-                  boolValue = SQLiteConvert.ToBoolean(strValue);
-                  if (boolValue != DefaultRecursiveTriggers)
+                  stringValue = FindKey(opts, "Recursive Triggers", null);
+                  if (stringValue != null)
                   {
-                      cmd.CommandText = HelperMethods.StringFormat(CultureInfo.InvariantCulture, "PRAGMA recursive_triggers={0}", boolValue ? "ON" : "OFF");
-                      cmd.ExecuteNonQuery();
+                      boolValue = SQLiteConvert.ToBoolean(stringValue);
+                      if (boolValue != DefaultRecursiveTriggers)
+                      {
+                          cmd.CommandText = HelperMethods.StringFormat(CultureInfo.InvariantCulture, "PRAGMA recursive_triggers={0}", boolValue ? "ON" : "OFF");
+                          cmd.ExecuteNonQuery();
+                      }
                   }
               }
           }
