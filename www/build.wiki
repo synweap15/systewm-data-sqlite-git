@@ -140,6 +140,8 @@
         <li>&lt;root&gt;\NuGet\SQLite.Core.MSIL.nuspec</li>
         <li>&lt;root&gt;\NuGet\SQLite.Core.MSIL.Beta.nuspec</li>
         <li>&lt;root&gt;\NuGet\SQLite.Core.MSIL.Test.nuspec</li>
+        <li>&lt;root&gt;\NuGet\SQLite.Core.NetFramework.nuspec</li>
+        <li>&lt;root&gt;\NuGet\SQLite.Core.NetStandard.nuspec</li>
         <li>&lt;root&gt;\NuGet\SQLite.EF6.nuspec</li>
         <li>&lt;root&gt;\NuGet\SQLite.EF6.Beta.nuspec</li>
         <li>&lt;root&gt;\NuGet\SQLite.EF6.Test.nuspec</li>

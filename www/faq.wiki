@@ -299,6 +299,20 @@
       System.Data.SQLite.MSIL.Beta</a>: Just the managed ADO.NET provider for
       SQLite.
     </li>
+
+    <li>
+      <a href="https://www.nuget.org/packages/Stub.System.Data.SQLite.Core.NetFramework/">
+      Stub.System.Data.SQLite.Core.NetFramework</a>: The SQLite database engine
+      for both x86 and x64 along with the ADO.NET provider.  This package
+      targets the desktop .NET Framework.
+    </li>
+
+    <li>
+      <a href="https://www.nuget.org/packages/Stub.System.Data.SQLite.Core.NetStandard/">
+      Stub.System.Data.SQLite.Core.NetStandard</a>: The SQLite database engine
+      for both x86 and x64 along with the ADO.NET provider.  This package
+      targets the .NET Standard 2.x.
+    </li>
   </ul>
   <br>
   <ul>

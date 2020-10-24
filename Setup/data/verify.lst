@@ -253,6 +253,8 @@ set sds_manifests(source) {
   NuGet/SQLite.Core.MSIL.Beta.nuspec
   NuGet/SQLite.Core.MSIL.nuspec
   NuGet/SQLite.Core.MSIL.Test.nuspec
+  NuGet/SQLite.Core.NetFramework.nuspec
+  NuGet/SQLite.Core.NetStandard.nuspec
   NuGet/SQLite.Core.nuspec
   NuGet/SQLite.Core.Test.nuspec
   NuGet/SQLite.EF6.Beta.nuspec
@@ -1412,9 +1414,9 @@ set sds_manifests(nuGetMetadata) {
 #
 # NOTE: This is the list of all files that should be present in all NuGet
 #       packages that include the primary assembly, whether managed only
-#       or mixed-mode.
+#       or mixed-mode, for the .NET Framework.
 #
-set sds_manifests(nuGetCoreCommon) {
+set sds_manifests(nuGetCoreNetFrameworkManagedOnly) {
   lib/net20/System.Data.SQLite.dll
   lib/net20/System.Data.SQLite.xml
   lib/net40/System.Data.SQLite.dll
@@ -1429,10 +1431,11 @@ set sds_manifests(nuGetCoreCommon) {
 
 ###############################################################################
 #
-# NOTE: This is the list of all files that should be present in all NuGet
-#       packages that include the primary managed-only assembly.
+# NOTE: This is the list of all files that should be present in all core
+#       NuGet packages that include the primary managed-only assembly,
+#       for the .NET Standard.
 #
-set sds_manifests(nuGetCoreManagedOnly) {
+set sds_manifests(nuGetCoreNetStandardManagedOnly) {
   lib/netstandard2.0/System.Data.SQLite.dll
   lib/netstandard2.0/System.Data.SQLite.xml
   lib/netstandard2.1/System.Data.SQLite.dll
@@ -1442,9 +1445,10 @@ set sds_manifests(nuGetCoreManagedOnly) {
 ###############################################################################
 #
 # NOTE: This is the list of all files that should be present in all core
-#       NuGet packages that include the primary interop assemblies.
+#       NuGet packages that include the primary interop assemblies, for
+#       the .NET Framework.
 #
-set sds_manifests(nuGetCoreNative) {
+set sds_manifests(nuGetCoreNetFrameworkNativeOnly) {
   build/net20/x64/SQLite.Interop.dll
   build/net20/x86/SQLite.Interop.dll
   build/net40/x64/SQLite.Interop.dll
@@ -1460,21 +1464,19 @@ set sds_manifests(nuGetCoreNative) {
   build/net45/System.Data.SQLite.Core.targets
   build/net451/System.Data.SQLite.Core.targets
   build/net46/System.Data.SQLite.Core.targets
-  lib/net20/System.Data.SQLite.dll.config
-  lib/net40/System.Data.SQLite.dll.config
-  lib/net45/System.Data.SQLite.dll.config
-  lib/net451/System.Data.SQLite.dll.config
-  lib/net46/System.Data.SQLite.dll.config
-  lib/netstandard2.0/System.Data.SQLite.dll.config
-  lib/netstandard2.1/System.Data.SQLite.dll.config
-  runtimes/win-x86/native/netstandard2.0/SQLite.Interop.dll
-  runtimes/win-x64/native/netstandard2.0/SQLite.Interop.dll
-  runtimes/linux-x64/native/netstandard2.0/SQLite.Interop.dll
-  runtimes/osx-x64/native/netstandard2.0/SQLite.Interop.dll
-  runtimes/win-x86/native/netstandard2.1/SQLite.Interop.dll
-  runtimes/win-x64/native/netstandard2.1/SQLite.Interop.dll
-  runtimes/linux-x64/native/netstandard2.1/SQLite.Interop.dll
-  runtimes/osx-x64/native/netstandard2.1/SQLite.Interop.dll
+}
+
+###############################################################################
+#
+# NOTE: This is the list of all files that should be present in all core
+#       NuGet packages that include the primary interop assemblies, for
+#       the the .NET Standard.
+#
+set sds_manifests(nuGetCoreNetStandardNativeOnly) {
+  runtimes/win-x86/native/SQLite.Interop.dll
+  runtimes/win-x64/native/SQLite.Interop.dll
+  runtimes/linux-x64/native/SQLite.Interop.dll
+  runtimes/osx-x64/native/SQLite.Interop.dll
 }
 
 ###############################################################################
@@ -1560,6 +1562,31 @@ set sds_manifests(nuGetCore) {
 #
 set sds_manifests(nuGetCoreMsil) {
   System.Data.SQLite.Core.MSIL.nuspec
+}
+
+###############################################################################
+#
+# NOTE: This is the list of all files that should be present in the core
+#       NuGet package for the .NET Framework.
+#
+set sds_manifests(nuGetCoreNetFramework) {
+  Stub.System.Data.SQLite.Core.NetFramework.nuspec
+  lib/net20/System.Data.SQLite.dll.altconfig
+  lib/net40/System.Data.SQLite.dll.altconfig
+  lib/net45/System.Data.SQLite.dll.altconfig
+  lib/net451/System.Data.SQLite.dll.altconfig
+  lib/net46/System.Data.SQLite.dll.altconfig
+}
+
+###############################################################################
+#
+# NOTE: This is the list of all files that should be present in the core
+#       NuGet package for the .NET Standard.
+#
+set sds_manifests(nuGetCoreNetStandard) {
+  Stub.System.Data.SQLite.Core.NetStandard.nuspec
+  lib/netstandard2.0/System.Data.SQLite.dll.altconfig
+  lib/netstandard2.1/System.Data.SQLite.dll.altconfig
 }
 
 ###############################################################################
@@ -2302,13 +2329,26 @@ set manifests(System.Data.SQLite..nupkg) [list sds \
 ###############################################################################
 
 set manifests(System.Data.SQLite.Core..nupkg) [list sds \
-    nuGetMetadata nuGetCoreCommon nuGetCoreManagedOnly nuGetCoreNative \
-    nuGetCore]
+    nuGetMetadata nuGetCore]
 
 ###############################################################################
 
 set manifests(System.Data.SQLite.Core.MSIL..nupkg) [list sds \
-    nuGetMetadata nuGetCoreCommon nuGetCoreManagedOnly nuGetCoreMsil]
+    nuGetMetadata nuGetCoreNetFrameworkManagedOnly \
+    nuGetCoreNetFrameworkManagedOnly nuGetCoreNetStandardManagedOnly \
+    nuGetCoreMsil]
+
+###############################################################################
+
+set manifests(Stub.System.Data.SQLite.Core.NetFramework..nupkg) [list sds \
+    nuGetMetadata nuGetCoreNetFrameworkManagedOnly \
+    nuGetCoreNetFrameworkNativeOnly nuGetCoreNetFramework]
+
+###############################################################################
+
+set manifests(Stub.System.Data.SQLite.Core.NetStandard..nupkg) [list sds \
+    nuGetMetadata nuGetCoreNetStandardManagedOnly \
+    nuGetCoreNetStandardNativeOnly nuGetCoreNetStandard]
 
 ###############################################################################
 
@@ -2328,12 +2368,12 @@ set manifests(System.Data.SQLite.MSIL..nupkg) [list sds \
 ###############################################################################
 
 set manifests(System.Data.SQLite.x64..nupkg) [list sds \
-    nuGetMetadata nuGetCoreCommon nuGetX64]
+    nuGetMetadata nuGetCoreNetFrameworkManagedOnly nuGetX64]
 
 ###############################################################################
 
 set manifests(System.Data.SQLite.x86..nupkg) [list sds \
-    nuGetMetadata nuGetCoreCommon nuGetX86]
+    nuGetMetadata nuGetCoreNetFrameworkManagedOnly nuGetX86]
 
 ###############################################################################
 # end of file

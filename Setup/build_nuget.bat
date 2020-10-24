@@ -164,6 +164,20 @@ IF ERRORLEVEL 1 (
   GOTO usage
 )
 
+%__ECHO% "%NUGET%" pack -VerbatimVersion "%ROOT%\NuGet\SQLite.Core.NetFramework.nuspec"
+
+IF ERRORLEVEL 1 (
+  ECHO The "%ROOT%\NuGet\SQLite.Core.NetFramework.nuspec" package could not be built.
+  GOTO usage
+)
+
+%__ECHO% "%NUGET%" pack -VerbatimVersion "%ROOT%\NuGet\SQLite.Core.NetStandard.nuspec"
+
+IF ERRORLEVEL 1 (
+  ECHO The "%ROOT%\NuGet\SQLite.Core.NetStandard.nuspec" package could not be built.
+  GOTO usage
+)
+
 IF NOT DEFINED NUGET_CORE_ONLY (
   %__ECHO% "%NUGET%" pack -VerbatimVersion "%ROOT%\NuGet\SQLite.Core.MSIL.nuspec"
 
