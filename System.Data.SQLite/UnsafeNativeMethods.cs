@@ -5544,6 +5544,12 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
+#if INTEROP_LEGACY_CLOSE
+        internal int version;
+#endif
+
+        ///////////////////////////////////////////////////////////////////////
+
         public static implicit operator IntPtr(SQLiteConnectionHandle db)
         {
             if (db != null)
@@ -5569,6 +5575,10 @@ namespace System.Data.SQLite
             {
                 this.ownHandle = ownHandle;
                 SetHandle(db);
+
+#if INTEROP_LEGACY_CLOSE
+                BumpVersion();
+#endif
             }
         }
 
@@ -5585,6 +5595,15 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
+#if INTEROP_LEGACY_CLOSE
+        private void BumpVersion()
+        {
+            Interlocked.Increment(ref version);
+        }
+#endif
+
+        ///////////////////////////////////////////////////////////////////////
+
         protected override bool ReleaseHandle()
         {
 #if PLATFORM_COMPACTFRAMEWORK
@@ -5596,6 +5615,10 @@ namespace System.Data.SQLite
 
             try
             {
+#if INTEROP_LEGACY_CLOSE
+                BumpVersion();
+#endif
+
 #if !PLATFORM_COMPACTFRAMEWORK
                 IntPtr localHandle = Interlocked.Exchange(
                     ref handle, IntPtr.Zero);
@@ -5742,6 +5765,12 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
+#if INTEROP_LEGACY_CLOSE
+        private int version;
+#endif
+
+        ///////////////////////////////////////////////////////////////////////
+
         public static implicit operator IntPtr(SQLiteStatementHandle stmt)
         {
             if (stmt != null)
@@ -5767,6 +5796,10 @@ namespace System.Data.SQLite
             {
                 this.cnn = cnn;
                 SetHandle(stmt);
+
+#if INTEROP_LEGACY_CLOSE
+                SetVersion();
+#endif
             }
         }
 
@@ -5782,6 +5815,38 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
+#if INTEROP_LEGACY_CLOSE
+        private bool MatchVersion()
+        {
+#if PLATFORM_COMPACTFRAMEWORK
+            lock (syncRoot)
+#endif
+            {
+                return (cnn != null) ? (version == cnn.version) : false;
+            }
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+
+        private bool SetVersion()
+        {
+#if PLATFORM_COMPACTFRAMEWORK
+            lock (syncRoot)
+#endif
+            {
+                if (cnn != null)
+                {
+                    version = cnn.version;
+                    return true;
+                }
+
+                return false;
+            }
+        }
+#endif
+
+        ///////////////////////////////////////////////////////////////////////
+
         protected override bool ReleaseHandle()
         {
             try
@@ -5789,6 +5854,28 @@ namespace System.Data.SQLite
 #if !PLATFORM_COMPACTFRAMEWORK
                 IntPtr localHandle = Interlocked.Exchange(
                     ref handle, IntPtr.Zero);
+
+#if INTEROP_LEGACY_CLOSE
+                if (!MatchVersion())
+                {
+#if !NET_COMPACT_20 && TRACE_HANDLE
+                    try
+                    {
+                        Trace.WriteLine(HelperMethods.StringFormat(
+                            CultureInfo.CurrentCulture,
+                            "MatchVersion: {0} (statement handle)",
+                            localHandle)); /* throw */
+                    }
+                    catch
+                    {
+                    }
+#endif
+#if COUNT_HANDLE
+                    Interlocked.Decrement(ref DebugData.statementCount);
+#endif
+                    return false;
+                }
+#endif
 
                 if (localHandle != IntPtr.Zero)
                     SQLiteBase.FinalizeStatement(cnn, localHandle);
@@ -5912,6 +5999,12 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
+#if INTEROP_LEGACY_CLOSE
+        private int version;
+#endif
+
+        ///////////////////////////////////////////////////////////////////////
+
         public static implicit operator IntPtr(SQLiteBackupHandle backup)
         {
             if (backup != null)
@@ -5937,6 +6030,10 @@ namespace System.Data.SQLite
             {
                 this.cnn = cnn;
                 SetHandle(backup);
+
+#if INTEROP_LEGACY_CLOSE
+                SetVersion();
+#endif
             }
         }
 
@@ -5952,6 +6049,38 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
+#if INTEROP_LEGACY_CLOSE
+        private bool MatchVersion()
+        {
+#if PLATFORM_COMPACTFRAMEWORK
+            lock (syncRoot)
+#endif
+            {
+                return (cnn != null) ? (version == cnn.version) : false;
+            }
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+
+        private bool SetVersion()
+        {
+#if PLATFORM_COMPACTFRAMEWORK
+            lock (syncRoot)
+#endif
+            {
+                if (cnn != null)
+                {
+                    version = cnn.version;
+                    return true;
+                }
+
+                return false;
+            }
+        }
+#endif
+
+        ///////////////////////////////////////////////////////////////////////
+
         protected override bool ReleaseHandle()
         {
             try
@@ -5959,6 +6088,28 @@ namespace System.Data.SQLite
 #if !PLATFORM_COMPACTFRAMEWORK
                 IntPtr localHandle = Interlocked.Exchange(
                     ref handle, IntPtr.Zero);
+
+#if INTEROP_LEGACY_CLOSE
+                if (!MatchVersion())
+                {
+#if !NET_COMPACT_20 && TRACE_HANDLE
+                    try
+                    {
+                        Trace.WriteLine(HelperMethods.StringFormat(
+                            CultureInfo.CurrentCulture,
+                            "MatchVersion: {0} (backup handle)",
+                            localHandle)); /* throw */
+                    }
+                    catch
+                    {
+                    }
+#endif
+#if COUNT_HANDLE
+                    Interlocked.Decrement(ref DebugData.backupCount);
+#endif
+                    return false;
+                }
+#endif
 
                 if (localHandle != IntPtr.Zero)
                     SQLiteBase.FinishBackup(cnn, localHandle);
@@ -6082,6 +6233,12 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
+#if INTEROP_LEGACY_CLOSE
+        private int version;
+#endif
+
+        ///////////////////////////////////////////////////////////////////////
+
         public static implicit operator IntPtr(SQLiteBlobHandle blob)
         {
             if (blob != null)
@@ -6107,6 +6264,10 @@ namespace System.Data.SQLite
             {
                 this.cnn = cnn;
                 SetHandle(blob);
+
+#if INTEROP_LEGACY_CLOSE
+                SetVersion();
+#endif
             }
         }
 
@@ -6122,6 +6283,38 @@ namespace System.Data.SQLite
 
         ///////////////////////////////////////////////////////////////////////
 
+#if INTEROP_LEGACY_CLOSE
+        private bool MatchVersion()
+        {
+#if PLATFORM_COMPACTFRAMEWORK
+            lock (syncRoot)
+#endif
+            {
+                return (cnn != null) ? (version == cnn.version) : false;
+            }
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+
+        private bool SetVersion()
+        {
+#if PLATFORM_COMPACTFRAMEWORK
+            lock (syncRoot)
+#endif
+            {
+                if (cnn != null)
+                {
+                    version = cnn.version;
+                    return true;
+                }
+
+                return false;
+            }
+        }
+#endif
+
+        ///////////////////////////////////////////////////////////////////////
+
         protected override bool ReleaseHandle()
         {
             try
@@ -6129,6 +6322,28 @@ namespace System.Data.SQLite
 #if !PLATFORM_COMPACTFRAMEWORK
                 IntPtr localHandle = Interlocked.Exchange(
                     ref handle, IntPtr.Zero);
+
+#if INTEROP_LEGACY_CLOSE
+                if (!MatchVersion())
+                {
+#if !NET_COMPACT_20 && TRACE_HANDLE
+                    try
+                    {
+                        Trace.WriteLine(HelperMethods.StringFormat(
+                            CultureInfo.CurrentCulture,
+                            "MatchVersion: {0} (blob handle)",
+                            localHandle)); /* throw */
+                    }
+                    catch
+                    {
+                    }
+#endif
+#if COUNT_HANDLE
+                    Interlocked.Decrement(ref DebugData.blobCount);
+#endif
+                    return false;
+                }
+#endif
 
                 if (localHandle != IntPtr.Zero)
                     SQLiteBase.CloseBlob(cnn, localHandle);

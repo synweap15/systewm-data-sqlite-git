@@ -295,7 +295,11 @@ SQLITE_PRIVATE void sqlite3DbFree_interop(sqlite3 *db, void *p)
     sqlite3_mutex_enter(db->mutex);
   }
   if (p) {
+#if SQLITE_VERSION_NUMBER >= 3008007
+    sqlite3MemdebugSetType(p, MEMTYPE_HEAP);
+#else
     sqlite3MemdebugSetType(p, MEMTYPE_DB|MEMTYPE_HEAP);
+#endif
   }
   sqlite3DbFree(db,p);
   if (db) {
