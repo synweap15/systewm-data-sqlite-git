@@ -242,7 +242,7 @@ set sds_manifests(source) {
   NuGet/shared/
   NuGet/shared/Core/
   NuGet/shared/Core/build/
-  NuGet/shared/Core/build/System.Data.SQLite.Core.targets
+  NuGet/shared/Core/build/System.Data.SQLite.Core.NetFramework.targets
   NuGet/shared/Core/content/
   NuGet/shared/Core/content/config.install.xdt
   NuGet/shared/Core/content/config.transform
@@ -1459,11 +1459,11 @@ set sds_manifests(nuGetCoreNetFrameworkNativeOnly) {
   build/net451/x86/SQLite.Interop.dll
   build/net46/x64/SQLite.Interop.dll
   build/net46/x86/SQLite.Interop.dll
-  build/net20/System.Data.SQLite.Core.targets
-  build/net40/System.Data.SQLite.Core.targets
-  build/net45/System.Data.SQLite.Core.targets
-  build/net451/System.Data.SQLite.Core.targets
-  build/net46/System.Data.SQLite.Core.targets
+  build/net20/Stub.System.Data.SQLite.Core.NetFramework.targets
+  build/net40/Stub.System.Data.SQLite.Core.NetFramework.targets
+  build/net45/Stub.System.Data.SQLite.Core.NetFramework.targets
+  build/net451/Stub.System.Data.SQLite.Core.NetFramework.targets
+  build/net46/Stub.System.Data.SQLite.Core.NetFramework.targets
 }
 
 ###############################################################################

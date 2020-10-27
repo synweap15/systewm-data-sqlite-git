@@ -11,7 +11,7 @@
   <metadata>
     <id>Stub.System.Data.SQLite.Core.NetFramework</id>
     <title>System.Data.SQLite Core for the .NET Framework (x86/x64)</title>
-    <version>1.0.113.0</version>
+    <version>1.0.113.1</version>
     <authors>SQLite Development Team</authors>
     <description>The official SQLite database engine for both x86 and x64 along with the ADO.NET provider.</description>
     <language>en-US</language>
@@ -49,11 +49,11 @@
     <file src="..\bin\2013\x64\ReleaseNativeOnlyStatic\SQLite.Interop.dll" target="build\net451\x64" />
     <file src="..\bin\2015\Win32\ReleaseNativeOnlyStatic\SQLite.Interop.dll" target="build\net46\x86" />
     <file src="..\bin\2015\x64\ReleaseNativeOnlyStatic\SQLite.Interop.dll" target="build\net46\x64" />
-    <file src="shared\Core\build\System.Data.SQLite.Core.targets" target="build\net20\System.Data.SQLite.Core.targets" />
-    <file src="shared\Core\build\System.Data.SQLite.Core.targets" target="build\net40\System.Data.SQLite.Core.targets" />
-    <file src="shared\Core\build\System.Data.SQLite.Core.targets" target="build\net45\System.Data.SQLite.Core.targets" />
-    <file src="shared\Core\build\System.Data.SQLite.Core.targets" target="build\net451\System.Data.SQLite.Core.targets" />
-    <file src="shared\Core\build\System.Data.SQLite.Core.targets" target="build\net46\System.Data.SQLite.Core.targets" />
+    <file src="shared\Core\build\System.Data.SQLite.Core.NetFramework.targets" target="build\net20\Stub.System.Data.SQLite.Core.NetFramework.targets" />
+    <file src="shared\Core\build\System.Data.SQLite.Core.NetFramework.targets" target="build\net40\Stub.System.Data.SQLite.Core.NetFramework.targets" />
+    <file src="shared\Core\build\System.Data.SQLite.Core.NetFramework.targets" target="build\net45\Stub.System.Data.SQLite.Core.NetFramework.targets" />
+    <file src="shared\Core\build\System.Data.SQLite.Core.NetFramework.targets" target="build\net451\Stub.System.Data.SQLite.Core.NetFramework.targets" />
+    <file src="shared\Core\build\System.Data.SQLite.Core.NetFramework.targets" target="build\net46\Stub.System.Data.SQLite.Core.NetFramework.targets" />
     <file src="shared\Core\lib\System.Data.SQLite.dll.altconfig" target="lib\net20" />
     <file src="shared\Core\lib\System.Data.SQLite.dll.altconfig" target="lib\net40" />
     <file src="shared\Core\lib\System.Data.SQLite.dll.altconfig" target="lib\net45" />
