@@ -64,6 +64,11 @@
     <file src="shared\Core\build\System.Data.SQLite.Core.NetFramework.targets" target="build\net45\System.Data.SQLite.Core.Beta.targets" />
     <file src="shared\Core\build\System.Data.SQLite.Core.NetFramework.targets" target="build\net451\System.Data.SQLite.Core.Beta.targets" />
     <file src="shared\Core\build\System.Data.SQLite.Core.NetFramework.targets" target="build\net46\System.Data.SQLite.Core.Beta.targets" />
+    <file src="shared\Core\buildTransitive\System.Data.SQLite.Core.NetFramework.targets" target="buildTransitive\net20\System.Data.SQLite.Core.Beta.targets" />
+    <file src="shared\Core\buildTransitive\System.Data.SQLite.Core.NetFramework.targets" target="buildTransitive\net40\System.Data.SQLite.Core.Beta.targets" />
+    <file src="shared\Core\buildTransitive\System.Data.SQLite.Core.NetFramework.targets" target="buildTransitive\net45\System.Data.SQLite.Core.Beta.targets" />
+    <file src="shared\Core\buildTransitive\System.Data.SQLite.Core.NetFramework.targets" target="buildTransitive\net451\System.Data.SQLite.Core.Beta.targets" />
+    <file src="shared\Core\buildTransitive\System.Data.SQLite.Core.NetFramework.targets" target="buildTransitive\net46\System.Data.SQLite.Core.Beta.targets" />
     <file src="shared\Core\lib\System.Data.SQLite.dll.altconfig" target="lib\net20" />
     <file src="shared\Core\lib\System.Data.SQLite.dll.altconfig" target="lib\net40" />
     <file src="shared\Core\lib\System.Data.SQLite.dll.altconfig" target="lib\net45" />
