@@ -49,6 +49,7 @@ Core\pragma.html
 Core\sqlite.css
 Core\syntax.html
 Core\syntaxdiagrams.html
+Core\syntax\aggregate-function-invocation.html
 Core\syntax\alter-table-stmt.html
 Core\syntax\analyze-stmt.html
 Core\syntax\attach-stmt.html
@@ -77,7 +78,11 @@ Core\syntax\drop-trigger-stmt.html
 Core\syntax\drop-view-stmt.html
 Core\syntax\expr.html
 Core\syntax\factored-select-stmt.html
+Core\syntax\filter-clause.html
+Core\syntax\filter.html
 Core\syntax\foreign-key-clause.html
+Core\syntax\frame-spec.html
+Core\syntax\function-invocation.html
 Core\syntax\indexed-column.html
 Core\syntax\insert-stmt.html
 Core\syntax\join-clause.html
@@ -86,6 +91,7 @@ Core\syntax\join-operator.html
 Core\syntax\literal-value.html
 Core\syntax\numeric-literal.html
 Core\syntax\ordering-term.html
+Core\syntax\over-clause.html
 Core\syntax\pragma-stmt.html
 Core\syntax\pragma-value.html
 Core\syntax\qualified-table-name.html
@@ -99,6 +105,7 @@ Core\syntax\savepoint-stmt.html
 Core\syntax\select-core.html
 Core\syntax\select-stmt.html
 Core\syntax\signed-number.html
+Core\syntax\simple-function-invocation.html
 Core\syntax\simple-select-stmt.html
 Core\syntax\sql-stmt-list.html
 Core\syntax\sql-stmt.html
@@ -107,7 +114,10 @@ Core\syntax\table-or-subquery.html
 Core\syntax\type-name.html
 Core\syntax\update-stmt-limited.html
 Core\syntax\update-stmt.html
+Core\syntax\upsert-clause.html
 Core\syntax\vacuum-stmt.html
+Core\syntax\window-defn.html
+Core\syntax\window-function-invocation.html
 Core\syntax\with-clause.html
 Include\ndoc.css
 Provider\dbfactorysupport.html
