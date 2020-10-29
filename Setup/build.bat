@@ -368,10 +368,44 @@ IF DEFINED NETFX472ONLY (
   GOTO setup_buildToolDir
 )
 
+IF DEFINED NETFX48ONLY (
+  %_AECHO% Forcing the use of the .NET Framework 4.8...
+  IF NOT DEFINED YEAR (
+    IF DEFINED NETFX48YEAR (
+      SET YEAR=%NETFX48YEAR%
+    ) ELSE (
+      SET YEAR=2017
+    )
+  )
+  IF NOT DEFINED NOUSEPACKAGERESTORE (
+    IF NOT DEFINED USEPACKAGERESTORE (
+      SET USEPACKAGERESTORE=1
+    )
+  )
+  CALL :fn_CheckFrameworkDir v4.0.30319
+  CALL :fn_CheckMsBuildDir 14.0
+  CALL :fn_CheckVisualStudioMsBuildDir Current 16.0
+  GOTO setup_buildToolDir
+)
+
 REM
 REM TODO: When the next version of Visual Studio and/or MSBuild is released,
 REM       this section may need updating.
 REM
+IF NOT DEFINED VISUALSTUDIOMSBUILDDIR (
+  CALL :fn_CheckVisualStudioMsBuildDir Current 16.0
+  IF DEFINED VISUALSTUDIOMSBUILDDIR (
+    IF NOT DEFINED YEAR (
+      SET YEAR=2017
+    )
+    IF NOT DEFINED NOUSEPACKAGERESTORE (
+      IF NOT DEFINED USEPACKAGERESTORE (
+        SET USEPACKAGERESTORE=1
+      )
+    )
+  )
+)
+
 IF NOT DEFINED VISUALSTUDIOMSBUILDDIR (
   CALL :fn_CheckVisualStudioMsBuildDir 15.0 15.0
   IF DEFINED VISUALSTUDIOMSBUILDDIR (
