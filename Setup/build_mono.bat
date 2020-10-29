@@ -56,6 +56,16 @@ IF ERRORLEVEL 1 (
 
 CALL :fn_UnsetVariable YEARS
 
+IF NOT DEFINED NOVS2019 (
+  IF DEFINED VS2019SP (
+    SET YEARS=2019
+  ) ELSE (
+    ECHO Could not detect Visual Studio 2019.
+  )
+) ELSE (
+  ECHO Use of Visual Studio 2019 is disallowed.
+)
+
 IF NOT DEFINED NOVS2017 (
   IF DEFINED VS2017SP (
     SET YEARS=2017
