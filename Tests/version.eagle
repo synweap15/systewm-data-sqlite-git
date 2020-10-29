@@ -51,7 +51,7 @@ set version(core,short) 3.34.0
 #       is not [necessarily] the same version as the assembly itself) in use
 #       by the System.Data.SQLite NuGet packages?
 #
-set version(ef6) 6.3.0
+set version(ef6) 6.4.4
 
 ###############################################################################
 # ********************* END VOLATILE VERSION INFORMATION **********************

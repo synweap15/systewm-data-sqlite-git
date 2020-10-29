@@ -4961,7 +4961,7 @@ namespace eval ::Eagle {
         #
         if {[isDotNetCore]} then {
           set externalFileNames [list \
-              [file join EntityFramework v6.3 lib [string map [list \
+              [file join EntityFramework v6.4 lib [string map [list \
               netStandard21 netstandard2.1] [getBuildNetFx]] \
               EntityFramework.dll]]
         } else {
