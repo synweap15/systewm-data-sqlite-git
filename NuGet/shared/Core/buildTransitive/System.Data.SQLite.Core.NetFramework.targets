@@ -25,14 +25,37 @@
 
   <!--
   ******************************************************************************
+  **               Target Framework Version Directory Base Name               **
+  ******************************************************************************
+  -->
+
+  <PropertyGroup Condition="'$(MSBuildThisFileDirectory)' != '' And
+                            HasTrailingSlash('$(MSBuildThisFileDirectory)')">
+    <!--
+        NOTE: Attempt to determine the name of our immediate parent directory,
+              e.g. "net40".  This is needed in order to locate the correct set
+              of SQLite interop files.  This value will have a trailing slash.
+    -->
+    <SQLiteTargetFramework>$([MSBuild]::MakeRelative('$(MSBuildThisFileDirectory)..', '$(MSBuildThisFileDirectory)'))</SQLiteTargetFramework>
+  </PropertyGroup>
+
+  <!--
+  ******************************************************************************
   **                    SQLite Interop Library Build Items                    **
   ******************************************************************************
   -->
 
   <ItemGroup>
+    <!--
+        NOTE: Grab the list of SQLite interop files to be copied to the build
+              output directory.  There should be one file for each supported
+              processor architecture.
+    -->
     <SQLiteInteropFiles Condition="'$(MSBuildThisFileDirectory)' != '' And
-                                   HasTrailingSlash('$(MSBuildThisFileDirectory)')"
-                        Include="$(MSBuildThisFileDirectory)..\build\**\SQLite.Interop.*" />
+                                   HasTrailingSlash('$(MSBuildThisFileDirectory)') And
+                                   '$(SQLiteTargetFramework)' != '' And
+                                   HasTrailingSlash('$(SQLiteTargetFramework)')"
+                        Include="$(MSBuildThisFileDirectory)..\..\build\$(SQLiteTargetFramework)**\SQLite.Interop.*" />
   </ItemGroup>
 
   <!--
