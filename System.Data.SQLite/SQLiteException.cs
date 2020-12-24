@@ -729,6 +729,10 @@ namespace System.Data.SQLite
       /// </summary>
       IoErr_Data = (IoErr | (32 << 8)),
       /// <summary>
+      /// File system corruption was detected during a read or write.
+      /// </summary>
+      IoErr_CorruptFs = (IoErr | (33 << 8)),
+      /// <summary>
       /// A database table is locked in shared-cache mode.
       /// </summary>
       Locked_SharedCache = (Locked | (1 << 8)),
