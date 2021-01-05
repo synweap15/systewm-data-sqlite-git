@@ -182,7 +182,7 @@ if {$argc >= 2 && $argc <= 3} then {
   source [file join $path data [appendArgs $rootName .lst]]
 
   if {![array exists manifests]} then {
-    usage "master archive manifest is missing"
+    usage "list of archive manifests is missing"
   }
 
   package require Eagle.Test; set extractDirectory [getTemporaryPath]
@@ -218,16 +218,6 @@ if {$argc >= 2 && $argc <= 3} then {
     set manifest [file tail $archiveFileName]
 
     #
-    # NOTE: Attempt to extract the version and/or date/time
-    #       information from the manifest file name.
-    #
-    regexp -- {(\d+)\.(\d+)\.(\d+)\.(\d+)} $manifest dummy \
-        major minor build revision
-
-    regexp -- {(\d{4})-(\d{2})-(\d{2})-(\d{2})} $manifest \
-        dummy year month day sequence
-
-    #
     # HACK: Attempt to match and remove sub-strings from the
     #       manifest file name that look like the name of a
     #       build configuration (e.g. "debug" or "release").
@@ -239,7 +229,9 @@ if {$argc >= 2 && $argc <= 3} then {
     #       manifest file names, part 1, the vanishing.
     #
     set manifest [string map \
-        [list CLRv2 CLRvTWO CLRv4 CLRvFOUR] $manifest]
+        [list CLRv2 CLRvTWO CLRv4 CLRvFOUR Standard.2.0 \
+        StandardTWO-ZERO Standard.2.1 StandardTWO-ONE] \
+        $manifest]
 
     #
     # HACK: Special hack to allow "EF6", "Win32", "x64", and
@@ -266,7 +258,8 @@ if {$argc >= 2 && $argc <= 3} then {
     #       manifest file names, part 2, the return.
     #
     set manifest [string map \
-        [list CLRvTWO CLRv2 CLRvFOUR CLRv4] $manifest]
+        [list CLRvTWO CLRv2 CLRvFOUR CLRv4 StandardTWO-ZERO \
+        Standard.2.0 StandardTWO-ONE Standard.2.1] $manifest]
 
     #
     # HACK: Special hack to allow "EF6", "Win32", "x64", and
@@ -288,9 +281,8 @@ if {$argc >= 2 && $argc <= 3} then {
     if {![info exists manifests($manifest)]} then {
       if {![info exists no(warn)]} then {
         puts stdout [appendArgs \
-            "WARNING: Cannot find master manifest \"" \
-            $manifest "\" for archive \"" $archiveFileName \
-            "\", skipped."]
+            "WARNING: Cannot find manifest \"" $manifest \
+            "\" for archive \"" $archiveFileName "\", skipped."]
       }
 
       continue
