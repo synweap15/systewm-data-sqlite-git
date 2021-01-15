@@ -522,6 +522,16 @@ namespace System.Data.SQLite
         bool IsEmpty();
 
         /// <summary>
+        /// This method attempts to determine the amount of memory used by the
+        /// session.
+        /// </summary>
+        /// <returns>
+        /// Number of bytes used by the session -OR- negative one if its value
+        /// cannot be obtained.
+        /// </returns>
+        long GetMemoryBytesInUse();
+
+        /// <summary>
         /// Upon success, causes changes to the specified table(s) to start
         /// being tracked.  Any tables impacted by calls to this method will
         /// not cause the <see cref="SessionTableFilterCallback" /> callback
@@ -3058,6 +3068,23 @@ namespace System.Data.SQLite
             CheckHandle();
 
             return UnsafeNativeMethods.sqlite3session_isempty(session) != 0;
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+
+        /// <summary>
+        /// This method attempts to determine the amount of memory used by the
+        /// session.
+        /// </summary>
+        /// <returns>
+        /// The number of bytes used by the session.
+        /// </returns>
+        public long GetMemoryBytesInUse()
+        {
+            CheckDisposed();
+            CheckHandle();
+
+            return UnsafeNativeMethods.sqlite3session_memory_used(session);
         }
 
         ///////////////////////////////////////////////////////////////////////

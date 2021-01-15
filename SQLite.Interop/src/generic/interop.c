@@ -24,16 +24,9 @@
 #define SQLITE_MAX_ATTACHED 30
 #endif
 
-#if SQLITE_VERSION_NUMBER >= 3032000
 #if defined(INTEROP_INCLUDE_SEE)
 #include "../core/sqlite3-see.c"
 #else
-#include "../core/sqlite3.c"
-#endif
-#else
-#if defined(INTEROP_INCLUDE_SEE)
-#include "../ext/see-prefix.txt"
-#endif
 #include "../core/sqlite3.c"
 #endif
 
