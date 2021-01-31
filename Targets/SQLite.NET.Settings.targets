@@ -947,7 +947,8 @@
   ******************************************************************************
   -->
 
-  <PropertyGroup Condition="'$(SQLiteNetDir)' != '' And
+  <PropertyGroup Condition="'$(SQLiteStrongNameSign)' != 'false' And
+                            '$(SQLiteNetDir)' != '' And
                             !HasTrailingSlash('$(SQLiteNetDir)') And
                             (('$(IsCompactFramework)' == 'false' And Exists('$(SQLiteNetDir)\Keys\System.Data.SQLite.snk')) Or
                              ('$(IsCompactFramework)' != 'false' And Exists('$(SQLiteNetDir)\Keys\System.Data.SQLite.CF.snk')))">
