@@ -946,7 +946,7 @@ REM ****************************************************************************
   IF DEFINED INTEROPONLY (
     IF DEFINED STATICONLY (
       %_AECHO% Building static core interop project...
-      FOR /F "delims=" %%F IN ('DIR /B /S ".\SQLite.Interop\SQLite.Interop.Static.%YEAR%.vc?proj" 2^> NUL') DO (
+      FOR /F "delims=" %%F IN ('DIR /B /S ".\SQLite.Interop\SQLite.Interop.Static.%YEAR%.vc*proj" 2^> NUL') DO (
         SET SOLUTION=%%F
       )
       IF NOT DEFINED SOLUTION (
@@ -956,7 +956,7 @@ REM ****************************************************************************
       GOTO :EOF
     ) ELSE (
       %_AECHO% Building normal core interop project...
-      FOR /F "delims=" %%F IN ('DIR /B /S ".\SQLite.Interop\SQLite.Interop.%YEAR%.vc?proj" 2^> NUL') DO (
+      FOR /F "delims=" %%F IN ('DIR /B /S ".\SQLite.Interop\SQLite.Interop.%YEAR%.vc*proj" 2^> NUL') DO (
         SET SOLUTION=%%F
       )
       IF NOT DEFINED SOLUTION (
