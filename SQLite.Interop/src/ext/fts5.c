@@ -3572,7 +3572,7 @@ static int fts5Bm25GetData(
   int rc = SQLITE_OK;             /* Return code */
   Fts5Bm25Data *p;                /* Object to return */
 
-  p = pApi->xGetAuxdata(pFts, 0);
+  p = (Fts5Bm25Data*)pApi->xGetAuxdata(pFts, 0);
   if( p==0 ){
     int nPhrase;                  /* Number of phrases in query */
     sqlite3_int64 nRow = 0;       /* Number of rows in table */
@@ -3646,7 +3646,7 @@ static void fts5Bm25Function(
 ){
   const double k1 = 1.2;          /* Constant "k1" from BM25 formula */
   const double b = 0.75;          /* Constant "b" from BM25 formula */
-  int rc = SQLITE_OK;             /* Error code */
+  int rc;                         /* Error code */
   double score = 0.0;             /* SQL function return value */
   Fts5Bm25Data *pData;            /* Values allocated/calculated once only */
   int i;                          /* Iterator variable */
@@ -3678,17 +3678,15 @@ static void fts5Bm25Function(
     D = (double)nTok;
   }
 
-  /* Determine the BM25 score for the current row. */
-  for(i=0; rc==SQLITE_OK && i<pData->nPhrase; i++){
-    score += pData->aIDF[i] * (
-      ( aFreq[i] * (k1 + 1.0) ) / 
-      ( aFreq[i] + k1 * (1 - b + b * D / pData->avgdl) )
-    );
-  }
-  
-  /* If no error has occurred, return the calculated score. Otherwise,
-  ** throw an SQL exception.  */
+  /* Determine and return the BM25 score for the current row. Or, if an
+  ** error has occurred, throw an exception. */
   if( rc==SQLITE_OK ){
+    for(i=0; i<pData->nPhrase; i++){
+      score += pData->aIDF[i] * (
+          ( aFreq[i] * (k1 + 1.0) ) / 
+          ( aFreq[i] + k1 * (1 - b + b * D / pData->avgdl) )
+      );
+    }
     sqlite3_result_double(pCtx, -1.0 * score);
   }else{
     sqlite3_result_error_code(pCtx, rc);
@@ -14832,6 +14830,7 @@ static int sqlite3Fts5IndexIntegrityCheck(Fts5Index *p, u64 cksum, int bUseCksum
     }else{
       poslist.n = 0;
       fts5SegiterPoslist(p, &pIter->aSeg[pIter->aFirst[1].iFirst], 0, &poslist);
+      fts5BufferAppendBlob(&p->rc, &poslist, 4, (const u8*)"\0\0\0\0");
       while( 0==sqlite3Fts5PoslistNext64(poslist.p, poslist.n, &iOff, &iPos) ){
         int iCol = FTS5_POS2COLUMN(iPos);
         int iTokOff = FTS5_POS2OFFSET(iPos);
@@ -18128,7 +18127,7 @@ static void fts5SourceIdFunc(
 ){
   assert( nArg==0 );
   UNUSED_PARAM2(nArg, apUnused);
-  sqlite3_result_text(pCtx, "fts5: 2020-10-26 18:14:12 aa512f72cf5adfece6299db17bd122aeff0cdee2a25f83f60e2ebb05e99c9591", -1, SQLITE_TRANSIENT);
+  sqlite3_result_text(pCtx, "fts5: 2021-01-20 14:10:07 10e20c0b43500cfb9bbc0eaa061c57514f715d87238f4d835880cd846b9ebd1f", -1, SQLITE_TRANSIENT);
 }
 
 /*
@@ -20703,13 +20702,14 @@ static void fts5TriDelete(Fts5Tokenizer *p){
 ** Allocate a trigram tokenizer.
 */
 static int fts5TriCreate(
-  void *pCtx,
+  void *pUnused,
   const char **azArg,
   int nArg,
   Fts5Tokenizer **ppOut
 ){
   int rc = SQLITE_OK;
   TrigramTokenizer *pNew = (TrigramTokenizer*)sqlite3_malloc(sizeof(*pNew));
+  UNUSED_PARAM(pUnused);
   if( pNew==0 ){
     rc = SQLITE_NOMEM;
   }else{
@@ -20742,7 +20742,7 @@ static int fts5TriCreate(
 static int fts5TriTokenize(
   Fts5Tokenizer *pTok,
   void *pCtx,
-  int flags,
+  int unusedFlags,
   const char *pText, int nText,
   int (*xToken)(void*, int, const char*, int, int, int)
 ){
@@ -20753,6 +20753,7 @@ static int fts5TriTokenize(
   const unsigned char *zEof = &zIn[nText];
   u32 iCode;
 
+  UNUSED_PARAM(unusedFlags);
   while( 1 ){
     char *zOut = aBuf;
     int iStart = zIn - (const unsigned char*)pText;
@@ -21616,6 +21617,7 @@ static void sqlite3Fts5UnicodeAscii(u8 *aArray, u8 *aAscii){
   }
   aAscii[0] = 0;                  /* 0x00 is never a token character */
 }
+
 
 #line 1 "fts5_varint.c"
 /*
