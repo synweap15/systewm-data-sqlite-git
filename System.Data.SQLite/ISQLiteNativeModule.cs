@@ -571,6 +571,41 @@ namespace System.Data.SQLite
         /// the idxNum or idxStr output fields.
         /// </para>
         /// <para>
+        /// For the LIKE, GLOB, REGEXP, and MATCH operators, the 
+        /// aConstraint[].iColumn value is the virtual table column that
+        /// is the left operand of the operator.  However, if these operators
+        /// are expressed as function calls instead of operators, then
+        /// the aConstraint[].iColumn value references the virtual table
+        /// column that is the second argument to that function:
+        /// </para>
+        /// <para><code>
+        /// LIKE(<i>EXPR</i>, <i>column</i>)<![CDATA[<br>]]>
+        /// GLOB(<i>EXPR</i>, <i>column</i>)<![CDATA[<br>]]>
+        /// REGEXP(<i>EXPR</i>, <i>column</i>)<![CDATA[<br>]]>
+        /// MATCH(<i>EXPR</i>, <i>column</i>)<![CDATA[<br>]]>
+        /// </code></para>
+        /// <para>
+        /// Hence, as far as the xBestIndex() method is concerned, the following
+        /// two forms are equivalent:
+        /// </para>
+        /// <para><code>
+        /// <i>column</i> LIKE <i>EXPR</i><![CDATA[<br>]]>
+        /// LIKE(<i>EXPR</i>,<i>column</i>)
+        /// </code></para>
+        /// <para>
+        /// This special behavior of looking at the second argument of a function
+        /// only occurs for the LIKE, GLOB, REGEXP, and MATCH functions.  For all
+        /// other functions, the aConstraint[].iColumn value references the first
+        /// argument of the function.
+        /// </para>
+        /// <para>
+        /// This special feature of LIKE, GLOB, REGEXP, and MATCH does not
+        /// apply to the xFindFunction() method, however.  The
+        /// xFindFunction() method always keys off of the left operand of an
+        /// LIKE, GLOB, REGEXP, or MATCH operator but off of the first argument
+        /// to function-call equivalents of those operators.
+        /// </para>
+        /// <para>
         /// Given all of the information above, the job of the xBestIndex 
         /// method it to figure out the best way to search the virtual table.
         /// </para>
@@ -1417,10 +1452,17 @@ namespace System.Data.SQLite
         /// </code></para>
         /// <para>
         /// Note that infix functions (LIKE, GLOB, REGEXP, and MATCH) reverse 
-        /// the order of their arguments. So "like(A,B)" is equivalent to "B like A". 
-        /// For the form "B like A" the B term is considered the first argument 
-        /// to the function. But for "like(A,B)" the A term is considered the 
-        /// first argument.
+        /// the order of their arguments. So "like(A,B)" would normally work the same
+        /// as "B like A".
+        /// However, xFindFunction() always looks a the left-most argument, not
+        /// the first logical argument.
+        /// Hence, for the form "B like A", SQLite looks at the
+        /// left operand "B" and if that operand is a virtual table column
+        /// it invokes the xFindFunction() method on that virtual table.
+        /// But if the form "like(A,B)" is used instead, then SQLite checks
+        /// the A term to see if it is column of a virtual table and if so
+        /// it invokes the xFindFunction() method for the virtual table of
+        /// column A. 
         /// </para>
         /// <para>
         /// The function pointer returned by this routine must be valid for
