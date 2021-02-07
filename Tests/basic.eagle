@@ -167,8 +167,9 @@ runTest {test data-1.4 {SELECT scalar/reader, CREATE, INSERT} -setup {
   unset -nocomplain name rows result db fileName
 } -constraints \
 {eagle monoBug28 command.sql compile.DATA SQLite System.Data.SQLite} \
--match regexp -result {^\{\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} [0-9a-f]{40,64}\}\
-\{1 \{\{x 1\} \{y foo\} \{z 1234\}\}\} \{count 1\} \{names \{x y z\}\}$}}
+-match regexp -result {^\{\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\
+[0-9a-f]{40,64}(?:alt1|alt2)?\} \{1 \{\{x 1\} \{y foo\} \{z 1234\}\}\} \{count\
+1\} \{names \{x y z\}\}$}}
 
 ###############################################################################
 
@@ -3312,8 +3313,8 @@ runTest {test data-1.71 {fts5 extension} -setup {
 } -constraints {eagle command.object monoBug28 command.sql compile.DATA SQLite\
 defineConstant.System.Data.SQLite.INTEROP_FTS5_EXTENSION\
 System.Data.SQLite SQLiteInterop} -match regexp -result \
-{^\{fts5: \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} [0-9a-f]{40,64}\} \{\} \{\} \{\}\
-\{\} \{\} \{rowid 3 x horse rowid 4 x house\}$}}
+{^\{fts5: \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} [0-9a-f]{40,64}(?:alt1|alt2)?\}\
+\{\} \{\} \{\} \{\} \{\} \{rowid 3 x horse rowid 4 x house\}$}}
 
 ###############################################################################
 
