@@ -492,8 +492,8 @@ proc conflictCallback { clientData type item } {
 runTest {test session-1.1 {basic extension usage} -setup {
   setupDb [set fileName(0) session-1.1.db]
 
-  set fileName(1) [getChangeSetFileName 1]
-  set fileName(2) [getChangeSetFileName 2]
+  set fileName(1) [getChangeSetFileName 1.1]
+  set fileName(2) [getChangeSetFileName 1.2]
 
   cleanupSomeText
 } -body {
@@ -613,8 +613,8 @@ Tango"} NewValue 1 <nullObject> ConflictValue 1 <nullObject>}}}}
 runTest {test session-1.2.2 {change set read/write/invert (stream)} -setup {
   setupDb [set fileName(0) session-1.2.2.db]
 
-  set fileName(1) [getChangeSetFileName 1]
-  set fileName(2) [getChangeSetFileName 2]
+  set fileName(1) [getChangeSetFileName 2.2.1]
+  set fileName(2) [getChangeSetFileName 2.2.2]
 
   cleanupSomeText
 } -body {
@@ -733,7 +733,7 @@ Tango"} NewValue 1 <nullObject> ConflictValue 1 <nullObject>}}}}
 runTest {test session-1.2.4 {change set read/write/invert (stream)} -setup {
   setupDb [set fileName(0) session-1.2.4.db]
 
-  set fileName(1) [getChangeSetFileName 1]
+  set fileName(1) [getChangeSetFileName 2.4.1]
 
   cleanupSomeText
 } -body {
@@ -1062,9 +1062,9 @@ Romeo Sierra Tango}}}}
 runTest {test session-1.6.2 {combine/apply change sets (stream)} -setup {
   setupDb [set fileName(0) session-1.6.2.db]
 
-  set fileName(1) [getChangeSetFileName 1]
-  set fileName(2) [getChangeSetFileName 2]
-  set fileName(3) [getChangeSetFileName 3]
+  set fileName(1) [getChangeSetFileName 6.2.1]
+  set fileName(2) [getChangeSetFileName 6.2.2]
+  set fileName(3) [getChangeSetFileName 6.2.3]
 
   cleanupSomeText
 } -body {
@@ -1218,9 +1218,9 @@ Romeo Sierra Tango}}}}
 runTest {test session-1.7.2 {combine/apply patch sets (stream)} -setup {
   setupDb [set fileName(0) session-1.7.2.db]
 
-  set fileName(1) [getChangeSetFileName 1]
-  set fileName(2) [getChangeSetFileName 2]
-  set fileName(3) [getChangeSetFileName 3]
+  set fileName(1) [getChangeSetFileName 7.2.1]
+  set fileName(2) [getChangeSetFileName 7.2.2]
+  set fileName(3) [getChangeSetFileName 7.2.3]
 
   cleanupSomeText
 } -body {
@@ -1389,7 +1389,7 @@ runTest {test session-1.9 {apply change set (remote stream)} -setup {
 } -constraints {eagle command.object monoBug28 command.sql compile.DATA\
 compile.EMIT SQLite System.Data.SQLite SQLiteInterop\
 defineConstant.System.Data.SQLite.INTEROP_SESSION_EXTENSION} -result \
-{06631bf3545dba83b25db5142afc4d229544ed55}}
+{7f0f0571ab843fe81543780c92a009b4abc90837}}
 
 ###############################################################################
 
@@ -1454,9 +1454,9 @@ ConflictValue 1 <nullObject>}}}
 runTest {test session-1.10.2 {change group (stream)} -setup {
   setupDb [set fileName(0) session-1.10.2.db]
 
-  set fileName(1) [getChangeSetFileName 1]
-  set fileName(2) [getChangeSetFileName 2]
-  set fileName(3) [getChangeSetFileName 3]
+  set fileName(1) [getChangeSetFileName 10.2.1]
+  set fileName(2) [getChangeSetFileName 10.2.2]
+  set fileName(3) [getChangeSetFileName 10.2.3]
 
   cleanupSomeText
 } -body {
