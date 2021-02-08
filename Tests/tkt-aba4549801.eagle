@@ -119,29 +119,23 @@ runTest {test tkt-aba4549801-1.1 {SQLiteConnection.Changed event} -setup {
 
   rename onChanged ""
 } -constraints {eagle command.object monoBug28 monoBug211 command.sql\
-compile.DATA SQLite System.Data.SQLite} -match regexp -result {^(?:\{\{\}\
-NewCriticalHandle \{\} \{\} \{\} 1\} \{\{\} NewCriticalHandle \{\} \{\} \{\}\
-1\} )?\{1 Opening \{\} \{\} \{\} \{\}\} \{1 Closing \{\} \{\} \{\} \{\}\} \{1\
-Closed \{\} \{\} \{\} \{\}\} \{1 ConnectionString \{\} \{\} \{\} \{\}\} \{\{\}\
-NewCriticalHandle \{\} \{\} \{\} 1\} \{1 NewCommand \{\} 1 \{\} \{\}\} \{1\
-DisposingCommand \{\} 1 \{\} \{\}\} \{1 Opened \{\} \{\} \{\} \{\}\} \{1\
-NewCommand \{\} 1 \{\} \{\}\} \{1 NewDataReader \{\} 1 1 \{\}\} \{\{\}\
-NewCriticalHandle \{\} \{\} \{\} 1\} \{1 DisposingDataReader \{\} 1 1 \{\}\}\
-\{1 ClosingDataReader \{\} 1 1 \{\}\} \{1 DisposingCommand \{\} 1 \{\} \{\}\}\
-\{1 NewCommand \{\} 1 \{\} \{\}\} \{1 NewDataReader \{\} 1 1 \{\}\} \{\{\}\
-NewCriticalHandle \{\} \{\} \{\} 1\} \{1 DisposingDataReader \{\} 1 1 \{\}\}\
-\{1 ClosingDataReader \{\} 1 1 \{\}\} \{1 DisposingCommand \{\} 1 \{\} \{\}\}\
-\{1 NewCommand \{\} 1 \{\} \{\}\} \{1 NewDataReader \{\} 1 1 \{\}\} \{\{\}\
-NewCriticalHandle \{\} \{\} \{\} 1\} \{1 DisposingDataReader \{\} 1 1 \{\}\}\
-\{1 ClosingDataReader \{\} 1 1 \{\}\} \{1 DisposingCommand \{\} 1 \{\} \{\}\}\
-\{1 NewTransaction 1 \{\} \{\} \{\}\} \{1 NewCommand \{\} 1 \{\} \{\}\} \{1\
-NewDataReader \{\} 1 1 \{\}\} \{\{\} NewCriticalHandle \{\} \{\} \{\} 1\}\
-\{\{\} NewCriticalHandle \{\} \{\} \{\} 1\} \{1 ClosingDataReader \{\} 1 1\
-\{\}\} \{1 DisposingCommand \{\} 1 \{\} \{\}\} \{1 NewCommand \{\} 1 \{\}\
-\{\}\} \{1 NewDataReader \{\} 1 1 \{\}\} \{\{\} NewCriticalHandle \{\} \{\}\
-\{\} 1\} \{1 DisposingDataReader \{\} 1 1 \{\}\} \{1 ClosingDataReader \{\} 1 1\
-\{\}\} \{1 DisposingCommand \{\} 1 \{\} \{\}\} \{1 Closing \{\} \{\} \{\}\
-\{\}\} \{1 Closed \{\} \{\} \{\} \{\}\}$}}
+compile.DATA SQLite System.Data.SQLite} -result {{1 Opening {} {} {} {}} {1\
+Closing {} {} {} {}} {1 Closed {} {} {} {}} {1 ConnectionString {} {} {} {}}\
+{{} NewCriticalHandle {} {} {} 1} {1 NewCommand {} 1 {} {}} {1 DisposingCommand\
+{} 1 {} {}} {1 Opened {} {} {} {}} {1 NewCommand {} 1 {} {}} {1 NewDataReader\
+{} 1 1 {}} {{} NewCriticalHandle {} {} {} 1} {1 DisposingDataReader {} 1 1 {}}\
+{1 ClosingDataReader {} 1 1 {}} {1 DisposingCommand {} 1 {} {}} {1 NewCommand\
+{} 1 {} {}} {1 NewDataReader {} 1 1 {}} {{} NewCriticalHandle {} {} {} 1} {1\
+DisposingDataReader {} 1 1 {}} {1 ClosingDataReader {} 1 1 {}} {1\
+DisposingCommand {} 1 {} {}} {1 NewCommand {} 1 {} {}} {1 NewDataReader {} 1 1\
+{}} {{} NewCriticalHandle {} {} {} 1} {1 DisposingDataReader {} 1 1 {}} {1\
+ClosingDataReader {} 1 1 {}} {1 DisposingCommand {} 1 {} {}} {1 NewTransaction\
+1 {} {} {}} {1 NewCommand {} 1 {} {}} {1 NewDataReader {} 1 1 {}} {{}\
+NewCriticalHandle {} {} {} 1} {{} NewCriticalHandle {} {} {} 1} {1\
+ClosingDataReader {} 1 1 {}} {1 DisposingCommand {} 1 {} {}} {1 NewCommand {} 1\
+{} {}} {1 NewDataReader {} 1 1 {}} {{} NewCriticalHandle {} {} {} 1} {1\
+DisposingDataReader {} 1 1 {}} {1 ClosingDataReader {} 1 1 {}} {1\
+DisposingCommand {} 1 {} {}} {1 Closing {} {} {} {}} {1 Closed {} {} {} {}}}}
 
 ###############################################################################
 
