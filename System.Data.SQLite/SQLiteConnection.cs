@@ -1142,6 +1142,18 @@ namespace System.Data.SQLite
   /// <description></description>
   /// </item>
   /// <item>
+  /// <description>TextPassword</description>
+  /// <description>
+  /// {password} - Using this parameter requires that the legacy CryptoAPI based
+  /// codec (or the SQLite Encryption Extension) be enabled at compile-time for
+  /// both the native interop assembly and the core managed assemblies; otherwise,
+  /// using this parameter may result in an exception being thrown when attempting
+  /// to open the connection.
+  /// </description>
+  /// <description>N</description>
+  /// <description></description>
+  /// </item>
+  /// <item>
   /// <description>Enlist</description>
   /// <description>
   /// <b>Y</b> - Automatically enlist in distributed transactions
@@ -1356,6 +1368,7 @@ namespace System.Data.SQLite
     private const string DefaultDataSource = null;
     private const string DefaultUri = null;
     private const string DefaultFullUri = null;
+    private const string DefaultTextPassword = null;
     private const string DefaultHexPassword = null;
     private const string DefaultPassword = null;
     private const int DefaultVersion = 3;
@@ -1536,6 +1549,13 @@ namespace System.Data.SQLite
     /// Temporary password storage, emptied after the database has been opened
     /// </summary>
     private byte[] _password;
+
+    /// <summary>
+    /// This will be non-zero if the "TextPassword" connection string property
+    /// was used.  When this value is non-zero, <see cref="ChangePassword(Byte[])" />
+    /// will retain treatment of the password as a NUL-terminated text string.
+    /// </summary>
+    private bool _passwordWasText;
 #endif
 
     /// <summary>
@@ -4370,6 +4390,13 @@ namespace System.Data.SQLite
                   continue;
               }
 
+              if (String.Equals(
+                    pair.Key, "TextPassword",
+                    StringComparison.OrdinalIgnoreCase))
+              {
+                  continue;
+              }
+
               eventArgOpts.Add(pair.Key, pair.Value);
           }
 
@@ -4586,47 +4613,69 @@ namespace System.Data.SQLite
             _binaryGuid = SQLiteConvert.ToBoolean(stringValue);
 
 #if INTEROP_CODEC || INTEROP_INCLUDE_SEE
-        string hexPassword = FindKey(opts, "HexPassword", DefaultHexPassword);
+        string textPassword = FindKey(opts, "TextPassword", DefaultTextPassword);
 
-        if (hexPassword != null)
+        if (textPassword != null)
         {
-            string error = null;
-            byte[] hexPasswordBytes = FromHexString(hexPassword, ref error);
+            byte[] textPasswordBytes = UTF8Encoding.UTF8.GetBytes(
+                textPassword); /* throw */
 
-            if (hexPasswordBytes == null)
-            {
-                throw new FormatException(HelperMethods.StringFormat(
-                    CultureInfo.CurrentCulture,
-                    "Cannot parse 'HexPassword' property value into byte values: {0}",
-                    error));
-            }
+            Array.Resize(ref textPasswordBytes, textPasswordBytes.Length + 1);
 
-            _sql.SetPassword(hexPasswordBytes);
+            _sql.SetPassword(textPasswordBytes, true);
+            _passwordWasText = true;
         }
         else
         {
-            string password = FindKey(opts, "Password", DefaultPassword);
+            string hexPassword = FindKey(opts, "HexPassword", DefaultHexPassword);
 
-            if (password != null)
+            if (hexPassword != null)
             {
-                byte[] passwordBytes = UTF8Encoding.UTF8.GetBytes(
-                    password); /* throw */
+                string error = null;
+                byte[] hexPasswordBytes = FromHexString(hexPassword, ref error);
 
-                _sql.SetPassword(passwordBytes);
+                if (hexPasswordBytes == null)
+                {
+                    throw new FormatException(HelperMethods.StringFormat(
+                        CultureInfo.CurrentCulture,
+                        "Cannot parse 'HexPassword' property value into byte values: {0}",
+                        error));
+                }
+
+                _sql.SetPassword(hexPasswordBytes, false);
+                _passwordWasText = false;
             }
-            else if (_password != null)
+            else
             {
-                _sql.SetPassword(_password);
+                string password = FindKey(opts, "Password", DefaultPassword);
+
+                if (password != null)
+                {
+                    byte[] passwordBytes = UTF8Encoding.UTF8.GetBytes(
+                        password); /* throw */
+
+                    _sql.SetPassword(passwordBytes, false);
+                    _passwordWasText = false;
+                }
+                else if (_password != null)
+                {
+                    _sql.SetPassword(_password, _passwordWasText);
+                }
+
+                password = null; /* IMMUTABLE */
             }
 
-            password = null;
+            hexPassword = null; /* IMMUTABLE */
         }
 
-        hexPassword = null; /* IMMUTABLE */
+        textPassword = null; /* IMMUTABLE */
         _password = null; /* IMMUTABLE */
 
         if (hidePassword)
         {
+            if (opts.ContainsKey("TextPassword"))
+                opts["TextPassword"] = String.Empty;
+
             if (opts.ContainsKey("HexPassword"))
                 opts["HexPassword"] = String.Empty;
 
@@ -4636,6 +4685,14 @@ namespace System.Data.SQLite
             _connectionString = BuildConnectionString(opts);
         }
 #else
+        if (FindKey(opts, "TextPassword", null) != null)
+        {
+            throw new SQLiteException(SQLiteErrorCode.Error,
+                "Cannot use \"TextPassword\" connection string property: " +
+                "library was not built with encryption support, please " +
+                "see \"https://www.sqlite.org/see\" for more information");
+        }
+
         if (FindKey(opts, "HexPassword", null) != null)
         {
             throw new SQLiteException(SQLiteErrorCode.Error,
@@ -5650,7 +5707,7 @@ namespace System.Data.SQLite
       if (_connectionState != ConnectionState.Open)
         throw new InvalidOperationException("Database must be opened before changing the password.");
 
-      _sql.ChangePassword(newPassword);
+      _sql.ChangePassword(newPassword, _passwordWasText);
     }
 
     /// <summary>

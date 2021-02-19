@@ -474,6 +474,30 @@ namespace System.Data.SQLite
     }
 
     /// <summary>
+    /// Gets/sets the database encryption textual password
+    /// </summary>
+    [DisplayName("Textual Password")]
+    [Browsable(true)]
+    [PasswordPropertyText(true)]
+    [DefaultValue(null)]
+    public string TextPassword
+    {
+        get
+        {
+            object value;
+
+            if (TryGetValue("textpassword", out value))
+                return (value != null) ? value.ToString() : null;
+
+            return null;
+        }
+        set
+        {
+            this["textpassword"] = value;
+        }
+    }
+
+    /// <summary>
     /// Gets/Sets the page size for the connection.
     /// </summary>
     [DisplayName("Page Size")]

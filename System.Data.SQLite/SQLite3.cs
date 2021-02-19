@@ -3348,9 +3348,10 @@ namespace System.Data.SQLite
         }
     }
 
-    internal override void SetPassword(byte[] passwordBytes)
+    internal override void SetPassword(byte[] passwordBytes, bool asText)
     {
-      SQLiteErrorCode n = UnsafeNativeMethods.sqlite3_key(_sql, passwordBytes, passwordBytes.Length);
+      int length = asText ? -1 : ((passwordBytes == null) ? 0 : passwordBytes.Length);
+      SQLiteErrorCode n = UnsafeNativeMethods.sqlite3_key(_sql, passwordBytes, length);
 
       if (HelperMethods.HasFlags(_flags, SQLiteConnectionFlags.HidePassword))
         ZeroPassword(passwordBytes);
@@ -3370,9 +3371,10 @@ namespace System.Data.SQLite
       }
     }
 
-    internal override void ChangePassword(byte[] newPasswordBytes)
+    internal override void ChangePassword(byte[] newPasswordBytes, bool asText)
     {
-      SQLiteErrorCode n = UnsafeNativeMethods.sqlite3_rekey(_sql, newPasswordBytes, (newPasswordBytes == null) ? 0 : newPasswordBytes.Length);
+      int length = asText ? -1 : ((newPasswordBytes == null) ? 0 : newPasswordBytes.Length);
+      SQLiteErrorCode n = UnsafeNativeMethods.sqlite3_rekey(_sql, newPasswordBytes, length);
 
       if (HelperMethods.HasFlags(_flags, SQLiteConnectionFlags.HidePassword))
         ZeroPassword(newPasswordBytes);

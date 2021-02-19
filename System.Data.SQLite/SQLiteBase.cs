@@ -468,8 +468,8 @@ namespace System.Data.SQLite
     internal abstract void LogMessage(SQLiteErrorCode iErrCode, string zMessage);
 
 #if INTEROP_CODEC || INTEROP_INCLUDE_SEE
-    internal abstract void SetPassword(byte[] passwordBytes);
-    internal abstract void ChangePassword(byte[] newPasswordBytes);
+    internal abstract void SetPassword(byte[] passwordBytes, bool asText);
+    internal abstract void ChangePassword(byte[] newPasswordBytes, bool asText);
 #endif
 
     internal abstract void SetProgressHook(int nOps, SQLiteProgressCallback func);
