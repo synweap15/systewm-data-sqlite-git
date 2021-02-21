@@ -30,7 +30,8 @@ namespace eval ::Eagle {
     # NOTE: If the "enableCSharpLog" runtime option is enabled, this routine
     #       will emit log output somewhere; otherwise, it will do nothing.
     #
-    if {[llength [info commands hasRuntimeOption]] > 0 && \
+    if {![info exists ::no(csharpLog)] && \
+        [llength [info commands hasRuntimeOption]] > 0 && \
         [hasRuntimeOption enableCSharpLog]} then {
       #
       # NOTE: If the caller passed a valid opaque object handle, query its
@@ -166,7 +167,7 @@ namespace eval ::Eagle {
 
     if {[string length $path] > 0} then {
       if {[string length $standardVersion] == 0} then {
-        if {!$useSdkVersion && \
+        if {!$useSdkVersion && [isDotNetCore] && \
             [info exists ::eagle_platform(runtimeVersion)]} then {
           set targetVersion $::eagle_platform(runtimeVersion)
         } else {
@@ -366,7 +367,7 @@ namespace eval ::Eagle {
 
       if {[file exists $compilerFileName]} then {
         return [list dotnet exec [appendArgs \
-            \" [file nativename $compilerFileName] \"]]
+            \" [file nativename $compilerFileName] \"]]; # EXEMPT
       }
     }
 
@@ -967,27 +968,27 @@ namespace eval ::Eagle {
       if {$symbols} then {lappend command -debug}
 
       #
-      # NOTE: As of this writing (2018-04-06), the current version of the
-      #       .NET Core SDK (2.1.101) uses the "netstandard.dll" assembly
-      #       to enable use of the .NET Standard 2.0 library.
+      # NOTE: As of this writing (2019-10-26), the current versions of the
+      #       .NET Core SDK (2.x / 3.x) use the "netstandard.dll" assembly
+      #       to enable use of the .NET Standard 2.x reference library.
       #
-      lappend command [appendArgs \"-reference: [file nativename \
+      lappend command [formatCompilerArgument -reference [file nativename \
           [file normalize [file join [getDotNetStandardReferencePath] \
-          netstandard.dll]]] \"]
+          netstandard.dll]]]]
 
       #
       # NOTE: Set the output assembly file name to the temporary output
       #       file name we obtained from [file tempname] above.
       #
-      lappend command [appendArgs \"-out: [file nativename [file \
-          normalize $outputFileName]] \"]
+      lappend command [formatCompilerArgument -out [file nativename [file \
+          normalize $outputFileName]]]
 
       #
       # NOTE: Set the source code file name to the temporary source code
       #       file name we obtained from [file tempname] above.
       #
-      lappend command [appendArgs \" [file nativename [file normalize \
-          $sourceFileName]] \"]
+      lappend command [formatCompilerArgument "" [file nativename [file \
+          normalize $sourceFileName]]]
 
       #
       # NOTE: First, write the specified string (containing C# code) to

@@ -126,9 +126,9 @@ namespace eval ::Eagle {
     }
 
     #
-    # NOTE: The list of URNs, relative to the base URI, where script
-    #       evaluation requests should be submitted to the "safe"
-    #       sandbox.  One of these will be selected at random.
+    # NOTE: The list of URNs, relative to the base URI, where test script
+    #       evaluation requests should be submitted to the "safe" sandbox.
+    #       One of these will be selected at random.
     #
     variable sandboxEvalUrns; # DEFAULT: eval_01 ... eval_NN
 
@@ -145,6 +145,29 @@ namespace eval ::Eagle {
 
     if {$force || ![info exists sandboxEvalUri]} then {
       set sandboxEvalUri {${baseUri}/${urn}}
+    }
+
+    #
+    # NOTE: The list of URNs, relative to the base URI, where the named
+    #       example scripts may be obtained.  One of these will be selected
+    #       at random.
+    #
+    variable scriptUrns; # DEFAULT: script_01 ... script_NN
+
+    if {$force || ![info exists scriptUrns]} then {
+      set scriptUrns [list \
+          script_01 script_02 script_03 script_04 script_05 script_06 \
+          script_07]
+    }
+
+    #
+    # NOTE: The URI where script evaluation requests should be submitted
+    #       to the "safe" sandbox.
+    #
+    variable scriptUri; # DEFAULT: ${baseUri}/${urn}
+
+    if {$force || ![info exists scriptUri]} then {
+      set scriptUri {${baseUri}/${urn}}
     }
   }
 
@@ -531,7 +554,7 @@ namespace eval ::Eagle {
           lappend warningCommand puts stderr
         }
 
-        set varName2 Master_Certificate
+        set varName2 Override_Certificate
 
         lappend warningCommand [appendArgs \
             "One or more temporary license certificate files " \
@@ -569,44 +592,76 @@ namespace eval ::Eagle {
     set directory [appendArgs \
         $processDirectoryPrefix [string trim [clock seconds] -]]
 
-    set urn [subst [lindex \
-        $licenseUrns [expr {int(rand() * [llength $licenseUrns])}]]]
-
-    set uri [subst $licenseUri]
-
-    if {![isEagle] || [catch {
-      object invoke System.Security.Principal.WindowsIdentity \
-          GetCurrent.Name
-    } userName]} then {
+    if {[info exists ::env(LicenseUri)]} then {
       #
-      # HACK: Fallback to using a value from the "tcl_platform" array.
-      #       For native Tcl, this is the only choice.  For Eagle, it
-      #       is used as a fallback.
+      # HACK: Allow license request URI to be overridden via the global
+      #       environment.  This is necessary to enable testing on Mono.
       #
-      if {[info exists ::tcl_platform(user)]} then {
-        set userName $::tcl_platform(user)
-      } else {
-        set userName "NO USER NAME"
+      set uri $::env(LicenseUri)
+    } else {
+      #
+      # NOTE: Normally, choose a random URN, which will resolve to one
+      #       of the official license request processing servers.
+      #
+      set urn [subst [lindex \
+          $licenseUrns [expr {int(rand() * [llength $licenseUrns])}]]]
+
+      set uri [subst $licenseUri]
+    }
+
+    #
+    # HACK: If overridden (via the environment), use the user name
+    #       specified; otherwise, attempt to automatically detect it.
+    #       The server does not really care what this value is.  It
+    #       can detect abuse by originating IP address, etc.
+    #
+    if {[info exists ::env(LicenseUserName)]} then {
+      set userName $::env(LicenseUserName)
+    } else {
+      if {![isEagle] || [catch {
+        object invoke System.Security.Principal.WindowsIdentity \
+            GetCurrent.Name
+      } userName]} then {
+        #
+        # HACK: Fallback to using a value from the "tcl_platform" array.
+        #       For native Tcl, this is the only choice.  For Eagle, it
+        #       is used as a fallback.
+        #
+        if {[info exists ::tcl_platform(user)]} then {
+          set userName $::tcl_platform(user)
+        } else {
+          set userName "NO USER NAME"
+        }
       }
     }
 
-    if {![isEagle] || [catch {
-      object load System.DirectoryServices.AccountManagement
+    #
+    # HACK: If overridden (via the environment), use the display name
+    #       specified; otherwise, attempt to automatically detect it.
+    #       The server does not really care what this value is.  It
+    #       can detect abuse by originating IP address, etc.
+    #
+    if {[info exists ::env(LicenseDisplayName)]} then {
+      set displayName $::env(LicenseDisplayName)
+    } else {
+      if {![isEagle] || [catch {
+        object load System.DirectoryServices.AccountManagement
 
-      object invoke \
-          System.DirectoryServices.AccountManagement.UserPrincipal \
-          Current.DisplayName
-    } displayName]} then {
-      #
-      # HACK: Fallback to using a value from the "tcl_platform" array.
-      #       This value is not set by native Tcl or Eagle; therefore,
-      #       the user would have to set it manually prior to calling
-      #       this procedure.
-      #
-      if {[info exists ::tcl_platform(userDisplayName)]} then {
-        set displayName $::tcl_platform(userDisplayName)
-      } else {
-        set displayName "NO DISPLAY NAME"
+        object invoke \
+            System.DirectoryServices.AccountManagement.UserPrincipal \
+            Current.DisplayName
+      } displayName]} then {
+        #
+        # HACK: Fallback to using a value from the "tcl_platform" array.
+        #       This value is not set by native Tcl or Eagle; therefore,
+        #       the user would have to set it manually prior to calling
+        #       this procedure.
+        #
+        if {[info exists ::tcl_platform(userDisplayName)]} then {
+          set displayName $::tcl_platform(userDisplayName)
+        } else {
+          set displayName "NO DISPLAY NAME"
+        }
       }
     }
 
@@ -678,10 +733,22 @@ namespace eval ::Eagle {
     variable sandboxEvalUri
     variable sandboxEvalUrns
 
-    set urn [subst [lindex \
-        $sandboxEvalUrns [expr {int(rand() * [llength $sandboxEvalUrns])}]]]
+    if {[info exists ::env(SandboxEvalUri)]} then {
+      #
+      # HACK: Allow remote sandbox URI to be overridden via the global
+      #       environment.  This is necessary to enable testing on Mono.
+      #
+      set uri $::env(SandboxEvalUri)
+    } else {
+      #
+      # NOTE: Normally, choose a random URN, which will resolve to one
+      #       of the official remote sandbox servers.
+      #
+      set urn [subst [lindex \
+          $sandboxEvalUrns [expr {int(rand() * [llength $sandboxEvalUrns])}]]]
 
-    set uri [subst $sandboxEvalUri]
+      set uri [subst $sandboxEvalUri]
+    }
 
     set query [list go 1 raw 1 script $script]
 
@@ -706,6 +773,109 @@ namespace eval ::Eagle {
           $uri 20 $channel $quiet -binary true \
           -query [eval ::http::formatQuery $query]]
     }
+  }
+
+  #
+  # NOTE: This procedure attempts to download (and save) the specified named
+  #       example script.  The apiKey parameter is the optional API key to use,
+  #       which MAY enable additional permissions within the remote repository.
+  #       The optional channel argument is the output channel where diagnostic
+  #       information is sent.  The optional quiet argument should be non-zero
+  #       to prevent diagnostic information from being emitted.  This procedure
+  #       may raise script errors.  The return value is the full path to the
+  #       saved example script.
+  #
+  proc downloadExampleScript {
+          script {apiKey ""} {channel stdout} {quiet false} } {
+    setupPackageToolsetVars false
+
+    variable baseUri
+    variable scriptUri
+    variable scriptUrns
+
+    package require Eagle.Test
+
+    if {[info exists ::env(ScriptUri)]} then {
+      #
+      # HACK: Allow example script URI to be overridden via the global
+      #       environment.  This is necessary to enable testing on Mono.
+      #
+      set uri $::env(ScriptUri)
+    } else {
+      #
+      # NOTE: Normally, choose a random URN, which will resolve to one
+      #       of the official example script servers.
+      #
+      set urn [subst [lindex \
+          $scriptUrns [expr {int(rand() * [llength $scriptUrns])}]]]
+
+      set uri [subst $scriptUri]
+    }
+
+    set fileName [getTemporaryFileName]
+    set query [list raw 1 script $script]
+
+    if {[string length $apiKey] > 0} then {
+      lappend query apiKey $apiKey
+    }
+
+    if {[isEagle]} then {
+      set fullUri $uri
+
+      foreach {name value} $query {
+        if {[string first ? $fullUri] != -1} then {
+          append fullUri &
+        } else {
+          append fullUri ?
+        }
+
+        append fullUri \
+            [uri escape data $name] = [uri escape data $value]
+      }
+
+      set data [uri download -inline $fullUri]
+    } else {
+      package require http 2.0
+      package require Eagle.Tools.Common
+
+      namespace import \
+          ::Eagle::Tools::Common::getFileViaHttp \
+          ::Eagle::Tools::Common::writeFile
+
+      set data [getFileViaHttp \
+          $uri 20 $channel $quiet -binary true \
+          -query [eval ::http::formatQuery $query]]
+    }
+
+    if {[string length $data] == 0} then {
+      error "request failed without providing error information"
+    }
+
+    if {![string is list $data] || [llength $data] < 2} then {
+      error [appendArgs \
+          "request failed with error information: " $data]
+    }
+
+    set code [lindex $data 0]
+    set result [lindex $data 1]
+
+    if {$code ne "OK"} then {
+      error $result
+    }
+
+    set signature ""
+
+    if {[llength $data] >= 2} then {
+      set signature [lindex $data 2]
+    }
+
+    writeFile $fileName $result
+
+    if {[string length $signature] > 0} then {
+      writeFile [appendArgs $fileName .harpy] $signature
+    }
+
+    return $fileName
   }
 
   #

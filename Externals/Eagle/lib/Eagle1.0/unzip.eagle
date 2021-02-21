@@ -81,7 +81,7 @@ namespace eval ::Eagle {
 
     if {$force || ![info exists unzipInstalledPattern]} then {
       set unzipInstalledPattern \
-          {^UnZip \d+\.\d+ of \d{1,2} \w+ \d{4}, by Info-ZIP\.}
+          {^UnZip \d+\.\d+ of \d{1,2} \w+ \d{4},[\w\s\.]* by Info-ZIP\.}
     }
 
     #
@@ -187,7 +187,10 @@ namespace eval ::Eagle {
         #       error will be raised.
         #
         if {[catch {library certificate $exeFileName}]} then {
-          catch {file delete $exeFileName}
+          if {![info exists ::no(deleteExtractZipArchiveFile)]} then {
+            catch {file delete $exeFileName}
+          }
+
           error "cannot use UnZip: downloaded file was not properly signed"
         }
 
@@ -202,7 +205,10 @@ namespace eval ::Eagle {
 
         file mkdir $exeDirectory
         file copy $exeFileName [file join $exeDirectory unzip.exe]
-        catch {file delete $exeFileName}
+
+        if {![info exists ::no(deleteExtractZipArchiveFile)]} then {
+          catch {file delete $exeFileName}
+        }
 
         addToPath $exeDirectory
       }

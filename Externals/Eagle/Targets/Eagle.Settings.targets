@@ -1728,6 +1728,12 @@
     <EagleForTestUseOnly Condition="'$(EagleForTestUseOnly)' == '' And '$(Configuration)' == 'Debug'">false</EagleForTestUseOnly>
     <EagleForTestUseOnly Condition="'$(EagleForTestUseOnly)' == '' And '$(Configuration)' == 'Release'">true</EagleForTestUseOnly>
     -->
+
+    <!--
+        NOTE: If the build type has been set, use the same one when performing
+              obfuscation on the target assembly, if any.
+    -->
+    <ObfuscatorBuildType Condition="'$(EagleBuildType)' != '' And '$(ObfuscatorBuildType)' == ''">$(EagleBuildType)</ObfuscatorBuildType>
   </PropertyGroup>
 
   <!--

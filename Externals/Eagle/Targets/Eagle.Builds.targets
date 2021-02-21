@@ -76,8 +76,11 @@
     <EagleConfigurationSuffix Condition="'$(EagleConfigurationSuffix)' == ''">NetFx20</EagleConfigurationSuffix>
     <EagleDebuggerExpression Condition="'$(EagleDebuggerExpression)' == ''">false</EagleDebuggerExpression>
     <EagleEmbeddedLibrary Condition="'$(EagleEmbeddedLibrary)' == ''">true</EagleEmbeddedLibrary>
+    <EagleFastErrorCode Condition="'$(EagleFastErrorCode)' == ''">true</EagleFastErrorCode>
+    <EagleFastErrorInfo Condition="'$(EagleFastErrorInfo)' == ''">true</EagleFastErrorInfo>
     <EagleIsolatedInterpreters Condition="'$(EagleIsolatedInterpreters)' == ''">true</EagleIsolatedInterpreters>
     <EagleIsolatedPlugins Condition="'$(EagleIsolatedPlugins)' == ''">true</EagleIsolatedPlugins>
+    <EagleMaybeTrace Condition="'$(EagleMaybeTrace)' == ''">true</EagleMaybeTrace>
     <EagleMonoLegacy Condition="'$(EagleMonoLegacy)' == ''">false</EagleMonoLegacy>
     <EagleNotifyExecute Condition="'$(EagleNotifyExecute)' == ''">false</EagleNotifyExecute>
     <EagleNotifyExpression Condition="'$(EagleNotifyExpression)' == ''">false</EagleNotifyExpression>
@@ -125,8 +128,11 @@
     <EagleConfigurationSuffix Condition="'$(EagleConfigurationSuffix)' == ''">NetFx35</EagleConfigurationSuffix>
     <EagleDebuggerExpression Condition="'$(EagleDebuggerExpression)' == ''">false</EagleDebuggerExpression>
     <EagleEmbeddedLibrary Condition="'$(EagleEmbeddedLibrary)' == ''">true</EagleEmbeddedLibrary>
+    <EagleFastErrorCode Condition="'$(EagleFastErrorCode)' == ''">true</EagleFastErrorCode>
+    <EagleFastErrorInfo Condition="'$(EagleFastErrorInfo)' == ''">true</EagleFastErrorInfo>
     <EagleIsolatedInterpreters Condition="'$(EagleIsolatedInterpreters)' == ''">true</EagleIsolatedInterpreters>
     <EagleIsolatedPlugins Condition="'$(EagleIsolatedPlugins)' == ''">true</EagleIsolatedPlugins>
+    <EagleMaybeTrace Condition="'$(EagleMaybeTrace)' == ''">true</EagleMaybeTrace>
     <EagleMonoLegacy Condition="'$(EagleMonoLegacy)' == ''">false</EagleMonoLegacy>
     <EagleNotifyExecute Condition="'$(EagleNotifyExecute)' == ''">false</EagleNotifyExecute>
     <EagleNotifyExpression Condition="'$(EagleNotifyExpression)' == ''">false</EagleNotifyExpression>
@@ -177,11 +183,15 @@
     <EagleAuthenticodeSign Condition="'$(EagleAuthenticodeSign)' == ''">true</EagleAuthenticodeSign>
     <EagleAuthenticodeSign32BitOnly Condition="'$(EagleAuthenticodeSign32BitOnly)' == ''">true</EagleAuthenticodeSign32BitOnly>
     <EagleCacheDictionary Condition="'$(EagleCacheDictionary)' == ''">true</EagleCacheDictionary>
+    <EagleCasPolicy Condition="'$(EagleCasPolicy)' == ''">true</EagleCasPolicy>
     <EagleConfigurationSuffix Condition="'$(EagleConfigurationSuffix)' == ''">NetFx40</EagleConfigurationSuffix>
     <EagleDebuggerExpression Condition="'$(EagleDebuggerExpression)' == ''">false</EagleDebuggerExpression>
     <EagleEmbeddedLibrary Condition="'$(EagleEmbeddedLibrary)' == ''">true</EagleEmbeddedLibrary>
+    <EagleFastErrorCode Condition="'$(EagleFastErrorCode)' == ''">true</EagleFastErrorCode>
+    <EagleFastErrorInfo Condition="'$(EagleFastErrorInfo)' == ''">true</EagleFastErrorInfo>
     <EagleIsolatedInterpreters Condition="'$(EagleIsolatedInterpreters)' == ''">true</EagleIsolatedInterpreters>
     <EagleIsolatedPlugins Condition="'$(EagleIsolatedPlugins)' == ''">true</EagleIsolatedPlugins>
+    <EagleMaybeTrace Condition="'$(EagleMaybeTrace)' == ''">true</EagleMaybeTrace>
     <EagleMonoLegacy Condition="'$(EagleMonoLegacy)' == ''">false</EagleMonoLegacy>
     <EagleNotifyExecute Condition="'$(EagleNotifyExecute)' == ''">false</EagleNotifyExecute>
     <EagleNotifyExpression Condition="'$(EagleNotifyExpression)' == ''">false</EagleNotifyExpression>
@@ -232,11 +242,15 @@
     <EagleAuthenticodeSign Condition="'$(EagleAuthenticodeSign)' == ''">true</EagleAuthenticodeSign>
     <EagleAuthenticodeSign32BitOnly Condition="'$(EagleAuthenticodeSign32BitOnly)' == ''">true</EagleAuthenticodeSign32BitOnly>
     <EagleCacheDictionary Condition="'$(EagleCacheDictionary)' == ''">true</EagleCacheDictionary>
+    <EagleCasPolicy Condition="'$(EagleCasPolicy)' == ''">true</EagleCasPolicy>
     <EagleConfigurationSuffix Condition="'$(EagleConfigurationSuffix)' == ''">NetFx45</EagleConfigurationSuffix>
     <EagleDebuggerExpression Condition="'$(EagleDebuggerExpression)' == ''">false</EagleDebuggerExpression>
     <EagleEmbeddedLibrary Condition="'$(EagleEmbeddedLibrary)' == ''">true</EagleEmbeddedLibrary>
+    <EagleFastErrorCode Condition="'$(EagleFastErrorCode)' == ''">true</EagleFastErrorCode>
+    <EagleFastErrorInfo Condition="'$(EagleFastErrorInfo)' == ''">true</EagleFastErrorInfo>
     <EagleIsolatedInterpreters Condition="'$(EagleIsolatedInterpreters)' == ''">true</EagleIsolatedInterpreters>
     <EagleIsolatedPlugins Condition="'$(EagleIsolatedPlugins)' == ''">true</EagleIsolatedPlugins>
+    <EagleMaybeTrace Condition="'$(EagleMaybeTrace)' == ''">true</EagleMaybeTrace>
     <EagleMonoLegacy Condition="'$(EagleMonoLegacy)' == ''">false</EagleMonoLegacy>
     <EagleNotifyExecute Condition="'$(EagleNotifyExecute)' == ''">false</EagleNotifyExecute>
     <EagleNotifyExpression Condition="'$(EagleNotifyExpression)' == ''">false</EagleNotifyExpression>
@@ -287,11 +301,15 @@
     <EagleAuthenticodeSign Condition="'$(EagleAuthenticodeSign)' == ''">true</EagleAuthenticodeSign>
     <EagleAuthenticodeSign32BitOnly Condition="'$(EagleAuthenticodeSign32BitOnly)' == ''">true</EagleAuthenticodeSign32BitOnly>
     <EagleCacheDictionary Condition="'$(EagleCacheDictionary)' == ''">true</EagleCacheDictionary>
+    <EagleCasPolicy Condition="'$(EagleCasPolicy)' == ''">true</EagleCasPolicy>
     <EagleConfigurationSuffix Condition="'$(EagleConfigurationSuffix)' == ''">NetFx451</EagleConfigurationSuffix>
     <EagleDebuggerExpression Condition="'$(EagleDebuggerExpression)' == ''">false</EagleDebuggerExpression>
     <EagleEmbeddedLibrary Condition="'$(EagleEmbeddedLibrary)' == ''">true</EagleEmbeddedLibrary>
+    <EagleFastErrorCode Condition="'$(EagleFastErrorCode)' == ''">true</EagleFastErrorCode>
+    <EagleFastErrorInfo Condition="'$(EagleFastErrorInfo)' == ''">true</EagleFastErrorInfo>
     <EagleIsolatedInterpreters Condition="'$(EagleIsolatedInterpreters)' == ''">true</EagleIsolatedInterpreters>
     <EagleIsolatedPlugins Condition="'$(EagleIsolatedPlugins)' == ''">true</EagleIsolatedPlugins>
+    <EagleMaybeTrace Condition="'$(EagleMaybeTrace)' == ''">true</EagleMaybeTrace>
     <EagleMonoLegacy Condition="'$(EagleMonoLegacy)' == ''">false</EagleMonoLegacy>
     <EagleNotifyExecute Condition="'$(EagleNotifyExecute)' == ''">false</EagleNotifyExecute>
     <EagleNotifyExpression Condition="'$(EagleNotifyExpression)' == ''">false</EagleNotifyExpression>
@@ -344,11 +362,15 @@
     <EagleAuthenticodeSign Condition="'$(EagleAuthenticodeSign)' == ''">true</EagleAuthenticodeSign>
     <EagleAuthenticodeSign32BitOnly Condition="'$(EagleAuthenticodeSign32BitOnly)' == ''">true</EagleAuthenticodeSign32BitOnly>
     <EagleCacheDictionary Condition="'$(EagleCacheDictionary)' == ''">true</EagleCacheDictionary>
+    <EagleCasPolicy Condition="'$(EagleCasPolicy)' == ''">true</EagleCasPolicy>
     <EagleConfigurationSuffix Condition="'$(EagleConfigurationSuffix)' == ''">NetFx452</EagleConfigurationSuffix>
     <EagleDebuggerExpression Condition="'$(EagleDebuggerExpression)' == ''">false</EagleDebuggerExpression>
     <EagleEmbeddedLibrary Condition="'$(EagleEmbeddedLibrary)' == ''">true</EagleEmbeddedLibrary>
+    <EagleFastErrorCode Condition="'$(EagleFastErrorCode)' == ''">true</EagleFastErrorCode>
+    <EagleFastErrorInfo Condition="'$(EagleFastErrorInfo)' == ''">true</EagleFastErrorInfo>
     <EagleIsolatedInterpreters Condition="'$(EagleIsolatedInterpreters)' == ''">true</EagleIsolatedInterpreters>
     <EagleIsolatedPlugins Condition="'$(EagleIsolatedPlugins)' == ''">true</EagleIsolatedPlugins>
+    <EagleMaybeTrace Condition="'$(EagleMaybeTrace)' == ''">true</EagleMaybeTrace>
     <EagleMonoLegacy Condition="'$(EagleMonoLegacy)' == ''">false</EagleMonoLegacy>
     <EagleNotifyExecute Condition="'$(EagleNotifyExecute)' == ''">false</EagleNotifyExecute>
     <EagleNotifyExpression Condition="'$(EagleNotifyExpression)' == ''">false</EagleNotifyExpression>
@@ -401,11 +423,15 @@
     <EagleAuthenticodeSign Condition="'$(EagleAuthenticodeSign)' == ''">true</EagleAuthenticodeSign>
     <EagleAuthenticodeSign32BitOnly Condition="'$(EagleAuthenticodeSign32BitOnly)' == ''">true</EagleAuthenticodeSign32BitOnly>
     <EagleCacheDictionary Condition="'$(EagleCacheDictionary)' == ''">true</EagleCacheDictionary>
+    <EagleCasPolicy Condition="'$(EagleCasPolicy)' == ''">true</EagleCasPolicy>
     <EagleConfigurationSuffix Condition="'$(EagleConfigurationSuffix)' == ''">NetFx46</EagleConfigurationSuffix>
     <EagleDebuggerExpression Condition="'$(EagleDebuggerExpression)' == ''">false</EagleDebuggerExpression>
     <EagleEmbeddedLibrary Condition="'$(EagleEmbeddedLibrary)' == ''">true</EagleEmbeddedLibrary>
+    <EagleFastErrorCode Condition="'$(EagleFastErrorCode)' == ''">true</EagleFastErrorCode>
+    <EagleFastErrorInfo Condition="'$(EagleFastErrorInfo)' == ''">true</EagleFastErrorInfo>
     <EagleIsolatedInterpreters Condition="'$(EagleIsolatedInterpreters)' == ''">true</EagleIsolatedInterpreters>
     <EagleIsolatedPlugins Condition="'$(EagleIsolatedPlugins)' == ''">true</EagleIsolatedPlugins>
+    <EagleMaybeTrace Condition="'$(EagleMaybeTrace)' == ''">true</EagleMaybeTrace>
     <EagleMonoLegacy Condition="'$(EagleMonoLegacy)' == ''">false</EagleMonoLegacy>
     <EagleNotifyExecute Condition="'$(EagleNotifyExecute)' == ''">false</EagleNotifyExecute>
     <EagleNotifyExpression Condition="'$(EagleNotifyExpression)' == ''">false</EagleNotifyExpression>
@@ -456,11 +482,15 @@
     <EagleAuthenticodeSign Condition="'$(EagleAuthenticodeSign)' == ''">true</EagleAuthenticodeSign>
     <EagleAuthenticodeSign32BitOnly Condition="'$(EagleAuthenticodeSign32BitOnly)' == ''">true</EagleAuthenticodeSign32BitOnly>
     <EagleCacheDictionary Condition="'$(EagleCacheDictionary)' == ''">true</EagleCacheDictionary>
+    <EagleCasPolicy Condition="'$(EagleCasPolicy)' == ''">true</EagleCasPolicy>
     <EagleConfigurationSuffix Condition="'$(EagleConfigurationSuffix)' == ''">NetFx461</EagleConfigurationSuffix>
     <EagleDebuggerExpression Condition="'$(EagleDebuggerExpression)' == ''">false</EagleDebuggerExpression>
     <EagleEmbeddedLibrary Condition="'$(EagleEmbeddedLibrary)' == ''">true</EagleEmbeddedLibrary>
+    <EagleFastErrorCode Condition="'$(EagleFastErrorCode)' == ''">true</EagleFastErrorCode>
+    <EagleFastErrorInfo Condition="'$(EagleFastErrorInfo)' == ''">true</EagleFastErrorInfo>
     <EagleIsolatedInterpreters Condition="'$(EagleIsolatedInterpreters)' == ''">true</EagleIsolatedInterpreters>
     <EagleIsolatedPlugins Condition="'$(EagleIsolatedPlugins)' == ''">true</EagleIsolatedPlugins>
+    <EagleMaybeTrace Condition="'$(EagleMaybeTrace)' == ''">true</EagleMaybeTrace>
     <EagleMonoLegacy Condition="'$(EagleMonoLegacy)' == ''">false</EagleMonoLegacy>
     <EagleNotifyExecute Condition="'$(EagleNotifyExecute)' == ''">false</EagleNotifyExecute>
     <EagleNotifyExpression Condition="'$(EagleNotifyExpression)' == ''">false</EagleNotifyExpression>
@@ -511,11 +541,15 @@
     <EagleAuthenticodeSign Condition="'$(EagleAuthenticodeSign)' == ''">true</EagleAuthenticodeSign>
     <EagleAuthenticodeSign32BitOnly Condition="'$(EagleAuthenticodeSign32BitOnly)' == ''">true</EagleAuthenticodeSign32BitOnly>
     <EagleCacheDictionary Condition="'$(EagleCacheDictionary)' == ''">true</EagleCacheDictionary>
+    <EagleCasPolicy Condition="'$(EagleCasPolicy)' == ''">true</EagleCasPolicy>
     <EagleConfigurationSuffix Condition="'$(EagleConfigurationSuffix)' == ''">NetFx462</EagleConfigurationSuffix>
     <EagleDebuggerExpression Condition="'$(EagleDebuggerExpression)' == ''">false</EagleDebuggerExpression>
     <EagleEmbeddedLibrary Condition="'$(EagleEmbeddedLibrary)' == ''">true</EagleEmbeddedLibrary>
+    <EagleFastErrorCode Condition="'$(EagleFastErrorCode)' == ''">true</EagleFastErrorCode>
+    <EagleFastErrorInfo Condition="'$(EagleFastErrorInfo)' == ''">true</EagleFastErrorInfo>
     <EagleIsolatedInterpreters Condition="'$(EagleIsolatedInterpreters)' == ''">true</EagleIsolatedInterpreters>
     <EagleIsolatedPlugins Condition="'$(EagleIsolatedPlugins)' == ''">true</EagleIsolatedPlugins>
+    <EagleMaybeTrace Condition="'$(EagleMaybeTrace)' == ''">true</EagleMaybeTrace>
     <EagleMonoLegacy Condition="'$(EagleMonoLegacy)' == ''">false</EagleMonoLegacy>
     <EagleNotifyExecute Condition="'$(EagleNotifyExecute)' == ''">false</EagleNotifyExecute>
     <EagleNotifyExpression Condition="'$(EagleNotifyExpression)' == ''">false</EagleNotifyExpression>
@@ -568,11 +602,15 @@
     <EagleAuthenticodeSign Condition="'$(EagleAuthenticodeSign)' == ''">true</EagleAuthenticodeSign>
     <EagleAuthenticodeSign32BitOnly Condition="'$(EagleAuthenticodeSign32BitOnly)' == ''">true</EagleAuthenticodeSign32BitOnly>
     <EagleCacheDictionary Condition="'$(EagleCacheDictionary)' == ''">true</EagleCacheDictionary>
+    <EagleCasPolicy Condition="'$(EagleCasPolicy)' == ''">true</EagleCasPolicy>
     <EagleConfigurationSuffix Condition="'$(EagleConfigurationSuffix)' == ''">NetFx47</EagleConfigurationSuffix>
     <EagleDebuggerExpression Condition="'$(EagleDebuggerExpression)' == ''">false</EagleDebuggerExpression>
     <EagleEmbeddedLibrary Condition="'$(EagleEmbeddedLibrary)' == ''">true</EagleEmbeddedLibrary>
+    <EagleFastErrorCode Condition="'$(EagleFastErrorCode)' == ''">true</EagleFastErrorCode>
+    <EagleFastErrorInfo Condition="'$(EagleFastErrorInfo)' == ''">true</EagleFastErrorInfo>
     <EagleIsolatedInterpreters Condition="'$(EagleIsolatedInterpreters)' == ''">true</EagleIsolatedInterpreters>
     <EagleIsolatedPlugins Condition="'$(EagleIsolatedPlugins)' == ''">true</EagleIsolatedPlugins>
+    <EagleMaybeTrace Condition="'$(EagleMaybeTrace)' == ''">true</EagleMaybeTrace>
     <EagleMonoLegacy Condition="'$(EagleMonoLegacy)' == ''">false</EagleMonoLegacy>
     <EagleNotifyExecute Condition="'$(EagleNotifyExecute)' == ''">false</EagleNotifyExecute>
     <EagleNotifyExpression Condition="'$(EagleNotifyExpression)' == ''">false</EagleNotifyExpression>
@@ -625,11 +663,15 @@
     <EagleAuthenticodeSign Condition="'$(EagleAuthenticodeSign)' == ''">true</EagleAuthenticodeSign>
     <EagleAuthenticodeSign32BitOnly Condition="'$(EagleAuthenticodeSign32BitOnly)' == ''">true</EagleAuthenticodeSign32BitOnly>
     <EagleCacheDictionary Condition="'$(EagleCacheDictionary)' == ''">true</EagleCacheDictionary>
+    <EagleCasPolicy Condition="'$(EagleCasPolicy)' == ''">true</EagleCasPolicy>
     <EagleConfigurationSuffix Condition="'$(EagleConfigurationSuffix)' == ''">NetFx471</EagleConfigurationSuffix>
     <EagleDebuggerExpression Condition="'$(EagleDebuggerExpression)' == ''">false</EagleDebuggerExpression>
     <EagleEmbeddedLibrary Condition="'$(EagleEmbeddedLibrary)' == ''">true</EagleEmbeddedLibrary>
+    <EagleFastErrorCode Condition="'$(EagleFastErrorCode)' == ''">true</EagleFastErrorCode>
+    <EagleFastErrorInfo Condition="'$(EagleFastErrorInfo)' == ''">true</EagleFastErrorInfo>
     <EagleIsolatedInterpreters Condition="'$(EagleIsolatedInterpreters)' == ''">true</EagleIsolatedInterpreters>
     <EagleIsolatedPlugins Condition="'$(EagleIsolatedPlugins)' == ''">true</EagleIsolatedPlugins>
+    <EagleMaybeTrace Condition="'$(EagleMaybeTrace)' == ''">true</EagleMaybeTrace>
     <EagleMonoLegacy Condition="'$(EagleMonoLegacy)' == ''">false</EagleMonoLegacy>
     <EagleNotifyExecute Condition="'$(EagleNotifyExecute)' == ''">false</EagleNotifyExecute>
     <EagleNotifyExpression Condition="'$(EagleNotifyExpression)' == ''">false</EagleNotifyExpression>
@@ -682,11 +724,15 @@
     <EagleAuthenticodeSign Condition="'$(EagleAuthenticodeSign)' == ''">true</EagleAuthenticodeSign>
     <EagleAuthenticodeSign32BitOnly Condition="'$(EagleAuthenticodeSign32BitOnly)' == ''">true</EagleAuthenticodeSign32BitOnly>
     <EagleCacheDictionary Condition="'$(EagleCacheDictionary)' == ''">true</EagleCacheDictionary>
+    <EagleCasPolicy Condition="'$(EagleCasPolicy)' == ''">true</EagleCasPolicy>
     <EagleConfigurationSuffix Condition="'$(EagleConfigurationSuffix)' == ''">NetFx472</EagleConfigurationSuffix>
     <EagleDebuggerExpression Condition="'$(EagleDebuggerExpression)' == ''">false</EagleDebuggerExpression>
     <EagleEmbeddedLibrary Condition="'$(EagleEmbeddedLibrary)' == ''">true</EagleEmbeddedLibrary>
+    <EagleFastErrorCode Condition="'$(EagleFastErrorCode)' == ''">true</EagleFastErrorCode>
+    <EagleFastErrorInfo Condition="'$(EagleFastErrorInfo)' == ''">true</EagleFastErrorInfo>
     <EagleIsolatedInterpreters Condition="'$(EagleIsolatedInterpreters)' == ''">true</EagleIsolatedInterpreters>
     <EagleIsolatedPlugins Condition="'$(EagleIsolatedPlugins)' == ''">true</EagleIsolatedPlugins>
+    <EagleMaybeTrace Condition="'$(EagleMaybeTrace)' == ''">true</EagleMaybeTrace>
     <EagleMonoLegacy Condition="'$(EagleMonoLegacy)' == ''">false</EagleMonoLegacy>
     <EagleNotifyExecute Condition="'$(EagleNotifyExecute)' == ''">false</EagleNotifyExecute>
     <EagleNotifyExpression Condition="'$(EagleNotifyExpression)' == ''">false</EagleNotifyExpression>
@@ -739,11 +785,15 @@
     <EagleAuthenticodeSign Condition="'$(EagleAuthenticodeSign)' == ''">true</EagleAuthenticodeSign>
     <EagleAuthenticodeSign32BitOnly Condition="'$(EagleAuthenticodeSign32BitOnly)' == ''">true</EagleAuthenticodeSign32BitOnly>
     <EagleCacheDictionary Condition="'$(EagleCacheDictionary)' == ''">true</EagleCacheDictionary>
+    <EagleCasPolicy Condition="'$(EagleCasPolicy)' == ''">true</EagleCasPolicy>
     <EagleConfigurationSuffix Condition="'$(EagleConfigurationSuffix)' == ''">NetFx48</EagleConfigurationSuffix>
     <EagleDebuggerExpression Condition="'$(EagleDebuggerExpression)' == ''">false</EagleDebuggerExpression>
     <EagleEmbeddedLibrary Condition="'$(EagleEmbeddedLibrary)' == ''">true</EagleEmbeddedLibrary>
+    <EagleFastErrorCode Condition="'$(EagleFastErrorCode)' == ''">true</EagleFastErrorCode>
+    <EagleFastErrorInfo Condition="'$(EagleFastErrorInfo)' == ''">true</EagleFastErrorInfo>
     <EagleIsolatedInterpreters Condition="'$(EagleIsolatedInterpreters)' == ''">true</EagleIsolatedInterpreters>
     <EagleIsolatedPlugins Condition="'$(EagleIsolatedPlugins)' == ''">true</EagleIsolatedPlugins>
+    <EagleMaybeTrace Condition="'$(EagleMaybeTrace)' == ''">true</EagleMaybeTrace>
     <EagleMonoLegacy Condition="'$(EagleMonoLegacy)' == ''">false</EagleMonoLegacy>
     <EagleNotifyExecute Condition="'$(EagleNotifyExecute)' == ''">false</EagleNotifyExecute>
     <EagleNotifyExpression Condition="'$(EagleNotifyExpression)' == ''">false</EagleNotifyExpression>
@@ -1115,6 +1165,9 @@
     <EagleDebuggerExpression Condition="'$(EagleDebuggerExpression)' == ''">false</EagleDebuggerExpression>
     <EagleDrawing Condition="'$(EagleDrawing)' == ''">false</EagleDrawing>
     <EagleEmbeddedLibrary Condition="'$(EagleEmbeddedLibrary)' == ''">true</EagleEmbeddedLibrary>
+    <EagleFastErrorCode Condition="'$(EagleFastErrorCode)' == ''">true</EagleFastErrorCode>
+    <EagleFastErrorInfo Condition="'$(EagleFastErrorInfo)' == ''">true</EagleFastErrorInfo>
+    <EagleMaybeTrace Condition="'$(EagleMaybeTrace)' == ''">true</EagleMaybeTrace>
     <EagleMonoLegacy Condition="'$(EagleMonoLegacy)' == ''">false</EagleMonoLegacy>
     <EagleNativePackage Condition="'$(EagleNativePackage)' == ''">false</EagleNativePackage>
     <EagleNativeUtility Condition="'$(EagleNativeUtility)' == ''">false</EagleNativeUtility>
@@ -1174,8 +1227,11 @@
     <EagleConfigurationSuffix Condition="'$(EagleConfigurationSuffix)' == ''">MonoOnUnix</EagleConfigurationSuffix>
     <EagleDebuggerExpression Condition="'$(EagleDebuggerExpression)' == ''">false</EagleDebuggerExpression>
     <EagleEmbeddedLibrary Condition="'$(EagleEmbeddedLibrary)' == ''">true</EagleEmbeddedLibrary>
+    <EagleFastErrorCode Condition="'$(EagleFastErrorCode)' == ''">true</EagleFastErrorCode>
+    <EagleFastErrorInfo Condition="'$(EagleFastErrorInfo)' == ''">true</EagleFastErrorInfo>
     <EagleIsolatedInterpreters Condition="'$(EagleIsolatedInterpreters)' == ''">true</EagleIsolatedInterpreters>
     <EagleIsolatedPlugins Condition="'$(EagleIsolatedPlugins)' == ''">true</EagleIsolatedPlugins>
+    <EagleMaybeTrace Condition="'$(EagleMaybeTrace)' == ''">true</EagleMaybeTrace>
     <EagleMono Condition="'$(EagleMono)' == ''">true</EagleMono>
     <EagleNativeUtilityBstr Condition="'$(EagleNativeUtilityBstr)' == ''">false</EagleNativeUtilityBstr>
     <EagleNotifyExecute Condition="'$(EagleNotifyExecute)' == ''">false</EagleNotifyExecute>
@@ -1232,6 +1288,7 @@
     <EagleForTestUseOnly Condition="'$(EagleForTestUseOnly)' == ''">true</EagleForTestUseOnly>
     <EagleIsolatedInterpreters Condition="'$(EagleIsolatedInterpreters)' == ''">true</EagleIsolatedInterpreters>
     <EagleIsolatedPlugins Condition="'$(EagleIsolatedPlugins)' == ''">true</EagleIsolatedPlugins>
+    <EagleMaybeTrace Condition="'$(EagleMaybeTrace)' == ''">true</EagleMaybeTrace>
     <EagleObsolete Condition="'$(EagleObsolete)' == ''">true</EagleObsolete>
     <EaglePolicyTrace Condition="'$(EaglePolicyTrace)' == ''">true</EaglePolicyTrace>
     <EagleScriptArguments Condition="'$(EagleScriptArguments)' == ''">true</EagleScriptArguments>

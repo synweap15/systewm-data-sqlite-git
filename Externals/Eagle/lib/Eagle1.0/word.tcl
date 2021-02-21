@@ -10,10 +10,22 @@
 # See the file "license.terms" for information on usage and redistribution
 # of this file, and for a DISCLAIMER OF ALL WARRANTIES.
 
+#
+# NOTE: Stolen from Tcl 8.4 (3ad9139367d5d1c480d6f55dd4821410f6a481b9) and
+#       modified:
+#
+#       1. Converted line-endings to DOS (i.e. cr/lf).
+#
+#       2. Added [info exists ::tcl_platform(platform)] check, below.
+#
+# -- Joe Mistachkin, 2021/02/15
+#
+
 # The following variables are used to determine which characters are
 # interpreted as white space.  
 
-if {$::tcl_platform(platform) eq "windows"} {
+if {[info exists ::tcl_platform(platform)] && \
+    $::tcl_platform(platform) eq "windows"} {
     # Windows style - any but a unicode space char
     set tcl_wordchars "\\S"
     set tcl_nonwordchars "\\s"

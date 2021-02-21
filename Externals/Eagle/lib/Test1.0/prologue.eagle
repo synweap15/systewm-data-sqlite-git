@@ -175,7 +175,13 @@ if {![info exists no([file tail [info script]])]} then {
   #       necessary.
   #
   if {![info exists bin_file]} then {
-    set bin_file [info nameofexecutable]
+    #
+    # HACK: This does not use the [getShellExecutableName]
+    #       script library procedure because it must always
+    #       refer to the name of the file that started the
+    #       current process.
+    #
+    set bin_file [info nameofexecutable]; # EXEMPT
   }
 
   #
@@ -279,10 +285,18 @@ if {![info exists no([file tail [info script]])]} then {
   }
 
   #
-  # NOTE: Set the network timeout, if necessary.
+  # NOTE: Set the timeout, if necessary.  This is a "short" timeout
+  #       that has historically been used for network related calls.
   #
   if {![info exists test_timeout]} then {
     set test_timeout 2000; # in milliseconds.
+  }
+
+  #
+  # NOTE: Set the default number of iterations for stress tests.
+  #
+  if {![info exists test_stress_count]} then {
+    set test_stress_count 1000; # in iterations.
   }
 
   #
@@ -429,8 +443,9 @@ if {![info exists no([file tail [info script]])]} then {
     if {[canExecFossil]} then {
       set pattern {^local-root:\s+(.*?)$}
 
-      if {[catch {exec -- fossil info} exec] || \
-          ![regexp -line -- $pattern $exec dummy directory]} then {
+      if {[catch {
+        execFossilCommand [file dirname [info script]] info
+      } exec] || ![regexp -line -- $pattern $exec dummy directory]} then {
         #
         # NOTE: We could not query local root directory of the source
         #       checkout from Fossil; therefore, attempt to make an
@@ -841,16 +856,63 @@ if {![info exists no([file tail [info script]])]} then {
   }
 
   #
-  # NOTE: Check for and process any custom test prologue script that may be set
-  #       in the environment.  This must be done after the Eagle test package
-  #       has been made available and after the log file has been setup.
+  # NOTE: Check for and process any custom test prologue script that may
+  #       be set in the environment.  This must be done after the Eagle
+  #       test package has been made available and after the log file has
+  #       been setup.
   #
   sourceIfValid prologue [getEnvironmentVariable testPrologue]
 
   #
-  # NOTE: Show the name of the executable and the command line arguments, if
-  #       any.  This must be done after the log file has been setup; otherwise,
-  #       this information will not be visible in the log file.
+  # NOTE: If there is an existing test log file, make sure it contains a
+  #       test log start sentry -AND- that its contained test log start
+  #       sentry matches the current (in-memory) test log start sentry.
+  #
+  if {[info exists test_log] && [file exists $test_log]} then {
+    set old_test_run_id [readTestLogStartSentry $test_log]
+
+    if {[string length $old_test_run_id] > 0} then {
+      #
+      # NOTE: At this point, everything MAY be fine, i.e. if the test log
+      #       sentry was read from the test log file -AND- it matches the
+      #       one currently in-memory; otherwise, we have a problem.
+      #
+      if {![info exists test_run_id] || \
+          $test_run_id ne $old_test_run_id} then {
+        #
+        # HACK: Generally, this is a fairly serious warning.  It probably
+        #       means the operating system (re?)used a process identifier
+        #       and that there was already existed an associated test log
+        #       file from a previous test run.  This has been observed to
+        #       occur on fully patched Windows 7.
+        #
+        if {[info exists test_run_id]} then {
+          tputs $test_channel [appendArgs \
+              "==== WARNING: read mismatched test log start sentry, " \
+              "was \"" $old_test_run_id "\", now \"" $test_run_id \"\n]
+        } else {
+          tputs $test_channel [appendArgs \
+              "==== WARNING: read stale test log start sentry \"" \
+              $old_test_run_id \"\n]
+        }
+      }
+    } else {
+      #
+      # NOTE: There is an existing test log file without any start
+      #       sentry?  Eventually, this will cause the test run to
+      #       fail.
+      #
+      tputs $test_channel \
+          "==== WARNING: could not read test log start sentry\n"
+    }
+
+    unset -nocomplain old_test_run_id
+  }
+
+  #
+  # NOTE: Show the name of the executable and the command line arguments,
+  #       if any.  This must be done after the log file has been setup;
+  #       otherwise, this information will not be visible in the log file.
   #
   if {![info exists test_run_id]} then {
     set test_run_id [getNewTestRunId]
@@ -877,6 +939,26 @@ if {![info exists no([file tail [info script]])]} then {
 
   tputs $test_channel [appendArgs "---- test channel: " \
       $test_channel \n]
+
+  tputs $test_channel [appendArgs "---- test host: " \
+      [expr {[info exists test_host] ? \
+          $test_host : "<none>"}] \n]
+
+  tputs $test_channel [appendArgs "---- test port: " \
+      [expr {[info exists test_port] ? \
+          $test_port : "<none>"}] \n]
+
+  tputs $test_channel [appendArgs "---- test short timeout: " \
+      [expr {[info exists test_timeout] ? \
+          $test_timeout : "<none>"}] \n]
+
+  tputs $test_channel [appendArgs "---- test join timeout: " \
+      [expr {[info exists test_join_timeout] ? \
+          $test_join_timeout : "<none>"}] \n]
+
+  tputs $test_channel [appendArgs "---- test stress count: " \
+      [expr {[info exists test_stress_count] ? \
+          $test_stress_count : "<none>"}] \n]
 
   tputs $test_channel [appendArgs "---- test machine: " \
       [expr {[info exists test_machine] ? \
@@ -931,34 +1013,56 @@ if {![info exists no([file tail [info script]])]} then {
         [expr {$encoding(0) == 0 ? $encoding(1) : "<none>"}] \n]
 
     unset encoding
-    set host(0) [catch {host query} host(1)]
 
-    tputs $test_channel [appendArgs "---- host query: " \
-        [formatListAsDict [expr {$host(0) == 0 ? $host(1) : ""}] \
-        <none>] \n]
+    if {![info exists no(showHostQuery)]} then {
+      set host(0) [catch {host query} host(1)]
 
-    unset host
-    set memory(0) [catch {debug memory} memory(1)]
+      tputs $test_channel [appendArgs "---- host query: " \
+          [formatListAsDict [expr {$host(0) == 0 ? $host(1) : ""}] \
+          <none>] \n]
 
-    tputs $test_channel [appendArgs "---- starting memory: " \
-        [formatListAsDict [expr {$memory(0) == 0 ? $memory(1) : ""}] \
-        <none>] \n]
+      unset host
+    }
 
-    unset memory
-    set stack(0) [catch {debug stack true} stack(1)]
+    if {![info exists no(showStartingCpu)]} then {
+      set cpu(0) [catch {getCpuStatus} cpu(1)]
 
-    tputs $test_channel [appendArgs "---- starting stack: " \
-        [formatListAsDict [expr {$stack(0) == 0 ? $stack(1) : ""}] \
-        <none>] \n]
+      tputs $test_channel [appendArgs "---- starting cpu: " \
+          [formatListAsDict [expr {$cpu(0) == 0 ? $cpu(1) : ""}] \
+          <none>] \n]
 
-    unset stack
-    set drive(0) [catch {file drive} drive(1)]
+      unset cpu
+    }
 
-    tputs $test_channel [appendArgs "---- system drive: " \
-        [formatListAsDict [expr {$drive(0) == 0 ? $drive(1) : ""}] \
-        <none>] \n]
+    if {![info exists no(showStartingMemory)]} then {
+      set memory(0) [catch {debug memory} memory(1)]
 
-    unset drive
+      tputs $test_channel [appendArgs "---- starting memory: " \
+          [formatListAsDict [expr {$memory(0) == 0 ? $memory(1) : ""}] \
+          <none>] \n]
+
+      unset memory
+    }
+
+    if {![info exists no(showStartingStack)]} then {
+      set stack(0) [catch {debug stack true} stack(1)]
+
+      tputs $test_channel [appendArgs "---- starting stack: " \
+          [formatListAsDict [expr {$stack(0) == 0 ? $stack(1) : ""}] \
+          <none>] \n]
+
+      unset stack
+    }
+
+    if {![info exists no(showSystemDrive)]} then {
+      set drive(0) [catch {file drive} drive(1)]
+
+      tputs $test_channel [appendArgs "---- system drive: " \
+          [formatListAsDict [expr {$drive(0) == 0 ? $drive(1) : ""}] \
+          <none>] \n]
+
+      unset drive
+    }
   }
 
   tputs $test_channel [appendArgs "---- executable: \"" \
@@ -1091,6 +1195,9 @@ if {![info exists no([file tail [info script]])]} then {
   tputs $test_channel [appendArgs "---- test home path: \"" \
       $test_home_path \"\n]
 
+  tputs $test_channel [appendArgs "---- test package files located in: \"" \
+      $test_package_path \"\n]
+
   tputs $test_channel [appendArgs "---- test suite files located in: \"" \
       $test_all_path \"\n]
 
@@ -1115,8 +1222,10 @@ if {![info exists no([file tail [info script]])]} then {
           test_tclsh_verbose] && [string length $test_tclsh_verbose] > 0 ? \
           $test_tclsh_verbose : "<none>"}] \n]
 
-  tputs $test_channel [appendArgs "---- disabled options: " \
-      [formatList [lsort [array names no]] <none>] \n]
+  if {![info exists no(showDisabledOptions)]} then {
+    tputs $test_channel [appendArgs "---- disabled options: " \
+        [formatList [lsort [array names no]] <none>] \n]
+  }
 
   #
   # NOTE: Is the use of Fossil by the test suite allowed?
@@ -1127,7 +1236,9 @@ if {![info exists no([file tail [info script]])]} then {
     #       project the Eagle binaries are being used by) using a Fossil
     #       binary in the PATH, if available.
     #
-    if {[catch {exec -- fossil info} exec] == 0} then {
+    if {[catch {
+      execFossilCommand [file dirname [info script]] info
+    } exec] == 0} then {
       set pattern {^checkout:\s+(.*?)$}
 
       if {[regexp -line -- $pattern $exec dummy checkout]} then {
@@ -1282,6 +1393,14 @@ if {![info exists no([file tail [info script]])]} then {
     }
 
     #
+    # NOTE: Check the variant and/or build of the CLR that we are
+    #       currently running on.
+    #
+    if {![info exists no(checkForRuntimeBuild)]} then {
+      checkForRuntimeBuild $test_channel
+    }
+
+    #
     # NOTE: Check the framework version (i.e. regardless of runtime) that
     #       we are currently running on.
     #
@@ -1351,6 +1470,19 @@ if {![info exists no([file tail [info script]])]} then {
     }
 
     #
+    # NOTE: Has Guru support been disabled?
+    #
+    if {![info exists no(guru)]} then {
+      if {![info exists no(checkForGuru)]} then {
+        checkForGuru $test_channel null
+      }
+
+      if {![info exists no(disableGuru)]} then {
+        checkForGuru $test_channel false
+      }
+    }
+
+    #
     # NOTE: Has software update trust detection support been disabled?
     #
     if {![info exists no(softwareUpdate)]} then {
@@ -1400,7 +1532,10 @@ if {![info exists no([file tail [info script]])]} then {
       # NOTE: Set the database name, if necessary.
       #
       if {![info exists database]} then {
-        set database master
+        #
+        # NOTE: Please see "https://urn.to/r/mssql_master" for details.
+        #
+        set database master; # COMPAT: Microsoft SQL Server
       }
 
       #
@@ -1689,6 +1824,30 @@ if {![info exists no([file tail [info script]])]} then {
           #       "interp-1.601", "redefine-6.2", and "sql-1.17".
           #
           checkForCompileOption $test_channel NET_STANDARD_20
+        }
+
+        #
+        # NOTE: Has .NET Standard 2.1 support been enabled (at
+        #       compile-time)?
+        #
+        if {![info exists no(compileNetStandard21)]} then {
+          checkForCompileOption $test_channel NET_STANDARD_21
+        }
+
+        #
+        # NOTE: Has .NET Core 2.0 support been enabled (at
+        #       compile-time)?
+        #
+        if {![info exists no(compileNetCore20)]} then {
+          checkForCompileOption $test_channel NET_CORE_20
+        }
+
+        #
+        # NOTE: Has .NET Core 3.0 support been enabled (at
+        #       compile-time)?
+        #
+        if {![info exists no(compileNetCore30)]} then {
+          checkForCompileOption $test_channel NET_CORE_30
         }
 
         #
@@ -2229,6 +2388,26 @@ if {![info exists no([file tail [info script]])]} then {
       }
 
       #
+      # NOTE: Has SimpleCallback testing support been disabled?
+      #
+      if {![info exists no(testSimpleCallback)]} then {
+        #
+        # NOTE: For test "object-8.201".
+        #
+        checkForObjectMember $test_channel Eagle._Tests.Default \
+            *TestPrivateInstanceNewInterpreterCallback*
+
+        checkForObjectMember $test_channel Eagle._Tests.Default \
+            *TestPublicInstanceNewInterpreterCallback*
+
+        checkForObjectMember $test_channel Eagle._Tests.Default \
+            *TestPrivateStaticNewInterpreterCallback*
+
+        checkForObjectMember $test_channel Eagle._Tests.Default \
+            *TestPublicStaticNewInterpreterCallback*
+      }
+
+      #
       # NOTE: Has DateTime testing support been disabled?
       #
       if {![info exists no(testDateTime)]} then {
@@ -2682,6 +2861,52 @@ if {![info exists no([file tail [info script]])]} then {
       }
 
       #
+      # NOTE: Has test string support been disabled?
+      #
+      if {![info exists no(testStrings)]} then {
+        checkForObjectMember $test_channel Eagle._Tests.Default \
+            *TestInitializeStrings*
+
+        checkForObjectMember $test_channel Eagle._Tests.Default \
+            *TestResetStrings*
+
+        checkForObjectMember $test_channel Eagle._Tests.Default \
+            *TestChangeString*
+
+        checkForObjectMember $test_channel Eagle._Tests.Default \
+            *TestRemoveString*
+
+        checkForObjectMember $test_channel Eagle._Tests.Default \
+            *TestGetString*
+      }
+
+      #
+      # NOTE: Has script XML testing been disabled?
+      #
+      if {![info exists no(testXml)]} then {
+        checkForObjectMember $test_channel Eagle._Tests.Default \
+            *TestGetScriptStreamXmlDataHash*
+
+        checkForObjectMember $test_channel Eagle._Tests.Default \
+            *TestGetScriptStreamXmlData*
+
+        checkForObjectMember $test_channel Eagle._Tests.Default \
+            *TestGetScriptStreamXmlSignature*
+
+        checkForObjectMember $test_channel Eagle._Tests.Default \
+            *TestGetScriptStreamXmlBlock1Signature*
+
+        checkForObjectMember $test_channel Eagle._Tests.Default \
+            *TestGetScriptStreamXmlBlock2Signature*
+
+        checkForObjectMember $test_channel Eagle._Tests.Default \
+            *TestReadScriptXml*
+
+        checkForObjectMember $test_channel Eagle._Tests.Default \
+            *TestScriptStreamXml*
+      }
+
+      #
       # NOTE: Has IDisposable testing support been disabled?
       #
       if {![info exists no(testDisposable)]} then {
@@ -2832,6 +3057,16 @@ if {![info exists no([file tail [info script]])]} then {
       #       "winForms-*.*".
       #
       checkForWindowsForms $test_channel
+    }
+
+    #
+    # NOTE: Has Windows Terminal testing support been disabled?
+    #
+    if {![info exists no(noWindowsTerminal)]} then {
+      #
+      # NOTE: For tests "debug-10.1" and "host-1.1".
+      #
+      checkForWindowsTerminal $test_channel
     }
 
     #
@@ -3101,7 +3336,7 @@ if {![info exists no([file tail [info script]])]} then {
     checkForPackage $test_channel {^Eagle\._Plugins\.Core, .*$}
     checkForPackage $test_channel {^Eagle\._Plugins\.Object, .*$}
     checkForPackage $test_channel {^Eagle\._Plugins\.Test, .*$}
-    checkForPackage $test_channel {^Eagle\._Plugins\.Trace, .*$}
+    checkForPackage $test_channel {^Eagle\._Plugins\.Monitor, .*$}
   }
 
   #
@@ -3204,6 +3439,13 @@ if {![info exists no([file tail [info script]])]} then {
     #
     if {![info exists no(bad_subst.txt)]} then {
       checkForFile $test_channel [file join $test_data_path bad_subst.txt]
+    }
+
+    #
+    # NOTE: For test "exec-2.1".
+    #
+    if {![info exists no(big_exec.txt)]} then {
+      checkForFile $test_channel [file join $test_data_path big_exec.txt]
     }
 
     #
@@ -3597,26 +3839,6 @@ if {![info exists no([file tail [info script]])]} then {
     checkForWindowsVersion $test_channel
   }
 
-  if {![info exists no(getInstalledUpdates)]} then {
-    checkForGetInstalledUpdates $test_channel
-  }
-
-  if {![info exists no(operatingSystemUpdates)]} then {
-    if {[isEagle] && [info exists tcl_platform(osExtra)]} then {
-      vwaitWithTimeout tcl_platform(osExtra) $test_timeout
-    }
-
-    checkForOperatingSystemUpdate $test_channel KB936929
-    checkForOperatingSystemUpdate $test_channel KB976932
-    checkForOperatingSystemUpdate $test_channel "November Update"
-    checkForOperatingSystemUpdate $test_channel "Anniversary Update"
-    checkForOperatingSystemUpdate $test_channel "Creators Update"
-    checkForOperatingSystemUpdate $test_channel "Fall Creators Update"
-    checkForOperatingSystemUpdate $test_channel "April 2018 Update"
-    checkForOperatingSystemUpdate $test_channel "October 2018 Update"
-    checkForOperatingSystemUpdate $test_channel "May 2019 Update"
-  }
-
   if {![info exists no(scriptLibrary)]} then {
     checkForScriptLibrary $test_channel
   }
@@ -3682,7 +3904,7 @@ if {![info exists no([file tail [info script]])]} then {
   }
 
   if {![info exists no(executableSymbols)]} then {
-    checkForSymbols $test_channel [info nameofexecutable] executable
+    checkForSymbols $test_channel [getShellExecutableName] executable
   }
 
   if {![info exists no(garuda)]} then {
@@ -3852,6 +4074,10 @@ if {![info exists no([file tail [info script]])]} then {
     checkForTip127 $test_channel
   }
 
+  if {![info exists no(tip182)]} then {
+    checkForTip182 $test_channel
+  }
+
   if {![info exists no(tip194)]} then {
     checkForTip194 $test_channel
   }
@@ -3898,6 +4124,14 @@ if {![info exists no([file tail [info script]])]} then {
 
   if {![info exists no(tip471)]} then {
     checkForTip471 $test_channel
+  }
+
+  if {![info exists no(tip508)]} then {
+    checkForTip508 $test_channel
+  }
+
+  if {![info exists no(tip521)]} then {
+    checkForTip521 $test_channel
   }
 
   #
@@ -4087,6 +4321,60 @@ if {![info exists no([file tail [info script]])]} then {
   #############################################################################
 
   #
+  # NOTE: Set the "long" timeout, if necessary.  This should be used
+  #       for operations that may take a long time on slower machines.
+  #
+  if {![info exists test_long_timeout]} then {
+    set test_long_timeout 60000; # in milliseconds.
+
+    if {![info exists no(bogoCops)] && [haveConstraint performance]} then {
+      set test_long_timeout [expr {
+        int([calculateRelativePerformance elapsed $test_long_timeout])
+      }]
+    }
+  }
+
+  #############################################################################
+
+  #
+  # HACK: Next, check for any installed operating system updates.
+  #       Since this can take a long time on slow machines, it is
+  #       calibrated against the performance of this machine.
+  #
+  if {![info exists no(core)] && \
+      ![info exists no(getInstalledUpdates)]} then {
+    checkForGetInstalledUpdates $test_channel $test_long_timeout
+  }
+
+  if {![info exists no(core)] && \
+      ![info exists no(operatingSystemUpdates)]} then {
+    #
+    # HACK: If the installed update names are not actually present
+    #       in the extra operating system information yet, wait a
+    #       little while for them to possibly appear.
+    #
+    if {[isEagle] && [haveConstraint getInstalledUpdates] && \
+        [info exists tcl_platform(osExtra)] && \
+        [lsearch -exact $tcl_platform(osExtra) UpdateNames] == -1} then {
+      vwaitWithTimeout tcl_platform(osExtra) $test_long_timeout
+    }
+
+    checkForOperatingSystemUpdate $test_channel KB936929
+    checkForOperatingSystemUpdate $test_channel KB976932
+    checkForOperatingSystemUpdate $test_channel "November Update"
+    checkForOperatingSystemUpdate $test_channel "Anniversary Update"
+    checkForOperatingSystemUpdate $test_channel "Creators Update"
+    checkForOperatingSystemUpdate $test_channel "Fall Creators Update"
+    checkForOperatingSystemUpdate $test_channel "April 2018 Update"
+    checkForOperatingSystemUpdate $test_channel "October 2018 Update"
+    checkForOperatingSystemUpdate $test_channel "May 2019 Update"
+    checkForOperatingSystemUpdate $test_channel "November 2019 Update"
+    checkForOperatingSystemUpdate $test_channel "May 2020 Update"
+  }
+
+  #############################################################################
+
+  #
   # NOTE: The test constraints should now be fully built, cache them.
   #
   if {![info exists test_constraints]} then {
@@ -4144,8 +4432,10 @@ if {![info exists no([file tail [info script]])]} then {
     tputs $test_channel [appendArgs "---- moduleVersionId: " \
         [getPlatformInfo moduleVersionId <none>] \n]
 
-    tputs $test_channel [appendArgs "---- compileOptions: " \
-        [formatList [getPlatformInfo compileOptions <none>]] \n]
+    if {![info exists no(showCompileOptions)]} then {
+      tputs $test_channel [appendArgs "---- compileOptions: " \
+          [formatList [getPlatformInfo compileOptions <none>]] \n]
+    }
 
     tputs $test_channel [appendArgs "---- strongName: " \
         [getPlatformInfo strongName <none>] \n]
@@ -4158,6 +4448,13 @@ if {![info exists no([file tail [info script]])]} then {
   }
 
   #
+  # NOTE: Show the (dynamically calculated?) long timeout.
+  #
+  tputs $test_channel [appendArgs "---- test long timeout: " \
+      [expr {[info exists test_long_timeout] ? \
+          $test_long_timeout : "<none>"}] \n]
+
+  #
   # NOTE: Show the current test file name, if any.
   #
   tputs $test_channel [appendArgs "---- test file: " \
@@ -4165,19 +4462,28 @@ if {![info exists no([file tail [info script]])]} then {
       $test_file : "<none>"}] \n]
 
   #
-  # NOTE: Show the active and cached test constraints.
+  # NOTE: Maybe show the active test constraints.
   #
-  tputs $test_channel [appendArgs "---- active constraints: " \
-      [formatList [lsort [getConstraints]] <none>] \n]
+  if {![info exists no(showActiveConstraints)]} then {
+    tputs $test_channel [appendArgs "---- active constraints: " \
+        [formatList [lsort [getConstraints]] <none>] \n]
+  }
 
-  tputs $test_channel [appendArgs "---- cached constraints: " \
-      [formatList [lsort [getCachedConstraints]] <none>] \n]
+  #
+  # NOTE: Maybe show the cached test constraints.
+  #
+  if {![info exists no(showCachedConstraints)]} then {
+    tputs $test_channel [appendArgs "---- cached constraints: " \
+        [formatList [lsort [getCachedConstraints]] <none>] \n]
+  }
 
   #
-  # NOTE: Show the lists of "well known" metadata.
+  # NOTE: Maybe show the lists of "well known" metadata.
   #
-  tputs $test_channel [appendArgs "---- well known metadata: " \
-      [formatListAsDict [array get test_well_known] <none>] \n]
+  if {![info exists no(showWellKnown)]} then {
+    tputs $test_channel [appendArgs "---- well known metadata: " \
+        [formatListAsDict [array get test_well_known] <none>] \n]
+  }
 
   #
   # NOTE: Show the starting command count (for both Tcl and Eagle).
@@ -4208,6 +4514,11 @@ if {![info exists no([file tail [info script]])]} then {
     #
     catch {set test_timestamp(startCount) [clock start]}
   }
+
+  #
+  # NOTE: Load the test settings file(s) now, if any.
+  #
+  loadTestSettings $test_channel
 
   #
   # NOTE: Show when the tests actually began (now).

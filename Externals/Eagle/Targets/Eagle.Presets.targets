@@ -57,10 +57,7 @@
 
               /property:EagleWindows=false
               /property:EagleUnix=true
-    -->
-    <EagleNetStandard20 Condition="'$(EagleNetStandard20)' == ''">false</EagleNetStandard20>
 
-    <!--
         HACK: *SPECIAL* Since this property may be needed *before* the build
               types targets file (i.e. "Eagle.Builds.targets") is loaded when
               building projects targeting the .NET Standard, automatically set
@@ -71,6 +68,7 @@
     <!--
     <EagleNetStandard20 Condition="'$(EagleBuildType)' == 'NetStandard20' And '$(EagleNetStandard20)' == ''">true</EagleNetStandard20>
     -->
+    <EagleNetStandard20 Condition="'$(EagleNetStandard20)' == ''">false</EagleNetStandard20>
 
     <!--
         NOTE: Building for .NET Standard 2.1?  By default, this is disabled.
@@ -78,10 +76,7 @@
               EagleNetStandard20 property (just above).  If this is enabled,
               some functionality unavailable in the .NET Standard 2.0 -AND-
               available in the .NET Standard 2.1 may be used.
-    -->
-    <EagleNetStandard21 Condition="'$(EagleNetStandard21)' == ''">false</EagleNetStandard21>
 
-    <!--
         HACK: *SPECIAL* Since this property may be needed *before* the build
               types targets file (i.e. "Eagle.Builds.targets") is loaded when
               building projects targeting the .NET Standard, automatically set
@@ -90,6 +85,7 @@
               the default value set in the block just above this one.
     -->
     <EagleNetStandard21 Condition="'$(EagleBuildType)' == 'NetStandard21' And '$(EagleNetStandard21)' == ''">true</EagleNetStandard21>
+    <EagleNetStandard21 Condition="'$(EagleNetStandard21)' == ''">false</EagleNetStandard21>
 
     <!--
         NOTE: When building for the .NET Standard 2.x, enable features that rely

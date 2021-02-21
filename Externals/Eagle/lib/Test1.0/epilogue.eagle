@@ -40,8 +40,37 @@ if {![info exists no([file tail [info script]])]} then {
   #
   # NOTE: Make sure all the variables used by this epilogue are unset.
   #
-  unset -nocomplain memory stack name count passedOrSkipped \
-      passedSkippedOrDisabled percent exitCode
+  unset -nocomplain haveStartSentry operationCount memory stack name \
+      count passedOrSkipped passedSkippedOrDisabled percent exitCode \
+      milliseconds code dictionary error usageKind usageType pair \
+      usageData key value cmdType usage
+
+  #
+  # HACK: Maybe process events for a little while on this thread to
+  #       give the window manager the opporutnity to hopefully remove
+  #       closed windows, etc, from the screen.
+  #
+  if {![info exists no(epilogueEvents)] && [needTestDoEvents]} then {
+    if {[isEagle] || [haveConstraint tcl85OrHigher]} then {
+      set expr {max(2000, $test_timeout)}
+
+      set milliseconds [expr $expr]
+
+      unset expr
+    } else {
+      set milliseconds 2000; # HACK: Tcl 8.4, no max()
+    }
+
+    tputs $test_channel [appendArgs \
+        "---- processing pending events for about " $milliseconds \
+        " milliseconds... "]
+
+    testDoEvents $milliseconds
+
+    tputs $test_channel done\n
+
+    unset milliseconds
+  }
 
   #
   # NOTE: Show when the tests actually ended (now).
@@ -143,26 +172,100 @@ if {![info exists no([file tail [info script]])]} then {
     unset operationCount
 
     #
-    # NOTE: Show the current state of the memory.
+    # NOTE: Maybe show the current state of the CPU.
     #
-    set memory(0) [catch {debug memory} memory(1)]
+    if {![info exists no(showEndingCpu)]} then {
+      set cpu(0) [catch {getCpuStatus} cpu(1)]
 
-    tputs $test_channel [appendArgs "---- ending memory: " \
-        [formatListAsDict [expr {$memory(0) == 0 ? $memory(1) : ""}] \
-        <none>] \n]
+      tputs $test_channel [appendArgs "---- ending cpu: " \
+          [formatListAsDict [expr {$cpu(0) == 0 ? $cpu(1) : ""}] \
+          <none>] \n]
 
-    unset memory
+      unset cpu
+    }
 
     #
-    # NOTE: Show the current state of the native stack.
+    # NOTE: Maybe show the current state of the memory.
     #
-    set stack(0) [catch {debug stack true} stack(1)]
+    if {![info exists no(showEndingMemory)]} then {
+      set memory(0) [catch {debug memory} memory(1)]
 
-    tputs $test_channel [appendArgs "---- ending stack: " \
-        [formatListAsDict [expr {$stack(0) == 0 ? $stack(1) : ""}] \
-        <none>] \n]
+      tputs $test_channel [appendArgs "---- ending memory: " \
+          [formatListAsDict [expr {$memory(0) == 0 ? $memory(1) : ""}] \
+          <none>] \n]
 
-    unset stack
+      unset memory
+    }
+
+    #
+    # NOTE: Maybe show the current state of the native stack.
+    #
+    if {![info exists no(showEndingStack)]} then {
+      set stack(0) [catch {debug stack true} stack(1)]
+
+      tputs $test_channel [appendArgs "---- ending stack: " \
+          [formatListAsDict [expr {$stack(0) == 0 ? $stack(1) : ""}] \
+          <none>] \n]
+
+      unset stack
+    }
+
+    #
+    # NOTE: Maybe show usage data for all commands.
+    #
+    if {![info exists no(showEndingUsageData)] && \
+        [llength [info commands object]] > 0} then {
+      #
+      # HACK: Many things can go wrong here and we do not want to cause
+      #       problems for the test run; therefore, wrap all this usage
+      #       data gathering and reporting in a [catch] block.
+      #
+      foreach usageKind [list Command Function Procedure Operator] {
+        if {[catch {
+          unset -nocomplain usageData
+
+          foreach usageType [list Count Microseconds] {
+            set dictionary null; set error null
+
+            set code [object invoke Interpreter.GetActive \
+                GetUsageData $usageKind $usageType dictionary \
+                error]
+
+            if {$code eq "Ok"} then {
+              object foreach -alias pair $dictionary {
+                set value [$pair Value]
+
+                if {$value == 0} then {continue}
+                set key [lindex [split [$pair Key] \t] 2]
+
+                if {$usageKind ne "Command" || \
+                    ([catch {info cmdtype $key} cmdType] == 0 && \
+                    $cmdType in [list native ensemble])} then {
+                  lappend usageData($key) [list $usageType $value]
+                }
+              }
+            } else {
+              tputs $test_channel [appendArgs \
+                  "---- received usage data error: " \
+                  [getStringFromObjectHandle $error] \n]
+            }
+          }
+
+          array get usageData
+        } usage] == 0} then {
+          tputs $test_channel [appendArgs \
+              "---- " [string tolower $usageKind] " usage data: " \
+              [formatListAsDict $usage <none>] \n]
+        } else {
+          tputs $test_channel [appendArgs \
+              "---- caught " [string tolower $usageKind] \
+              " usage data error: " $usage \n]
+        }
+      }
+
+      unset -nocomplain code dictionary error usageKind usageType \
+          pair usageData key value cmdType usage
+    }
 
     #
     # NOTE: Check for and display any duplicate test names that we found.  In

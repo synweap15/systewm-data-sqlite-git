@@ -21,6 +21,80 @@
 #
 namespace eval ::Eagle {
   #
+  # NOTE: This procedure returns the fully qualified file name for the shell
+  #       executable, which is a native executable -OR- a managed assembly.
+  #
+  proc getShellExecutableName {} {
+    #
+    # NOTE: Check for native Tcl, Mono, and .NET Core because this impacts
+    #       how the shell executable name is determined.
+    #
+    if {[isEagle]} then {
+      if {[isMono] || [isDotNetCore]} then {
+        return [lindex [info assembly true] 1]; # Mono -OR- .NET Core
+      } else {
+        return [info nameofexecutable]; # .NET Framework
+      }
+    } else {
+      return [info nameofexecutable]; # native Tcl
+    }
+  }
+
+  #
+  # NOTE: This procedure returns a list with the command line arguments that
+  #       are necessary to run an executable using the current runtime, e.g.
+  #       native Tcl -OR- Eagle on the .NET Framework, Mono, or .NET Core.
+  #
+  proc getRuntimeCommandLine { fileName } {
+    #
+    # NOTE: Only the base portion of the command line arguments are returned
+    #       from this procedure, i.e. we do not return the [exec] command or
+    #       its options, nor are subsequent arguments for the target command
+    #       included.
+    #
+    set result [list]
+
+    if {[isEagle]} then {
+      #
+      # NOTE: Ok, running on Eagle, not native Tcl.  Check the runtime.
+      #
+      if {[isMono]} then {
+        #
+        # HACK: Assume that Mono is somewhere along the PATH.  Insert the
+        #       "mono" command line argument followed by our entry assembly
+        #       name.
+        #
+        lappend result mono \
+            [appendArgs \" [file nativename $fileName] \"]
+      } elseif {[isDotNetCore]} then {
+        #
+        # HACK: When running on .NET Core, we need to insert "dotnet exec"
+        #       command line arguments followed by our entry assembly name.
+        #
+        lappend result dotnet exec \
+            [appendArgs \" [file nativename $fileName] \"]
+      } else {
+        #
+        # NOTE: When running on the .NET Framework, just use the executable
+        #       name as this will be the same as the entry assembly name.
+        #
+        lappend result \
+            [appendArgs \" [file nativename $fileName] \"]
+      }
+    } else {
+      #
+      # NOTE: Assumes the native Tcl shell executable (e.g. "tclsh", etc)
+      #       is somewhere along the PATH -OR- the value returned is from
+      #       [info nameofexecutable] is fully qualified.
+      #
+      lappend result \
+          [appendArgs \" [file nativename $fileName] \"]
+    }
+
+    return $result
+  }
+
+  #
   # NOTE: This procedure executes a native Tcl or Eagle sub-shell using the
   #       specified arguments and returns the captured output, verbatim.
   #
@@ -43,35 +117,10 @@ namespace eval ::Eagle {
     lappend command --
 
     #
-    # NOTE: Check for native Tcl and Mono because this impacts how the
-    #       shell executable name is determined.
+    # NOTE: Add the necessary command line arguments to run the target
+    #       file using the current runtime.
     #
-    if {[isEagle] && [isMono]} then {
-      #
-      # HACK: Assume that Mono is somewhere along the PATH.
-      #
-      lappend command mono \
-          [appendArgs \" [file nativename [info nameofexecutable]] \"]
-    } else {
-      #
-      # NOTE: Assumes that the executable (e.g. "dotnet", "EagleShell",
-      #       etc) is somewhere along the PATH -OR- the value returned
-      #       from [info nameofexecutable] is fully qualified.
-      #
-      lappend command \
-          [appendArgs \" [file nativename [info nameofexecutable]] \"]
-
-      #
-      # HACK: When running on .NET Core, we need to insert the "exec"
-      #       command line argument followed by our assembly name.
-      #
-      if {[isEagle] && [isDotNetCore]} then {
-        lappend command exec
-
-        lappend command [appendArgs \" \
-            [file nativename [lindex [info assembly true] 1]] \"]
-      }
-    }
+    eval lappend command [getRuntimeCommandLine [getShellExecutableName]]
 
     #
     # NOTE: If possible, check if the current interpreter has security

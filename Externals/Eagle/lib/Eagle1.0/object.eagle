@@ -225,24 +225,67 @@ namespace eval ::Eagle {
   # NOTE: This procedure returns non-zero if the specified name is usable
   #       as a CLR type name.
   #
-  proc canGetManagedType { name {varName ""} } {
+  proc canGetManagedType {
+          name allowExtra {typeVarName ""} {extraVarName ""} } {
     if {[llength [info commands object]] > 0} then {
       if {![isObjectHandle $name]} then {
         set cultureInfo [object invoke Interpreter.GetActive CultureInfo]
         set type null
 
         set code [object invoke -create -alias -flags +NonPublic \
-            Value GetAnyType "" $name null null None $cultureInfo type]
+            Value GetAnyType "" $name null null None $cultureInfo \
+            type]
 
         if {[$code ToString] eq "Ok"} then {
-          if {[string length $varName] > 0} then {
-            upvar 1 $varName typeName
+          if {[string length $typeVarName] > 0} then {
+            upvar 1 $typeVarName typeName
           }
 
           set typeName [$type AssemblyQualifiedName]
 
+          if {[string length $extraVarName] > 0} then {
+            upvar 1 $extraVarName extraName
+          }
+
+          set extraName ""; # NOTE: Entire name was used.
+
           if {[isManagedType $typeName]} then {
             return true
+          }
+        } elseif {$allowExtra && [string first . $name] != -1} then {
+          set typeParts [split $name .]
+          set startIndex [expr {[llength $typeParts] - 2}]
+
+          for {set index $startIndex} {$index >= 0} {incr index -1} {
+            set rangeName [lrange $typeParts 0 $index]
+
+            if {![isObjectHandle $rangeName]} then {
+              set type null
+
+              set code [object invoke -create -alias -flags +NonPublic \
+                  Value GetAnyType "" $rangeName null null None \
+                  $cultureInfo type]
+
+              if {[$code ToString] eq "Ok"} then {
+                if {[string length $typeVarName] > 0} then {
+                  upvar 1 $typeVarName typeName
+                }
+
+                set typeName $rangeName
+
+                if {[string length $extraVarName] > 0} then {
+                  upvar 1 $extraVarName extraName
+                }
+
+                set extraName [join [lrange $typeParts $index+1 end] .]
+
+                if {[isManagedType $typeName]} then {
+                  return true
+                } else {
+                  break
+                }
+              }
+            }
           }
         }
       }
@@ -332,9 +375,16 @@ namespace eval ::Eagle {
     #       the dynamic callback mechanism with the anonymous procedure we
     #       constructed above.
     #
+    set interp [object invoke \
+        -objectflags +NoDispose Interpreter GetActive]; # TODO: 10x speed?
+
+    set parameterTypes [list \
+        String Eagle._Components.Public.Delegates.AsynchronousCallback \
+        Eagle._Interfaces.Public.IClientData Result&]; # TODO: Speed?
+
     set code [object invoke -verbose \
-        -marshalflags +DynamicCallback -- Interpreter.GetActive \
-        EvaluateScript $asyncScript $callback null error]
+        -marshalflags +DynamicCallback -parametertypes $parameterTypes \
+        -- $interp EvaluateScript $asyncScript $callback null error]
 
     #
     # NOTE: Check the return code, which only indicates if the script was

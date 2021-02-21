@@ -137,26 +137,34 @@ namespace eval ::Eagle {
     return [uplevel 1 [list loadScripts $directory $matchFileNames]]
   }
 
-  if {![interp issafe]} then {
+  if {![interp issafe] && ([isEagle] ? ![interp issdk] : true)} then {
     #
     # NOTE: Load the extra script library files that contain commonly used
     #       procedures that are shared between native Tcl and Eagle.
     #
-    maybeLoadScripts [file dirname [info script]] [list \
-        auxiliary.eagle database.eagle exec.eagle file1.eagle \
-        file2.eagle file3.eagle info.eagle list.eagle \
-        pkgt.eagle platform.eagle testlog.eagle unzip.eagle]
+    if {![info exists ::no(maybeLoadScripts,shared)]} then {
+      maybeLoadScripts [file dirname [info script]] [list \
+          auxiliary.eagle database.eagle exec.eagle file1.eagle \
+          file2.eagle file3.eagle info.eagle list.eagle \
+          pkgt.eagle platform.eagle testlog.eagle unzip.eagle]
+    }
 
     #
     # NOTE: Load the extra script library files that contain procedures that
     #       require a specific language (i.e. either native Tcl or Eagle).
     #
     if {[isEagle]} then {
-      maybeLoadScripts [file dirname [info script]] [list \
-          compat.eagle csharp.eagle object.eagle process.eagle \
-          runopt.eagle unkobj.eagle update.eagle]
+      if {![info exists ::no(maybeLoadScripts,engine)] && \
+          ![info exists ::no(maybeLoadScripts,eagle)]} then {
+        maybeLoadScripts [file dirname [info script]] [list \
+            compat.eagle csharp.eagle object.eagle process.eagle \
+            runopt.eagle unkobj.eagle update.eagle]
+      }
     } else {
-      maybeLoadScripts [file dirname [info script]] [list shim.eagle]
+      if {![info exists ::no(maybeLoadScripts,engine)] && \
+          ![info exists ::no(maybeLoadScripts,tcl)]} then {
+        maybeLoadScripts [file dirname [info script]] [list shim.eagle]
+      }
     }
   }
 
@@ -181,10 +189,10 @@ namespace eval ::Eagle {
 
       try {
         catch {
-          set savedInterpreterFlags None
+          set savedInterpreterStateFlags None
 
           object invoke -flags +NonPublic Interpreter.GetActive \
-              BeginArgumentLocation savedInterpreterFlags
+              BeginArgumentLocation savedInterpreterStateFlags
         }
 
         try {
@@ -194,7 +202,7 @@ namespace eval ::Eagle {
         } finally {
           catch {
             object invoke -flags +NonPublic Interpreter.GetActive \
-                EndArgumentLocation savedInterpreterFlags
+                EndArgumentLocation savedInterpreterStateFlags
           }
         }
       } finally {
@@ -205,7 +213,7 @@ namespace eval ::Eagle {
       }
     }
 
-    if {![interp issafe]} then {
+    if {![interp issafe] && ![interp issdk]} then {
       #
       # NOTE: This is the [unknown] command for Eagle.  It will normally be
       #       executed by the script engine when a command is not found.
@@ -344,7 +352,7 @@ namespace eval ::Eagle {
     #
     # NOTE: Add script library files borrowed from native Tcl.
     #
-    if {![interp issafe]} then {
+    if {![interp issafe] && ![interp issdk]} then {
       maybeLoadScripts [file dirname [info script]] [list word.tcl]
     }
 
@@ -372,11 +380,12 @@ namespace eval ::Eagle {
           appendLogFile appendSharedFile appendSharedLogFile \
           readAsciiFile writeAsciiFile readUnicodeFile \
           writeUnicodeFile getDirResultPath addToPath removeFromPath \
-          execShell maybeGetExitCode lshuffle ldifference filter map reduce \
-          getLengthModifier debug findDirectories \
-          findDirectoriesRecursive findFiles findFilesRecursive \
-          copyFilesRecursive exportAndImportPackageCommands setupUnzipVars \
-          unzipMustBeInstalled extractZipArchive] false false
+          getShellExecutableName getRuntimeCommandLine execShell \
+          maybeGetExitCode lshuffle ldifference filter map reduce \
+          getLengthModifier debug findDirectories findDirectoriesRecursive \
+          findFiles findFilesRecursive copyFilesRecursive \
+          exportAndImportPackageCommands setupUnzipVars unzipMustBeInstalled \
+          extractZipArchive] false false
     }
 
     ###########################################################################

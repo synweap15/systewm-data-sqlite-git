@@ -26,8 +26,11 @@ namespace eval ::Eagle {
   #       merging options and arguments as necessary.
   #
   proc unknownObjectInvoke { level name args } {
+    set typeName $name; set extraName ""
+
     if {[llength [info commands object]] > 0 && \
-        ([isManagedType $name] || [canGetManagedType $name name])} then {
+       ([isManagedType $typeName] || \
+        [canGetManagedType $typeName true typeName extraName])} then {
       #
       # NOTE: Get possible options for the [object invoke] sub-command.
       #
@@ -43,8 +46,21 @@ namespace eval ::Eagle {
       # NOTE: Create argument list for the entire command being handled.
       #       There may be options right after the command name itself.
       #
-      set arguments2 [eval \
-          object create ArgumentList [concat [list $name] $args]]
+      if {[string length $extraName] > 0} then {
+        #
+        # HACK: Construct a new type name with the NUL character between
+        #       it and the extra parts that must be moved into the member
+        #       name by the core marshaller.
+        #
+        set arguments2 [eval \
+            object create ArgumentList [concat [list [appendArgs \
+            $typeName \x00 [string map [list . \x00] $extraName]]] \
+            $args]]
+      } else {
+        set arguments2 [eval \
+            object create ArgumentList [concat [list $typeName] \
+            $args]]
+      }
 
       #
       # NOTE: Setup output arguments needed for the MergeArguments method.

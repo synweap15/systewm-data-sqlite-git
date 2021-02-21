@@ -28,8 +28,9 @@ namespace eval ::Eagle {
     return [list \
         NetFx20 NetFx35 NetFx40 NetFx45 NetFx451 \
         NetFx452 NetFx46 NetFx461 NetFx462 NetFx47 \
-        NetFx471 NetFx472 NetFx48 NetStandard20 Bare \
-        LeanAndMean Database MonoOnUnix Development]
+        NetFx471 NetFx472 NetFx48 NetStandard20 \
+        NetStandard21 Bare LeanAndMean Database \
+        MonoOnUnix Development]
   }
 
   proc getKnownCompileOptions {} {
@@ -52,21 +53,23 @@ namespace eval ::Eagle {
         EXPRESSION_FLAGS FAST_ERRORCODE FAST_ERRORINFO FOR_TEST_USE_ONLY \
         FORCE_TRACE HAVE_SIZEOF HISTORY IA64 INTERACTIVE_COMMANDS \
         INTERNALS_VISIBLE_TO ISOLATED_INTERPRETERS ISOLATED_PLUGINS LIBRARY \
-        LICENSING LICENSE_MANAGER LIMITED_EDITION LIST_CACHE MONO MONO_BUILD \
-        MONO_HACKS MONO_LEGACY NATIVE NATIVE_PACKAGE NATIVE_THREAD_ID \
-        NATIVE_UTILITY NATIVE_UTILITY_BSTR NETWORK NET_20 NET_20_FAST_ENUM \
-        NET_20_ONLY NET_20_SP1 NET_20_SP2 NET_30 NET_35 NET_40 NET_45 NET_451 \
-        NET_452 NET_46 NET_461 NET_462 NET_47 NET_471 NET_472 NET_48 \
-        NET_CORE_20 NET_STANDARD_20 NON_WORKING_CODE NOTIFY NOTIFY_ACTIVE \
+        LICENSING LICENSE_MANAGER LIMITED_EDITION LIST_CACHE MAYBE_TRACE MONO \
+        MONO_BUILD MONO_HACKS MONO_LEGACY NATIVE NATIVE_PACKAGE \
+        NATIVE_THREAD_ID NATIVE_UTILITY NATIVE_UTILITY_BSTR NETWORK NET_20 \
+        NET_20_FAST_ENUM NET_20_ONLY NET_20_SP1 NET_20_SP2 NET_30 NET_35 \
+        NET_40 NET_45 NET_451 NET_452 NET_46 NET_461 NET_462 NET_47 NET_471 \
+        NET_472 NET_48 NET_CORE_20 NET_CORE_30 NET_STANDARD_20 \
+        NET_STANDARD_21 NON_WORKING_CODE NOTIFY NOTIFY_ACTIVE \
         NOTIFY_ARGUMENTS NOTIFY_EXCEPTION NOTIFY_EXECUTE NOTIFY_EXPRESSION \
-        NOTIFY_GLOBAL NOTIFY_OBJECT OBSOLETE OBFUSCATION OFFICIAL PARSE_CACHE \
-        PATCHLEVEL PLUGIN_COMMANDS POLICY_TRACE PREVIOUS_RESULT RANDOMIZE_ID \
-        REMOTING RESULT_LIMITS SAMPLE SCRIPT_ARGUMENTS SECURITY SERIALIZATION \
-        SHARED_ID_POOL SHELL SOURCE_ID SOURCE_TIMESTAMP STATIC TCL TCL_KITS \
-        TCL_THREADED TCL_THREADS TCL_UNICODE TCL_WRAPPER TEST TEST_PLUGIN \
-        THREADING THROW_ON_DISPOSED TRACE TYPE_CACHE UNIX UNSAFE \
-        USE_APPDOMAIN_FOR_ID USE_NAMESPACES VERBOSE WEB WINDOWS WINFORMS \
-        WIX_30 WIX_35 WIX_36 WIX_37 WIX_38 WIX_39 WIX_310 WIX_311 X64 X86 XML]
+        NOTIFY_GLOBAL NOTIFY_OBJECT NOTIFY_TCL OBSOLETE OBFUSCATION OFFICIAL \
+        PARSE_CACHE PATCHLEVEL PLUGIN_COMMANDS POLICY_TRACE PREVIOUS_RESULT \
+        PROFILER RANDOMIZE_ID REMOTING RESULT_LIMITS SAMPLE SCRIPT_ARGUMENTS \
+        SECURITY SERIALIZATION SHARED_ID_POOL SHELL SOURCE_ID \
+        SOURCE_TIMESTAMP STATIC TCL TCL_KITS TCL_THREADED TCL_THREADS \
+        TCL_UNICODE TCL_WRAPPER TEST TEST_PLUGIN THREADING THROW_ON_DISPOSED \
+        TRACE TYPE_CACHE UNIX UNSAFE USE_APPDOMAIN_FOR_ID USE_NAMESPACES \
+        VERBOSE WEB WINDOWS WINFORMS WIX_30 WIX_35 WIX_36 WIX_37 WIX_38 \
+        WIX_39 WIX_310 WIX_311 X64 X86 XML]
   }
 
   proc getKnownWindowsVersions { {force false} } {
@@ -111,7 +114,8 @@ namespace eval ::Eagle {
           [list 3 8] [list 3 10] [list 3 12] [list 4 0] [list 4 2] [list 4 4] \
           [list 4 6] [list 4 8] [list 5 0] [list 5 2] [list 5 4] [list 5 8] \
           [list 5 10] [list 5 12] [list 5 14] [list 5 16] [list 5 18] \
-          [list 5 20] [list 6 0] [list 6 4] [list 6 6]]
+          [list 5 20] [list 6 0] [list 6 4] [list 6 6] [list 6 8] [list 6 10] \
+          [list 6 12]]
     } else {
       return [list]
     }
@@ -323,6 +327,20 @@ namespace eval ::Eagle {
     return ""
   }
 
+  proc getRuntimeVersion { verify } {
+    if {[isEagle]} then {
+      if {[info exists ::eagle_platform(runtimeVersion)]} then {
+        set version $::eagle_platform(runtimeVersion)
+
+        if {!$verify || [string is version -strict $version]} then {
+          return $version
+        }
+      }
+    }
+
+    return [expr {$verify ? "0.0" : ""}]
+  }
+
   proc getDottedVersion { version } {
     return [join $version .]
   }
@@ -337,6 +355,104 @@ namespace eval ::Eagle {
 
   proc getMajorMinorVersion { version } {
     return [join [lrange [split $version .] 0 1] .]
+  }
+
+  proc loadTestSettings { channel {suffix ""} {quiet false} } {
+    #
+    # NOTE: Skip loading settings if their usage has been disabled.
+    #
+    if {![info exists ::no(testSettings)]} then {
+      #
+      # NOTE: Figure out which directory should contain test settings
+      #       files, if any.
+      #
+      if {[info exists ::test_settings_path]} then {
+        set directory $::test_settings_path; # NOTE: Override path?
+      } elseif {[info exists ::path]} then {
+        set directory $::path; # NOTE: Plugin test suite?
+      } elseif {[info exists ::test_path]} then {
+        set directory $::test_path; # NOTE: Core test suite?
+      }
+
+      #
+      # NOTE: Was any candidate test directory available?
+      #
+      if {[info exists directory]} then {
+        #
+        # NOTE: Attempt to determine the active test configuration.
+        #
+        if {[info exists ::test_configuration]} then {
+          set configuration $::test_configuration
+        } else {
+          set configuration Unknown; # ???
+        }
+
+        #
+        # NOTE: This will contain the candidate list of test settings
+        #       file names to load.
+        #
+        set fileNames [list]
+
+        #
+        # NOTE: Is a user name available?
+        #
+        if {[info exists ::tcl_platform(user)]} then {
+          lappend fileNames [file join $directory [appendArgs \
+              settings $suffix . $::tcl_platform(user) . \
+              $configuration .eagle]]
+
+          lappend fileNames [file join $directory [appendArgs \
+              settings $suffix . $::tcl_platform(user) .eagle]]
+        }
+
+        #
+        # NOTE: Is a host name available?
+        #
+        if {[info exists ::tcl_platform(host)]} then {
+          lappend fileNames [file join $directory [appendArgs \
+              settings $suffix . $::tcl_platform(host) . \
+              $configuration .eagle]]
+
+          lappend fileNames [file join $directory [appendArgs \
+              settings $suffix . $::tcl_platform(host) .eagle]]
+        }
+
+        #
+        # NOTE: Check each candidate test settings file, in order.  Any
+        #       that actually exist will be evaluated.
+        #
+        foreach fileName $fileNames {
+          if {[file exists $fileName]} then {
+            if {[catch {
+              uplevel 1 [list source $fileName]
+            } error] == 0} then {
+              if {!$quiet} then {
+                tputs $channel [appendArgs \
+                    "==== OK: test settings file \"" $fileName \
+                    "\" loaded\n"]
+              }
+            } else {
+              if {!$quiet} then {
+                tputs $channel [appendArgs \
+                    "==== WARNING: test settings file \"" $fileName \
+                    "\" error: " \n\t $error \n]
+              }
+            }
+          } else {
+            if {!$quiet} then {
+              tputs $channel [appendArgs \
+                  "---- skipped loading test settings file \"" \
+                  $fileName "\", it does not exist\n"]
+            }
+          }
+        }
+      } else {
+        if {!$quiet} then {
+          tputs $channel \
+              "---- skipped loading test settings files, no directory\n"
+        }
+      }
+    }
   }
 
   #
@@ -520,6 +636,60 @@ namespace eval ::Eagle {
   }
 
   #
+  # NOTE: This procedure should return non-zero if the "wmic" tool may be
+  #       executed by the test suite infrastructure outside the context of
+  #       any specific tests.  The specific tests themselves must make use
+  #       of their own constraints to prevent its execution.
+  #
+  proc canExecWmic {} {
+    if {[info exists ::no(exec)]} then {
+      return false
+    }
+
+    if {[info exists ::no(wmic)]} then {
+      return false
+    }
+
+    if {[info exists ::no(canExecWmic)]} then {
+      return false
+    }
+
+    return true
+  }
+
+  proc getCpuStatus {} {
+    if {[isWindows] && [canExecWmic]} then {
+      if {[catch {
+        exec -- wmic CPU GET CurrentClockSpeed, MaxClockSpeed, Name
+      } cpu] == 0} then {
+        set cpu [string map [list \r\n \n] [string trim $cpu]]
+
+        if {[regexp -line -- {^(\d+)\s+(\d+)\s+(.+)$} $cpu dummy \
+            current maximum name]} then {
+          return [list status [appendArgs \
+              $name ", current " $current "MHz, maximum " $maximum MHz]]
+        }
+      }
+    }
+
+    if {[file exists /proc/cpuinfo]} then {
+      if {[catch {
+        set data [readFile /proc/cpuinfo]
+      } cpu] == 0} then {
+        set cpu [string map [list \r\n \n] [string trim $cpu]]
+
+        if {[regexp -line -- {^model name\s+: (.*)$} $cpu dummy name] && \
+            [regexp -line -- {^cpu MHz\s+: (.*)$} $cpu dummy current]} then {
+          return [list status [appendArgs \
+              $name ", current " $current MHz]]
+        }
+      }
+    }
+
+    return ""
+  }
+
+  #
   # NOTE: This procedure should return non-zero if the test suite should be
   #       considered to be running on Mono.
   #
@@ -609,9 +779,12 @@ namespace eval ::Eagle {
         #
         # NOTE: Other versions of Mono, e.g. 3.12, appear to require elevated
         #       privileges (i.e. full administrator) in order to successfully
-        #       execute [uri ping].  This has been verified on Windows.
+        #       execute [uri ping].  This has been verified on Windows.  New
+        #       versions of Mono, e.g. 6.x, do not appear to have this issue
+        #       any longer.
         #
-        if {![isTestAdministrator]} then {
+        if {![isTestAdministrator] && \
+            [package vcompare [getRuntimeVersion true] 6.0] < 0} then {
           set reason "skipped, need administrator privileges"
           return false
         }
@@ -707,6 +880,35 @@ namespace eval ::Eagle {
     return false
   }
 
+  proc appendExecArguments { varName args } {
+    upvar 1 $varName command
+
+    if {[isEagle]} then {
+      foreach arg $args {
+        if {[list $arg] eq $arg} then {
+          lappend command $arg
+        } else {
+          lappend command [appendArgs \" $arg \"]
+        }
+      }
+    } else {
+      eval lappend command $args
+    }
+
+    return ""
+  }
+
+  proc execFossilCommand { directory args } {
+    set command [list exec -- fossil]
+    eval appendExecArguments command $args
+
+    if {[string length $directory] > 0} then {
+      appendExecArguments command --chdir $directory
+    }
+
+    return [eval $command]
+  }
+
   proc checkForTestSuiteFiles { channel } {
     tputs $channel "---- checking for test suite files... "
 
@@ -729,9 +931,9 @@ namespace eval ::Eagle {
           file3.eagle info.eagle init.eagle list.eagle \
           object.eagle pkgIndex.eagle pkgIndex.tcl pkgt.eagle \
           platform.eagle process.eagle runopt.eagle safe.eagle \
-          shell.eagle shim.eagle test.eagle testlog.eagle \
-          unkobj.eagle unzip.eagle update.eagle vendor.eagle \
-          word.tcl] {
+          shell.eagle shim.eagle startup.eagle test.eagle \
+          testlog.eagle unkobj.eagle unzip.eagle update.eagle \
+          vendor.eagle word.tcl] {
         #
         # NOTE: First, check if the file resides in the Eagle-specific
         #       package sub-directory.  Failing that, fallback to using
@@ -988,7 +1190,7 @@ namespace eval ::Eagle {
     tputs $channel no\n
   }
 
-  proc checkForGetInstalledUpdates { channel {populate true} {timeout 60000} } {
+  proc checkForGetInstalledUpdates { channel {timeout 60000} {populate true} } {
     tputs $channel "---- checking for installed updates support... "
 
     if {[info exists ::tcl_platform(osExtra)]} then {
@@ -1010,7 +1212,7 @@ namespace eval ::Eagle {
               object invoke -flags +NonPublic \
                   Eagle._Components.Private.PlatformOps \
                   PopulateOperatingSystemExtra "" \
-                  false true
+                  false true true
             }
 
             object invoke -flags +NonPublic \
@@ -1286,8 +1488,15 @@ namespace eval ::Eagle {
   proc checkForFossil { channel } {
     tputs $channel "---- checking for Fossil... "
 
-    if {[canExecFossil] && \
-        [catch {exec -- fossil version} version] == 0} then {
+    if {[info exists ::test_path]} then {
+      set directory $::test_path
+    } else {
+      set directory ""
+    }
+
+    if {[canExecFossil] && [catch {
+      execFossilCommand $directory version
+    } version] == 0} then {
       set version [string trim $version]
 
       set pattern {^This is fossil version (.*) \[([0-9a-f]+)\]\
@@ -1305,8 +1514,9 @@ namespace eval ::Eagle {
         #
         append result version " " $version " \[" $sourceId \]
 
-        if {[canExecFossil] && \
-            [catch {exec -- fossil remote-url} remoteUrl] == 0} then {
+        if {[canExecFossil] && [catch {
+          execFossilCommand $directory remote-url
+        } remoteUrl] == 0} then {
           set remoteUrl [string trim $remoteUrl]; set validUrl false
 
           if {[isEagle]} then {
@@ -1335,6 +1545,32 @@ namespace eval ::Eagle {
             addConstraint fossil_repository_url
 
             #
+            # NOTE: Unless forbidden from doing so, attempt to detect
+            #       if an HTTP redirect response may have been used.
+            #
+            set typeOfUrl ""
+
+            if {[isEagle] && \
+                ![info exists ::no(detectRepositoryUrlType)]} then {
+              if {[catch {
+                uri download -inline $remoteUrl
+              } remoteBody] == 0} then {
+                if {[regexp -- {<!--\s*?TestBaseUrl\s*?=\s*?"(.*?)"\s*?-->} \
+                        $remoteBody dummy baseUrl] || \
+                    [regexp -- {<base href="(.*?)" />} $remoteBody dummy \
+                        baseUrl]} then {
+                  set typeOfUrl " redirected"
+
+                  if {[string range $baseUrl end-5 end] eq "/login"} then {
+                    set baseUrl [string range $baseUrl 0 end-6]
+                  }
+
+                  set remoteUrl $baseUrl
+                }
+              }
+            }
+
+            #
             # NOTE: If we are not prevented from doing so, save
             #       the test repository URL to the repository
             #       currently in use to a suitably named global
@@ -1347,12 +1583,13 @@ namespace eval ::Eagle {
             #
             # NOTE: Append the repository URL currently in use.
             #
-            append result ", remote URL \"" $remoteUrl \"
+            append result ", remote" $typeOfUrl " URL \"" $remoteUrl \"
           }
         }
 
-        if {[canExecFossil] && \
-            [catch {exec -- fossil info} info] == 0} then {
+        if {[canExecFossil] && [catch {
+          execFossilCommand $directory info
+        } info] == 0} then {
           set info [string trim $info]; set validFile false
 
           if {[string length $info] > 0} then {
@@ -1423,7 +1660,7 @@ namespace eval ::Eagle {
     # NOTE: Use of the "vswhere" tool must be enabled for us to detect
     #       any instances of Visual Studio.
     #
-    if {[canExecVsWhere]} then {
+    if {[isWindows] && [canExecVsWhere]} then {
       #
       # NOTE: The versions of Visual Studio that we support detection
       #       of using the "vswhere" tool.
@@ -1438,17 +1675,17 @@ namespace eval ::Eagle {
         # NOTE: Attempt to fetch Visual Studio install directories
         #       value using the "vswhere" tool.
         #
-        if {[canExecVsWhere] && [catch {
-          exec -nocarriagereturns -- vswhere -products * \
-              -version [lindex $version 0] -property installationPath
+        if {[catch {
+          exec -- vswhere -products * -version [lindex $version 0] \
+              -property installationPath -latest
         } installationPaths] == 0} then {
           #
           # NOTE: Check each Visual Studio install directory, in the
           #       order they were returned, after splitting them into
           #       a proper Tcl list.
           #
-          set installationPaths [split \
-              [string trim $installationPaths] \n]
+          set installationPaths [split [string map [list \r\n \n] \
+              [string trim $installationPaths]] \n]
 
           foreach installationPath $installationPaths {
             #
@@ -1634,7 +1871,7 @@ namespace eval ::Eagle {
   proc checkForShell { channel } {
     tputs $channel "---- checking for shell... "
 
-    set name [file rootname [file tail [info nameofexecutable]]]
+    set name [file rootname [file tail [getShellExecutableName]]]
 
     if {[isEagle]} then {
       #
@@ -2244,6 +2481,21 @@ namespace eval ::Eagle {
     }
   }
 
+  proc checkForTip182 { channel } {
+    tputs $channel "---- checking for TIP #182... "
+
+    #
+    # NOTE: Is the interpreter TIP #182 ready?
+    #
+    if {[catch {expr {bool(0)}}] == 0} then {
+      addConstraint tip182
+
+      tputs $channel yes\n
+    } else {
+      tputs $channel no\n
+    }
+  }
+
   proc checkForTip194 { channel } {
     tputs $channel "---- checking for TIP #194... "
 
@@ -2454,6 +2706,38 @@ namespace eval ::Eagle {
 
     if {[string match {wrong # args: should be "*} $error]} then {
       addConstraint tip471
+
+      tputs $channel yes\n
+    } else {
+      tputs $channel no\n
+    }
+  }
+
+  proc checkForTip508 { channel } {
+    tputs $channel "---- checking for TIP #508... "
+
+    #
+    # NOTE: Is the interpreter TIP #508 ready?
+    #
+    catch {array default} error
+
+    if {[string match {wrong # args: should be "*} $error]} then {
+      addConstraint tip508
+
+      tputs $channel yes\n
+    } else {
+      tputs $channel no\n
+    }
+  }
+
+  proc checkForTip521 { channel } {
+    tputs $channel "---- checking for TIP #521... "
+
+    #
+    # NOTE: Is the interpreter TIP #521 ready?
+    #
+    if {[catch {fpclassify 1.0}] == 0} then {
+      addConstraint tip521
 
       tputs $channel yes\n
     } else {
@@ -2716,10 +3000,15 @@ namespace eval ::Eagle {
           set reserve [object invoke -create UIntPtr Zero]
           set commit [object invoke -create UIntPtr Zero]
 
+          #
+          # HACK: This does not use the [getShellExecutableName] script
+          #       library procedure because it must always refer to the
+          #       name of the file that started the current process.
+          #
           object invoke -flags +NonPublic \
               Eagle._Components.Private.FileOps \
               GetPeFileStackReserveAndCommit \
-              [info nameofexecutable] reserve commit
+              [info nameofexecutable] reserve commit; # EXEMPT
 
           set reserve; # primitive, already numeric.
         } stackSize] == 0 && \
@@ -2930,6 +3219,43 @@ namespace eval ::Eagle {
     ############################ BEGIN Eagle ONLY #############################
     ###########################################################################
 
+    proc checkForGuru { channel enable } {
+      tputs $channel [appendArgs \
+          "---- checking for Guru using \"" $enable "\"... "]
+
+      if {[catch {
+        set result null
+
+        object invoke -flags +NonPublic \
+            Eagle._Components.Private.ObjectOps MaybeEnableGuru \
+            "" $enable result
+
+        getStringFromObjectHandle $result
+      } guru] == 0} then {
+        addConstraint guru.available
+
+        if {[string is list -strict $guru] && \
+            [string is true -strict [lindex $guru end]]} then {
+          addConstraint guru.enabled
+
+          tputs $channel yes\n
+        } else {
+          addConstraint guru.disabled
+
+          tputs $channel no\n
+        }
+
+        tputs $channel [appendArgs \
+            "---- checking for Guru raw results: " \
+            [formatList $guru <none>] \n]
+      } else {
+        addConstraint guru.unavailable
+
+        tputs $channel unavailable\n
+        tputs $channel [appendArgs "---- Guru Meditation: " $guru \n]
+      }
+    }
+
     proc checkForSecurity { channel } {
       tputs $channel "---- checking for security... "
 
@@ -2973,7 +3299,7 @@ namespace eval ::Eagle {
     }
 
     proc checkForManagedDebuggingAssistants { channel } {
-      set fileName [file normalize [appendArgs [info nameofexecutable] \
+      set fileName [file normalize [appendArgs [getShellExecutableName] \
           .mda.config]]
 
       tputs $channel [appendArgs \
@@ -3191,11 +3517,27 @@ namespace eval ::Eagle {
     proc checkForCompileCSharp { channel } {
       tputs $channel "---- checking for test use of C# compiler... "
 
-      if {![info exists ::no(compileCSharp)] && \
-          [doesCompileCSharpWork]} then {
-        addConstraint compileCSharp
+      if {![info exists ::no(compileCSharp)]} then {
+        if {[info exists ::no(csharpLog)]} then {
+          set hadNoCsharpLog true
+        } else {
+          set ::no(csharpLog) 1
+          set hadNoCsharpLog false
+        }
 
-        tputs $channel yes\n
+        try {
+          if {[doesCompileCSharpWork]} then {
+            addConstraint compileCSharp
+
+            tputs $channel yes\n
+          } else {
+            tputs $channel no\n
+          }
+        } finally {
+          if {!$hadNoCsharpLog} then {
+            unset ::no(csharpLog)
+          }
+        }
       } else {
         tputs $channel no\n
       }
@@ -3758,6 +4100,25 @@ namespace eval ::Eagle {
       }
     }
 
+    proc checkForRuntimeBuild { channel } {
+      tputs $channel "---- checking for runtime build... "
+
+      if {[info exists ::eagle_platform(runtimeBuild)] && \
+          [string length $::eagle_platform(runtimeBuild)] > 0} then {
+        if {[regexp -- {^(\d+\.\d+(?:\.\d+)*) } \
+            $::eagle_platform(runtimeBuild) dummy build]} then {
+          addConstraint [appendArgs runtimeBuild. $build]
+        } else {
+          set build unknown
+        }
+
+        tputs $channel [appendArgs \
+            $::eagle_platform(runtimeBuild) " (" $build ")\n"]
+      } else {
+        tputs $channel no\n
+      }
+    }
+
     proc checkForProcessBits { channel } {
       tputs $channel "---- checking for process bits... "
 
@@ -4099,6 +4460,35 @@ namespace eval ::Eagle {
       tputs $channel no\n
     }
 
+    proc checkForWindowsTerminal { channel } {
+      tputs $channel "---- checking for Windows Terminal (Cascadia)... "
+
+      if {[catch {
+        #
+        # HACK: Rather than simply checking the associated environment
+        #       variable directly, make sure the core library actually
+        #       knows how to deal with Windows Terminal.
+        #
+        object invoke -flags +NonPublic \
+            Eagle._Components.Private.WindowOps IsWindowsTerminal
+      } windowsTerminal] == 0 && \
+          [string is true -strict $windowsTerminal]} then {
+        #
+        # NOTE: Yes, it appears that it is available.
+        #
+        addConstraint windowsTerminal
+
+        tputs $channel yes\n
+
+        #
+        # NOTE: We are done here, return now.
+        #
+        return
+      }
+
+      tputs $channel no\n
+    }
+
     proc checkForWoW64 { channel } {
       tputs $channel "---- checking for WoW64... "
 
@@ -4305,6 +4695,15 @@ namespace eval ::Eagle {
                 interp set $interp tempName(1) $tempName(1)
 
                 #
+                # NOTE: Setup reasonable script timeout for the newly created
+                #       (isolated) interpreter so that Excel detection cannot
+                #       simply hang forever.
+                #
+                catch {interp watchdog $interp false}; # NOTE: Superfluous?
+                interp timeout $interp [expr {$milliseconds * 2}]
+                interp watchdog $interp true +Interrupt
+
+                #
                 # NOTE: Evaluate all the Excel interop assembly related code
                 #       in the other AppDomain.
                 #
@@ -4401,6 +4800,32 @@ namespace eval ::Eagle {
                 #
                 tputs $channel yes\n
               } else {
+                #
+                # NOTE: Check for runaway script error message.  Matching
+                #       this would mean the watchdog thread canceled the
+                #       detection script (i.e. after the blocking creation
+                #       call).
+                #
+                if {[string match "runaway script *" $result] || \
+                    [string match "*ThreadInterruptedException*" $result] || \
+                    [string match "* 0x80080005*" $result]} then {
+                  #
+                  # NOTE: It appears that Excel is taking too long to
+                  #       startup.
+                  #
+                  addConstraint excel.timeout
+
+                  #
+                  # NOTE: Show that Excel took too long starting up.
+                  #
+                  tputs $channel "no, timeout\n"
+
+                  #
+                  # NOTE: We are done here, return now.
+                  #
+                  return
+                }
+
                 #
                 # NOTE: This is the list of error message patterns that may
                 #       indicate a trial version of Excel is being used.
@@ -4573,7 +4998,7 @@ namespace eval ::Eagle {
         # NOTE: Ok, attempt to determine the loaded Tcl version.
         #
         if {[catch {
-          tcl eval [tcl master] {info tclversion}
+          tcl eval [tcl primary] {info tclversion}
         } dotVersion] == 0 && [regexp -- {^\d+\.\d+$} $dotVersion]} then {
           addConstraint [appendArgs \
               tclReady [getDotlessVersion $dotVersion]]
@@ -5031,168 +5456,378 @@ namespace eval ::Eagle {
       tputs $channel no\n
     }
 
+    proc isOsReleaseId { releaseId } {
+      return [expr {[info exists ::tcl_platform(osReleaseId)] && \
+          $::tcl_platform(osReleaseId) eq $releaseId}]
+    }
+
+    proc isOsProductType { type } {
+      set type [string tolower $type]
+
+      switch -exact -- $type {
+        missing {
+          #
+          # NOTE: Used for backward compatibility with Eagle beta.
+          #
+          return [expr {![info exists ::tcl_platform(osProductType)]}]
+        }
+        unknown -
+        none {
+          set productTypes [list $type]
+        }
+        client {
+          set productTypes [list workstation]
+        }
+        server {
+          set productTypes [list "server domain controller" server]
+        }
+        default {
+          return false; # NOTE: Unknown, so not it.
+        }
+      }
+
+      return [expr {[info exists ::tcl_platform(osProductType)] && \
+          $::tcl_platform(osProductType) in $productTypes}]
+    }
+
+    proc getFrameworkSetup45Value {} {
+      #
+      # NOTE: Return the "normal" value.
+      #
+      return 378389
+    }
+
     proc getFrameworkSetup451Value {} {
       #
-      # NOTE: Check if we are running on Windows 8.1.
+      # NOTE: Check if we are running on Windows.
       #
-      # BUGBUG: Is exact matching correct here?
-      #
-      if {[isWindows] && [info exists ::tcl_platform(osVersion)] && \
-          $::tcl_platform(osVersion) == 6.3} then {
+      if {[isWindows]} then {
         #
-        # NOTE: We are running on Windows 8.1, return the special value.
+        # NOTE: Check if we are running on a server (or client) operating
+        #       system.
         #
-        return 378675
+        if {[isOsProductType server]} then {
+          #
+          # NOTE: Is this Windows Server 2012 R2 (NT v6.3)?
+          #
+          # BUGBUG: Is exact matching correct here?
+          #
+          if {[info exists ::tcl_platform(osVersion)] && \
+              $::tcl_platform(osVersion) == 6.3} then {
+            #
+            # NOTE: Return the "special" value.
+            #
+            return 378675
+          }
+        } elseif {[isOsProductType missing] || [isOsProductType client]} then {
+          #
+          # NOTE: Is this Windows 8.1 (NT v6.3)?
+          #
+          # BUGBUG: Is exact matching correct here?
+          #
+          if {[info exists ::tcl_platform(osVersion)] && \
+              $::tcl_platform(osVersion) == 6.3} then {
+            #
+            # NOTE: Return the "special" value.
+            #
+            return 378675
+          }
+        }
       }
 
       #
-      # NOTE: We are not running on Windows 8.1, return the normal value.
+      # NOTE: Return the "normal" value.
       #
       return 378758
     }
 
+    proc getFrameworkSetup452Value {} {
+      #
+      # NOTE: Return the "normal" value.
+      #
+      return 379893
+    }
+
     proc getFrameworkSetup46Value {} {
       #
-      # NOTE: Check if we are running on Windows 10 or later.
+      # NOTE: Check if we are running on Windows.
       #
-      # BUGBUG: Is greater-than-or-equal-to matching correct here?
-      #
-      if {[isWindows] && [info exists ::tcl_platform(osVersion)] && \
-          $::tcl_platform(osVersion) >= 10.0} then {
+      if {[isWindows]} then {
         #
-        # NOTE: We are running on Windows 10, return the special value.
+        # NOTE: Check if we are running on a client operating system.
         #
-        return 393295
+        if {[isOsProductType missing] || [isOsProductType client]} then {
+          #
+          # NOTE: Is this Windows 10 (NT v10.0 or higher)?
+          #
+          # BUGBUG: Is greater-than-or-equal-to matching correct here?
+          #
+          if {[info exists ::tcl_platform(osVersion)] && \
+              $::tcl_platform(osVersion) >= 10.0} then {
+            #
+            # NOTE: Return the "special" value.
+            #
+            return 393295
+          }
+        }
       }
 
       #
-      # NOTE: We are not running on Windows 10, return the normal value.
+      # NOTE: Return the "normal" value.
       #
       return 393297
     }
 
     proc getFrameworkSetup461Value {} {
       #
-      # NOTE: Check if we are running on Windows 10 or later.
+      # NOTE: Check if we are running on Windows.
       #
-      # BUGBUG: Is greater-than-or-equal-to matching correct here?
-      #
-      if {[isWindows] && [info exists ::tcl_platform(osVersion)] && \
-          $::tcl_platform(osVersion) >= 10.0 && \
-          [haveTclPlatformOsExtraUpdateName "November Update"]} then {
+      if {[isWindows]} then {
         #
-        # NOTE: We are running on Windows 10, return the special value.
+        # NOTE: Check if we are running on a client operating system.
         #
-        return 394254; # BUGBUG: November Update only?
+        if {[isOsProductType missing] || [isOsProductType client]} then {
+          #
+          # NOTE: Is this Windows 10 (NT v10.0 or higher) with the
+          #       "November Update" installed?
+          #
+          # BUGBUG: Is greater-than-or-equal-to matching correct here?
+          #
+          if {[info exists ::tcl_platform(osVersion)] && \
+              $::tcl_platform(osVersion) >= 10.0 && \
+              [haveTclPlatformOsExtraUpdateName "November Update"]} then {
+            #
+            # NOTE: Return the "special" value.
+            #
+            return 394254; # BUGBUG: November Update only?
+          }
+        }
       }
 
       #
-      # NOTE: We are not running on Windows 10, return the normal value.
+      # NOTE: Return the "normal" value.
       #
       return 394271
     }
 
     proc getFrameworkSetup462Value {} {
       #
-      # NOTE: Check if we are running on Windows 10 or later.
+      # NOTE: Check if we are running on Windows.
       #
-      # BUGBUG: Is greater-than-or-equal-to matching correct here?
-      #
-      if {[isWindows] && [info exists ::tcl_platform(osVersion)] && \
-          $::tcl_platform(osVersion) >= 10.0 && \
-          [haveTclPlatformOsExtraUpdateName "Anniversary Update"]} then {
+      if {[isWindows]} then {
         #
-        # NOTE: We are running on Windows 10, return the special value.
+        # NOTE: Check if we are running on a server (or client) operating
+        #       system.
         #
-        return 394802; # BUGBUG: Anniversary Update only?
+        if {[isOsProductType server]} then {
+          #
+          # NOTE: Is this Windows Server 2016 (NT v10.0 release 1607)?
+          #
+          # BUGBUG: Is exact matching correct here?
+          #
+          if {[info exists ::tcl_platform(osVersion)] && \
+              $::tcl_platform(osVersion) == 10.0 && \
+              [isOsReleaseId 1607]} then {
+            #
+            # NOTE: Return the "special" value.
+            #
+            return 394802
+          }
+        } elseif {[isOsProductType missing] || [isOsProductType client]} then {
+          #
+          # NOTE: Is this Windows 10 (NT v10.0 or higher) with the
+          #       "Anniversary Update" installed?
+          #
+          # BUGBUG: Is greater-than-or-equal-to matching correct here?
+          #
+          if {[info exists ::tcl_platform(osVersion)] && \
+              $::tcl_platform(osVersion) >= 10.0 && \
+              [haveTclPlatformOsExtraUpdateName "Anniversary Update"]} then {
+            #
+            # NOTE: Return the "special" value.
+            #
+            return 394802; # BUGBUG: Anniversary Update only?
+          }
+        }
       }
 
       #
-      # NOTE: We are not running on Windows 10, return the normal value.
+      # NOTE: Return the "normal" value.
       #
       return 394806
     }
 
     proc getFrameworkSetup47Value {} {
       #
-      # NOTE: Check if we are running on Windows 10 or later.
+      # NOTE: Check if we are running on Windows.
       #
-      # BUGBUG: Is greater-than-or-equal-to matching correct here?
-      #
-      if {[isWindows] && [info exists ::tcl_platform(osVersion)] && \
-          $::tcl_platform(osVersion) >= 10.0 && \
-          [haveTclPlatformOsExtraUpdateName "Creators Update"]} then {
+      if {[isWindows]} then {
         #
-        # NOTE: We are running on Windows 10, return the special value.
+        # NOTE: Check if we are running on a client operating system.
         #
-        return 460798; # BUGBUG: Creators Update only?
+        if {[isOsProductType missing] || [isOsProductType client]} then {
+          #
+          # NOTE: Is this Windows 10 (NT v10.0 or higher) with the
+          #       "Creators Update" installed?
+          #
+          # BUGBUG: Is greater-than-or-equal-to matching correct here?
+          #
+          if {[info exists ::tcl_platform(osVersion)] && \
+              $::tcl_platform(osVersion) >= 10.0 && \
+              [haveTclPlatformOsExtraUpdateName "Creators Update"]} then {
+            #
+            # NOTE: Return the "special" value.
+            #
+            return 460798; # BUGBUG: Creators Update only?
+          }
+        }
       }
 
       #
-      # NOTE: We are not running on Windows 10, return the normal value.
+      # NOTE: Return the "normal" value.
       #
       return 460805
     }
 
     proc getFrameworkSetup471Value {} {
       #
-      # NOTE: Check if we are running on Windows 10 or later.
+      # NOTE: Check if we are running on Windows.
       #
-      # BUGBUG: Is greater-than-or-equal-to matching correct here?
-      #
-      if {[isWindows] && [info exists ::tcl_platform(osVersion)] && \
-          $::tcl_platform(osVersion) >= 10.0 && \
-          [haveTclPlatformOsExtraUpdateName "Fall Creators Update"]} then {
+      if {[isWindows]} then {
         #
-        # NOTE: We are running on Windows 10, return the special value.
+        # NOTE: Check if we are running on a server (or client) operating
+        #       system.
         #
-        return 461308; # BUGBUG: Fall Creators Update only?
+        if {[isOsProductType server]} then {
+          #
+          # NOTE: Is this Windows Server (NT v10.0 release 1709)?
+          #
+          # BUGBUG: Is exact matching correct here?
+          #
+          if {[info exists ::tcl_platform(osVersion)] && \
+              $::tcl_platform(osVersion) == 10.0 && \
+              [isOsReleaseId 1709]} then {
+            #
+            # NOTE: Return the "special" value.
+            #
+            return 461308
+          }
+        } elseif {[isOsProductType missing] || [isOsProductType client]} then {
+          #
+          # NOTE: Is this Windows 10 (NT v10.0 or higher) with the
+          #       "Fall Creators Update" installed?
+          #
+          # BUGBUG: Is greater-than-or-equal-to matching correct here?
+          #
+          if {[info exists ::tcl_platform(osVersion)] && \
+              $::tcl_platform(osVersion) >= 10.0 && \
+              [haveTclPlatformOsExtraUpdateName "Fall Creators Update"]} then {
+            #
+            # NOTE: Return the "special" value.
+            #
+            return 461308; # BUGBUG: Fall Creators Update only?
+          }
+        }
       }
 
       #
-      # NOTE: We are not running on Windows 10, return the normal value.
+      # NOTE: Return the "normal" value.
       #
       return 461310
     }
 
     proc getFrameworkSetup472Value {} {
       #
-      # NOTE: Check if we are running on Windows 10 or later.
+      # NOTE: Check if we are running on Windows.
       #
-      # BUGBUG: Is greater-than-or-equal-to matching correct here?
-      #
-      if {[isWindows] && [info exists ::tcl_platform(osVersion)] && \
-          $::tcl_platform(osVersion) >= 10.0 && \
-          [haveTclPlatformOsExtraUpdateName "April 2018 Update"]} then {
+      if {[isWindows]} then {
         #
-        # NOTE: We are running on Windows 10, return the special value.
+        # NOTE: Check if we are running on a server (or client) operating
+        #       system.
         #
-        return 461808; # BUGBUG: April 2018 Update only?
+        if {[isOsProductType server]} then {
+          #
+          # NOTE: Is this Windows Server (NT v10.0 release 1803)?
+          #
+          # BUGBUG: Is exact matching correct here?
+          #
+          if {[info exists ::tcl_platform(osVersion)] && \
+              $::tcl_platform(osVersion) == 10.0 && \
+              [isOsReleaseId 1803]} then {
+            #
+            # NOTE: Return the "special" value.
+            #
+            return 461808
+          }
+        } elseif {[isOsProductType missing] || [isOsProductType client]} then {
+          #
+          # NOTE: Is this Windows 10 (NT v10.0 or higher) with the
+          #       "April 2018 Update" installed?
+          #
+          # BUGBUG: Is greater-than-or-equal-to matching correct here?
+          #
+          if {[info exists ::tcl_platform(osVersion)] && \
+              $::tcl_platform(osVersion) >= 10.0 && \
+              [haveTclPlatformOsExtraUpdateName "April 2018 Update"]} then {
+            #
+            # NOTE: Return the "special" value.
+            #
+            return 461808; # BUGBUG: April 2018 Update only?
+          }
+        }
       }
 
       #
-      # NOTE: We are not running on Windows 10, return the normal value.
+      # NOTE: Return the "normal" value.
       #
       return 461814
     }
 
     proc getFrameworkSetup48Value {} {
       #
-      # NOTE: Check if we are running on Windows 10 or later.
+      # NOTE: Check if we are running on Windows.
       #
-      # BUGBUG: Is greater-than-or-equal-to matching correct here?
-      #
-      if {[isWindows] && [info exists ::tcl_platform(osVersion)] && \
-          $::tcl_platform(osVersion) >= 10.0 && \
-          [haveTclPlatformOsExtraUpdateName "May 2019 Update"]} then {
+      if {[isWindows]} then {
         #
-        # NOTE: We are running on Windows 10, return the special value.
+        # NOTE: Check if we are running on a client operating system.
         #
-        return 528040; # BUGBUG: May 2019 Update only?
+        if {[isOsProductType missing] || [isOsProductType client]} then {
+          #
+          # NOTE: Is this Windows 10 (NT v10.0 or higher)?
+          #
+          # BUGBUG: Is greater-than-or-equal-to matching correct here?
+          #
+          if {[info exists ::tcl_platform(osVersion)] && \
+              $::tcl_platform(osVersion) >= 10.0} then {
+            #
+            # NOTE: Is the "May 2020 Update" -OR- "October 2020 Update"
+            #       installed?
+            #
+            if {[haveTclPlatformOsExtraUpdateName "May 2020 Update"] || \
+                [haveTclPlatformOsExtraUpdateName "October 2020 Update"]} then {
+              #
+              # NOTE: Return the "special" value.
+              #
+              return 528372; # BUGBUG: May / October 2020 Update(s) only?
+            } else {
+              #
+              # NOTE: Is the "May 2019 Update" -OR- "November 2019 Update"
+              #       installed?
+              #
+              if {[haveTclPlatformOsExtraUpdateName "May 2019 Update"] || \
+                  [haveTclPlatformOsExtraUpdateName "November 2019 Update"]} then {
+                #
+                # NOTE: Return the "special" value.
+                #
+                return 528040; # BUGBUG: May / November 2019 Update(s) only?
+              }
+            }
+          }
+        }
       }
 
       #
-      # NOTE: We are not running on Windows 10, return the normal value.
+      # NOTE: Return the "normal" value.
       #
       return 528049
     }
@@ -5226,7 +5861,8 @@ namespace eval ::Eagle {
           object invoke Microsoft.Win32.Registry GetValue $key Release null
         } release
 
-        if {[string is integer -strict $release] && $release >= 378389} then {
+        if {[string is integer -strict $release] && \
+            $release >= [getFrameworkSetup45Value]} then {
           #
           # NOTE: Yes, it appears that it is available.
           #
@@ -5317,7 +5953,7 @@ namespace eval ::Eagle {
             addConstraint dotNet46OrHigher
 
             set version 4.6
-          } elseif {$release >= 379893} then {
+          } elseif {$release >= [getFrameworkSetup452Value]} then {
             addConstraint dotNet451OrHigher
             addConstraint dotNet452
             addConstraint dotNet452OrHigher
@@ -5574,25 +6210,30 @@ namespace eval ::Eagle {
         getKnownBuildTypes getKnownCompileOptions getKnownWindowsVersions \
         getKnownMonoVersions addKnownMonoConstraints \
         getKnownDotNetCoreVersions addKnownDotNetCoreConstraints \
-        getDotNetCoreLibPathDirectoryNameOnly lpermute alwaysFullInterpReady \
+        getKnownTclVersions filterKnownVersions \
+        getDotNetCoreDirectoryNameOnly getDotNetCoreLibPathDirectoryNameOnly \
+        getRuntimeVersion getDottedVersion getDotlessVersion \
+        getMajorMinorVersion loadTestSettings lpermute alwaysFullInterpReady \
         canExecComSpec canExecWhoAmI canExecTclShell canExecFossil \
-        canExecVsWhere isTestMono isTestDotNetCore isTestAdministrator canPing \
-        cleanConstraintName cleanPackageName haveTclPlatformOsExtraUpdateName \
-        checkForTestSuiteFiles checkForPlatform checkForWindowsVersion \
-        checkForGetInstalledUpdates checkForOperatingSystemUpdate \
-        checkForScriptLibrary checkForVariable checkForTclOptions \
-        checkForWindowsCommandProcessor checkForPackage checkForFossil \
-        checkForVisualStudioViaVsWhere checkForEagle checkForSymbols \
-        checkForLogFile checkForGaruda checkForShell \
+        canExecFsUtil canExecVsWhere canExecWmic getCpuStatus isTestMono \
+        isTestDotNetCore isTestAdministrator canPing cleanConstraintName \
+        cleanPackageName haveTclPlatformOsExtraUpdateName appendExecArguments \
+        execFossilCommand checkForTestSuiteFiles checkForPlatform \
+        checkForWindowsVersion checkForGetInstalledUpdates \
+        checkForOperatingSystemUpdate checkForScriptLibrary checkForVariable \
+        checkForTclOptions checkForWindowsCommandProcessor checkForPackage \
+        checkForFossil checkForVisualStudioViaVsWhere checkForEagle \
+        checkForSymbols checkForLogFile checkForGaruda checkForShell \
         checkForOfficialStableReleaseInProgress checkForDebug checkForTk \
         checkForVersion checkForCommand checkForSubCommand checkForEFormat \
         checkForNamespaces checkForTestExec checkForTestMachine \
         checkForTestPlatform checkForTestConfiguration checkForTestNamePrefix \
         checkForTestSuffix checkForFile checkForPathFile checkForNativeCode \
-        checkForTip127 checkForTip194 checkForTip207 checkForTip241 \
-        checkForTip285 checkForTip405 checkForTip421 checkForTip426 \
-        checkForTip429 checkForTip440 checkForTip461 checkForTip463 \
-        checkForTip471 checkForTiming checkForPerformance checkForBigLists \
+        checkForTip127 checkForTip182 checkForTip194 checkForTip207 \
+        checkForTip241 checkForTip285 checkForTip405 checkForTip421 \
+        checkForTip426 checkForTip429 checkForTip440 checkForTip461 \
+        checkForTip463 checkForTip471 checkForTip508 checkForTip521 \
+        checkForTiming checkForPerformance checkForBigLists \
         checkForProcessorIntensive checkForTimeIntensive checkForFullTest \
         checkForMemoryIntensive checkForStackIntensive checkForStackSize \
         checkForInteractive checkForInteractiveCommand \

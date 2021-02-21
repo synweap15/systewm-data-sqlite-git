@@ -21,6 +21,264 @@
 #
 namespace eval ::Eagle {
   #
+  # NOTE: This procedure creates an identifier suitable for use with the
+  #       [isUpdateInstalled] and [markUpdateInstalled] script library
+  #       procedures.  The format of the returned string identifier is
+  #       unspecified.
+  #
+  proc makeUpdateId { args } {
+    #
+    # NOTE: Enforce a restriction that there must be at least one string
+    #       in the list of arguments.
+    #
+    if {[llength $args] == 0} then {
+      error "cannot make update identifier without any arguments"
+    }
+
+    if {[isEagle]} then {
+      #
+      # NOTE: Attempt to load Eagle test package as it is required for its
+      #       [generateUniqueId] procedure.
+      #
+      package require Eagle.Test
+
+      #
+      # NOTE: Attempt to generate a stable unique identifier that is based
+      #       on the arguments specified.
+      #
+      return [generateUniqueId $args]
+    } elseif {[catch {package require sha1}] == 0} then {
+      #
+      # BUGBUG: Apparently, the ActiveState tcllib sha1 package may have a
+      #         bug that produces the wrong values here.  No attempt is made
+      #         here to work around any such bug.  For further information,
+      #         please see:
+      #
+      #         https://core.tcl.tk/tcllib/info/ad20454023
+      #
+      return [sha1::sha1 -hex $args]
+    } else {
+      error "cannot make unique identifier without the sha1 package"
+    }
+  }
+
+  #
+  # NOTE: This procedure returns a fully qualified file name for the updates
+  #       file -OR- an empty string if it cannot be determined.
+  #
+  proc getUpdateFileName { {directory ""} } {
+    #
+    # NOTE: The (installed) updates file, if it exists, must reside in the
+    #       specified directory by the caller, the current update directory
+    #       for the target interpreter, or the directory containing the Tcl
+    #       script library.  It must be a textual file with fields and lines
+    #       delimited by tab characters and new line characters.
+    #
+    if {[string length $directory] > 0} then {
+      return [file join $directory updates.tsv]
+    } elseif {[isEagle] && [llength [info commands object]] > 0} then {
+      set directory [object invoke -flags +NonPublic \
+          Eagle._Components.Private.ShellOps GetUpdateDirectory ""]
+
+      if {[string length $directory] > 0} then {
+        return [file join $directory updates.tsv]
+      }
+    }
+
+    return [file join [info library] updates.tsv]
+  }
+
+  #
+  # NOTE: This procedure returns non-zero if the specified updated has been
+  #       installed on the local machine.  Optionally, it will evaluate an
+  #       arbitrary script for each update found.
+  #
+  proc isUpdateInstalled { updateId {directory ""} {script ""} } {
+    #
+    # NOTE: Assume that the specified update is not installed and then try
+    #       to prove otherwise.
+    #
+    set result false
+
+    #
+    # NOTE: The (installed) updates file, if it exists, must reside in the
+    #       specified directory by the caller, the current update directory
+    #       for the target interpreter, or the directory containing the Tcl
+    #       script library.  It must be a textual file with fields and lines
+    #       delimited by tab characters and new line characters.
+    #
+    set fileName [getUpdateFileName $directory]
+
+    if {[file isfile $fileName] && [file readable $fileName]} then {
+      #
+      # NOTE: Attempt to read all the update data from the file, which must
+      #       exist within the script library directory.  This may raise an
+      #       error.  Convert the read data to Unix-style line-endings.  If
+      #       there is no data, do nothing.
+      #
+      set data [string map [list \r\n \n] [readFile $fileName]]
+
+      if {[string length $data] > 0} then {
+        #
+        # NOTE: Split the data into lines.  This will always use Unix-style
+        #       line-endings.
+        #
+        set lines [split $data \n]
+
+        foreach line $lines {
+          #
+          # NOTE: Save the original line for use by the script callback, if
+          #       any.
+          #
+          set savedLine $line
+
+          #
+          # NOTE: Remove surrounding spaces (but not tabs), skip blank lines
+          #       and comment lines.
+          #
+          set line [string trim $line " "]
+
+          if {[string length $line] == 0} then {
+            if {[string length $script] > 0} then {eval $script}
+            continue
+          }
+
+          set char [string index $line 0]
+
+          if {$char eq "#" || $char eq ";"} then {
+            if {[string length $script] > 0} then {eval $script}
+            continue
+          }
+
+          #
+          # NOTE: Split the tab-delimited line into its fields.  The format
+          #       of all lines in the data must be as follows, all on the
+          #       same line:
+          #
+          #       <startLine> updateId <tab> timeStamp <tab> notes <newLine>
+          #
+          set fields [split $line \t]
+
+          if {[llength $fields] < 3} then {
+            if {[string length $script] > 0} then {eval $script}
+            continue
+          }
+
+          #
+          # NOTE: Grab all fields from the update line.  The caller supplied
+          #       script may need them.
+          #
+          set field(updateId) [lindex $fields 0]
+          set field(timeStamp) [lindex $fields 1]
+          set field(notes) [lindex $fields 2]
+
+          #
+          # NOTE: If the caller specified a script, it will be evaluated for
+          #       each line, even blank lines and comment lines.
+          #
+          if {[string length $script] > 0} then {eval $script}
+
+          #
+          # NOTE: Compare this update identifier with the update identifier
+          #       specified by the caller.
+          #
+          if {$field(updateId) eq $updateId} then {
+            #
+            # NOTE: The update appears to be installed.  We cannot simply
+            #       here because the caller supplied script, if any, needs
+            #       access to all the lines.
+            #
+            set result true
+          }
+        }
+      }
+    }
+
+    return $result
+  }
+
+  #
+  # NOTE: This procedure marks the specified update as being installed on
+  #       the local machine (or not).
+  #
+  proc markUpdateInstalled { updateId installed {directory ""} {notes ""} } {
+    #
+    # NOTE: Check if the update is installed while capturing each line of
+    #       the updates file.
+    #
+    set lines [list]; set result [isUpdateInstalled $updateId $directory {
+      #
+      # HACK: The list of lines is only used when marking an update as not
+      #       being installed; therefore, always omit that update line, if
+      #       present.
+      #
+      if {![info exists field(updateId)] || \
+          $field(updateId) ne [uplevel 1 [list set updateId]]} then {
+        #
+        # NOTE: This is either a blank line, comment line, unknown line,
+        #       or an update line not pertaining to the update specified
+        #       by the caller; therefore, retain it in the filtered list.
+        #
+        uplevel 1 [list lappend lines $savedLine]
+      }
+    }]
+
+    #
+    # NOTE: The (installed) updates file, if it exists, must reside in the
+    #       specified directory by the caller, the current update directory
+    #       for the target interpreter, or the directory containing the Tcl
+    #       script library.  It must be a textual file with fields and lines
+    #       delimited by tab characters and new line characters.
+    #
+    set fileName [getUpdateFileName $directory]
+
+    #
+    # NOTE: Are we marking the update as "installed"?  Otherwise, we are
+    #       removing the installation mark.
+    #
+    if {$installed} then {
+      #
+      # NOTE: Is the update currently marked as "installed"?  If so, raise
+      #       a script error; otherwise, mark it as "installed" by simply
+      #       appending a properly formed update line to the updates file.
+      #
+      if {$result} then {
+        error [appendArgs \
+            "update \"" $updateId "\" is already installed"]
+      } else {
+        if {[isEagle]} then {
+          # 2019.10.24T00:12:28.503 -0400
+          set timeStamp [clock format \
+              [clock seconds] -iso -isotimezone]
+        } else {
+          # 2019.10.24T00:12:28.000
+          set timeStamp [clock format \
+              [clock seconds] -format %Y.%m.%dT%H:%M:%S.000]
+        }
+
+        appendFile $fileName [appendArgs \
+            [expr {[llength $lines] > 0 ? "\n" : ""}] $updateId \t \
+            $timeStamp \t [escapeUpdateNotes $notes]]
+      }
+    } else {
+      #
+      # NOTE: Is the update currently marked as installed?  If so, write
+      #       out the (filtered) list of lines to the updates file, which
+      #       will have the effect of removing that installation mark;
+      #       otherwise, raise a script error.
+      #
+      if {$result} then {
+        writeFile $fileName [join $lines \n]
+      } else {
+        error [appendArgs \
+            "update \"" $updateId "\" is not installed"]
+      }
+    }
+
+    return $result
+  }
+
+  #
   # NOTE: This procedure returns non-zero if the specified public key tokens
   #       match.  An empty string matches any public key token (including an
   #       empty string).
@@ -245,7 +503,9 @@ namespace eval ::Eagle {
   #       level and package type and then saves it to the specified local
   #       directory.
   #
-  proc fetchUpdate { name type targetDirectory metadata varName } {
+  proc fetchUpdate {
+          type publicKeyToken name culture patchLevel targetDirectory
+          metadata varName } {
     #
     # NOTE: Figure out the appropriate file extension to download for this
     #       release type and platform.
@@ -335,19 +595,11 @@ namespace eval ::Eagle {
     #       it is not available, we cannot continue.
     #
     set fileName [file join [file normalize \
-        [file dirname [info nameofexecutable]]] Hippogriff.exe]
+        [file dirname [getShellExecutableName]]] Hippogriff.exe]
 
     if {![file exists $fileName]} then {
       error [appendArgs \
           "updater executable \"" $fileName "\" is not available"]
-    }
-
-    #
-    # NOTE: For .NET Core, updating via the updater tool is unsupported.
-    #
-    if {[isDotNetCore]} then {
-      error [appendArgs \
-          "updater executable \"" $fileName "\" unsupported on .NET Core"]
     }
 
     #
@@ -357,18 +609,10 @@ namespace eval ::Eagle {
     set command [list exec -shell --]
 
     #
-    # NOTE: Check for native Tcl and Mono because this impacts how the
-    #       shell executable name is determined.
+    # NOTE: Add the necessary command line arguments to run the target
+    #       file using the current runtime.
     #
-    if {[isEagle] && [isMono]} then {
-      #
-      # HACK: Assume that Mono is somewhere along the PATH.
-      #
-      lappend command mono \
-          [appendArgs \" [file nativename $fileName] \"]
-    } else {
-      lappend command $fileName
-    }
+    eval lappend command [getRuntimeCommandLine $fileName]
 
     #
     # NOTE: Add the base options to the updater executable.  Typically,
@@ -420,10 +664,20 @@ namespace eval ::Eagle {
   #       to another temporary directory, and then copies them to the target
   #       directory.
   #
-  proc downloadAndExtractUpdate { name type targetDirectory metadata varName } {
+  proc downloadAndExtractUpdate {
+          type publicKeyToken name culture patchLevel targetDirectory
+          metadata varName } {
     #
-    # NOTE: Attempt to load Eagle test package as it is required for
-    #       the [getTemporaryPath] procedure.
+    # NOTE: Currently, this procedure will not work properly without the
+    #       [object] command.
+    #
+    if {[llength [info commands object]] == 0} then {
+      error "cannot update: missing \"object\" command"
+    }
+
+    #
+    # NOTE: Attempt to load Eagle test package as it is required for its
+    #       [getTemporaryPath] procedure.
     #
     package require Eagle.Test
 
@@ -453,9 +707,17 @@ namespace eval ::Eagle {
 
       #
       # NOTE: Actually fetch (download) the update (archive?) file from
-      #       the URI, saving it to the special temporary directory.
+      #       its built URI, saving it to a temporary directory created
+      #       specially for this operation.  Optionally capture all the
+      #       arguments used for the fetch operation into the variable
+      #       specified by the caller.
       #
-      fetchUpdate $name $type $fetchDirectory $metadata fetchArgs
+      if {[string length $varName] > 0} then {
+        upvar 1 $varName fetchArgs
+      }
+
+      fetchUpdate $type $publicKeyToken $name $culture $patchLevel \
+          $fetchDirectory $metadata fetchArgs
 
       #
       # NOTE: Grab the downloaded file name from the arguments returned
@@ -518,7 +780,9 @@ namespace eval ::Eagle {
       set extractDirectory [extractZipArchive \
           $archiveFileName $extractRootDirectory true]
 
-      catch {file delete $archiveFileName}; # NOTE: No longer needed.
+      if {![info exists ::no(deleteDownloadAndExtractUpdateFiles)]} then {
+        catch {file delete $archiveFileName}; # NOTE: No longer needed.
+      }
 
       set extractFileNames [object invoke System.IO.Directory GetFiles \
           $extractDirectory * AllDirectories]
@@ -684,15 +948,27 @@ namespace eval ::Eagle {
         #       target sub-directory.
         #
         file mkdir [file dirname $targetFileName]
-        file copy $extractFileName $targetFileName
+        file copy -force $extractFileName $targetFileName
       }
+
+      #########################################################################
+      ################### PHASE 4: MARK UPDATE AS INSTALLED ###################
+      #########################################################################
+
+      #
+      # NOTE: The update should now be "installed".  Mark it as such.
+      #
+      markUpdateInstalled [makeUpdateId $type $publicKeyToken $name \
+          $culture $patchLevel] true "" $targetDirectory
     } finally {
       #
       # NOTE: Completely delete the outer temporary directory, which will
       #       cleanup the fetched update (archive?) file name and all the
       #       files subsequently extracted from the archive.
       #
-      catch {file delete -recursive -- $temporaryDirectory}
+      if {![info exists ::no(deleteDownloadAndExtractUpdateFiles)]} then {
+        catch {file delete -recursive -- $temporaryDirectory}
+      }
     }
   }
 
@@ -1093,8 +1369,8 @@ namespace eval ::Eagle {
     }
 
     #
-    # NOTE: Fetch the master update data from the distribution site and
-    #       normalize to Unix-style line-endings.
+    # NOTE: Fetch the update data from the configured distribution site
+    #       and normalize to Unix-style line-endings.
     #
     set updateData [string map [list \r\n \n] [getUpdateData $updateUri]]
 
@@ -1143,22 +1419,22 @@ namespace eval ::Eagle {
       #
       # NOTE: Grab the protocol Id field.
       #
-      set product(protocolId) [lindex $fields 0]
+      set field(protocolId) [lindex $fields 0]
 
       #
       # NOTE: Grab the public key token field.
       #
-      set product(publicKeyToken) [lindex $fields 1]
+      set field(publicKeyToken) [lindex $fields 1]
 
       #
       # NOTE: Grab the (product) name field.
       #
-      set product(name) [lindex $fields 2]
+      set field(name) [lindex $fields 2]
 
       #
       # NOTE: Grab the culture field.
       #
-      set product(culture) [lindex $fields 3]
+      set field(culture) [lindex $fields 3]
 
       #
       # NOTE: Figure out which protocol is in use for this line.  The value
@@ -1170,19 +1446,19 @@ namespace eval ::Eagle {
       #       plugin.  All other values are currently reserved and ignored.
       #
       set checkBuild [expr {
-        !$wantScripts && $product(protocolId) eq "1"
+        !$wantScripts && $field(protocolId) eq "1"
       }]
 
       set checkScript [expr {
-        $wantScripts && $product(protocolId) eq "2"
+        $wantScripts && $field(protocolId) eq "2"
       }]
 
       set checkSelf [expr {
-        !$wantScripts && $product(protocolId) eq "3"
+        !$wantScripts && $field(protocolId) eq "3"
       }]
 
       set checkPlugin [expr {
-        !$wantScripts && $product(protocolId) eq "4"
+        !$wantScripts && $field(protocolId) eq "4"
       }]
 
       #
@@ -1197,25 +1473,25 @@ namespace eval ::Eagle {
       #
       if {($checkBuild || $checkScript || $checkPlugin) && \
           [matchUpdatePublicKeyToken \
-              $product(publicKeyToken) $updatePublicKeyToken] && \
-          [matchUpdateName $product(name) $updateName] && \
-          [matchUpdateCulture $product(culture) $updateCulture]} then {
+              $field(publicKeyToken) $updatePublicKeyToken] && \
+          [matchUpdateName $field(name) $updateName] && \
+          [matchUpdateCulture $field(culture) $updateCulture]} then {
         #
         # NOTE: Grab the patch level field.
         #
-        set product(patchLevel) [lindex $fields 4]
+        set field(patchLevel) [lindex $fields 4]
 
-        if {[string length $product(patchLevel)] == 0} then {
-          set product(patchLevel) 0.0.0.0; # no patch level?
+        if {[string length $field(patchLevel)] == 0} then {
+          set field(patchLevel) 0.0.0.0; # no patch level?
         }
 
         #
         # NOTE: Grab the time-stamp field.
         #
-        set product(timeStamp) [lindex $fields 5]
+        set field(timeStamp) [lindex $fields 5]
 
-        if {[string length $product(timeStamp)] == 0} then {
-          set product(timeStamp) 0; #never?
+        if {[string length $field(timeStamp)] == 0} then {
+          set field(timeStamp) 0; #never?
         }
 
         #
@@ -1228,12 +1504,12 @@ namespace eval ::Eagle {
         # NOTE: Does it look like the number of seconds since the epoch
         #       or some kind of date/time string?
         #
-        if {[string is integer -strict $product(timeStamp)]} then {
-          set product(dateTime) [clock format \
-              $product(timeStamp) -format $dateTimeFormat]
+        if {[string is integer -strict $field(timeStamp)]} then {
+          set field(dateTime) [clock format \
+              $field(timeStamp) -format $dateTimeFormat]
         } else {
-          set product(dateTime) [clock format \
-              [clock scan $product(timeStamp)] -format $dateTimeFormat]
+          set field(dateTime) [clock format \
+              [clock scan $field(timeStamp)] -format $dateTimeFormat]
         }
 
         #
@@ -1247,7 +1523,7 @@ namespace eval ::Eagle {
           #       associated with the target product.
           #
           set compare [package \
-              vcompare $product(patchLevel) $updatePatchLevel]
+              vcompare $field(patchLevel) $updatePatchLevel]
         } else {
           #
           # NOTE: This is not a build line, no match.
@@ -1264,7 +1540,7 @@ namespace eval ::Eagle {
           #       to a malformed patch level regular expression.
           #
           if {[catch {
-            regexp -nocase -- $product(patchLevel) $updatePatchLevel
+            regexp -nocase -- $field(patchLevel) $updatePatchLevel
           } match]} then {
             #
             # NOTE: The patch level from the script line was most likely
@@ -1282,8 +1558,15 @@ namespace eval ::Eagle {
         #
         # NOTE: Are we interested in further processing this line?
         #
-        if {(($checkBuild || $checkPlugin) && $compare > 0) ||
-            ($checkScript && $match)} then {
+        # HACK: For plugins, process any line for the current patch
+        #       level -OR- higher.
+        #
+        if {($checkBuild && $compare > 0) ||
+            ($checkScript && $match) ||
+            ($checkPlugin && $compare > 0) ||
+            ($checkPlugin && $compare == 0 && \
+             ![isUpdateInstalled [makeUpdateId Plugin $field(publicKeyToken) \
+             $field(name) $field(culture) $field(patchLevel)]])} then {
           #
           # NOTE: Grab the base URI field (i.e. may be a mirror site).
           #       Then, if set, use it as the base URI for the build
@@ -1291,19 +1574,19 @@ namespace eval ::Eagle {
           #       URI for builds (or scripts) when the base URI field
           #       is not present.
           #
-          set product(baseUri) [lindex $fields 6]
+          set field(baseUri) [lindex $fields 6]
 
           if {$checkBuild || $checkPlugin} then {
-            if {[string length $product(baseUri)] > 0} then {
-              set buildUri $product(baseUri)
+            if {[string length $field(baseUri)] > 0} then {
+              set buildUri $field(baseUri)
             } else {
               set buildUri [getDownloadBaseUri]; # primary site.
             }
           }
 
           if {$checkScript} then {
-            if {[string length $product(baseUri)] > 0} then {
-              set scriptUri $product(baseUri)
+            if {[string length $field(baseUri)] > 0} then {
+              set scriptUri $field(baseUri)
             } else {
               set scriptUri [getScriptBaseUri]; # primary site.
             }
@@ -1315,9 +1598,9 @@ namespace eval ::Eagle {
           #       (below).  However, they will always be included in the
           #       result if the build is a later version.
           #
-          set product(md5) [lindex $fields 7]
-          set product(sha1) [lindex $fields 8]
-          set product(sha512) [lindex $fields 9]
+          set field(md5) [lindex $fields 7]
+          set field(sha1) [lindex $fields 8]
+          set field(sha512) [lindex $fields 9]
 
           #
           # NOTE: Grab the notes field (which may be empty) and unescape
@@ -1325,10 +1608,10 @@ namespace eval ::Eagle {
           #       up being included in the result returned to the caller
           #       and in that case they will be [list] escaped instead.
           #
-          set product(notes) [lindex $fields 10]
+          set field(notes) [lindex $fields 10]
 
-          if {[string length $product(notes)] > 0} then {
-            set product(notes) [unescapeUpdateNotes $product(notes)]
+          if {[string length $field(notes)] > 0} then {
+            set field(notes) [unescapeUpdateNotes $field(notes)]
           }
 
           #
@@ -1343,7 +1626,7 @@ namespace eval ::Eagle {
             #
             set text [appendArgs \
                 $updateUriType " " $updateType " " \
-                $product(patchLevel) ", dated " $product(dateTime) \
+                $field(patchLevel) ", dated " $field(dateTime) \
                 ", is newer than the running " $updateType " " \
                 $updatePatchLevel ", dated " $updateDateTime \
                 ", based on the data from " $updateBaseUri]
@@ -1384,9 +1667,9 @@ namespace eval ::Eagle {
             #       the updater tool -OR- it cannot be run for some reason.
             #
             return [list \
-                $text [list uri $buildUri patchLevel $product(patchLevel) \
-                notes $product(notes) md5 $product(md5) sha1 $product(sha1) \
-                sha512 $product(sha512)]]
+                $text [list uri $buildUri patchLevel $field(patchLevel) \
+                notes $field(notes) md5 $field(md5) sha1 $field(sha1) \
+                sha512 $field(sha512)]]
           }
 
           #
@@ -1426,7 +1709,7 @@ namespace eval ::Eagle {
             #       the value of this field will be compared to that of the
             #       actual MD5 hash of the downloaded script data.
             #
-            if {[string length $product(md5)] == 0} then {
+            if {[string length $field(md5)] == 0} then {
               if {!$quiet} then {
                 tqputs $channel [appendArgs \
                     "---- invalid md5 value for update script " \
@@ -1441,7 +1724,7 @@ namespace eval ::Eagle {
             #       the value of this field will be compared to that of the
             #       actual SHA1 hash of the downloaded script data.
             #
-            if {[string length $product(sha1)] == 0} then {
+            if {[string length $field(sha1)] == 0} then {
               if {!$quiet} then {
                 tqputs $channel [appendArgs \
                     "---- invalid sha1 value for update script " \
@@ -1456,7 +1739,7 @@ namespace eval ::Eagle {
             #       the value of this field will be compared to that of the
             #       actual SHA512 hash of the downloaded script data.
             #
-            if {[string length $product(sha512)] == 0} then {
+            if {[string length $field(sha512)] == 0} then {
               if {!$quiet} then {
                 tqputs $channel [appendArgs \
                     "---- invalid sha512 value for update script " \
@@ -1473,9 +1756,9 @@ namespace eval ::Eagle {
             if {!$quiet} then {
               tqputs $channel [appendArgs \
                   "---- fetching update script from \"" $scriptUri \
-                  "\" (" $product(dateTime) ") with notes:\n"]
+                  "\" (" $field(dateTime) ") with notes:\n"]
 
-              set trimNotes [string trim $product(notes)]
+              set trimNotes [string trim $field(notes)]
 
               tqputs $channel [appendArgs \
                   [expr {[string length $trimNotes] > 0 ? $trimNotes : \
@@ -1511,7 +1794,7 @@ namespace eval ::Eagle {
             #
             set md5 [hash normal md5 $scriptData]
 
-            if {![string equal -nocase $product(md5) $md5]} then {
+            if {![string equal -nocase $field(md5) $md5]} then {
               if {!$quiet} then {
                 tqputs $channel [appendArgs \
                     "---- wrong md5 value \"" $md5 \
@@ -1523,7 +1806,7 @@ namespace eval ::Eagle {
 
             set sha1 [hash normal sha1 $scriptData]
 
-            if {![string equal -nocase $product(sha1) $sha1]} then {
+            if {![string equal -nocase $field(sha1) $sha1]} then {
               if {!$quiet} then {
                 tqputs $channel [appendArgs \
                     "---- wrong sha1 value \"" $sha1 \
@@ -1535,7 +1818,7 @@ namespace eval ::Eagle {
 
             set sha512 [hash normal sha512 $scriptData]
 
-            if {![string equal -nocase $product(sha512) $sha512]} then {
+            if {![string equal -nocase $field(sha512) $sha512]} then {
               if {!$quiet} then {
                 tqputs $channel [appendArgs \
                     "---- wrong sha512 value \"" $sha512 \
@@ -1580,12 +1863,14 @@ namespace eval ::Eagle {
               #
               set code [catch {uplevel 1 $scriptData} result]
             } finally {
-              #
-              # NOTE: Reset manual override of the script file name to be
-              #       returned by [info script].
-              #
-              object invoke -flags +NonPublic Interpreter.GetActive \
-                  PopScriptLocation true pushed
+              if {[llength [info commands object]] > 0} then {
+                #
+                # NOTE: Reset manual override of the script file name to
+                #       be returned by [info script].
+                #
+                object invoke -flags +NonPublic Interpreter.GetActive \
+                    PopScriptLocation true pushed
+              }
             }
 
             #
@@ -1611,8 +1896,8 @@ namespace eval ::Eagle {
           return [list [appendArgs \
               "running " $updateType " " $updatePatchLevel ", dated " \
               $updateDateTime ", is newer than the " $updateUriType " " \
-              $updateType " " $product(patchLevel) ", dated " \
-              $product(dateTime) ", based on the data " "from " \
+              $updateType " " $field(patchLevel) ", dated " \
+              $field(dateTime) ", based on the data " "from " \
               $updateBaseUri]]
         } elseif {$checkBuild || $checkPlugin} then {
           #

@@ -205,8 +205,8 @@ namespace eval ::Eagle {
     #
     if {[isEagle]} then {
       return [expr {[llength [info commands tcl]] > 0 && [tcl ready] && \
-          [catch {tcl eval [tcl master] {package present Garuda}}] == 0 && \
-          [catch {tcl eval [tcl master] {garuda packageid}} packageId] == 0}]
+          [catch {tcl eval [tcl primary] {package present Garuda}}] == 0 && \
+          [catch {tcl eval [tcl primary] {garuda packageid}} packageId] == 0}]
     } else {
       return [expr {[catch {package present Garuda}] == 0 && \
           [catch {garuda packageid} packageId] == 0}]
