@@ -64,6 +64,12 @@ IF NOT DEFINED YEARS (
 
 %_VECHO% Years = '%YEARS%'
 
+IF NOT DEFINED BUILD_TOOL (
+  SET BUILD_TOOL=%TOOLS%\build.bat
+)
+
+%_VECHO% BuildTool = '%BUILD_TOOL%'
+
 FOR %%C IN (%BUILD_CONFIGURATIONS%) DO (
   FOR %%P IN (%PLATFORMS%) DO (
     FOR %%Y IN (%YEARS%) DO (
@@ -74,7 +80,7 @@ FOR %%C IN (%BUILD_CONFIGURATIONS%) DO (
         GOTO errors
       )
 
-      %__ECHO3% CALL "%TOOLS%\build.bat" %%C %%P
+      %__ECHO3% CALL "%BUILD_TOOL%" %%C %%P %%Y
 
       IF ERRORLEVEL 1 (
         ECHO Could not build binaries for %%C/%%P/%%Y.

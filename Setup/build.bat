@@ -20,7 +20,7 @@ IF NOT DEFINED _VECHO (SET _VECHO=REM)
 
 %_AECHO% Running %0 %*
 
-SET DUMMY2=%3
+SET DUMMY2=%4
 
 IF DEFINED DUMMY2 (
   GOTO usage
@@ -52,6 +52,14 @@ IF DEFINED PLATFORM (
 )
 
 %_VECHO% Platform = '%PLATFORM%'
+
+SET YEAR=%3
+
+IF DEFINED YEAR (
+  CALL :fn_UnquoteVariable YEAR
+) ELSE (
+  %_AECHO% No year specified, using default...
+)
 
 SET BASE_CONFIGURATION=%CONFIGURATION%
 SET BASE_CONFIGURATION=%BASE_CONFIGURATION:ManagedOnly=%
@@ -1066,7 +1074,7 @@ REM ****************************************************************************
 
 :usage
   ECHO.
-  ECHO Usage: %~nx0 [configuration] [platform]
+  ECHO Usage: %~nx0 [configuration] [platform] [year]
   ECHO.
   GOTO errors
 
