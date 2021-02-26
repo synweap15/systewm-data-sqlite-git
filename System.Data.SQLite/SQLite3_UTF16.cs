@@ -181,34 +181,29 @@ namespace System.Data.SQLite
           IntPtr db = IntPtr.Zero;
           SQLiteErrorCode n;
 
+#if !SQLITE_STANDARD
           int extFuncs = HelperMethods.HasFlags(connectionFlags, SQLiteConnectionFlags.NoExtensionFunctions) ? 0 : 1;
 
-#if !SQLITE_STANDARD
-          if ((vfsName != null) || (extFuncs != 0))
+          n = UnsafeNativeMethods.sqlite3_open16_interop(ToUTF8(strFilename), ToUTF8(vfsName), openFlags, extFuncs, ref db);
+#else
+          //
+          // NOTE: This flag check is designed to enforce the constraint that opening
+          //       a database file that does not already exist requires specifying the
+          //       "Create" flag, even when a native API is used that does not accept
+          //       a flags parameter.
+          //
+          if (((openFlags & SQLiteOpenFlagsEnum.Create) != SQLiteOpenFlagsEnum.Create) && !File.Exists(strFilename))
+            throw new SQLiteException(SQLiteErrorCode.CantOpen, strFilename);
+
+          if (vfsName != null)
           {
-            n = UnsafeNativeMethods.sqlite3_open16_interop(ToUTF8(strFilename), ToUTF8(vfsName), openFlags, extFuncs, ref db);
+            throw new SQLiteException(SQLiteErrorCode.CantOpen, HelperMethods.StringFormat(
+              CultureInfo.CurrentCulture,
+              "cannot open using UTF-16 and VFS \"{0}\": need interop assembly", vfsName));
           }
-          else
+
+          n = UnsafeNativeMethods.sqlite3_open16(strFilename, ref db);
 #endif
-          {
-            //
-            // NOTE: This flag check is designed to enforce the constraint that opening
-            //       a database file that does not already exist requires specifying the
-            //       "Create" flag, even when a native API is used that does not accept
-            //       a flags parameter.
-            //
-            if (((openFlags & SQLiteOpenFlagsEnum.Create) != SQLiteOpenFlagsEnum.Create) && !File.Exists(strFilename))
-              throw new SQLiteException(SQLiteErrorCode.CantOpen, strFilename);
-
-            if (vfsName != null)
-            {
-              throw new SQLiteException(SQLiteErrorCode.CantOpen, HelperMethods.StringFormat(
-                CultureInfo.CurrentCulture,
-                "cannot open using UTF-16 and VFS \"{0}\": need interop assembly", vfsName));
-            }
-
-            n = UnsafeNativeMethods.sqlite3_open16(strFilename, ref db);
-          }
 
 #if !NET_COMPACT_20 && TRACE_CONNECTION
           Trace.WriteLine(HelperMethods.StringFormat(

@@ -1056,15 +1056,10 @@ namespace System.Data.SQLite
 #if !SQLITE_STANDARD
           int extFuncs = HelperMethods.HasFlags(connectionFlags, SQLiteConnectionFlags.NoExtensionFunctions) ? 0 : 1;
 
-          if (extFuncs != 0)
-          {
-            n = UnsafeNativeMethods.sqlite3_open_interop(ToUTF8(strFilename), ToUTF8(vfsName), openFlags, extFuncs, ref db);
-          }
-          else
+          n = UnsafeNativeMethods.sqlite3_open_interop(ToUTF8(strFilename), ToUTF8(vfsName), openFlags, extFuncs, ref db);
+#else
+          n = UnsafeNativeMethods.sqlite3_open_v2(ToUTF8(strFilename), ref db, openFlags, ToUTF8(vfsName));
 #endif
-          {
-            n = UnsafeNativeMethods.sqlite3_open_v2(ToUTF8(strFilename), ref db, openFlags, ToUTF8(vfsName));
-          }
 
 #if !NET_COMPACT_20 && TRACE_CONNECTION
           Trace.WriteLine(HelperMethods.StringFormat(
