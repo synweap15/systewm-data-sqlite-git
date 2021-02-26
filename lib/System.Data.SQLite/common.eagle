@@ -2576,6 +2576,11 @@ namespace eval ::Eagle {
       set exception [object invoke \
           -alias -flags +NonPublic Interpreter.GetActive Exception]
 
+      if {[isNonNullObjectHandle $exception] && [$exception GetType] \
+              eq "Eagle._Components.Public.ScriptException"} then {
+        set exception [$exception -alias InnerException]
+      }
+
       return ""
     }
 
