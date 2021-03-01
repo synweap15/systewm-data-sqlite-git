@@ -30,6 +30,13 @@
 #include "../core/sqlite3.c"
 #endif
 
+#ifdef _WIN32
+#define GETPID (int)GetCurrentProcessId
+#else
+#define WINAPI
+#define GETPID getpid
+#endif
+
 #if !SQLITE_OS_WIN
 #include <wchar.h>
 #endif
@@ -88,7 +95,7 @@ extern int RegisterExtensionFunctions(sqlite3 *db);
 
 #if defined(_MSC_VER) && defined(INTEROP_DEBUG) && \
     (INTEROP_DEBUG & INTEROP_DEBUG_BREAK)
-#define sqlite3InteropBreak(a) { sqlite3InteropDebug("%s\n", (a)); __debugbreak(); }
+#define sqlite3InteropBreak(a) { sqlite3InteropDebug("[%d] %s\n", GETPID(), (a)); __debugbreak(); }
 #else
 #define sqlite3InteropBreak(a)
 #endif
@@ -254,7 +261,7 @@ SQLITE_PRIVATE void sqlite3InteropDebug(const char *zFormat, ...){
 SQLITE_PRIVATE int logConfigured = 0;
 
 SQLITE_PRIVATE void sqlite3InteropLogCallback(void *pArg, int iCode, const char *zMsg){
-  sqlite3InteropDebug("INTEROP_LOG (%d) %s\n", iCode, zMsg);
+  sqlite3InteropDebug("[%d] INTEROP_LOG (%d) %s\n", GETPID(), iCode, zMsg);
 }
 #endif
 
@@ -320,13 +327,13 @@ SQLITE_API int WINAPI sqlite3_close_interop(sqlite3 *db)
 #if !defined(INTEROP_LEGACY_CLOSE) && SQLITE_VERSION_NUMBER >= 3007014
 
 #if defined(INTEROP_DEBUG) && (INTEROP_DEBUG & INTEROP_DEBUG_CLOSE)
-  sqlite3InteropDebug("sqlite3_close_interop(): calling sqlite3_close_v2(%p)...\n", db);
+  sqlite3InteropDebug("[%d] sqlite3_close_interop(): calling sqlite3_close_v2(%p)...\n", GETPID(), db);
 #endif
 
   ret = sqlite3_close_v2(db);
 
 #if defined(INTEROP_DEBUG) && (INTEROP_DEBUG & INTEROP_DEBUG_CLOSE)
-  sqlite3InteropDebug("sqlite3_close_interop(): sqlite3_close_v2(%p) returned %d.\n", db, ret);
+  sqlite3InteropDebug("[%d] sqlite3_close_interop(): sqlite3_close_v2(%p) returned %d.\n", GETPID(), db, ret);
 #endif
 
   return ret;
@@ -395,7 +402,7 @@ SQLITE_API int WINAPI sqlite3_config_log_interop()
     if( ret==SQLITE_OK ){
       logConfigured = 1;
     }else{
-      sqlite3InteropDebug("sqlite3_config_log_interop(): sqlite3_config(SQLITE_CONFIG_LOG) returned %d.\n", ret);
+      sqlite3InteropDebug("[%d] sqlite3_config_log_interop(): sqlite3_config(SQLITE_CONFIG_LOG) returned %d.\n", GETPID(), ret);
     }
   }else{
     ret = SQLITE_DONE;
@@ -419,13 +426,13 @@ SQLITE_API int WINAPI sqlite3_open_interop(const char *filename, const char *vfs
   int ret;
 
 #if defined(INTEROP_DEBUG) && (INTEROP_DEBUG & INTEROP_DEBUG_OPEN)
-  sqlite3InteropDebug("sqlite3_open_interop(): calling sqlite3_open_v2(\"%s\", \"%s\", %d, %d, %p)...\n", filename, vfsName, flags, extFuncs, ppdb);
+  sqlite3InteropDebug("[%d] sqlite3_open_interop(): calling sqlite3_open_v2(\"%s\", \"%s\", %d, %d, %p)...\n", GETPID(), filename, vfsName, flags, extFuncs, ppdb);
 #endif
 
   ret = sqlite3_open_v2(filename, ppdb, flags, vfsName);
 
 #if defined(INTEROP_DEBUG) && (INTEROP_DEBUG & INTEROP_DEBUG_OPEN)
-  sqlite3InteropDebug("sqlite3_open_interop(): sqlite3_open_v2(\"%s\", \"%s\", %d, %d, %p) returned %d.\n", filename, vfsName, flags, extFuncs, ppdb, ret);
+  sqlite3InteropDebug("[%d] sqlite3_open_interop(): sqlite3_open_v2(\"%s\", \"%s\", %d, %d, %p) returned %d.\n", GETPID(), filename, vfsName, flags, extFuncs, ppdb, ret);
 #endif
 
 #if defined(INTEROP_EXTENSION_FUNCTIONS)
@@ -441,13 +448,13 @@ SQLITE_API int WINAPI sqlite3_open16_interop(const char *filename, const char *v
   int ret;
 
 #if defined(INTEROP_DEBUG) && (INTEROP_DEBUG & INTEROP_DEBUG_OPEN16)
-  sqlite3InteropDebug("sqlite3_open16_interop(): calling sqlite3_open_interop(\"%s\", \"%s\", %d, %d, %p)...\n", filename, vfsName, flags, extFuncs, ppdb);
+  sqlite3InteropDebug("[%d] sqlite3_open16_interop(): calling sqlite3_open_interop(\"%s\", \"%s\", %d, %d, %p)...\n", GETPID(), filename, vfsName, flags, extFuncs, ppdb);
 #endif
 
   ret = sqlite3_open_interop(filename, vfsName, flags, extFuncs, ppdb);
 
 #if defined(INTEROP_DEBUG) && (INTEROP_DEBUG & INTEROP_DEBUG_OPEN16)
-  sqlite3InteropDebug("sqlite3_open16_interop(): sqlite3_open_interop(\"%s\", \"%s\", %d, %d, %p) returned %d.\n", filename, vfsName, flags, extFuncs, ppdb, ret);
+  sqlite3InteropDebug("[%d] sqlite3_open16_interop(): sqlite3_open_interop(\"%s\", \"%s\", %d, %d, %p) returned %d.\n", GETPID(), filename, vfsName, flags, extFuncs, ppdb, ret);
 #endif
 
   if ((ret == SQLITE_OK) && ppdb && !DbHasProperty(*ppdb, 0, DB_SchemaLoaded))
@@ -477,7 +484,7 @@ SQLITE_API int WINAPI sqlite3_changes_interop(sqlite3 *db)
   int result;
 
 #if defined(INTEROP_DEBUG) && (INTEROP_DEBUG & INTEROP_DEBUG_CHANGES)
-  sqlite3InteropDebug("sqlite3_changes_interop(): calling sqlite3_changes(%p)...\n", db);
+  sqlite3InteropDebug("[%d] sqlite3_changes_interop(): calling sqlite3_changes(%p)...\n", GETPID(), db);
 #endif
 
 #ifndef NDEBUG
@@ -488,7 +495,7 @@ SQLITE_API int WINAPI sqlite3_changes_interop(sqlite3 *db)
   result = sqlite3_changes(db);
 
 #if defined(INTEROP_DEBUG) && (INTEROP_DEBUG & INTEROP_DEBUG_CHANGES)
-  sqlite3InteropDebug("sqlite3_changes_interop(): sqlite3_changes(%p) returned %d.\n", db, result);
+  sqlite3InteropDebug("[%d] sqlite3_changes_interop(): sqlite3_changes(%p) returned %d.\n", GETPID(), db, result);
 #endif
 
   return result;
@@ -499,7 +506,7 @@ SQLITE_API int WINAPI sqlite3_prepare_interop(sqlite3 *db, const char *sql, int 
   int n;
 
 #if defined(INTEROP_DEBUG) && (INTEROP_DEBUG & INTEROP_DEBUG_PREPARE)
-  sqlite3InteropDebug("sqlite3_prepare_interop(): calling sqlite3_prepare(%p, \"%s\", %d, %p)...\n", db, sql, nbytes, ppstmt);
+  sqlite3InteropDebug("[%d] sqlite3_prepare_interop(): calling sqlite3_prepare(%p, \"%s\", %d, %p)...\n", GETPID(), db, sql, nbytes, ppstmt);
 #endif
 
 #if SQLITE_VERSION_NUMBER >= 3003009
@@ -509,7 +516,7 @@ SQLITE_API int WINAPI sqlite3_prepare_interop(sqlite3 *db, const char *sql, int 
 #endif
 
 #if defined(INTEROP_DEBUG) && (INTEROP_DEBUG & INTEROP_DEBUG_PREPARE)
-  sqlite3InteropDebug("sqlite3_prepare_interop(): sqlite3_prepare(%p, \"%s\", %d, %p) returned %d.\n", db, sql, nbytes, ppstmt, n);
+  sqlite3InteropDebug("[%d] sqlite3_prepare_interop(): sqlite3_prepare(%p, \"%s\", %d, %p) returned %d.\n", GETPID(), db, sql, nbytes, ppstmt, n);
 #endif
 
   if (plen) *plen = (pztail && *pztail) ? strlen(*pztail) : 0;
@@ -522,7 +529,7 @@ SQLITE_API int WINAPI sqlite3_prepare16_interop(sqlite3 *db, const void *sql, in
   int n;
 
 #if defined(INTEROP_DEBUG) && (INTEROP_DEBUG & INTEROP_DEBUG_PREPARE16)
-  sqlite3InteropDebug("sqlite3_prepare_interop(): calling sqlite3_prepare16(%p, \"%s\", %d, %p)...\n", db, sql, nchars, ppstmt);
+  sqlite3InteropDebug("[%d] sqlite3_prepare_interop(): calling sqlite3_prepare16(%p, \"%s\", %d, %p)...\n", GETPID(), db, sql, nchars, ppstmt);
 #endif
 
 #if SQLITE_VERSION_NUMBER >= 3003009
@@ -532,7 +539,7 @@ SQLITE_API int WINAPI sqlite3_prepare16_interop(sqlite3 *db, const void *sql, in
 #endif
 
 #if defined(INTEROP_DEBUG) && (INTEROP_DEBUG & INTEROP_DEBUG_PREPARE16)
-  sqlite3InteropDebug("sqlite3_prepare_interop(): sqlite3_prepare16(%p, \"%s\", %d, %p) returned %d.\n", db, sql, nchars, ppstmt, n);
+  sqlite3InteropDebug("[%d] sqlite3_prepare_interop(): sqlite3_prepare16(%p, \"%s\", %d, %p) returned %d.\n", GETPID(), db, sql, nchars, ppstmt, n);
 #endif
 
   if (plen) *plen = (pztail && *pztail) ? wcslen((wchar_t *)*pztail) * sizeof(wchar_t) : 0;
@@ -710,13 +717,13 @@ SQLITE_API int WINAPI sqlite3_finalize_interop(sqlite3_stmt *stmt)
 #if defined(INTEROP_DEBUG) && (INTEROP_DEBUG & INTEROP_DEBUG_FINALIZE)
   Vdbe *p = (Vdbe *)stmt;
   sqlite3 *db = p ? p->db : 0;
-  sqlite3InteropDebug("sqlite3_finalize_interop(): calling sqlite3_finalize(%p, %p)...\n", db, stmt);
+  sqlite3InteropDebug("[%d] sqlite3_finalize_interop(): calling sqlite3_finalize(%p, %p)...\n", GETPID(), db, stmt);
 #endif
 
   ret = sqlite3_finalize(stmt);
 
 #if defined(INTEROP_DEBUG) && (INTEROP_DEBUG & INTEROP_DEBUG_FINALIZE)
-  sqlite3InteropDebug("sqlite3_finalize_interop(): sqlite3_finalize(%p, %p) returned %d.\n", db, stmt, ret);
+  sqlite3InteropDebug("[%d] sqlite3_finalize_interop(): sqlite3_finalize(%p, %p) returned %d.\n", GETPID(), db, stmt, ret);
 #endif
 
   return ret;
@@ -756,13 +763,13 @@ SQLITE_API int WINAPI sqlite3_backup_finish_interop(sqlite3_backup *p)
 #if defined(INTEROP_DEBUG) && (INTEROP_DEBUG & INTEROP_DEBUG_BACKUP_FINISH)
   sqlite3* pDestDb = p ? p->pDestDb : 0;
   sqlite3* pSrcDb = p ? p->pSrcDb : 0;
-  sqlite3InteropDebug("sqlite3_backup_finish_interop(): calling sqlite3_backup_finish(%p, %p, %p)...\n", pDestDb, pSrcDb, p);
+  sqlite3InteropDebug("[%d] sqlite3_backup_finish_interop(): calling sqlite3_backup_finish(%p, %p, %p)...\n", GETPID(), pDestDb, pSrcDb, p);
 #endif
 
   ret = sqlite3_backup_finish(p);
 
 #if defined(INTEROP_DEBUG) && (INTEROP_DEBUG & INTEROP_DEBUG_BACKUP_FINISH)
-  sqlite3InteropDebug("sqlite3_backup_finish_interop(): sqlite3_backup_finish(%p, %p, %p) returned %d.\n", pDestDb, pSrcDb, p, ret);
+  sqlite3InteropDebug("[%d] sqlite3_backup_finish_interop(): sqlite3_backup_finish(%p, %p, %p) returned %d.\n", GETPID(), pDestDb, pSrcDb, p, ret);
 #endif
 
   return ret;
@@ -773,13 +780,13 @@ SQLITE_API int WINAPI sqlite3_blob_close_interop(sqlite3_blob *p)
   int ret;
 
 #if defined(INTEROP_DEBUG) && (INTEROP_DEBUG & INTEROP_DEBUG_BLOB_CLOSE)
-  sqlite3InteropDebug("sqlite3_blob_close_interop(): calling sqlite3_blob_close(%p)...\n", p);
+  sqlite3InteropDebug("[%d] sqlite3_blob_close_interop(): calling sqlite3_blob_close(%p)...\n", GETPID(), p);
 #endif
 
   ret = sqlite3_blob_close(p);
 
 #if defined(INTEROP_DEBUG) && (INTEROP_DEBUG & INTEROP_DEBUG_BLOB_CLOSE)
-  sqlite3InteropDebug("sqlite3_blob_close_interop(): sqlite3_blob_close(%p) returned %d.\n", p, ret);
+  sqlite3InteropDebug("[%d] sqlite3_blob_close_interop(): sqlite3_blob_close(%p) returned %d.\n", GETPID(), p, ret);
 #endif
 
   return ret;
@@ -791,13 +798,13 @@ SQLITE_API int WINAPI sqlite3_reset_interop(sqlite3_stmt *stmt)
 #if !defined(INTEROP_LEGACY_CLOSE) && SQLITE_VERSION_NUMBER >= 3007014
 
 #if defined(INTEROP_DEBUG) && (INTEROP_DEBUG & INTEROP_DEBUG_RESET)
-  sqlite3InteropDebug("sqlite3_reset_interop(): calling sqlite3_reset(%p)...\n", stmt);
+  sqlite3InteropDebug("[%d] sqlite3_reset_interop(): calling sqlite3_reset(%p)...\n", GETPID(), stmt);
 #endif
 
   ret = sqlite3_reset(stmt);
 
 #if defined(INTEROP_DEBUG) && (INTEROP_DEBUG & INTEROP_DEBUG_RESET)
-  sqlite3InteropDebug("sqlite3_reset_interop(): sqlite3_reset(%p) returned %d.\n", stmt, ret);
+  sqlite3InteropDebug("[%d] sqlite3_reset_interop(): sqlite3_reset(%p) returned %d.\n", GETPID(), stmt, ret);
 #endif
 
   return ret;
