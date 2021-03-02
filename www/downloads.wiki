@@ -2527,14 +2527,14 @@
       <td valign="top">
         This NuGet package contains all the binaries for both the x86 and x64
         versions of System.Data.SQLite 1.0.113.0 (3.32.1), <big><b>except those
-        needed to support LINQ and Entity Framework 6</b></big>.  The .NET
-        Framework 3.5 SP1, 4.0, 4.5, 4.5.1, 4.5.2, 4.6, 4.6.1, 4.6.2, 4.7,
-        4.7.1, or 4.7.2 is required.  For the included Windows native binaries,
-        the version of the Visual C++ runtime corresponding to the .NET
-        Framework used by the associated managed assembly is statically linked.
-        For the included Linux native binaries, Ubuntu 16.04 LTS compatible
-        runtime libraries are required.  For the included macOS native binaries,
-        macOS Sierra compatible runtime libraries are required.
+        needed to support LINQ and Entity Framework 6</b></big>.  The .NET Core
+        runtime 2.0, 2.1, 2.2, 3.0, or 3.1 is required.  For the included
+        Windows native binaries, the version of the Visual C++ runtime
+        corresponding to the .NET Framework used by the associated managed
+        assembly is statically linked.  For the included Linux native binaries,
+        Ubuntu 16.04 LTS compatible runtime libraries are required.  For the
+        included macOS native binaries, macOS Sierra compatible runtime
+        libraries are required.
         <br />
         <big><b>This package does not depend on any other package.</b></big>
         <br />
