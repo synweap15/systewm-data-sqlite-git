@@ -423,53 +423,58 @@ SQLITE_API const char *WINAPI interop_sourceid(void)
 
 SQLITE_API int WINAPI sqlite3_open_interop(const char *filename, const char *vfsName, int flags, int extFuncs, sqlite3 **ppdb)
 {
-  int ret;
-
 #if defined(INTEROP_DEBUG) && (INTEROP_DEBUG & INTEROP_DEBUG_OPEN)
   sqlite3InteropDebug("[%d] sqlite3_open_interop(): calling sqlite3_open_v2(\"%s\", \"%s\", %d, %d, %p)...\n", GETPID(), filename, vfsName, flags, extFuncs, ppdb);
 #endif
 
-  ret = sqlite3_open_v2(filename, ppdb, flags, vfsName);
+  {
+    int ret = sqlite3_open_v2(filename, ppdb, flags, vfsName);
 
 #if defined(INTEROP_DEBUG) && (INTEROP_DEBUG & INTEROP_DEBUG_OPEN)
-  sqlite3InteropDebug("[%d] sqlite3_open_interop(): sqlite3_open_v2(\"%s\", \"%s\", %d, %d, %p) returned %d.\n", GETPID(), filename, vfsName, flags, extFuncs, ppdb, ret);
+    sqlite3InteropDebug("[%d] sqlite3_open_interop(): sqlite3_open_v2(\"%s\", \"%s\", %d, %d, %p) returned %d.\n", GETPID(), filename, vfsName, flags, extFuncs, ppdb, ret);
 #endif
 
 #if defined(INTEROP_EXTENSION_FUNCTIONS)
-  if ((ret == SQLITE_OK) && ppdb && extFuncs)
-    RegisterExtensionFunctions(*ppdb);
+    if ((ret == SQLITE_OK) && ppdb && extFuncs)
+      RegisterExtensionFunctions(*ppdb);
 #endif
 
-  return ret;
+    return ret;
+  }
 }
 
 SQLITE_API int WINAPI sqlite3_open16_interop(const char *filename, const char *vfsName, int flags, int extFuncs, sqlite3 **ppdb)
 {
-  int ret;
-
 #if defined(INTEROP_DEBUG) && (INTEROP_DEBUG & INTEROP_DEBUG_OPEN16)
-  sqlite3InteropDebug("[%d] sqlite3_open16_interop(): calling sqlite3_open_interop(\"%s\", \"%s\", %d, %d, %p)...\n", GETPID(), filename, vfsName, flags, extFuncs, ppdb);
+  sqlite3InteropDebug("[%d] sqlite3_open16_interop(): calling sqlite3_open_v2(\"%s\", \"%s\", %d, %d, %p)...\n", GETPID(), filename, vfsName, flags, extFuncs, ppdb);
 #endif
 
-  ret = sqlite3_open_interop(filename, vfsName, flags, extFuncs, ppdb);
-
-#if defined(INTEROP_DEBUG) && (INTEROP_DEBUG & INTEROP_DEBUG_OPEN16)
-  sqlite3InteropDebug("[%d] sqlite3_open16_interop(): sqlite3_open_interop(\"%s\", \"%s\", %d, %d, %p) returned %d.\n", GETPID(), filename, vfsName, flags, extFuncs, ppdb, ret);
-#endif
-
-  if ((ret == SQLITE_OK) && ppdb && !DbHasProperty(*ppdb, 0, DB_SchemaLoaded))
   {
-    ENC(*ppdb) = SQLITE_UTF16NATIVE;
+    int ret = sqlite3_open_v2(filename, ppdb, flags, vfsName);
+
+#if defined(INTEROP_DEBUG) && (INTEROP_DEBUG & INTEROP_DEBUG_OPEN16)
+    sqlite3InteropDebug("[%d] sqlite3_open16_interop(): sqlite3_open_v2(\"%s\", \"%s\", %d, %d, %p) returned %d.\n", GETPID(), filename, vfsName, flags, extFuncs, ppdb, ret);
+#endif
+
+#if defined(INTEROP_EXTENSION_FUNCTIONS)
+    if ((ret == SQLITE_OK) && ppdb && extFuncs)
+      RegisterExtensionFunctions(*ppdb);
+#endif
+
+    if ((ret == SQLITE_OK) && ppdb && !DbHasProperty(*ppdb, 0, DB_SchemaLoaded))
+    {
+      ENC(*ppdb) = SQLITE_UTF16NATIVE;
 
 #if SQLITE_VERSION_NUMBER >= 3008008
-    //
-    // BUGFIX: See ticket [7c151a2f0e22804c].
-    //
-    SCHEMA_ENC(*ppdb) = SQLITE_UTF16NATIVE;
+      //
+      // BUGFIX: See ticket [7c151a2f0e22804c].
+      //
+      SCHEMA_ENC(*ppdb) = SQLITE_UTF16NATIVE;
 #endif
-  }
+    }
 
-  return ret;
+    return ret;
+  }
 }
 
 SQLITE_API const char *WINAPI sqlite3_errmsg_interop(sqlite3 *db, int *plen)
