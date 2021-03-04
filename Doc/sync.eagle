@@ -33,14 +33,16 @@ set fileNames [list \
     [file join lang_indexedby.html] \
     [file join lang_insert.html] \
     [file join lang_keywords.html] \
+    [file join lang_mathfunc.html] \
     [file join lang_naming.html] \
     [file join lang_reindex.html] \
     [file join lang_replace.html] \
+    [file join lang_returning.html] \
     [file join lang_savepoint.html] \
     [file join lang_select.html] \
     [file join lang_transaction.html] \
     [file join lang_update.html] \
-    [file join lang_UPSERT.html] \
+    [file join lang_upsert.html] \
     [file join lang_vacuum.html] \
     [file join lang_with.html] \
     [file join pragma.html] \
@@ -116,6 +118,7 @@ set fileNames [list \
     [file join images syntax window-defn.gif] \
     [file join images syntax window-function-invocation.gif] \
     [file join images syntax with-clause.gif] \
+    [file join syntax aggregate-function-invocation.html] \
     [file join syntax alter-table-stmt.html] \
     [file join syntax analyze-stmt.html] \
     [file join syntax attach-stmt.html] \
@@ -144,7 +147,11 @@ set fileNames [list \
     [file join syntax drop-view-stmt.html] \
     [file join syntax expr.html] \
     [file join syntax factored-select-stmt.html] \
+    [file join syntax filter-clause.html] \
+    [file join syntax filter.html] \
     [file join syntax foreign-key-clause.html] \
+    [file join syntax frame-spec.html] \
+    [file join syntax function-invocation.html] \
     [file join syntax indexed-column.html] \
     [file join syntax insert-stmt.html] \
     [file join syntax join-clause.html] \
@@ -153,6 +160,7 @@ set fileNames [list \
     [file join syntax literal-value.html] \
     [file join syntax numeric-literal.html] \
     [file join syntax ordering-term.html] \
+    [file join syntax over-clause.html] \
     [file join syntax pragma-stmt.html] \
     [file join syntax pragma-value.html] \
     [file join syntax qualified-table-name.html] \
@@ -161,11 +169,13 @@ set fileNames [list \
     [file join syntax reindex-stmt.html] \
     [file join syntax release-stmt.html] \
     [file join syntax result-column.html] \
+    [file join syntax returning-clause.html] \
     [file join syntax rollback-stmt.html] \
     [file join syntax savepoint-stmt.html] \
     [file join syntax select-core.html] \
     [file join syntax select-stmt.html] \
     [file join syntax signed-number.html] \
+    [file join syntax simple-function-invocation.html] \
     [file join syntax simple-select-stmt.html] \
     [file join syntax sql-stmt-list.html] \
     [file join syntax sql-stmt.html] \
@@ -174,7 +184,10 @@ set fileNames [list \
     [file join syntax type-name.html] \
     [file join syntax update-stmt-limited.html] \
     [file join syntax update-stmt.html] \
+    [file join syntax upsert-clause.html] \
     [file join syntax vacuum-stmt.html] \
+    [file join syntax window-defn.html] \
+    [file join syntax window-function-invocation.html] \
     [file join syntax with-clause.html]]
 
 ###############################################################################

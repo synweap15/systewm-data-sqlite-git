@@ -145,6 +145,10 @@
 			<param name="Local" value="Core/lang_keywords.html">
 			</OBJECT>
 		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Math Functions">
+			<param name="Local" value="Core/lang_mathfunc.html">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
 			<param name="Name" value="Database Object Name Resolution">
 			<param name="Local" value="Core/lang_naming.html">
 			</OBJECT>
@@ -155,6 +159,10 @@
 		<LI> <OBJECT type="text/sitemap">
 			<param name="Name" value="REPLACE">
 			<param name="Local" value="Core/lang_replace.html">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="RETURNING">
+			<param name="Local" value="Core/lang_returning.html">
 			</OBJECT>
 		<LI> <OBJECT type="text/sitemap">
 			<param name="Name" value="SAVEPOINT">
@@ -186,7 +194,7 @@
 			</OBJECT>
 		<LI> <OBJECT type="text/sitemap">
 			<param name="Name" value="UPSERT">
-			<param name="Local" value="Core/lang_UPSERT.html">
+			<param name="Local" value="Core/lang_upsert.html">
 			</OBJECT>
 		<LI> <OBJECT type="text/sitemap">
 			<param name="Name" value="VACUUM">

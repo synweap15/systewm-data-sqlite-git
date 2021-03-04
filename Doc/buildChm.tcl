@@ -151,6 +151,8 @@ proc transformCoreDocumentationFile { fileName url } {
   set subSpec(3) {"<ul class='multicol_list'>"}
   set pattern(4) {***="</ul></td>\n<td><ul class='multicol_list'>\n"}
   set subSpec(4) {""}
+  set pattern(5) {***=<html><head>}
+  set subSpec(5) {<html><head><meta http-equiv="X-UA-Compatible" content="IE=edge">}
 
   #
   # NOTE: Perform the replacements, if any, keeping track of how many were
@@ -160,6 +162,7 @@ proc transformCoreDocumentationFile { fileName url } {
   incr count [regsub -all -- $pattern(2) $data $subSpec(2) data]
   incr count [regsub -all -- $pattern(3) $data $subSpec(3) data]
   incr count [regsub -all -- $pattern(4) $data $subSpec(4) data]
+  incr count [regsub -all -- $pattern(5) $data $subSpec(5) data]
 
   #
   # NOTE: Process all "href" attribute values from the data.  This pattern is
@@ -167,9 +170,9 @@ proc transformCoreDocumentationFile { fileName url } {
   #       are using it consistently.
   #
   set hrefCount 0
-  set pattern(5) {href=['"](.*?)['"]}
+  set pattern(6) {href=['"](.*?)['"]}
 
-  foreach {dummy href} [regexp -all -inline -nocase -- $pattern(5) $data] {
+  foreach {dummy href} [regexp -all -inline -nocase -- $pattern(6) $data] {
     #
     # NOTE: Skip all references to other items on this page.
     #
@@ -219,14 +222,14 @@ proc transformCoreDocumentationFile { fileName url } {
     #       with [regsub].  Use the literal string syntax supported by the
     #       regular expression engine here.
     #
-    set pattern(6) "***=$dummy"
-    set subSpec(6) "href=\"[escapeSubSpec $url$href]\""
+    set pattern(7) "***=$dummy"
+    set subSpec(7) "href=\"[escapeSubSpec $url$href]\""
 
     #
     # NOTE: Perform the replacements, if any, keeping track of how many were
     #       done.
     #
-    incr hrefCount [regsub -all -- $pattern(6) $data $subSpec(6) data]
+    incr hrefCount [regsub -all -- $pattern(7) $data $subSpec(7) data]
   }
 
   #
@@ -243,9 +246,9 @@ proc transformCoreDocumentationFile { fileName url } {
   #       not univeral; however, as of this writing (Feb 2020), the core docs
   #       are using it consistently.
   #
-  set pattern(7) {src=['"](.*?)['"]}
+  set pattern(8) {src=['"](.*?)['"]}
 
-  foreach {dummy src} [regexp -all -inline -nocase -- $pattern(7) $data] {
+  foreach {dummy src} [regexp -all -inline -nocase -- $pattern(8) $data] {
     #
     # NOTE: Skip all absolute HTTP/HTTPS references.
     #
