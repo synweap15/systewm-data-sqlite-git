@@ -64,7 +64,7 @@
 #if defined(INTEROP_EXTENSION_FUNCTIONS)
 #undef COMPILE_SQLITE_EXTENSIONS_AS_LOADABLE_MODULE
 #include "../contrib/extension-functions.c"
-extern int RegisterExtensionFunctions(sqlite3 *db);
+extern int RegisterExtensionFunctions(sqlite3 *db, int bNoCore);
 #endif
 
 #if SQLITE_OS_WIN && defined(INTEROP_CODEC) && !defined(INTEROP_INCLUDE_SEE)
@@ -435,8 +435,8 @@ SQLITE_API int WINAPI sqlite3_open_interop(const char *filename, const char *vfs
 #endif
 
 #if defined(INTEROP_EXTENSION_FUNCTIONS)
-    if ((ret == SQLITE_OK) && ppdb && extFuncs)
-      RegisterExtensionFunctions(*ppdb);
+    if ((ret == SQLITE_OK) && ppdb && ((extFuncs & 1) == 1))
+      RegisterExtensionFunctions(*ppdb, ((extFuncs & 2) == 2));
 #endif
 
     return ret;
@@ -458,7 +458,7 @@ SQLITE_API int WINAPI sqlite3_open16_interop(const char *filename, const char *v
 
 #if defined(INTEROP_EXTENSION_FUNCTIONS)
     if ((ret == SQLITE_OK) && ppdb && extFuncs)
-      RegisterExtensionFunctions(*ppdb);
+      RegisterExtensionFunctions(*ppdb, ((extFuncs & 2) == 2));
 #endif
 
     if ((ret == SQLITE_OK) && ppdb && !DbHasProperty(*ppdb, 0, DB_SchemaLoaded))

@@ -55,6 +55,8 @@
     <li>Updated to [https://www.sqlite.org/draft/releaselog/3_35_0.html|SQLite 3.35.0].</li>
     <li>Updated to [https://www.nuget.org/packages/EntityFramework/6.4.4|Entity Framework 6.4.4].</li>
     <li>Add preliminary support for the .NET Framework 4.8.</li>
+    <li>Add support for math functions now provided by the SQLite core library.</li>
+    <li>Add support for [https://www.sqlite.org/compile.html#enable_update_delete_limit|ORDER BY and LIMIT for UPDATE and DELETE].</li>
     <li>Add TextPassword connection string property for use with [https://www.sqlite.org/see|SEE].</li>
 </ul>
 <p>

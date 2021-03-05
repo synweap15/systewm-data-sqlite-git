@@ -182,7 +182,13 @@ namespace System.Data.SQLite
           SQLiteErrorCode n;
 
 #if !SQLITE_STANDARD
-          int extFuncs = HelperMethods.HasFlags(connectionFlags, SQLiteConnectionFlags.NoExtensionFunctions) ? 0 : 1;
+          int extFuncs = 0;
+
+          if (!HelperMethods.HasFlags(connectionFlags, SQLiteConnectionFlags.NoExtensionFunctions))
+              extFuncs |= 1;
+
+          if (HelperMethods.HasFlags(connectionFlags, SQLiteConnectionFlags.NoCoreFunctions))
+              extFuncs |= 2;
 
           n = UnsafeNativeMethods.sqlite3_open16_interop(ToUTF8(strFilename), ToUTF8(vfsName), openFlags, extFuncs, ref db);
 #else

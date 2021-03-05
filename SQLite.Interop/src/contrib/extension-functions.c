@@ -460,7 +460,7 @@ static double log10(double x){
 }
 #endif
 
-GEN_MATH_WRAP_DOUBLE_1(logFunc, log)
+GEN_MATH_WRAP_DOUBLE_1(oldLogFunc, log)
 GEN_MATH_WRAP_DOUBLE_1(log10Func, log10)
 GEN_MATH_WRAP_DOUBLE_1(expFunc, exp)
 
@@ -490,7 +490,7 @@ GEN_MATH_WRAP_DOUBLE_1(rad2degFunc, rad2deg)
 GEN_MATH_WRAP_DOUBLE_1(deg2radFunc, deg2rad)
 
 /* constant function that returns the value of PI=3.1415... */
-static void piFunc(sqlite3_context *context, int argc, sqlite3_value **argv){
+static void oldPiFunc(sqlite3_context *context, int argc, sqlite3_value **argv){
   sqlite3_result_double(context, M_PI);
 }
 
@@ -502,7 +502,7 @@ static void piFunc(sqlite3_context *context, int argc, sqlite3_value **argv){
 static void squareFunc(sqlite3_context *context, int argc, sqlite3_value **argv){
   i64 iVal = 0;
   double rVal = 0.0;
-  assert( argc==2 );
+  assert( argc==1 );
   switch( sqlite3_value_type(argv[0]) ){
     case SQLITE_INTEGER: {
       iVal = sqlite3_value_int64(argv[0]);
@@ -1716,72 +1716,73 @@ static void lastRowsFunc(sqlite3_context *context, int argc, sqlite3_value **arg
 ** functions.  This should be the only routine in this file with
 ** external linkage.
 */
-int RegisterExtensionFunctions(sqlite3 *db){
+int RegisterExtensionFunctions(sqlite3 *db, int bNoCore){
   static const struct {
      char *zName;
      signed char nArg;
+     u8 hasCoreFunc;       /* boolean */
      u8 argType;           /* 0: none.  1: db  2: (-1) */
      u8 eTextRep;          /* 1: UTF-16.  0: UTF-8 */
      u8 needCollSeq;
      void (*xFunc)(sqlite3_context*,int,sqlite3_value **);
   } aFuncs[] = {
     /* math.h */
-    { "acos",               1, 0, SQLITE_UTF8,    0, acosFunc  },
-    { "asin",               1, 0, SQLITE_UTF8,    0, asinFunc  },
-    { "atan",               1, 0, SQLITE_UTF8,    0, atanFunc  },
-    { "atn2",               2, 0, SQLITE_UTF8,    0, atn2Func  },
+    { "acos",               1, 1, 0, SQLITE_UTF8,    0, acosFunc  },
+    { "asin",               1, 1, 0, SQLITE_UTF8,    0, asinFunc  },
+    { "atan",               1, 1, 0, SQLITE_UTF8,    0, atanFunc  },
+    { "atn2",               2, 0, 0, SQLITE_UTF8,    0, atn2Func  },
     /* XXX alias */
-    { "atan2",              2, 0, SQLITE_UTF8,    0, atn2Func  },
-    { "acosh",              1, 0, SQLITE_UTF8,    0, acoshFunc  },
-    { "asinh",              1, 0, SQLITE_UTF8,    0, asinhFunc  },
-    { "atanh",              1, 0, SQLITE_UTF8,    0, atanhFunc  },
+    { "atan2",              2, 1, 0, SQLITE_UTF8,    0, atn2Func  },
+    { "acosh",              1, 1, 0, SQLITE_UTF8,    0, acoshFunc  },
+    { "asinh",              1, 1, 0, SQLITE_UTF8,    0, asinhFunc  },
+    { "atanh",              1, 1, 0, SQLITE_UTF8,    0, atanhFunc  },
 
-    { "difference",         2, 0, SQLITE_UTF8,    0, differenceFunc},
-    { "degrees",            1, 0, SQLITE_UTF8,    0, rad2degFunc  },
-    { "radians",            1, 0, SQLITE_UTF8,    0, deg2radFunc  },
+    { "difference",         2, 0, 0, SQLITE_UTF8,    0, differenceFunc},
+    { "degrees",            1, 1, 0, SQLITE_UTF8,    0, rad2degFunc  },
+    { "radians",            1, 1, 0, SQLITE_UTF8,    0, deg2radFunc  },
 
-    { "cos",                1, 0, SQLITE_UTF8,    0, cosFunc  },
-    { "sin",                1, 0, SQLITE_UTF8,    0, sinFunc },
-    { "tan",                1, 0, SQLITE_UTF8,    0, tanFunc },
-    { "cot",                1, 0, SQLITE_UTF8,    0, cotFunc },
-    { "cosh",               1, 0, SQLITE_UTF8,    0, coshFunc  },
-    { "sinh",               1, 0, SQLITE_UTF8,    0, sinhFunc },
-    { "tanh",               1, 0, SQLITE_UTF8,    0, tanhFunc },
-    { "coth",               1, 0, SQLITE_UTF8,    0, cothFunc },
+    { "cos",                1, 1, 0, SQLITE_UTF8,    0, cosFunc  },
+    { "sin",                1, 1, 0, SQLITE_UTF8,    0, sinFunc },
+    { "tan",                1, 1, 0, SQLITE_UTF8,    0, tanFunc },
+    { "cot",                1, 0, 0, SQLITE_UTF8,    0, cotFunc },
+    { "cosh",               1, 1, 0, SQLITE_UTF8,    0, coshFunc  },
+    { "sinh",               1, 1, 0, SQLITE_UTF8,    0, sinhFunc },
+    { "tanh",               1, 1, 0, SQLITE_UTF8,    0, tanhFunc },
+    { "coth",               1, 0, 0, SQLITE_UTF8,    0, cothFunc },
 
-    { "exp",                1, 0, SQLITE_UTF8,    0, expFunc  },
-    { "log",                1, 0, SQLITE_UTF8,    0, logFunc  },
-    { "log10",              1, 0, SQLITE_UTF8,    0, log10Func  },
-    { "power",              2, 0, SQLITE_UTF8,    0, powerFunc  },
-    { "sign",               1, 0, SQLITE_UTF8,    0, oldSignFunc },
-    { "sqrt",               1, 0, SQLITE_UTF8,    0, sqrtFunc },
-    { "square",             1, 0, SQLITE_UTF8,    0, squareFunc },
+    { "exp",                1, 1, 0, SQLITE_UTF8,    0, expFunc  },
+    { "log",                1, 1, 0, SQLITE_UTF8,    0, oldLogFunc  },
+    { "log10",              1, 1, 0, SQLITE_UTF8,    0, log10Func  },
+    { "power",              2, 1, 0, SQLITE_UTF8,    0, powerFunc  },
+    { "sign",               1, 0, 0, SQLITE_UTF8,    0, oldSignFunc },
+    { "sqrt",               1, 1, 0, SQLITE_UTF8,    0, sqrtFunc },
+    { "square",             1, 0, 0, SQLITE_UTF8,    0, squareFunc },
 
-    { "ceil",               1, 0, SQLITE_UTF8,    0, ceilFunc },
-    { "ceiling",            1, 0, SQLITE_UTF8,    0, ceilFunc },
-    { "floor",              1, 0, SQLITE_UTF8,    0, floorFunc },
+    { "ceil",               1, 1, 0, SQLITE_UTF8,    0, ceilFunc },
+    { "ceiling",            1, 1, 0, SQLITE_UTF8,    0, ceilFunc },
+    { "floor",              1, 1, 0, SQLITE_UTF8,    0, floorFunc },
 
-    { "pi",                 0, 0, SQLITE_UTF8,    0, piFunc },
-    { "last_rows_affected", 0, 0, SQLITE_UTF8,    0, lastRowsFunc },
+    { "pi",                 0, 1, 0, SQLITE_UTF8,    0, oldPiFunc },
+    { "last_rows_affected", 0, 0, 0, SQLITE_UTF8,    0, lastRowsFunc },
 
     /* string */
-    { "replicate",          2, 0, SQLITE_UTF8,    0, replicateFunc },
-    { "charindex",          2, 0, SQLITE_UTF8,    1, charindexFunc },
-    { "charindex",          3, 0, SQLITE_UTF8,    1, charindexFunc },
-    { "leftstr",            2, 0, SQLITE_UTF8,    0, leftFunc },
-    { "rightstr",           2, 0, SQLITE_UTF8,    0, rightFunc },
+    { "replicate",          2, 0, 0, SQLITE_UTF8,    0, replicateFunc },
+    { "charindex",          2, 0, 0, SQLITE_UTF8,    1, charindexFunc },
+    { "charindex",          3, 0, 0, SQLITE_UTF8,    1, charindexFunc },
+    { "leftstr",            2, 0, 0, SQLITE_UTF8,    0, leftFunc },
+    { "rightstr",           2, 0, 0, SQLITE_UTF8,    0, rightFunc },
 #ifndef HAVE_TRIM
-    { "ltrim",              1, 0, SQLITE_UTF8,    0, ltrimFunc },
-    { "rtrim",              1, 0, SQLITE_UTF8,    0, rtrimFunc },
-    { "trim",               1, 0, SQLITE_UTF8,    0, trimFunc },
-    { "replace",            3, 0, SQLITE_UTF8,    0, replaceFunc },
+    { "ltrim",              1, 0, 0, SQLITE_UTF8,    0, ltrimFunc },
+    { "rtrim",              1, 0, 0, SQLITE_UTF8,    0, rtrimFunc },
+    { "trim",               1, 0, 0, SQLITE_UTF8,    0, trimFunc },
+    { "replace",            3, 0, 0, SQLITE_UTF8,    0, replaceFunc },
 #endif
-    { "reverse",            1, 0, SQLITE_UTF8,    0, reverseFunc },
-    { "proper",             1, 0, SQLITE_UTF8,    0, properFunc },
-    { "padl",               2, 0, SQLITE_UTF8,    0, padlFunc },
-    { "padr",               2, 0, SQLITE_UTF8,    0, padrFunc },
-    { "padc",               2, 0, SQLITE_UTF8,    0, padcFunc },
-    { "strfilter",          2, 0, SQLITE_UTF8,    0, strfilterFunc },
+    { "reverse",            1, 0, 0, SQLITE_UTF8,    0, reverseFunc },
+    { "proper",             1, 0, 0, SQLITE_UTF8,    0, properFunc },
+    { "padl",               2, 0, 0, SQLITE_UTF8,    0, padlFunc },
+    { "padr",               2, 0, 0, SQLITE_UTF8,    0, padrFunc },
+    { "padc",               2, 0, 0, SQLITE_UTF8,    0, padcFunc },
+    { "strfilter",          2, 0, 0, SQLITE_UTF8,    0, strfilterFunc },
 
   };
   /* Aggregate functions */
@@ -1804,6 +1805,7 @@ int RegisterExtensionFunctions(sqlite3 *db){
 
   for(i=0; i<sizeof(aFuncs)/sizeof(aFuncs[0]); i++){
     void *pArg = 0;
+    if (bNoCore && aFuncs[i].hasCoreFunc) continue;
     switch( aFuncs[i].argType ){
       case 1: pArg = db; break;
       case 2: pArg = (void *)(-1); break;

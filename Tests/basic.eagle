@@ -5695,6 +5695,146 @@ database|database disk image is malformed)\} 0 1 0 2$}}
 
 ###############################################################################
 
+runTest {test data-1.106 {contrib math functions} -setup {
+  setupDb [set fileName data-1.106.db]
+} -body {
+  set results [list]
+
+  set functionCalls [list \
+      acos(0) acosh(1) asin(0) asinh(0) \
+      atan(0) atan2(0,0) atn2(0,0) \
+      atanh(0) ceil(0) ceiling(0) cos(0) \
+      cosh(0) cot(1) coth(1) degrees(0) \
+      exp(0) floor(0) log(1) log10(1) \
+      pi() power(0,0) radians(0) sign(0) \
+      sin(0) sinh(0) sqrt(0) square(0) \
+      tan(0) tanh(0)]
+
+  foreach functionCall $functionCalls {
+    set code [catch {
+      sql execute -execute scalar $db \
+          [appendArgs "SELECT " $functionCall \;]
+    } result]
+
+    lappend results $code $result
+  }
+
+  set results
+} -cleanup {
+  cleanupDb $fileName
+
+  unset -nocomplain results result code
+  unset -nocomplain functionCall functionCalls
+  unset -nocomplain db fileName
+} -constraints \
+{eagle monoBug28 command.sql compile.DATA SQLite System.Data.SQLite} -match \
+regexp -result {^0 1\.5707\d* 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 1 0\
+0\.6420\d* 0 1\.3130\d* 0 0 0 1 0 0 0 0 0 0 0 3\.1415\d* 0 1 0 0 0 0 0 0 0 0 0\
+0 0 0 0 0 0 0$}}
+
+###############################################################################
+
+runTest {test data-1.107 {contrib math functions w/NoCoreFunctions} -setup {
+  setupDb [set fileName data-1.107.db] "" "" "" NoCoreFunctions
+} -body {
+  set results [list]
+
+  set functionCalls [list \
+      acos(0) acosh(1) asin(0) asinh(0) \
+      atan(0) atan2(0,0) atn2(0,0) \
+      atanh(0) ceil(0) ceiling(0) cos(0) \
+      cosh(0) cot(1) coth(1) degrees(0) \
+      exp(0) floor(0) log(1) log10(1) \
+      pi() power(0,0) radians(0) sign(0) \
+      sin(0) sinh(0) sqrt(0) square(0) \
+      tan(0) tanh(0)]
+
+  foreach functionCall $functionCalls {
+    set code [catch {
+      sql execute -execute scalar $db \
+          [appendArgs "SELECT " $functionCall \;]
+    } result]
+
+    lappend results $code $result
+  }
+
+  set results
+} -cleanup {
+  cleanupDb $fileName
+
+  unset -nocomplain results result code
+  unset -nocomplain functionCall functionCalls
+  unset -nocomplain db fileName
+} -constraints \
+{eagle monoBug28 command.sql compile.DATA SQLite System.Data.SQLite} -match \
+regexp -result {^0 1\.5707\d* 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 1 0\
+0\.6420\d* 0 1\.3130\d* 0 0 0 1 0 0 0 0 0 0 0 3\.1415\d* 0 1 0 0 0 0 0 0 0 0 0\
+0 0 0 0 0 0 0$}}
+
+###############################################################################
+
+runTest {test data-1.108 {core-only math functions} -setup {
+  setupDb [set fileName data-1.108.db]
+} -body {
+  set results [list]
+
+  set functionCalls [list \
+      ln(1) log(2,1) log2(1) mod(1,1) \
+      pow(0,0) trunc(0)]
+
+  foreach functionCall $functionCalls {
+    set code [catch {
+      sql execute -execute scalar $db \
+          [appendArgs "SELECT " $functionCall \;]
+    } result]
+
+    lappend results $code $result
+  }
+
+  set results
+} -cleanup {
+  cleanupDb $fileName
+
+  unset -nocomplain results result code
+  unset -nocomplain functionCall functionCalls
+  unset -nocomplain db fileName
+} -constraints \
+{eagle monoBug28 command.sql compile.DATA SQLite System.Data.SQLite} -result \
+{0 0 0 0 0 0 0 0 0 1 0 0}}
+
+###############################################################################
+
+runTest {test data-1.109 {core-only math functions w/NoCoreFunctions} -setup {
+  setupDb [set fileName data-1.109.db] "" "" "" NoCoreFunctions
+} -body {
+  set results [list]
+
+  set functionCalls [list \
+      ln(1) log(2,1) log2(1) mod(1,1) \
+      pow(0,0) trunc(0)]
+
+  foreach functionCall $functionCalls {
+    set code [catch {
+      sql execute -execute scalar $db \
+          [appendArgs "SELECT " $functionCall \;]
+    } result]
+
+    lappend results $code $result
+  }
+
+  set results
+} -cleanup {
+  cleanupDb $fileName
+
+  unset -nocomplain results result code
+  unset -nocomplain functionCall functionCalls
+  unset -nocomplain db fileName
+} -constraints \
+{eagle monoBug28 command.sql compile.DATA SQLite System.Data.SQLite} -result \
+{0 0 0 0 0 0 0 0 0 1 0 0}}
+
+###############################################################################
+
 reportSQLiteResources $test_channel
 
 ###############################################################################

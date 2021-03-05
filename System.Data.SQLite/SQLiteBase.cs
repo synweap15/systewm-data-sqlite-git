@@ -1353,6 +1353,13 @@ namespace System.Data.SQLite
       HidePassword = 0x1000000000000,
 
       /// <summary>
+      /// Skip adding the extension functions provided by the native interop
+      /// assembly if they would conflict with a function provided by the
+      /// SQLite core library.
+      /// </summary>
+      NoCoreFunctions = 0x2000000000000,
+
+      /// <summary>
       /// When binding parameter values or returning column values, always
       /// treat them as though they were plain text (i.e. no numeric,
       /// date/time, or other conversions should be attempted).
