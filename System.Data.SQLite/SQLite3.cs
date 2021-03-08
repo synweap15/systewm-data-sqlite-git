@@ -3444,7 +3444,25 @@ namespace System.Data.SQLite
             SQLiteConfigOpsEnum.SQLITE_CONFIG_LOG, func, IntPtr.Zero);
 
         if (rc == SQLiteErrorCode.Ok)
+        {
             _setLogCallback = (func != null);
+
+#if !NET_COMPACT_20 && TRACE_CONNECTION
+            Trace.WriteLine(HelperMethods.StringFormat(
+                CultureInfo.CurrentCulture,
+                "SetLogCallback: SUCCESS ==> {0}",
+                _setLogCallback ? "SET" : "UNSET"));
+#endif
+        }
+#if !NET_COMPACT_20 && TRACE_CONNECTION
+        else
+        {
+            Trace.WriteLine(HelperMethods.StringFormat(
+                CultureInfo.CurrentCulture,
+                "SetLogCallback: FAILURE ==> {0}",
+                rc));
+        }
+#endif
 
         return rc;
     }
