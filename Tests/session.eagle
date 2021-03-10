@@ -1112,6 +1112,7 @@ runTest {test session-1.6.2 {combine/apply change sets (stream)} -setup {
 
   unset -nocomplain connection
 
+  cleanupFile $fileName(3)
   cleanupFile $fileName(2)
   cleanupFile $fileName(1)
 
