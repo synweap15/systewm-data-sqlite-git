@@ -13,7 +13,7 @@
 </a>
 <div><!-- IE hack to prevent disappearing logo --></div>
 <div class="tagline desktoponly">
-<font size="6" color="red">*** DRAFT ***</font>
+Small. Fast. Reliable.<br>Choose any three.
 </div>
 <div class="menu mainmenu">
 <ul>
@@ -2564,8 +2564,12 @@ ALTER TABLE
 
 
 <p>SQLite supports a limited subset of ALTER TABLE.
-The ALTER TABLE command in SQLite allows the user to rename a table,
-to rename a column within a table, or to add a new column to an existing table.
+The ALTER TABLE command in SQLite allows
+these alterations of an existing table:
+it can be renamed;
+a column can be added to it;
+or
+a column can be dropped from it.
 
 <a name="altertabrename"></a>
 
@@ -2607,7 +2611,7 @@ when the table that the foreign key referred to (the "<a href="foreignkeys.html#
 was renamed.  Beginning with version 3.26.0, FOREIGN KEY constraints
 are always converted when a table is renamed, unless the
 <a href="pragma.html#pragma_legacy_alter_table">PRAGMA legacy_alter_table=ON</a> setting is engaged.  The following
-table summaries the difference:</p>
+table summarizes the difference:</p>
 
 <blockquote>
 <table border="1" cellpadding="2" cellspacing="0">
@@ -2668,11 +2672,12 @@ change to validate CHECK constraints as they are added.</p>
 
 <p>The ALTER TABLE command works by modifying the SQL text of the schema
 stored in the <a href="schematab.html">sqlite_schema table</a>.
-No changes are made to table content.
+No changes are made to table content for renames or column addition.
 Because of this,
-the execution time of the ALTER TABLE command is independent of
-the amount of data in the table.  The ALTER TABLE command runs as quickly
-on a table with 10 million rows as it does on a table with 1 row.
+the execution time of such ALTER TABLE commands is independent of
+the amount of data in the table.
+They run as quickly
+on a table with 10 million rows as on a table with 1 row.
 </p>
 
 <p>After ADD COLUMN has been run on a database, that database will not
@@ -2685,20 +2690,19 @@ be readable by SQLite version 3.1.3 (2005-02-20) and earlier.</p>
 <p> The DROP COLUMN syntax
 is used to remove an existing column from a table.
 The DROP COLUMN command removes the named column from the table,
-and also rewrites the entire table to purge the data associated
+and rewrites its content to purge the data associated
 with that column.
 The DROP COLUMN command only works if the column is not referenced
 by any other parts of the schema and is not a PRIMARY KEY and
 does not have a UNIQUE constraint.
 Possible reasons why the DROP COLUMN command can fail include:
 </p><ul>
-<li>The column is a PRIMARY KEY.
+<li>The column is a PRIMARY KEY or part of one.
 </li><li>The column has a UNIQUE constraint.
 </li><li>The column is indexed.
 </li><li>The column is named in the WHERE clause of a <a href="partialindex.html">partial index</a>.
-</li><li>The column appears in a table CHECK constraint.  However, the column being
-     deleted can be used in a column CHECK constraint because the column
-     CHECK constraint is dropped together with the column itself.
+</li><li>The column is named in a table or column <a href="lang_createtable.html#ckconst">CHECK constraint</a>
+not associated with the column being dropped.
 </li><li>The column is used in a <a href="foreignkeys.html">foreign key constraint</a>.
 </li><li>The column is used in the expression of a <a href="gencol.html">generated column</a>.
 </li><li>The column appears in a trigger or view.
@@ -2932,4 +2936,4 @@ that are easier to modify.
 
 
 
-</p><p align="center"><font size="6" color="red">*** DRAFT ***</font></p>
+</p>

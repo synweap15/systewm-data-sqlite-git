@@ -13,7 +13,7 @@
 </a>
 <div><!-- IE hack to prevent disappearing logo --></div>
 <div class="tagline desktoponly">
-<font size="6" color="red">*** DRAFT ***</font>
+Small. Fast. Reliable.<br>Choose any three.
 </div>
 <div class="menu mainmenu">
 <ul>
@@ -110,7 +110,7 @@ if the amalgamation is compiled using the
 <a href="compile.html#enable_math_functions">-DSQLITE_ENABLE_MATH_FUNCTIONS</a> compile-time option.
 
 </p><p>The arguments to math functions can be integers, floating-point numbers,
-or strings or blobs that looks like integers or real numbers.  If any argument
+or strings or blobs that look like integers or real numbers.  If any argument
 is NULL or is a string or blob that is not readily converted into a number,
 then the function will return NULL.
 These functions also return NULL for domain errors, such as trying to
@@ -132,6 +132,7 @@ for IEEE754 doubles.
 <li><a href='lang_mathfunc.html#asinh'>asinh(X)</a></li>
 <li><a href='lang_mathfunc.html#atan'>atan(X)</a></li>
 <li><a href='lang_mathfunc.html#atan2'>atan2(X,Y)</a></li>
+<li><a href='lang_mathfunc.html#atanh'>atanh(X)</a></li>
 <li><a href='lang_mathfunc.html#ceil'>ceil(X)</a></li>
 <li><a href='lang_mathfunc.html#ceil'>ceiling(X)</a></li>
 <li><a href='lang_mathfunc.html#cos'>cos(X)</a></li>
@@ -168,7 +169,7 @@ for IEEE754 doubles.
 </dd>
 <a name="acosh"></a>
 <dt><p><b>acosh(<i>X</i>)</b></dt><dd><p>
-  Return the hyperbolic arccosine of X.  The result is in radians.
+  Return the hyperbolic arccosine of X.
 </dd>
 <a name="asin"></a>
 <dt><p><b>asin(<i>X</i>)</b></dt><dd><p>
@@ -176,7 +177,7 @@ for IEEE754 doubles.
 </dd>
 <a name="asinh"></a>
 <dt><p><b>asinh(<i>X</i>)</b></dt><dd><p>
-  Return the hyperbolic arcsine of X.  The result is in radians.
+  Return the hyperbolic arcsine of X.
 </dd>
 <a name="atan"></a>
 <dt><p><b>atan(<i>X</i>)</b></dt><dd><p>
@@ -188,9 +189,13 @@ for IEEE754 doubles.
   result is placed into correct quadrant depending on the signs
   of X and Y.
 </dd>
+<a name="atanh"></a>
+<dt><p><b>atanh(<i>X</i>)</b></dt><dd><p>
+  Return the hyperbolic arctangent of X.
+</dd>
 <a name="ceil"></a>
 <dt><p><b>ceil(<i>X</i>)<br />ceiling(<i>X</i>)</b></dt><dd><p>
-  Return the next larger representable integer values above X.
+  Return the first representable integer value greater than or equal to X.
   For positive values of X, this routine rounds away from zero.
   For negative values of X, this routine rounds toward zero.
 </dd>
@@ -200,7 +205,7 @@ for IEEE754 doubles.
 </dd>
 <a name="cosh"></a>
 <dt><p><b>cosh(<i>X</i>)</b></dt><dd><p>
-  Return the hyperbolic cosine of X.  X is in radians.
+  Return the hyperbolic cosine of X.
 </dd>
 <a name="degrees"></a>
 <dt><p><b>degrees(<i>X</i>)</b></dt><dd><p>
@@ -213,9 +218,9 @@ for IEEE754 doubles.
 </dd>
 <a name="floor"></a>
 <dt><p><b>floor(<i>X</i>)</b></dt><dd><p>
-  Return the next representable integer value that is less than X.
-  For positive numbers, this function rounds toward zero but for
-  negative numbers, this function rounds away from zero.
+  Return the first representable integer value less than or equal to X.
+  For positive numbers, this function rounds toward zero.
+  For negative numbers, this function rounds away from zero.
 </dd>
 <a name="ln"></a>
 <dt><p><b>ln(<i>X</i>)</b></dt><dd><p>
@@ -248,7 +253,7 @@ for IEEE754 doubles.
 </dd>
 <a name="pow"></a>
 <dt><p><b>pow(<i>X</i>,<i>Y</i>)<br />power(<i>X</i>,<i>Y</i>)</b></dt><dd><p>
-  Compute X raised to Y-th power.
+  Compute X raised to the power Y.
 </dd>
 <a name="radians"></a>
 <dt><p><b>radians(<i>X</i>)</b></dt><dd><p>
@@ -260,7 +265,7 @@ for IEEE754 doubles.
 </dd>
 <a name="sinh"></a>
 <dt><p><b>sinh(<i>X</i>)</b></dt><dd><p>
-  Return the hyperbolic sine of X.  X is in radians.
+  Return the hyperbolic sine of X.
 </dd>
 <a name="sqrt"></a>
 <dt><p><b>sqrt(<i>X</i>)</b></dt><dd><p>
@@ -272,14 +277,17 @@ for IEEE754 doubles.
 </dd>
 <a name="tanh"></a>
 <dt><p><b>tanh(<i>X</i>)</b></dt><dd><p>
-  Return the hyperbolic tangent of X.  X is in radians.
+  Return the hyperbolic tangent of X.
 </dd>
 <a name="trunc"></a>
 <dt><p><b>trunc(<i>X</i>)</b></dt><dd><p>
-  Return the first representable integers on the line from X to 0.0.
-  This is similar to <a href="lang_mathfunc.html#ceil">ceiling(X)</a> and <a href="lang_mathfunc.html#floor">floor(X)</a> except that it always
-  rounds toward zero.
+  Return the representable integer in between X and 0 (inclusive)
+  that is furthest away from zero.  Or, in other words, return the
+  integer part of X, rounding toward zero.
+  The trunc() function is similar to <a href="lang_mathfunc.html#ceil">ceiling(X)</a> and <a href="lang_mathfunc.html#floor">floor(X)</a> except
+  that it always rounds toward zero whereas ceiling(X) and floor(X) round
+  up and down, respectively.
 </dd>
 
 </dl>
-<p align="center"><font size="6" color="red">*** DRAFT ***</font></p>
+

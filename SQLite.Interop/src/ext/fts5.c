@@ -13535,9 +13535,11 @@ static void fts5DoclistIterInit(
   Fts5DoclistIter *pIter
 ){
   memset(pIter, 0, sizeof(*pIter));
-  pIter->aPoslist = pBuf->p;
-  pIter->aEof = &pBuf->p[pBuf->n];
-  fts5DoclistIterNext(pIter);
+  if( pBuf->n>0 ){
+    pIter->aPoslist = pBuf->p;
+    pIter->aEof = &pBuf->p[pBuf->n];
+    fts5DoclistIterNext(pIter);
+  }
 }
 
 #if 0
@@ -14299,8 +14301,9 @@ static int sqlite3Fts5IterNextFrom(Fts5IndexIter *pIndexIter, i64 iMatch){
 static const char *sqlite3Fts5IterTerm(Fts5IndexIter *pIndexIter, int *pn){
   int n;
   const char *z = (const char*)fts5MultiIterTerm((Fts5Iter*)pIndexIter, &n);
+  assert_nc( z || n<=1 );
   *pn = n-1;
-  return &z[1];
+  return (z ? &z[1] : 0);
 }
 
 /*
@@ -17587,7 +17590,8 @@ static int fts5ApiPhraseFirst(
   int n;
   int rc = fts5CsrPoslist(pCsr, iPhrase, &pIter->a, &n);
   if( rc==SQLITE_OK ){
-    pIter->b = &pIter->a[n];
+    assert( pIter->a || n==0 );
+    pIter->b = (pIter->a ? &pIter->a[n] : 0);
     *piCol = 0;
     *piOff = 0;
     fts5ApiPhraseNext(pCtx, pIter, piCol, piOff);
@@ -17646,7 +17650,8 @@ static int fts5ApiPhraseFirstColumn(
       rc = sqlite3Fts5ExprPhraseCollist(pCsr->pExpr, iPhrase, &pIter->a, &n);
     }
     if( rc==SQLITE_OK ){
-      pIter->b = &pIter->a[n];
+      assert( pIter->a || n==0 );
+      pIter->b = (pIter->a ? &pIter->a[n] : 0);
       *piCol = 0;
       fts5ApiPhraseNextColumn(pCtx, pIter, piCol);
     }
@@ -17654,7 +17659,8 @@ static int fts5ApiPhraseFirstColumn(
     int n;
     rc = fts5CsrPoslist(pCsr, iPhrase, &pIter->a, &n);
     if( rc==SQLITE_OK ){
-      pIter->b = &pIter->a[n];
+      assert( pIter->a || n==0 );
+      pIter->b = (pIter->a ? &pIter->a[n] : 0);
       if( n<=0 ){
         *piCol = -1;
       }else if( pIter->a[0]==0x01 ){
@@ -18132,7 +18138,7 @@ static int sqlite3Fts5GetTokenizer(
     *pzErr = sqlite3_mprintf("no such tokenizer: %s", azArg[0]);
   }else{
     rc = pMod->x.xCreate(
-        pMod->pUserData, &azArg[1], (nArg?nArg-1:0), &pConfig->pTok
+        pMod->pUserData, (azArg?&azArg[1]:0), (nArg?nArg-1:0), &pConfig->pTok
     );
     pConfig->pTokApi = &pMod->x;
     if( rc!=SQLITE_OK ){
@@ -18195,7 +18201,7 @@ static void fts5SourceIdFunc(
 ){
   assert( nArg==0 );
   UNUSED_PARAM2(nArg, apUnused);
-  sqlite3_result_text(pCtx, "fts5: 2021-03-03 19:36:40 4da40620ac8557aba6e1e06e720418b55e9950f406288b03749ef1b117041cd9", -1, SQLITE_TRANSIENT);
+  sqlite3_result_text(pCtx, "fts5: 2021-03-12 15:10:09 acd63062eb06748bfe9e4886639e4f2b54ea6a496a83f10716abbaba4115500b", -1, SQLITE_TRANSIENT);
 }
 
 /*

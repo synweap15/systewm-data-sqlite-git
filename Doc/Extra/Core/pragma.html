@@ -13,7 +13,7 @@
 </a>
 <div><!-- IE hack to prevent disappearing logo --></div>
 <div class="tagline desktoponly">
-<font size="6" color="red">*** DRAFT ***</font>
+Small. Fast. Reliable.<br>Choose any three.
 </div>
 <div class="menu mainmenu">
 <ul>
@@ -871,6 +871,11 @@ for use in application programs.</ol></p>
     as "UTF-16 encoding using native machine byte-ordering".  It is not
     possible to change the text encoding of a database after it has been
     created and any attempt to do so will be silently ignored.</p>
+
+    <p>If no encoding is first set with this pragma,
+    then the encoding with which the main database will be created
+    defaults to one determined by the
+    <a href="c3ref/open.html">API used to open the connection</a>.</p>
 
     <p>Once an encoding has been set for a database, it cannot be changed.</p>
 
@@ -2174,4 +2179,4 @@ PRAGMA <b>main.</b>locking_mode=EXCLUSIVE;
     a <a href="howtocorrupt.html#cfgerr">corrupt database file</a>.</span>
 
 <hr>
-<p align="center"><font size="6" color="red">*** DRAFT ***</font></p>
+
