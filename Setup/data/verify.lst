@@ -26,75 +26,6 @@ set sds_manifests(source) {
   Doc/Extra/Core/
   Doc/Extra/Core/images/
   Doc/Extra/Core/images/sqlite370_banner.gif
-  Doc/Extra/Core/images/syntax/
-  Doc/Extra/Core/images/syntax/aggregate-function-invocation.gif
-  Doc/Extra/Core/images/syntax/alter-table-stmt.gif
-  Doc/Extra/Core/images/syntax/analyze-stmt.gif
-  Doc/Extra/Core/images/syntax/attach-stmt.gif
-  Doc/Extra/Core/images/syntax/begin-stmt.gif
-  Doc/Extra/Core/images/syntax/column-constraint.gif
-  Doc/Extra/Core/images/syntax/column-def.gif
-  Doc/Extra/Core/images/syntax/column-name-list.gif
-  Doc/Extra/Core/images/syntax/comment-syntax.gif
-  Doc/Extra/Core/images/syntax/commit-stmt.gif
-  Doc/Extra/Core/images/syntax/common-table-expression.gif
-  Doc/Extra/Core/images/syntax/compound-operator.gif
-  Doc/Extra/Core/images/syntax/compound-select-stmt.gif
-  Doc/Extra/Core/images/syntax/conflict-clause.gif
-  Doc/Extra/Core/images/syntax/create-index-stmt.gif
-  Doc/Extra/Core/images/syntax/create-table-stmt.gif
-  Doc/Extra/Core/images/syntax/create-trigger-stmt.gif
-  Doc/Extra/Core/images/syntax/create-view-stmt.gif
-  Doc/Extra/Core/images/syntax/create-virtual-table-stmt.gif
-  Doc/Extra/Core/images/syntax/cte-table-name.gif
-  Doc/Extra/Core/images/syntax/delete-stmt-limited.gif
-  Doc/Extra/Core/images/syntax/delete-stmt.gif
-  Doc/Extra/Core/images/syntax/detach-stmt.gif
-  Doc/Extra/Core/images/syntax/drop-index-stmt.gif
-  Doc/Extra/Core/images/syntax/drop-table-stmt.gif
-  Doc/Extra/Core/images/syntax/drop-trigger-stmt.gif
-  Doc/Extra/Core/images/syntax/drop-view-stmt.gif
-  Doc/Extra/Core/images/syntax/expr.gif
-  Doc/Extra/Core/images/syntax/factored-select-stmt.gif
-  Doc/Extra/Core/images/syntax/filter-clause.gif
-  Doc/Extra/Core/images/syntax/frame-spec.gif
-  Doc/Extra/Core/images/syntax/foreign-key-clause.gif
-  Doc/Extra/Core/images/syntax/indexed-column.gif
-  Doc/Extra/Core/images/syntax/insert-stmt.gif
-  Doc/Extra/Core/images/syntax/join-clause.gif
-  Doc/Extra/Core/images/syntax/join-constraint.gif
-  Doc/Extra/Core/images/syntax/join-operator.gif
-  Doc/Extra/Core/images/syntax/literal-value.gif
-  Doc/Extra/Core/images/syntax/numeric-literal.gif
-  Doc/Extra/Core/images/syntax/ordering-term.gif
-  Doc/Extra/Core/images/syntax/over-clause.gif
-  Doc/Extra/Core/images/syntax/pragma-stmt.gif
-  Doc/Extra/Core/images/syntax/pragma-value.gif
-  Doc/Extra/Core/images/syntax/qualified-table-name.gif
-  Doc/Extra/Core/images/syntax/raise-function.gif
-  Doc/Extra/Core/images/syntax/recursive-cte.gif
-  Doc/Extra/Core/images/syntax/reindex-stmt.gif
-  Doc/Extra/Core/images/syntax/release-stmt.gif
-  Doc/Extra/Core/images/syntax/result-column.gif
-  Doc/Extra/Core/images/syntax/rollback-stmt.gif
-  Doc/Extra/Core/images/syntax/savepoint-stmt.gif
-  Doc/Extra/Core/images/syntax/select-core.gif
-  Doc/Extra/Core/images/syntax/select-stmt.gif
-  Doc/Extra/Core/images/syntax/signed-number.gif
-  Doc/Extra/Core/images/syntax/simple-function-invocation.gif
-  Doc/Extra/Core/images/syntax/simple-select-stmt.gif
-  Doc/Extra/Core/images/syntax/sql-stmt-list.gif
-  Doc/Extra/Core/images/syntax/sql-stmt.gif
-  Doc/Extra/Core/images/syntax/table-constraint.gif
-  Doc/Extra/Core/images/syntax/table-or-subquery.gif
-  Doc/Extra/Core/images/syntax/type-name.gif
-  Doc/Extra/Core/images/syntax/update-stmt-limited.gif
-  Doc/Extra/Core/images/syntax/update-stmt.gif
-  Doc/Extra/Core/images/syntax/upsert-clause.gif
-  Doc/Extra/Core/images/syntax/vacuum-stmt.gif
-  Doc/Extra/Core/images/syntax/window-defn.gif
-  Doc/Extra/Core/images/syntax/window-function-invocation.gif
-  Doc/Extra/Core/images/syntax/with-clause.gif
   Doc/Extra/Core/lang.html
   Doc/Extra/Core/lang_aggfunc.html
   Doc/Extra/Core/lang_altertable.html
@@ -120,20 +51,35 @@ set sds_manifests(source) {
   Doc/Extra/Core/lang_indexedby.html
   Doc/Extra/Core/lang_insert.html
   Doc/Extra/Core/lang_keywords.html
+  Doc/Extra/Core/lang_mathfunc.html
   Doc/Extra/Core/lang_naming.html
   Doc/Extra/Core/lang_reindex.html
   Doc/Extra/Core/lang_replace.html
+  Doc/Extra/Core/lang_returning.html
   Doc/Extra/Core/lang_savepoint.html
   Doc/Extra/Core/lang_select.html
   Doc/Extra/Core/lang_transaction.html
   Doc/Extra/Core/lang_update.html
-  Doc/Extra/Core/lang_UPSERT.html
+  Doc/Extra/Core/lang_upsert.html
   Doc/Extra/Core/lang_vacuum.html
   Doc/Extra/Core/lang_with.html
   Doc/Extra/Core/pragma.html
   Doc/Extra/Core/sqlite.css
   Doc/Extra/Core/syntax.html
   Doc/Extra/Core/syntax/
+
+
+
+
+
+
+
+
+
+
+
+
+  Doc/Extra/Core/syntax/aggregate-function-invocation.html
   Doc/Extra/Core/syntax/alter-table-stmt.html
   Doc/Extra/Core/syntax/analyze-stmt.html
   Doc/Extra/Core/syntax/attach-stmt.html
@@ -162,7 +108,9 @@ set sds_manifests(source) {
   Doc/Extra/Core/syntax/drop-view-stmt.html
   Doc/Extra/Core/syntax/expr.html
   Doc/Extra/Core/syntax/factored-select-stmt.html
+  Doc/Extra/Core/syntax/filter-clause.html
   Doc/Extra/Core/syntax/foreign-key-clause.html
+  Doc/Extra/Core/syntax/frame-spec.html
   Doc/Extra/Core/syntax/indexed-column.html
   Doc/Extra/Core/syntax/insert-stmt.html
   Doc/Extra/Core/syntax/join-clause.html
@@ -171,6 +119,7 @@ set sds_manifests(source) {
   Doc/Extra/Core/syntax/literal-value.html
   Doc/Extra/Core/syntax/numeric-literal.html
   Doc/Extra/Core/syntax/ordering-term.html
+  Doc/Extra/Core/syntax/over-clause.html
   Doc/Extra/Core/syntax/pragma-stmt.html
   Doc/Extra/Core/syntax/pragma-value.html
   Doc/Extra/Core/syntax/qualified-table-name.html
@@ -179,11 +128,13 @@ set sds_manifests(source) {
   Doc/Extra/Core/syntax/reindex-stmt.html
   Doc/Extra/Core/syntax/release-stmt.html
   Doc/Extra/Core/syntax/result-column.html
+  Doc/Extra/Core/syntax/returning-clause.html
   Doc/Extra/Core/syntax/rollback-stmt.html
   Doc/Extra/Core/syntax/savepoint-stmt.html
   Doc/Extra/Core/syntax/select-core.html
   Doc/Extra/Core/syntax/select-stmt.html
   Doc/Extra/Core/syntax/signed-number.html
+  Doc/Extra/Core/syntax/simple-function-invocation.html
   Doc/Extra/Core/syntax/simple-select-stmt.html
   Doc/Extra/Core/syntax/sql-stmt-list.html
   Doc/Extra/Core/syntax/sql-stmt.html
@@ -192,7 +143,10 @@ set sds_manifests(source) {
   Doc/Extra/Core/syntax/type-name.html
   Doc/Extra/Core/syntax/update-stmt-limited.html
   Doc/Extra/Core/syntax/update-stmt.html
+  Doc/Extra/Core/syntax/upsert-clause.html
   Doc/Extra/Core/syntax/vacuum-stmt.html
+  Doc/Extra/Core/syntax/window-defn.html
+  Doc/Extra/Core/syntax/window-function-invocation.html
   Doc/Extra/Core/syntax/with-clause.html
   Doc/Extra/Core/syntaxdiagrams.html
   Doc/Extra/Include/
@@ -219,9 +173,10 @@ set sds_manifests(source) {
   Externals/
   Externals/Eagle/
   Externals/Eagle/bin/
+  Externals/Eagle/bin/netFramework20/
+  Externals/Eagle/bin/netFramework20/EagleShell.exe.config
   Externals/Eagle/bin/netFramework40/
   Externals/Eagle/bin/netFramework40/EagleShell.exe.config
-  Externals/Eagle/bin/netFramework40/EagleShell.exe.mda.config
   Externals/Eagle/lib/
   Externals/Eagle/lib/Eagle1.0/
   Externals/Eagle/lib/Eagle1.0/vendor.eagle
@@ -243,6 +198,7 @@ set sds_manifests(source) {
   NuGet/shared/Core/
   NuGet/shared/Core/build/
   NuGet/shared/Core/build/System.Data.SQLite.Core.NetFramework.targets
+  NuGet/shared/Core/buildTransitive/
   NuGet/shared/Core/buildTransitive/System.Data.SQLite.Core.NetFramework.targets
   NuGet/shared/Core/content/
   NuGet/shared/Core/content/config.install.xdt
@@ -1007,8 +963,17 @@ set sds_manifests(source) {
 #       suite.
 #
 set sds_manifests(eagle) {
+  Externals/Eagle/bin/netFramework20/Eagle.dll
+  Externals/Eagle/bin/netFramework20/EagleShell.exe
+  Externals/Eagle/bin/netFramework20/EagleShell.exe.mda.config
+  Externals/Eagle/bin/netFramework20/EagleShell32.exe
+  Externals/Eagle/bin/netFramework20/x64/
+  Externals/Eagle/bin/netFramework20/x64/Spilornis.dll
+  Externals/Eagle/bin/netFramework20/x86/
+  Externals/Eagle/bin/netFramework20/x86/Spilornis.dll
   Externals/Eagle/bin/netFramework40/Eagle.dll
   Externals/Eagle/bin/netFramework40/EagleShell.exe
+  Externals/Eagle/bin/netFramework40/EagleShell.exe.mda.config
   Externals/Eagle/bin/netFramework40/EagleShell32.exe
   Externals/Eagle/bin/netFramework40/x64/
   Externals/Eagle/bin/netFramework40/x64/Spilornis.dll
@@ -1058,6 +1023,13 @@ set sds_manifests(eagle) {
   Externals/Eagle/lib/Test1.0/pkgIndex.eagle
   Externals/Eagle/lib/Test1.0/pkgIndex.tcl
   Externals/Eagle/lib/Test1.0/prologue.eagle
+  Externals/Eagle/Targets/
+  Externals/Eagle/Targets/Eagle.Builds.targets
+  Externals/Eagle/Targets/Eagle.Presets.targets
+  Externals/Eagle/Targets/Eagle.Sample.targets
+  Externals/Eagle/Targets/Eagle.Settings.targets
+  Externals/Eagle/Targets/Eagle.targets
+  Externals/Eagle/Targets/Eagle.tasks
 }
 
 ###############################################################################

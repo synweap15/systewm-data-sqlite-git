@@ -81,10 +81,8 @@ Core\syntax\drop-view-stmt.html
 Core\syntax\expr.html
 Core\syntax\factored-select-stmt.html
 Core\syntax\filter-clause.html
-Core\syntax\filter.html
 Core\syntax\foreign-key-clause.html
 Core\syntax\frame-spec.html
-Core\syntax\function-invocation.html
 Core\syntax\indexed-column.html
 Core\syntax\insert-stmt.html
 Core\syntax\join-clause.html

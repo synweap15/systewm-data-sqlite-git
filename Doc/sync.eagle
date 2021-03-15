@@ -148,10 +148,8 @@ set fileNames [list \
     [file join syntax expr.html] \
     [file join syntax factored-select-stmt.html] \
     [file join syntax filter-clause.html] \
-    [file join syntax filter.html] \
     [file join syntax foreign-key-clause.html] \
     [file join syntax frame-spec.html] \
-    [file join syntax function-invocation.html] \
     [file join syntax indexed-column.html] \
     [file join syntax insert-stmt.html] \
     [file join syntax join-clause.html] \
