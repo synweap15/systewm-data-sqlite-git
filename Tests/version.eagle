@@ -76,7 +76,7 @@ set version(nuget) [appendArgs $version(major) \\. $version(minor) \\. \
 
 ###############################################################################
 
-set version(minor) [appendArgs $version(major) \\. $version(minor)]
+set version(mm) [appendArgs $version(major) \\. $version(minor)]
 
 ###############################################################################
 
