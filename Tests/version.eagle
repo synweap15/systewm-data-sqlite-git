@@ -41,8 +41,8 @@ set version(revision)          0
 #       must be kept synchronized with the version numbers for the associated
 #       source code and property files.
 #
-set version(core,full) 3.35.1.0
-set version(core,short) 3.35.1
+set version(core,full) 3.35.3.0
+set version(core,short) 3.35.3
 
 ###############################################################################
 
@@ -73,6 +73,10 @@ set version(full) [appendArgs $version(major) . $version(minor) . \
 #
 set version(nuget) [appendArgs $version(major) \\. $version(minor) \\. \
                                $version(build) \\. \\d+]
+
+###############################################################################
+
+set version(minor) [appendArgs $version(major) \\. $version(minor)]
 
 ###############################################################################
 
