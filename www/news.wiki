@@ -52,7 +52,7 @@
     <b>1.0.114.0 - April XX, 2021 <font color="red">(release scheduled)</font></b>
 </p>
 <ul>
-    <li>Updated to [https://www.sqlite.org/releaselog/3_35_3.html|SQLite 3.35.3].</li>
+    <li>Updated to [https://www.sqlite.org/releaselog/3_35_4.html|SQLite 3.35.4].</li>
     <li>Updated to [https://www.nuget.org/packages/EntityFramework/6.4.4|Entity Framework 6.4.4].</li>
     <li>Add preliminary support for the .NET Framework 4.8.</li>
     <li>Add support for math functions now provided by the SQLite core library.</li>
