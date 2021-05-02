@@ -5765,11 +5765,10 @@ runTest {test data-1.107 {contrib math functions w/NoCoreFunctions} -setup {
   unset -nocomplain results result code
   unset -nocomplain functionCall functionCalls
   unset -nocomplain db fileName
-} -constraints \
-{eagle monoBug28 command.sql compile.DATA SQLite System.Data.SQLite} -match \
-regexp -result {^0 1\.5707\d* 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 1 0\
-0\.6420\d* 0 1\.3130\d* 0 0 0 1 0 0 0 0 0 0 0 3\.1415\d* 0 1 0 0 0 0 0 0 0 0 0\
-0 0 0 0 0 0 0$}}
+} -constraints {eagle monoBug28 command.sql compile.DATA SQLite\
+System.Data.SQLite sqlite3_c99_math} -match regexp -result {^0 1\.5707\d* 0 0 0\
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 1 0 0\.6420\d* 0 1\.3130\d* 0 0 0 1 0 0 0 0\
+0 0 0 3\.1415\d* 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0$}}
 
 ###############################################################################
 
@@ -5798,9 +5797,8 @@ runTest {test data-1.108 {core-only math functions} -setup {
   unset -nocomplain results result code
   unset -nocomplain functionCall functionCalls
   unset -nocomplain db fileName
-} -constraints \
-{eagle monoBug28 command.sql compile.DATA SQLite System.Data.SQLite} -result \
-{0 0 0 0 0 0 0 0 0 1 0 0}}
+} -constraints {eagle monoBug28 command.sql compile.DATA SQLite\
+System.Data.SQLite sqlite3_c99_math} -result {0 0 0 0 0 0 0 0 0 1 0 0}}
 
 ###############################################################################
 
@@ -5829,9 +5827,8 @@ runTest {test data-1.109 {core-only math functions w/NoCoreFunctions} -setup {
   unset -nocomplain results result code
   unset -nocomplain functionCall functionCalls
   unset -nocomplain db fileName
-} -constraints \
-{eagle monoBug28 command.sql compile.DATA SQLite System.Data.SQLite} -result \
-{0 0 0 0 0 0 0 0 0 1 0 0}}
+} -constraints {eagle monoBug28 command.sql compile.DATA SQLite\
+System.Data.SQLite sqlite3_c99_math} -result {0 0 0 0 0 0 0 0 0 1 0 0}}
 
 ###############################################################################
 

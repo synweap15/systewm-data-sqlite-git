@@ -4625,6 +4625,23 @@ namespace eval ::Eagle {
       }
     }
 
+    proc checkForSQLiteC99MathFunctions { channel } {
+      tputs $channel \
+          "---- checking for SQLite C99 math functions... "
+
+      if {[isSQLiteReady] && [catch {
+        object invoke \
+            System.Data.SQLite.SQLiteCommand Execute \
+            "SELECT trunc(0);" NonQuery "Data Source=:memory:;"
+      }] == 0} then {
+        addConstraint sqlite3_c99_math
+
+        tputs $channel yes\n
+      } else {
+        tputs $channel no\n
+      }
+    }
+
     proc loadSQLiteTestSettings { channel {suffix ""} {quiet false} } {
       #
       # NOTE: Skip loading the settings if their usage has been disabled.
@@ -5628,6 +5645,12 @@ namespace eval ::Eagle {
         # NOTE: Check the SQLite database and temporary directories.
         #
         checkForSQLiteDirectories $::test_channel
+
+        #
+        # NOTE: Check if the SQLite core library was compiled with support for
+        #       the math functions from the ANSI C99 standard.
+        #
+        checkForSQLiteC99MathFunctions $::test_channel
 
         #
         # NOTE: Attempt to determine if various compile-time options needed for
