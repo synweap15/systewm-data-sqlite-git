@@ -258,7 +258,7 @@ SQLITE_PRIVATE void sqlite3InteropDebug(const char *zFormat, ...){
 #endif
 
 #if defined(INTEROP_LOG)
-SQLITE_PRIVATE int logConfigured = 0;
+SQLITE_PRIVATE volatile LONG logConfigured = 0;
 
 SQLITE_PRIVATE void sqlite3InteropLogCallback(void *pArg, int iCode, const char *zMsg){
   sqlite3InteropDebug("[%d] INTEROP_LOG (%d) %s\n", GETPID(), iCode, zMsg);
@@ -397,15 +397,16 @@ SQLITE_API int WINAPI sqlite3_close_interop(sqlite3 *db)
 SQLITE_API int WINAPI sqlite3_config_log_interop()
 {
   int ret;
-  if( !logConfigured ){
+
+  if( InterlockedIncrement(&logConfigured)==1 ){
     ret = sqlite3_config(SQLITE_CONFIG_LOG, sqlite3InteropLogCallback, 0);
-    if( ret==SQLITE_OK ){
-      logConfigured = 1;
-    }else{
+    if( ret!=SQLITE_OK ){
       sqlite3InteropDebug("[%d] sqlite3_config_log_interop(): sqlite3_config(SQLITE_CONFIG_LOG) returned %d.\n", GETPID(), ret);
+      InterlockedDecrement(&logConfigured);
     }
   }else{
     ret = SQLITE_DONE;
+    InterlockedDecrement(&logConfigured);
   }
   return ret;
 }
