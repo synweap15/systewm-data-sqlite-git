@@ -163,6 +163,7 @@ runTest {test tkt-0e48e80333-1.2 {delegate MDA on pooled close} -setup {
     set count(3) [expr {$count(1) * $count(2)}]; # total query count
     set count(4) [expr {0.00002 * $count(3)}]; # timeout in seconds
     set count(5) 10; # busy loop sleep milliseconds
+    set count(6) 120; # connection default command timeout
 
     set sql { \
       SELECT 1; \
@@ -206,6 +207,7 @@ runTest {test tkt-0e48e80333-1.2 {delegate MDA on pooled close} -setup {
           {
             SQLiteConnection connection = new SQLiteConnection(
                 "Data Source=${dataSource};Journal Mode=Wal;Pooling=true;" +
+                "Default Timeout=${count(6)};" +
                 "[getTestProperties AllowNestedTransactions]");
 
             connection.Open();
