@@ -39,8 +39,8 @@
 
 #ifndef _WIN32
 typedef long LONG;
-#define InterlockedIncrement(p) (*((LONG*)(p)))++;
-#define InterlockedDecrement(p) (*((LONG*)(p)))--;
+#define InterlockedIncrement(p) (*((LONG*)(p)))++
+#define InterlockedDecrement(p) (*((LONG*)(p)))--
 #endif
 
 #if !SQLITE_OS_WIN
