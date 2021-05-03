@@ -37,6 +37,12 @@
 #define GETPID getpid
 #endif
 
+#ifndef _WIN32
+typedef long LONG;
+#define InterlockedIncrement(p) (*((LONG*)(p)))++;
+#define InterlockedDecrement(p) (*((LONG*)(p)))--;
+#endif
+
 #if !SQLITE_OS_WIN
 #include <wchar.h>
 #endif
