@@ -416,6 +416,23 @@ SQLITE_API int WINAPI sqlite3_config_log_interop()
   }
   return ret;
 }
+
+SQLITE_API int WINAPI sqlite3_unconfig_log_interop()
+{
+  int ret;
+
+  if( InterlockedDecrement(&logConfigured)==0 ){
+    ret = sqlite3_config(SQLITE_CONFIG_LOG, NULL, 0);
+    if( ret!=SQLITE_OK ){
+      sqlite3InteropDebug("[%d] sqlite3_unconfig_log_interop(): sqlite3_config(SQLITE_CONFIG_LOG) returned %d.\n", GETPID(), ret);
+      InterlockedIncrement(&logConfigured);
+    }
+  }else{
+    ret = SQLITE_DONE;
+    InterlockedIncrement(&logConfigured);
+  }
+  return ret;
+}
 #endif
 
 SQLITE_API const char *WINAPI interop_libversion(void)

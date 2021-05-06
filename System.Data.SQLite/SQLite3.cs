@@ -4141,8 +4141,8 @@ namespace System.Data.SQLite
             // NOTE: Save the state of the logging class and then restore it
             //       after we are done to avoid logging too many false errors.
             //
-            bool savedEnabled = SQLiteLog.Enabled;
-            SQLiteLog.Enabled = false;
+            bool savedEnabled = SQLiteLog.InternalEnabled;
+            SQLiteLog.InternalEnabled = false;
 
             try
             {
@@ -4159,7 +4159,7 @@ namespace System.Data.SQLite
             }
             finally
             {
-                SQLiteLog.Enabled = savedEnabled;
+                SQLiteLog.InternalEnabled = savedEnabled;
             }
         }
     }
@@ -4178,6 +4178,28 @@ namespace System.Data.SQLite
             UnsafeNativeMethods.sqlite3_log(rc, SQLiteConvert.ToUTF8(
                 HelperMethods.StringFormat(CultureInfo.InvariantCulture,
                     "logging initialized via \"{0}\".", className)));
+        }
+        else if (rc == SQLiteErrorCode.Done)
+        {
+            rc = SQLiteErrorCode.Ok;
+        }
+
+        return rc;
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+
+    internal static SQLiteErrorCode UnConfigureLogForInterop(
+        string className
+        )
+    {
+        SQLiteErrorCode rc = UnsafeNativeMethods.sqlite3_unconfig_log_interop();
+
+        if (rc == SQLiteErrorCode.Ok)
+        {
+            UnsafeNativeMethods.sqlite3_log(rc, SQLiteConvert.ToUTF8(
+                HelperMethods.StringFormat(CultureInfo.InvariantCulture,
+                    "logging uninitialized via \"{0}\".", className)));
         }
         else if (rc == SQLiteErrorCode.Done)
         {

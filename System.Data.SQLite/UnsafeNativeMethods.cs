@@ -3565,6 +3565,9 @@ namespace System.Data.SQLite
 #if INTEROP_LOG
     [DllImport(SQLITE_DLL)]
     internal static extern SQLiteErrorCode sqlite3_config_log_interop();
+
+    [DllImport(SQLITE_DLL)]
+    internal static extern SQLiteErrorCode sqlite3_unconfig_log_interop();
 #endif
 #endif
 // !SQLITE_STANDARD
