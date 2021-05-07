@@ -200,10 +200,18 @@ namespace System.Data.SQLite
 
             try
             {
-                newEvent = new ManualResetEvent(false);
+                EventWaitHandle oldEvent;
 
-                EventWaitHandle oldEvent = Interlocked.CompareExchange(
-                    ref _initializeEvent, newEvent, null);
+                oldEvent = Interlocked.CompareExchange(
+                    ref _initializeEvent, null, null);
+
+                if (oldEvent == null)
+                {
+                    newEvent = new ManualResetEvent(false);
+
+                    oldEvent = Interlocked.CompareExchange(
+                        ref _initializeEvent, newEvent, null);
+                }
 
                 if (oldEvent == null)
                 {
