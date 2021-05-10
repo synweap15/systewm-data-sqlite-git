@@ -3,7 +3,7 @@
 ::
 :: vsSp.bat --
 ::
-:: Visual Studio 2005/2008/2010/2012/2013/2015/2017 Service Pack Detection Tool
+:: Visual Studio 200x/201x Service Pack Detection Tool
 ::
 :: Written by Joe Mistachkin.
 :: Released to the public domain, use at your own risk!

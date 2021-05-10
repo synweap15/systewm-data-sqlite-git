@@ -74,11 +74,30 @@ namespace System.Data.SQLite
     /// </summary>
     public static class SQLiteLog
     {
+        #region Private Constants
+        /// <summary>
+        /// Maximum number of milliseconds a non-primary thread should wait
+        /// for the <see cref="PrivateInitialize" /> method to be completed.
+        /// </summary>
+        private const int _initializeTimeout = 1000;
+        #endregion
+
+        ///////////////////////////////////////////////////////////////////////
+
+        #region Private Data
         /// <summary>
         /// Object used to synchronize access to the static instance data
         /// for this class.
         /// </summary>
         private static object syncRoot = new object();
+
+        ///////////////////////////////////////////////////////////////////////
+
+        /// <summary>
+        /// This will be signaled when the <see cref="PrivateInitialize" />
+        /// method has been completed.
+        /// </summary>
+        private static EventWaitHandle _initializeEvent;
 
         ///////////////////////////////////////////////////////////////////////
 
@@ -161,6 +180,56 @@ namespace System.Data.SQLite
         /// This will be non-zero if logging is currently enabled.
         /// </summary>
         private static bool _enabled;
+        #endregion
+
+        ///////////////////////////////////////////////////////////////////////
+
+        /// <summary>
+        /// Creates the <see cref="EventWaitHandle" /> that will be used to
+        /// signal completion of the <see cref="PrivateInitialize" /> method,
+        /// if necessary, and then returns it.
+        /// </summary>
+        /// <returns>
+        /// The <see cref="EventWaitHandle" /> that will be used to signal
+        /// completion of the <see cref="PrivateInitialize" /> method.
+        /// </returns>
+        private static EventWaitHandle CreateAndOrGetTheEvent()
+        {
+            bool created = false;
+            EventWaitHandle newEvent = null;
+
+            try
+            {
+                EventWaitHandle oldEvent;
+
+                oldEvent = Interlocked.CompareExchange(
+                    ref _initializeEvent, null, null);
+
+                if (oldEvent == null)
+                {
+                    newEvent = new ManualResetEvent(false);
+
+                    oldEvent = Interlocked.CompareExchange(
+                        ref _initializeEvent, newEvent, null);
+                }
+
+                if (oldEvent == null)
+                {
+                    oldEvent = newEvent;
+                    created = true;
+                }
+
+                return oldEvent;
+            }
+            finally
+            {
+                if (!created && (newEvent != null))
+                {
+                    newEvent.Close();
+                    newEvent = null;
+                }
+            }
+        }
 
         ///////////////////////////////////////////////////////////////////////
 
@@ -175,7 +244,8 @@ namespace System.Data.SQLite
         ///////////////////////////////////////////////////////////////////////
 
         /// <summary>
-        /// Initializes the SQLite logging facilities.
+        /// Initializes the SQLite logging facilities -OR- waits for the
+        /// SQLite logging facilities to be initialized by another thread.
         /// </summary>
         /// <param name="className">
         /// The name of the managed class that called this method.  This
@@ -189,6 +259,8 @@ namespace System.Data.SQLite
             // NOTE: Before doing anything else, see if this method was
             //       fully completed before.  If so, do nothing.
             //
+            EventWaitHandle theEvent = CreateAndOrGetTheEvent();
+
             if (Interlocked.Increment(ref _initializeDoneCount) == 1)
             {
                 bool success = false;
@@ -199,6 +271,9 @@ namespace System.Data.SQLite
                 }
                 finally
                 {
+                    if (theEvent != null)
+                        theEvent.Set();
+
                     if (!success)
                         Interlocked.Decrement(ref _initializeDoneCount);
                 }
@@ -206,6 +281,15 @@ namespace System.Data.SQLite
             else
             {
                 Interlocked.Decrement(ref _initializeDoneCount);
+            }
+
+            if ((theEvent != null) &&
+                !theEvent.WaitOne(_initializeTimeout, false))
+            {
+                Trace.WriteLine(HelperMethods.StringFormat(
+                    CultureInfo.CurrentCulture,
+                    "TIMED OUT ({0}) waiting for logging subsystem",
+                    _initializeTimeout));
             }
         }
 
@@ -522,6 +606,19 @@ namespace System.Data.SQLite
                     _domainUnload = null;
                 }
 #endif
+
+                ///////////////////////////////////////////////////////////////
+
+                //
+                // NOTE: Reset the event for this AppDomain so that future
+                //       (non-primary) threads will once again wait for the
+                //       PrivateInitialize method to be completed.
+                //
+                EventWaitHandle theEvent = CreateAndOrGetTheEvent();
+
+                if (theEvent != null)
+                    theEvent.Reset();
+
             }
         }
 
