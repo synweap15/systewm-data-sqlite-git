@@ -256,6 +256,18 @@ namespace System.Data.SQLite
             )
         {
             //
+            // NOTE: See if the logging subsystem has been totally disabled.
+            //       If so, do nothing.
+            //
+            if (UnsafeNativeMethods.GetSettingValue(
+                    "No_SQLiteLog", null) != null)
+            {
+                return;
+            }
+
+            ///////////////////////////////////////////////////////////////////
+
+            //
             // NOTE: Before doing anything else, see if this method was
             //       fully completed before.  If so, do nothing.
             //
@@ -309,18 +321,6 @@ namespace System.Data.SQLite
             string className
             )
         {
-            //
-            // NOTE: See if the logging subsystem has been totally disabled.
-            //       If so, do nothing.
-            //
-            if (UnsafeNativeMethods.GetSettingValue(
-                    "No_SQLiteLog", null) != null)
-            {
-                return false;
-            }
-
-            ///////////////////////////////////////////////////////////////////
-
             //
             // NOTE: Keep track of exactly how many times this method is
             //       called (i.e. per-AppDomain, of course).
