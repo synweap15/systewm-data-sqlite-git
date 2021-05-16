@@ -110,7 +110,7 @@ runTest {test tkt-47c6fa04d3-1.1 {loading DataTable with JOIN} -setup {
 
   list $code $results \
       [expr {[info exists errors] ? $errors : ""}] \
-      [expr {$code eq "Ok" ? [catch {
+      [expr {$code eq "Ok" ? [catchCSharp {
         object invoke -alias _Dynamic${id}.Test${id} GetDataTable
       } result] : [set result ""]}] $result [getRowsFromDataTable $result]
 } -cleanup {

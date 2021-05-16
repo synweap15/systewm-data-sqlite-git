@@ -212,7 +212,7 @@ runTest {test data-1.5 {GetSchema with ReservedWords} -setup {
 
   list $code $results \
       [expr {[info exists errors] ? $errors : ""}] \
-      [expr {$code eq "Ok" ? [catch {
+      [expr {$code eq "Ok" ? [catchCSharp {
         object invoke -alias _Dynamic${id}.Test${id} GetReservedWords
       } result] : [set result ""]}] $result [string map [list \
       \{\{ "" \}\} ""] [string map [list "ReservedWord " "" \
@@ -288,7 +288,7 @@ runTest {test data-1.6 {GetSchema with ForeignKeys} -setup {
 
   list $code $results \
       [expr {[info exists errors] ? $errors : ""}] \
-      [expr {$code eq "Ok" ? [catch {
+      [expr {$code eq "Ok" ? [catchCSharp {
         set rows [list]
         set foreignKeys [object invoke _Dynamic${id}.Test${id} GetForeignKeys]
 
@@ -386,7 +386,7 @@ runTest {test data-1.7 {SQLITE_FCNTL_WIN32_AV_RETRY} -setup {
 
   list $code $results \
       [expr {[info exists errors] ? $errors : ""}] \
-      [expr {$code eq "Ok" ? [catch {
+      [expr {$code eq "Ok" ? [catchCSharp {
         set savedCount -1; set savedInterval -1
 
         object invoke _Dynamic${id}.Test${id} TestSetAvRetry \
@@ -402,7 +402,7 @@ runTest {test data-1.7 {SQLITE_FCNTL_WIN32_AV_RETRY} -setup {
     #
     # NOTE: Restore the saved retry count, if possible.
     #
-    catch {
+    catchCSharp {
       set interval -1
       object invoke _Dynamic${id}.Test${id} TestSetAvRetry savedCount interval
     }
@@ -412,7 +412,7 @@ runTest {test data-1.7 {SQLITE_FCNTL_WIN32_AV_RETRY} -setup {
     #
     # NOTE: Restore the saved retry interval, if possible.
     #
-    catch {
+    catchCSharp {
       set count -1
       object invoke _Dynamic${id}.Test${id} TestSetAvRetry count savedInterval
     }
@@ -470,7 +470,7 @@ runTest {test data-1.8 {properly closed database file (non-query)} -setup {
 
   list $code $results \
       [expr {[info exists errors] ? $errors : ""}] \
-      [expr {$code eq "Ok" ? [catch {
+      [expr {$code eq "Ok" ? [catchCSharp {
         object invoke _Dynamic${id}.Test${id} Main
       } result] : [set result ""]}] $result \
       [close [open $dataSource RDONLY 0 "" -share None]]
@@ -529,7 +529,7 @@ runTest {test data-1.9 {properly closed database file (reader #1)} -setup {
 
   list $code $results \
       [expr {[info exists errors] ? $errors : ""}] \
-      [expr {$code eq "Ok" ? [catch {
+      [expr {$code eq "Ok" ? [catchCSharp {
         object invoke _Dynamic${id}.Test${id} Main
       } result] : [set result ""]}] $result \
       [close [open $dataSource RDONLY 0 "" -share None]]
@@ -590,7 +590,7 @@ runTest {test data-1.10 {properly closed database file (reader #2)} -setup {
 
   list $code $results \
       [expr {[info exists errors] ? $errors : ""}] \
-      [expr {$code eq "Ok" ? [catch {
+      [expr {$code eq "Ok" ? [catchCSharp {
         object invoke _Dynamic${id}.Test${id} Main
       } result] : [set result ""]}] $result \
       [close [open $dataSource RDONLY 0 "" -share None]]
@@ -919,23 +919,23 @@ runTest {test data-1.16 {SQLiteConnectionStringBuilder DateTime} -body {
 
   list $code $results \
       [expr {[info exists errors] ? $errors : ""}] \
-      [expr {$code eq "Ok" ? [catch {
+      [expr {$code eq "Ok" ? [catchCSharp {
         object invoke _Dynamic${id}.Test${id} GetConnectionString \
             null null null
       } result] : [set result ""]}] $result \
-      [expr {$code eq "Ok" ? [catch {
+      [expr {$code eq "Ok" ? [catchCSharp {
         object invoke _Dynamic${id}.Test${id} GetConnectionString \
             Default null null
       } result] : [set result ""]}] $result \
-      [expr {$code eq "Ok" ? [catch {
+      [expr {$code eq "Ok" ? [catchCSharp {
         object invoke _Dynamic${id}.Test${id} GetConnectionString \
             null Unspecified null
       } result] : [set result ""]}] $result \
-      [expr {$code eq "Ok" ? [catch {
+      [expr {$code eq "Ok" ? [catchCSharp {
         object invoke _Dynamic${id}.Test${id} GetConnectionString \
             ISO8601 Utc null
       } result] : [set result ""]}] $result \
-      [expr {$code eq "Ok" ? [catch {
+      [expr {$code eq "Ok" ? [catchCSharp {
         object invoke _Dynamic${id}.Test${id} GetConnectionString \
             Ticks Local yyyy-MM-dd
       } result] : [set result ""]}] $result
@@ -1058,7 +1058,7 @@ runTest {test data-1.17 {SQLiteConnectionStringBuilder properties} -body {
                             RecursiveTriggers WaitTimeout TextPassword]
 
     foreach key $keys value $values propertyName $propertyNames {
-      set code [catch {
+      set code [catchCSharp {
         object invoke _Dynamic${id}.Test${id} GetConnectionString \
             $key $value $propertyName
       } result]
@@ -1233,7 +1233,7 @@ runTest {test data-1.22 {SQLiteTransaction disposal behavior} -setup {
 
   list $code $results \
       [expr {[info exists errors] ? $errors : ""}] \
-      [expr {$code eq "Ok" ? [catch {
+      [expr {$code eq "Ok" ? [catchCSharp {
         object invoke _Dynamic${id}.Test${id} Main
       } result] : [set result ""]}] $result
 } -cleanup {
@@ -1317,7 +1317,7 @@ runTest {test data-1.23 {SQLiteFunction collation exception} -setup {
 
   list $code $results \
       [expr {[info exists errors] ? $errors : ""}] \
-      [expr {$code eq "Ok" ? [catch {
+      [expr {$code eq "Ok" ? [catchCSharp {
         object invoke _Dynamic${id}.Test${id} Main
       } result] : [set result ""]}] \
       [extractSystemDataSQLiteExceptionMessage $result]
@@ -2638,15 +2638,15 @@ runTest {test data-1.54 {bind function to a connection} -setup {
 
   list $code $results \
       [expr {[info exists errors] ? $errors : ""}] \
-      [expr {$code eq "Ok" ? [catch {
+      [expr {$code eq "Ok" ? [catchCSharp {
         object invoke _Dynamic${id}.Test${id} DoTest false
       } result] : [set result ""]}] \
       [extractSystemDataSQLiteExceptionMessage $result] \
-      [expr {$code eq "Ok" ? [catch {
+      [expr {$code eq "Ok" ? [catchCSharp {
         object invoke _Dynamic${id}.Test${id} DoTest true
       } result] : [set result ""]}] \
       [extractSystemDataSQLiteExceptionMessage $result] \
-      [expr {$code eq "Ok" ? [catch {
+      [expr {$code eq "Ok" ? [catchCSharp {
         object invoke _Dynamic${id}.Test${id} DoTest false
       } result] : [set result ""]}] \
       [extractSystemDataSQLiteExceptionMessage $result]
@@ -3437,31 +3437,31 @@ runTest {test data-1.72 {unbind function from a connection} -setup {
 
   list $code $results \
       [expr {[info exists errors] ? $errors : ""}] \
-      [expr {$code eq "Ok" ? [catch {
+      [expr {$code eq "Ok" ? [catchCSharp {
         object invoke _Dynamic${id}.Test${id} BindFunction
       } result] : [set result ""]}] \
       [extractSystemDataSQLiteExceptionMessage $result] \
-      [expr {$code eq "Ok" ? [catch {
+      [expr {$code eq "Ok" ? [catchCSharp {
         object invoke _Dynamic${id}.Test${id} CallFunction
       } result] : [set result ""]}] \
       [extractSystemDataSQLiteExceptionMessage $result] \
-      [expr {$code eq "Ok" ? [catch {
+      [expr {$code eq "Ok" ? [catchCSharp {
         object invoke _Dynamic${id}.Test${id} UnbindFunction
       } result] : [set result ""]}] \
       [extractSystemDataSQLiteExceptionMessage $result] \
-      [expr {$code eq "Ok" ? [catch {
+      [expr {$code eq "Ok" ? [catchCSharp {
         object invoke _Dynamic${id}.Test${id} CallFunction
       } result] : [set result ""]}] \
       [extractSystemDataSQLiteExceptionMessage $result] \
-      [expr {$code eq "Ok" ? [catch {
+      [expr {$code eq "Ok" ? [catchCSharp {
         object invoke _Dynamic${id}.Test${id} BindFunction
       } result] : [set result ""]}] \
       [extractSystemDataSQLiteExceptionMessage $result] \
-      [expr {$code eq "Ok" ? [catch {
+      [expr {$code eq "Ok" ? [catchCSharp {
         object invoke _Dynamic${id}.Test${id} CallFunction
       } result] : [set result ""]}] \
       [extractSystemDataSQLiteExceptionMessage $result] \
-      [expr {$code eq "Ok" ? [catch {
+      [expr {$code eq "Ok" ? [catchCSharp {
         object invoke _Dynamic${id}.Test${id} Uninitialize
       } result] : [set result ""]}] \
       [extractSystemDataSQLiteExceptionMessage $result]
@@ -3595,31 +3595,31 @@ runTest {test data-1.73 {unbind functions from a connection on close} -setup {
 
   list $code $results \
       [expr {[info exists errors] ? $errors : ""}] \
-      [expr {$code eq "Ok" ? [catch {
+      [expr {$code eq "Ok" ? [catchCSharp {
         object invoke _Dynamic${id}.Test${id} BindFunction
       } result] : [set result ""]}] \
       [extractSystemDataSQLiteExceptionMessage $result] \
-      [expr {$code eq "Ok" ? [catch {
+      [expr {$code eq "Ok" ? [catchCSharp {
         object invoke _Dynamic${id}.Test${id} CallFunction
       } result] : [set result ""]}] \
       [extractSystemDataSQLiteExceptionMessage $result] \
-      [expr {$code eq "Ok" ? [catch {
+      [expr {$code eq "Ok" ? [catchCSharp {
         object invoke _Dynamic${id}.Test${id} CloseAndReopen
       } result] : [set result ""]}] \
       [extractSystemDataSQLiteExceptionMessage $result] \
-      [expr {$code eq "Ok" ? [catch {
+      [expr {$code eq "Ok" ? [catchCSharp {
         object invoke _Dynamic${id}.Test${id} CallFunction
       } result] : [set result ""]}] \
       [extractSystemDataSQLiteExceptionMessage $result] \
-      [expr {$code eq "Ok" ? [catch {
+      [expr {$code eq "Ok" ? [catchCSharp {
         object invoke _Dynamic${id}.Test${id} BindFunction
       } result] : [set result ""]}] \
       [extractSystemDataSQLiteExceptionMessage $result] \
-      [expr {$code eq "Ok" ? [catch {
+      [expr {$code eq "Ok" ? [catchCSharp {
         object invoke _Dynamic${id}.Test${id} CallFunction
       } result] : [set result ""]}] \
       [extractSystemDataSQLiteExceptionMessage $result] \
-      [expr {$code eq "Ok" ? [catch {
+      [expr {$code eq "Ok" ? [catchCSharp {
         object invoke _Dynamic${id}.Test${id} Uninitialize
       } result] : [set result ""]}] \
       [extractSystemDataSQLiteExceptionMessage $result]
@@ -4430,39 +4430,39 @@ runTest {test data-1.83 {bind and use REGEXP function} -setup {
 
   list $code $results \
       [expr {[info exists errors] ? $errors : ""}] \
-      [expr {$code eq "Ok" ? [catch {
+      [expr {$code eq "Ok" ? [catchCSharp {
         object invoke _Dynamic${id}.Test${id} CallFunction1
       } result] : [set result ""]}] \
       [extractSystemDataSQLiteExceptionMessage $result] \
-      [expr {$code eq "Ok" ? [catch {
+      [expr {$code eq "Ok" ? [catchCSharp {
         object invoke _Dynamic${id}.Test${id} CallFunction2
       } result] : [set result ""]}] \
       [extractSystemDataSQLiteExceptionMessage $result] \
-      [expr {$code eq "Ok" ? [catch {
+      [expr {$code eq "Ok" ? [catchCSharp {
         object invoke _Dynamic${id}.Test${id} BindFunction
       } result] : [set result ""]}] \
       [extractSystemDataSQLiteExceptionMessage $result] \
-      [expr {$code eq "Ok" ? [catch {
+      [expr {$code eq "Ok" ? [catchCSharp {
         object invoke _Dynamic${id}.Test${id} CallFunction1
       } result] : [set result ""]}] \
       [extractSystemDataSQLiteExceptionMessage $result] \
-      [expr {$code eq "Ok" ? [catch {
+      [expr {$code eq "Ok" ? [catchCSharp {
         object invoke _Dynamic${id}.Test${id} CallFunction2
       } result] : [set result ""]}] \
       [extractSystemDataSQLiteExceptionMessage $result] \
-      [expr {$code eq "Ok" ? [catch {
+      [expr {$code eq "Ok" ? [catchCSharp {
         object invoke _Dynamic${id}.Test${id} UnbindFunction
       } result] : [set result ""]}] \
       [extractSystemDataSQLiteExceptionMessage $result] \
-      [expr {$code eq "Ok" ? [catch {
+      [expr {$code eq "Ok" ? [catchCSharp {
         object invoke _Dynamic${id}.Test${id} CallFunction1
       } result] : [set result ""]}] \
       [extractSystemDataSQLiteExceptionMessage $result] \
-      [expr {$code eq "Ok" ? [catch {
+      [expr {$code eq "Ok" ? [catchCSharp {
         object invoke _Dynamic${id}.Test${id} CallFunction2
       } result] : [set result ""]}] \
       [extractSystemDataSQLiteExceptionMessage $result] \
-      [expr {$code eq "Ok" ? [catch {
+      [expr {$code eq "Ok" ? [catchCSharp {
         object invoke _Dynamic${id}.Test${id} Uninitialize
       } result] : [set result ""]}] \
       [extractSystemDataSQLiteExceptionMessage $result]

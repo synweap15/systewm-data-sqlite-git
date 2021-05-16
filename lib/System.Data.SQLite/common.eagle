@@ -2645,6 +2645,27 @@ namespace eval ::Eagle {
       }
     }
 
+    proc catchCSharp {
+            script {resultVarName ""} {optionsVarName ""} {verbose true} } {
+      if {[string length $resultVarName] > 0} then {
+        upvar 1 $resultVarName result
+      }
+
+      if {[string length $optionsVarName] > 0} then {
+        upvar 1 $optionsVarName options
+      }
+
+      set code [catch [list uplevel 1 $script] result options]
+
+      if {$code && $verbose} then {
+        tputs $::test_channel [appendArgs \
+            "==== WARNING: error while invoking compiled C# code: " \
+            \n\t $result \n]
+      }
+
+      return $code
+    }
+
     proc isMemoryDb { fileName } {
       #
       # NOTE: Is the specified database file name really an in-memory database?

@@ -181,7 +181,7 @@ runTest {test tkt-343d392b51-2.1 {SQLiteDataAdapter update fail} -setup {
 
   list $code $results \
       [expr {[info exists errors] ? $errors : ""}] \
-      [expr {$code eq "Ok" ? [catch {
+      [expr {$code eq "Ok" ? [catchCSharp {
         object invoke _Dynamic${id}.Test${id} Main
       } result] : [set result ""]}] $result
 } -cleanup {
@@ -288,7 +288,7 @@ runTest {test tkt-343d392b51-2.2 {SQLiteDataAdapter update success} -setup {
 
   list $code $results \
       [expr {[info exists errors] ? $errors : ""}] \
-      [expr {$code eq "Ok" ? [catch {
+      [expr {$code eq "Ok" ? [catchCSharp {
         object invoke _Dynamic${id}.Test${id} Main
       } result] : [set result ""]}] $result
 } -cleanup {
@@ -424,7 +424,7 @@ runTest {test tkt-343d392b51-3.2 {adapter, attached db, table names} -setup {
 
   list $code $results \
       [expr {[info exists errors] ? $errors : ""}] \
-      [expr {$code eq "Ok" ? [catch {
+      [expr {$code eq "Ok" ? [catchCSharp {
         object invoke _Dynamic${id}.Test${id} Main
       } result] : [set result ""]}] $result
 } -cleanup {

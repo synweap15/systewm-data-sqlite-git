@@ -188,7 +188,7 @@ runTest {test tkt-5cee5409f8-1.1 {asynchronous transaction handling} -setup {
           int count1 = Interlocked.CompareExchange(ref resetCount, 0, 0);
           int count2 = Interlocked.CompareExchange(ref timeoutCount, 0, 0);
 
-          return String.Format("{0}, {1}", count1, count2);
+          return String.Format("{0} {1}", count1, count2);
         }
 
         ///////////////////////////////////////////////////////////////////////
@@ -204,7 +204,7 @@ runTest {test tkt-5cee5409f8-1.1 {asynchronous transaction handling} -setup {
 
   list $code $results \
       [expr {[info exists errors] ? $errors : ""}] \
-      [expr {$code eq "Ok" ? [catch {
+      [expr {$code eq "Ok" ? [catchCSharp {
         object invoke _Dynamic${id}.Test${id} DoTest
       } result] : [set result ""]}] \
       [expr {[lindex $result 0] > 0}] \

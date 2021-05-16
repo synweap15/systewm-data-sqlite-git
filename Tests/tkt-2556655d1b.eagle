@@ -87,7 +87,7 @@ runTest {test tkt-2556655d1b-1.1 {duplicate functions} -setup {
   #
   list $code $results \
       [expr {[info exists errors] ? $errors : ""}] \
-      [expr {$code eq "Ok" ? [catch {
+      [expr {$code eq "Ok" ? [catchCSharp {
         object invoke _Dynamic${id}.Test${id} Main
       } result] : [set result ""]}] $result [setupDb $fileName] \
       [sql execute -execute scalar $db "SELECT Base64(CAST(NULL AS BLOB));"] \

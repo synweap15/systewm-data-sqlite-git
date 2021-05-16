@@ -112,7 +112,7 @@ runTest {test tkt-e1b2e0f769-1.1 {data reader cleanup} -setup {
 
     lappend result1 $code $results \
         [expr {[info exists errors] ? $errors : ""}] \
-        [expr {$code eq "Ok" ? [catch {
+        [expr {$code eq "Ok" ? [catchCSharp {
           object invoke _Dynamic${id}.Test${id} Main
         } result2] : [set result2 ""]}] $result2
   }

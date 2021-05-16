@@ -273,10 +273,10 @@ runTest {test tkt-0e48e80333-1.2 {delegate MDA on pooled close} -setup {
 
     puts stdout [list $code $results \
         [expr {[info exists errors] ? $errors : ""}] \
-        [expr {$code eq "Ok" ? [catch {
+        [expr {$code eq "Ok" ? [catchCSharp {
           object invoke _Dynamic${id}.Test${id} Main
         } result] : [set result ""]}] $result \
-        [expr {$code eq "Ok" ? [catch {
+        [expr {$code eq "Ok" ? [catchCSharp {
           object invoke _Dynamic${id}.Test${id} ThreadedPoolTraceTest
         } result] : [set result ""]}] $result]
   }]

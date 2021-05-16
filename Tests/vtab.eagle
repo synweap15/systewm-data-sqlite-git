@@ -106,7 +106,7 @@ runTest {test vtab-1.1 {basic virtual table support} -setup {
 
   list $code $results \
       [expr {[info exists errors] ? $errors : ""}] \
-      [expr {$code eq "Ok" ? [catch {
+      [expr {$code eq "Ok" ? [catchCSharp {
         object invoke _Dynamic${id}.Test${id} Main
       } result] : [set result ""]}] [normalizeVtabResult $result]
 } -cleanup {
@@ -212,7 +212,7 @@ runTest {test vtab-1.2.1 {IEnumerable virtual table} -setup {
 
   list $code $results \
       [expr {[info exists errors] ? $errors : ""}] \
-      [expr {$code eq "Ok" ? [catch {
+      [expr {$code eq "Ok" ? [catchCSharp {
         object invoke _Dynamic${id}.Test${id} GetList one two three 4 5.0
       } result] : [set result ""]}] [normalizeVtabResult $result]
 } -cleanup {
@@ -323,7 +323,7 @@ runTest {test vtab-1.2.2 {IEnumerable virtual table} -setup {
 
   list $code $results \
       [expr {[info exists errors] ? $errors : ""}] \
-      [expr {$code eq "Ok" ? [catch {
+      [expr {$code eq "Ok" ? [catchCSharp {
         object invoke _Dynamic${id}.Test${id} GetList one two three 4 5.0
       } result] : [set result ""]}] [normalizeVtabResult $result]
 } -cleanup {
@@ -432,7 +432,7 @@ runTest {test vtab-1.3.1 {IEnumerable<T> virtual table} -setup {
 
   list $code $results \
       [expr {[info exists errors] ? $errors : ""}] \
-      [expr {$code eq "Ok" ? [catch {
+      [expr {$code eq "Ok" ? [catchCSharp {
         object invoke _Dynamic${id}.Test${id} GetList 1 2 3 4 5
       } result] : [set result ""]}] [normalizeVtabResult $result]
 } -cleanup {
@@ -543,7 +543,7 @@ runTest {test vtab-1.3.2 {IEnumerable<T> virtual table} -setup {
 
   list $code $results \
       [expr {[info exists errors] ? $errors : ""}] \
-      [expr {$code eq "Ok" ? [catch {
+      [expr {$code eq "Ok" ? [catchCSharp {
         object invoke _Dynamic${id}.Test${id} GetList 1 2 3 4 5
       } result] : [set result ""]}] [normalizeVtabResult $result]
 } -cleanup {
@@ -794,7 +794,7 @@ runTest {test vtab-1.4 {virtual table function support} -setup {
 
   list $code $results \
       [expr {[info exists errors] ? $errors : ""}] \
-      [expr {$code eq "Ok" ? [catch {
+      [expr {$code eq "Ok" ? [catchCSharp {
         object invoke _Dynamic${id}.Test${id} GetList
       } result] : [set result ""]}] [normalizeVtabResult $result]
 } -cleanup {
@@ -1047,7 +1047,7 @@ runTest {test vtab-1.5 {virtual table function support} -setup {
 
   list $code $results \
       [expr {[info exists errors] ? $errors : ""}] \
-      [expr {$code eq "Ok" ? [catch {
+      [expr {$code eq "Ok" ? [catchCSharp {
         object invoke _Dynamic${id}.Test${id} GetList
       } result] : [set result ""]}] [normalizeVtabResult $result]
 } -cleanup {
@@ -1226,7 +1226,7 @@ runTest {test vtab-1.6 {virtual table rename support} -setup {
 
   list $code $results \
       [expr {[info exists errors] ? $errors : ""}] \
-      [expr {$code eq "Ok" ? [catch {
+      [expr {$code eq "Ok" ? [catchCSharp {
         object invoke _Dynamic${id}.Test${id} GetList
       } result] : [set result ""]}] [normalizeVtabResult $result]
 } -cleanup {
@@ -1369,7 +1369,7 @@ runTest {test vtab-1.7 {virtual table xBestIndex marshalling (1)} -setup {
 
   list $code $results \
       [expr {[info exists errors] ? $errors : ""}] \
-      [expr {$code eq "Ok" ? [catch {
+      [expr {$code eq "Ok" ? [catchCSharp {
         object invoke _Dynamic${id}.Test${id} GetList one two three 4 5.0
       } result] : [set result ""]}] [normalizeVtabResult $result]
 } -cleanup {
@@ -1514,7 +1514,7 @@ runTest {test vtab-1.8 {virtual table xBestIndex marshalling (2)} -setup {
 
   list $code $results \
       [expr {[info exists errors] ? $errors : ""}] \
-      [expr {$code eq "Ok" ? [catch {
+      [expr {$code eq "Ok" ? [catchCSharp {
         object invoke _Dynamic${id}.Test${id} GetList one two three 4 5.0
       } result] : [set result ""]}] [normalizeVtabResult $result]
 } -cleanup {
@@ -1593,7 +1593,7 @@ runTest {test vtab-1.9 {IEnumerable virtual table w/large byte array} -setup {
 
   list $code $results \
       [expr {[info exists errors] ? $errors : ""}] \
-      [expr {$code eq "Ok" ? [catch {
+      [expr {$code eq "Ok" ? [catchCSharp {
         object invoke _Dynamic${id}.Test${id} GetSum
       } result] : [set result ""]}] [normalizeVtabResult $result]
 } -cleanup {
@@ -1690,7 +1690,7 @@ runTest {test vtab-1.10 {virtual table xRowId uniqueness} -setup {
 
   list $code $results \
       [expr {[info exists errors] ? $errors : ""}] \
-      [expr {$code eq "Ok" ? [catch {
+      [expr {$code eq "Ok" ? [catchCSharp {
         object invoke _Dynamic${id}.Test${id} GetList one one two one two two
       } result] : [set result ""]}] [normalizeVtabResult $result]
 } -cleanup {
@@ -1782,7 +1782,7 @@ runTest {test vtab-1.11 {IEnumerable virtual table w/object identity} -setup {
 
   list $code $results \
       [expr {[info exists errors] ? $errors : ""}] \
-      [expr {$code eq "Ok" ? [catch {
+      [expr {$code eq "Ok" ? [catchCSharp {
         object invoke _Dynamic${id}.Test${id} GetList one two three 4 5.0
       } result] : [set result ""]}] [normalizeVtabResult $result]
 } -cleanup {

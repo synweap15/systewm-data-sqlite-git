@@ -273,7 +273,7 @@ runTest {test tkt-72905c9a77-1.1 {StaticIsInitialized race condition} -setup {
 
   list $code $results \
       [expr {[info exists errors] ? $errors : ""}] \
-      [expr {$code eq "Ok" ? [catch {
+      [expr {$code eq "Ok" ? [catchCSharp {
         object invoke _Dynamic${id}.Test${id} GetTraceOutput
       } result] : [set result ""]}] [string map [list \r\n \n] $result]
 } -cleanup {

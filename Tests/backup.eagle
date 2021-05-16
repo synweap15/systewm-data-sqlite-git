@@ -206,7 +206,7 @@ for {set i 0} {$i < [llength $params(pages)]} {incr i} {
 
     list $code $results \
         [expr {[info exists errors] ? $errors : ""}] \
-        [expr {$code eq "Ok" ? [catch {
+        [expr {$code eq "Ok" ? [catchCSharp {
           object invoke _Dynamic${id}.Test${id} BackupAndGetData "" $memSource
         } result] : [set result ""]}] \
         [extractSystemDataSQLiteExceptionMessage $result] $callbackResults

@@ -100,7 +100,7 @@ runTest {test tkt-e30b820248-1.1 {disposal ordering} -setup {
 
   list $code $results \
       [expr {[info exists errors] ? $errors : ""}] \
-      [expr {$code eq "Ok" ? [catch {
+      [expr {$code eq "Ok" ? [catchCSharp {
         object invoke _Dynamic${id}.Test${id} Main
       } result] : [set result ""]}] $result \
       [reportSQLiteResources $test_channel true]
@@ -254,7 +254,7 @@ for {set i 2} {$i < 5} {incr i} {
 
     list $code $results \
         [expr {[info exists errors] ? $errors : ""}] \
-        [expr {$code eq "Ok" ? [catch {
+        [expr {$code eq "Ok" ? [catchCSharp {
           object invoke _Dynamic${id}.Test${id} Main
         } result] : [set result ""]}] $result \
         [reportSQLiteResources $test_channel true]

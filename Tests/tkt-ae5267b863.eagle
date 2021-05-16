@@ -139,7 +139,7 @@ runTest {test tkt-ae5267b863-1.1 {segfault during command GC} -setup {
 
   list $code $results \
       [expr {[info exists errors] ? $errors : ""}] \
-      [expr {$code eq "Ok" ? [catch {
+      [expr {$code eq "Ok" ? [catchCSharp {
         object invoke _Dynamic${id}.Test${id} Main
       } result] : [set result ""]}] $result
 } -cleanup {

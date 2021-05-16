@@ -64,7 +64,7 @@ runTest {test tkt-6c6ecccc5f-1.1 {CloseConnection with extensions} -setup {
 
   list $code $results \
       [expr {[info exists errors] ? $errors : ""}] \
-      [expr {$code eq "Ok" ? [catch {
+      [expr {$code eq "Ok" ? [catchCSharp {
         object invoke _Dynamic${id}.Test${id} Main
       } result] : [set result ""]}] $result
 } -cleanup {

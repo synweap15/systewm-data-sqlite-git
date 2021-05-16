@@ -121,7 +121,7 @@ runTest {test tkt-7e3fa93744-1.2 {composite primary key, DataTable} -setup {
 
   list $code $results \
       [expr {[info exists errors] ? $errors : ""}] \
-      [expr {$code eq "Ok" ? [catch {
+      [expr {$code eq "Ok" ? [catchCSharp {
         object invoke _Dynamic${id}.Test${id} Main
       } result] : [set result ""]}] $result
 } -cleanup {

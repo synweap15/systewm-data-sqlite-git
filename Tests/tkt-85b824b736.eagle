@@ -123,7 +123,7 @@ runTest {test tkt-85b824b736-1.1 {SQLiteValue.GetString return value} -setup {
 
   list $code $results \
       [expr {[info exists errors] ? $errors : ""}] \
-      [expr {$code eq "Ok" ? [catch {
+      [expr {$code eq "Ok" ? [catchCSharp {
         object invoke _Dynamic${id}.Test${id} GetList one two three 4 5.0
       } result] : [set result ""]}] $result
 } -cleanup {
@@ -242,7 +242,7 @@ runTest {test tkt-85b824b736-1.2 {SQLiteValue.GetBlob return value} -setup {
 
   list $code $results \
       [expr {[info exists errors] ? $errors : ""}] \
-      [expr {$code eq "Ok" ? [catch {
+      [expr {$code eq "Ok" ? [catchCSharp {
         object invoke _Dynamic${id}.Test${id} GetList one two three 4 5.0
       } result] : [set result ""]}] $result
 } -cleanup {
