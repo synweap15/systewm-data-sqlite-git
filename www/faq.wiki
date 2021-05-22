@@ -659,11 +659,11 @@
 
 <p>
   If any behavior is observed that appears to be a bug, it may be reported via
-  the <a href="/index.html/doc/trunk/www/support.wiki">sqlite-users</a> public
-  mailing list or by filing a <a href="/index.html/tktnew">ticket</a>.  Prior
-  to taking one of these steps, it is always prudent to check the various lists
-  of previously filed tickets to see if the behavior being observed has already
-  been reported and possibly fixed in a subsequent release.
+  the <a href="https://sqlite.org/forum/forum">SQLite Forum</a> or by filing a
+  <a href="/index.html/tktnew">ticket</a>.  Prior to taking one of these steps,
+  it is always prudent to check the various lists of previously filed tickets
+  to see if the behavior being observed has already been reported and possibly
+  fixed in a subsequent release.
   <ol>
     <li><a href="/index.html/rptview?rn=6">
       The list of tickets actively being worked on.

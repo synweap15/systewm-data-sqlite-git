@@ -7,10 +7,13 @@
 
 <ul>
   <li>
-    It will be disabled in all default build configurations.
+    It is unsupported.
   </li>
   <li>
-    However, it may still be possible to build binaries with it enabled.
+    It is disabled in all default build configurations.
+  </li>
+  <li>
+    It may not be possible to build binaries with it enabled.
   </li>
 </ul>
 
@@ -24,7 +27,7 @@
     However, they will no longer be &quot;officially supported&quot;.
   </li>
   <li>
-    The mailing lists may still be used to ask questions about them.
+    The forum may still be used to ask questions about them.
   </li>
   <li>
     However, any tickets opened for them will be deleted.
@@ -48,50 +51,22 @@
   </li>
 </ul>
 
-<div align="center"><h2><b>Mailing Lists</b></h2></div>
+<div align="center"><h2><b>Forum</b></h2></div>
 
 <p>
-  SQLite has an active mailing list and support community and users of
-  the System.Data.SQLite project available on this web site are encouraged to
+  SQLite has an active forum and support community and users of the
+  System.Data.SQLite project available on this web site are encouraged to
   use these for support questions.
 </p>
 
 <p>
-  Three separate mailing lists have been established to help support SQLite and
-  System.Data.SQLite:
+  The <a href="https://sqlite.org/forum/forum">SQLite Forum</a> has been
+  established to help support SQLite and System.Data.SQLite.
 </p>
 
-<ul>
-  <li>
-    <a href="http://mailinglists.sqlite.org/cgi-bin/mailman/listinfo/sqlite-announce">
-    sqlite-announce</a> - announcements of new releases or significant
-    developments.
-  </li>
-
-  <li>
-    <a href="http://mailinglists.sqlite.org/cgi-bin/mailman/listinfo/sqlite-users">
-    sqlite-users</a> - general user discussion; most postings belong here.
-  </li>
-
-  <li>
-    <a href="http://mailinglists.sqlite.org/cgi-bin/mailman/listinfo/sqlite-dev">
-    sqlite-dev</a> - developer conversations; for people who have or aspire to
-    have write permission on the SQLite and/or System.Data.SQLite source code
-    repositories.
-  </li>
-</ul>
-
 <p>
-  Most users of SQLite and/or System.Data.SQLite will want to join the
-  <a href="http://mailinglists.sqlite.org/cgi-bin/mailman/listinfo/sqlite-announce">
-  sqlite-announce</a> list and many will want to join the
-  <a href="http://mailinglists.sqlite.org/cgi-bin/mailman/listinfo/sqlite-users">
-  sqlite-users</a> list.  The
-  <a href="http://mailinglists.sqlite.org/cgi-bin/mailman/listinfo/sqlite-dev">
-  sqlite-dev</a> list is more specialized and appeals to a narrower audience.
-  Off-site archives of the
-  <a href="http://mailinglists.sqlite.org/cgi-bin/mailman/listinfo/sqlite-users">
-  sqlite-users</a> list are available at:
+  Off-site archives of the (legacy) <b>sqlite-users</b> mailing list are
+  available at:
 </p>
 
 <ul>
@@ -121,8 +96,9 @@
 <div align="center"><h2><b>Direct E-Mail</b></h2></div>
 
 <p>
-  Use the mailing list. Please do <b>not</b> send email directly
-  to the authors of SQLite or System.Data.SQLite unless:
+  Use the <a href="https://sqlite.org/forum/forum">SQLite Forum</a>.
+  Please do <b>not</b> send email directly to the authors of SQLite
+  or System.Data.SQLite unless:
 </p>
 
 <ul>
@@ -139,7 +115,7 @@
 
 <p>
   You are welcomed to use SQLite and System.Data.SQLite in closed source,
-  proprietary, and/or commercial projects and to ask questions about such use
-  on the public mailing list.  But please do not ask to receive free direct
-  technical support. The software is free; direct technical support is not.
+  proprietary, and/or commercial projects and to ask questions about such
+  use on the forum.  But please do not ask to receive free direct technical
+  support. The software is free; direct technical support is not.
 </p>

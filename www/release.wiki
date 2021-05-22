@@ -680,5 +680,8 @@
     further details.</i>
   </li>
 
-  <li>Announce the release on the System.Data.SQLite mailing list.</li>
+  <li>
+    Announce the release on the
+    <a href="https://sqlite.org/forum/forum">SQLite Forum</a>.
+  </li>
 </ol>

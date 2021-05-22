@@ -42,9 +42,8 @@ implementation of the same feature being prepared separately.
 Check-in privileges are granted on a case-by-case basis.   Your chances
 of getting check-in privileges are much improved if you have a history
 of submitting quality patches and/or making thoughtful posts on the
-[https://www.mail-archive.com/sqlite-users@mailinglists.sqlite.org/ | mailing list].
-A contributor agreement is, of course, a prerequisite for check-in
-privileges.</p>
+[https://sqlite.org/forum/forum | SQLite Forum].  A contributor agreement
+is, of course, a prerequisite for check-in privileges.</p>
 
 Contributors are asked to make all non-trivial changes on a branch.  A
 System.Data.SQLite admin will review the branch and merge the changes

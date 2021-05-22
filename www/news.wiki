@@ -28,10 +28,16 @@
     However, they will no longer be &quot;officially supported&quot;.
   </li>
   <li>
-    The mailing lists may still be used to ask questions about them.
+    The forum may still be used to ask questions about them.
   </li>
   <li>
     However, any tickets opened for them will be deleted.
+  </li>
+  <li>
+    Due to
+    <a href="https://docs.microsoft.com/en-us/visualstudio/extensibility/breaking-changes-2017">changes</a>
+    in the Visual Studio package installation model, they are not
+    supported by Visual Studio 2017 and later versions.
   </li>
 </ul>
 
