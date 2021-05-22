@@ -10,7 +10,7 @@
     It will be disabled in all default build configurations.
   </li>
   <li>
-    However, it will still be possible to build binaries with it enabled.
+    However, it may still be possible to build binaries with it enabled.
   </li>
 </ul>
 
@@ -28,6 +28,12 @@
   </li>
   <li>
     However, any tickets opened for them will be deleted.
+  </li>
+  <li>
+    Due to
+    <a href="https://docs.microsoft.com/en-us/visualstudio/extensibility/breaking-changes-2017">changes</a>
+    in the Visual Studio package installation model, they are not
+    supported by Visual Studio 2017 and later versions.
   </li>
 </ul>
 

@@ -22,7 +22,7 @@
   </li>
   <br>
   <li>
-    <a href="#q5">Is there a <b>NuGet</b> package?</a>
+    <a href="#q5">Are <b>NuGet</b> packages available?</a>
   </li>
   <br>
   <li>
@@ -213,7 +213,12 @@
   corresponding sub-projects via their respective integrated development
   environments (IDE); however, this configuration has <b>not</b> been tested.
   The design-time components are <b>no longer</b> supported for the Express
-  editions due to licensing restrictions.
+  editions due to licensing restrictions.  Due to
+  <a href="https://docs.microsoft.com/en-us/visualstudio/extensibility/breaking-changes-2017">changes</a>
+  in the Visual Studio package installation model, the design-time components
+  do not support Visual Studio 2017 and later versions.  Also, as of
+  [./support.wiki | May 1, 2017], the design-time components are <b>no
+  longer</b> officially supported.
 </p>
 
 <hr>
