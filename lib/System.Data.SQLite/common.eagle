@@ -2658,12 +2658,16 @@ namespace eval ::Eagle {
       set code [catch [list uplevel 1 $script] result options]
 
       if {$code && $verbose} then {
-        set errorLine [lindex \
-            [split [string map [list \r\n \n] $result] \n] 0]
+        set error [string map [list \r\n \n] [string trim $result]]
+        set errorLine [lindex [split $error \n] 0]
 
         if {[regexp -- \
             { System\.Data\.SQLite\.SQLiteException: (.+?)\n} \
-            $errorLine dummy message]} then {
+            $errorLine dummy message] || [regexp -nocase -- \
+            { code = \w+ \(\d+\), message = (.+?)\n\s+at\s+} \
+            $error dummy message]} then {
+          set message [string map [list \n " ==> "] $message]
+
           tputs $::test_channel [appendArgs \
               "==== WARNING: SQLite error while invoking " \
               "compiled C# code: " \n\t $message \n]
