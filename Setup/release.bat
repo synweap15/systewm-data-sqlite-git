@@ -203,23 +203,83 @@ IF DEFINED NO_RELEASE_YEAR (
 )
 
 %_VECHO% ReleaseOutputFile = '%RELEASE_OUTPUT_FILE%'
+%_VECHO% ReleaseRmDirSubDir = '%RELEASE_RMDIR_SUBDIR%'
+%_VECHO% ReleaseRmDirPlatforms = '%RELEASE_RMDIR_PLATFORMS%'
+%_VECHO% ReleaseManagedOnly = '%RELEASE_MANAGEDONLY%'
+%_VECHO% NoReleaseInterop = '%NO_RELEASE_INTEROP%'
 
 IF DEFINED BASE_CONFIGURATIONSUFFIX (
   IF NOT DEFINED NO_RELEASE_RMDIR (
-    FOR /F "delims=" %%F IN ('DIR /B /S /AD "bin\%YEAR%\%BASE_CONFIGURATION%%BASE_CONFIGURATIONSUFFIX%\bin" 2^> NUL') DO (
-      %__ECHO% RMDIR /S /Q "%%F"
+    IF DEFINED RELEASE_RMDIR_SUBDIR (
+      %_AECHO% Checking for directories under "bin\%YEAR%\%BASE_CONFIGURATION%%BASE_CONFIGURATIONSUFFIX%\bin\%RELEASE_RMDIR_SUBDIR%" for removal...
+
+      IF DEFINED RELEASE_RMDIR_PLATFORMS (
+        FOR %%N IN (%RELEASE_RMDIR_PLATFORMS%) DO (
+          FOR /F "delims=" %%F IN ('DIR /B /S /AD "bin\%YEAR%\%BASE_CONFIGURATION%%BASE_CONFIGURATIONSUFFIX%\bin\%RELEASE_RMDIR_SUBDIR%" 2^> NUL') DO (
+            IF /I "%%~nxF" == "%%N" (
+              %_CECHO% RMDIR /S /Q "%%F"
+              %__ECHO% RMDIR /S /Q "%%F"
+            )
+          )
+        )
+      ) ELSE (
+        FOR /F "delims=" %%F IN ('DIR /B /S /AD "bin\%YEAR%\%BASE_CONFIGURATION%%BASE_CONFIGURATIONSUFFIX%\bin\%RELEASE_RMDIR_SUBDIR%" 2^> NUL') DO (
+          %_CECHO% RMDIR /S /Q "%%F"
+          %__ECHO% RMDIR /S /Q "%%F"
+        )
+      )
+    ) ELSE (
+      %_AECHO% Checking for directories under "bin\%YEAR%\%BASE_CONFIGURATION%%BASE_CONFIGURATIONSUFFIX%\bin" for removal...
+
+      FOR /F "delims=" %%F IN ('DIR /B /S /AD "bin\%YEAR%\%BASE_CONFIGURATION%%BASE_CONFIGURATIONSUFFIX%\bin" 2^> NUL') DO (
+        %_CECHO% RMDIR /S /Q "%%F"
+        %__ECHO% RMDIR /S /Q "%%F"
+      )
     )
   )
-  %_CECHO% zip.exe -v -j -r "%RELEASE_OUTPUT_FILE%" "bin\%YEAR%\%BASE_CONFIGURATION%%BASE_CONFIGURATIONSUFFIX%\bin" -x "%EXCLUDE_BIN%"
-  %__ECHO% zip.exe -v -j -r "%RELEASE_OUTPUT_FILE%" "bin\%YEAR%\%BASE_CONFIGURATION%%BASE_CONFIGURATIONSUFFIX%\bin" -x "%EXCLUDE_BIN%"
+  IF DEFINED RELEASE_RMDIR_SUBDIR (
+    %_CECHO% zip.exe -v -j -r "%RELEASE_OUTPUT_FILE%" "bin\%YEAR%\%BASE_CONFIGURATION%%BASE_CONFIGURATIONSUFFIX%\bin\%RELEASE_RMDIR_SUBDIR%" -x "%EXCLUDE_BIN%"
+    %__ECHO% zip.exe -v -j -r "%RELEASE_OUTPUT_FILE%" "bin\%YEAR%\%BASE_CONFIGURATION%%BASE_CONFIGURATIONSUFFIX%\bin\%RELEASE_RMDIR_SUBDIR%" -x "%EXCLUDE_BIN%"
+  ) ELSE (
+    %_CECHO% zip.exe -v -j -r "%RELEASE_OUTPUT_FILE%" "bin\%YEAR%\%BASE_CONFIGURATION%%BASE_CONFIGURATIONSUFFIX%\bin" -x "%EXCLUDE_BIN%"
+    %__ECHO% zip.exe -v -j -r "%RELEASE_OUTPUT_FILE%" "bin\%YEAR%\%BASE_CONFIGURATION%%BASE_CONFIGURATIONSUFFIX%\bin" -x "%EXCLUDE_BIN%"
+  )
 ) ELSE (
   IF NOT DEFINED NO_RELEASE_RMDIR (
-    FOR /F "delims=" %%F IN ('DIR /B /S /AD "bin\%YEAR%\%BASE_CONFIGURATION%\bin" 2^> NUL') DO (
-      %__ECHO% RMDIR /S /Q "%%F"
+    IF DEFINED RELEASE_RMDIR_SUBDIR (
+      %_AECHO% Checking for directories under "bin\%YEAR%\%BASE_CONFIGURATION%\bin\%RELEASE_RMDIR_SUBDIR%" for removal...
+
+      IF DEFINED RELEASE_RMDIR_PLATFORMS (
+        FOR %%N IN (%RELEASE_RMDIR_PLATFORMS%) DO (
+          FOR /F "delims=" %%F IN ('DIR /B /S /AD "bin\%YEAR%\%BASE_CONFIGURATION%\bin\%RELEASE_RMDIR_SUBDIR%" 2^> NUL') DO (
+            IF /I "%%~nxF" == "%%N" (
+              %_CECHO% RMDIR /S /Q "%%F"
+              %__ECHO% RMDIR /S /Q "%%F"
+            )
+          )
+        )
+      ) ELSE (
+        FOR /F "delims=" %%F IN ('DIR /B /S /AD "bin\%YEAR%\%BASE_CONFIGURATION%\bin\%RELEASE_RMDIR_SUBDIR%" 2^> NUL') DO (
+          %_CECHO% RMDIR /S /Q "%%F"
+          %__ECHO% RMDIR /S /Q "%%F"
+        )
+      )
+    ) ELSE (
+      %_AECHO% Checking for directories under "bin\%YEAR%\%BASE_CONFIGURATION%\bin" for removal...
+
+      FOR /F "delims=" %%F IN ('DIR /B /S /AD "bin\%YEAR%\%BASE_CONFIGURATION%\bin" 2^> NUL') DO (
+        %_CECHO% RMDIR /S /Q "%%F"
+        %__ECHO% RMDIR /S /Q "%%F"
+      )
     )
   )
-  %_CECHO% zip.exe -v -j -r "%RELEASE_OUTPUT_FILE%" "bin\%YEAR%\%BASE_CONFIGURATION%\bin" -x "%EXCLUDE_BIN%"
-  %__ECHO% zip.exe -v -j -r "%RELEASE_OUTPUT_FILE%" "bin\%YEAR%\%BASE_CONFIGURATION%\bin" -x "%EXCLUDE_BIN%"
+  IF DEFINED RELEASE_RMDIR_SUBDIR (
+    %_CECHO% zip.exe -v -j -r "%RELEASE_OUTPUT_FILE%" "bin\%YEAR%\%BASE_CONFIGURATION%\bin\%RELEASE_RMDIR_SUBDIR%" -x "%EXCLUDE_BIN%"
+    %__ECHO% zip.exe -v -j -r "%RELEASE_OUTPUT_FILE%" "bin\%YEAR%\%BASE_CONFIGURATION%\bin\%RELEASE_RMDIR_SUBDIR%" -x "%EXCLUDE_BIN%"
+  ) ELSE (
+    %_CECHO% zip.exe -v -j -r "%RELEASE_OUTPUT_FILE%" "bin\%YEAR%\%BASE_CONFIGURATION%\bin" -x "%EXCLUDE_BIN%"
+    %__ECHO% zip.exe -v -j -r "%RELEASE_OUTPUT_FILE%" "bin\%YEAR%\%BASE_CONFIGURATION%\bin" -x "%EXCLUDE_BIN%"
+  )
 )
 
 IF DEFINED RELEASE_MANAGEDONLY GOTO skip_releaseInterop
@@ -229,6 +289,13 @@ IF /I "%CONFIGURATION%" == "%BASE_CONFIGURATION%" (
     %_CECHO% zip.exe -v -d "%RELEASE_OUTPUT_FILE%" SQLite.Interop.*
     %__ECHO% zip.exe -v -d "%RELEASE_OUTPUT_FILE%" SQLite.Interop.*
   )
+)
+
+IF DEFINED NO_RELEASE_INTEROP (
+  %_CECHO% zip.exe -v -d "%RELEASE_OUTPUT_FILE%" SQLite.Interop.*
+  %__ECHO% zip.exe -v -d "%RELEASE_OUTPUT_FILE%" SQLite.Interop.*
+
+  GOTO skip_releaseInterop
 )
 
 %_CECHO% zip.exe -v -j -r "%RELEASE_OUTPUT_FILE%" "bin\%YEAR%\%PLATFORM%\%CONFIGURATION%%CONFIGURATIONSUFFIX%" -x "%EXCLUDE_BIN%"
