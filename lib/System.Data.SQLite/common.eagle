@@ -2658,9 +2658,20 @@ namespace eval ::Eagle {
       set code [catch [list uplevel 1 $script] result options]
 
       if {$code && $verbose} then {
-        tputs $::test_channel [appendArgs \
-            "==== WARNING: error while invoking compiled C# code: " \
-            \n\t $result \n]
+        set errorLine [lindex \
+            [split [string map [list \r\n \n] $result] \n] 0]
+
+        if {[regexp -- \
+            { System\.Data\.SQLite\.SQLiteException: (.+?)\n} \
+            $errorLine dummy message]} then {
+          tputs $::test_channel [appendArgs \
+              "==== WARNING: SQLite error while invoking " \
+              "compiled C# code: " \n\t $message \n]
+        } else {
+          tputs $::test_channel [appendArgs \
+              "==== WARNING: other error while invoking " \
+              "compiled C# code: " \n\t $result \n]
+        }
       }
 
       return $code
