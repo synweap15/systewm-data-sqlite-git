@@ -30,14 +30,20 @@
 #include "../core/sqlite3.c"
 #endif
 
-#ifdef _WIN32
+#if SQLITE_OS_WIN
 #define GETPID (int)GetCurrentProcessId
 #else
 #define WINAPI
 #define GETPID getpid
 #endif
 
-#ifndef _WIN32
+#if SQLITE_OS_WIN
+#if SQLITE_OS_WINCE
+#define VOLATILE
+#else
+#define VOLATILE volatile
+#endif
+#else
 typedef long LONG;
 #define InterlockedIncrement(p) (*((LONG*)(p)))++
 #define InterlockedDecrement(p) (*((LONG*)(p)))--
@@ -264,7 +270,7 @@ SQLITE_PRIVATE void sqlite3InteropDebug(const char *zFormat, ...){
 #endif
 
 #if defined(INTEROP_LOG)
-SQLITE_PRIVATE volatile LONG logConfigured = 0;
+SQLITE_PRIVATE VOLATILE LONG logConfigured = 0;
 
 SQLITE_PRIVATE void sqlite3InteropLogCallback(void *pArg, int iCode, const char *zMsg){
   sqlite3InteropDebug("[%d] INTEROP_LOG (%d) %s\n", GETPID(), iCode, zMsg);

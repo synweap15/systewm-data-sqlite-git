@@ -1781,7 +1781,11 @@ namespace System.Data.SQLite
         _vfsName = DefaultVfsName;
         _defaultTimeout = DefaultConnectionTimeout;
         _busyTimeout = DefaultBusyTimeout;
+
+#if !PLATFORM_COMPACTFRAMEWORK
         _waitTimeout = DefaultWaitTimeout;
+#endif
+
         _prepareRetries = DefaultPrepareRetries;
         _progressOps = DefaultProgressOps;
         _defaultIsolation = DefaultIsolationLevel;

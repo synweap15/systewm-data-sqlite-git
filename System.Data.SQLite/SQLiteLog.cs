@@ -5,6 +5,10 @@
  * Released to the public domain, use at your own risk!
  ********************************************************/
 
+#if PLATFORM_COMPACTFRAMEWORK
+using EventWaitHandle = System.Threading.ManualResetEvent;
+#endif
+
 namespace System.Data.SQLite
 {
     using System;
@@ -298,10 +302,12 @@ namespace System.Data.SQLite
             if ((theEvent != null) &&
                 !theEvent.WaitOne(_initializeTimeout, false))
             {
+#if !NET_COMPACT_20
                 Trace.WriteLine(HelperMethods.StringFormat(
                     CultureInfo.CurrentCulture,
                     "TIMED OUT ({0}) waiting for logging subsystem",
                     _initializeTimeout));
+#endif
             }
         }
 
