@@ -150,77 +150,83 @@ IF NOT DEFINED NO_NUGET_XPLATFORM (
   )
 )
 
-%__ECHO% "%NUGET%" pack -VerbatimVersion "%ROOT%\NuGet\SQLite.nuspec"
+IF NOT DEFINED NUGET_LEGACY_ONLY (
+  %__ECHO% "%NUGET%" pack -VerbatimVersion "%ROOT%\NuGet\SQLite.nuspec"
 
-IF ERRORLEVEL 1 (
-  ECHO The "%ROOT%\NuGet\SQLite.nuspec" package could not be built.
-  GOTO usage
-)
+  IF ERRORLEVEL 1 (
+    ECHO The "%ROOT%\NuGet\SQLite.nuspec" package could not be built.
+    GOTO errors
+  )
 
-%__ECHO% "%NUGET%" pack -VerbatimVersion "%ROOT%\NuGet\SQLite.Core.nuspec"
+  %__ECHO% "%NUGET%" pack -VerbatimVersion "%ROOT%\NuGet\SQLite.Core.nuspec"
 
-IF ERRORLEVEL 1 (
-  ECHO The "%ROOT%\NuGet\SQLite.Core.nuspec" package could not be built.
-  GOTO usage
-)
+  IF ERRORLEVEL 1 (
+    ECHO The "%ROOT%\NuGet\SQLite.Core.nuspec" package could not be built.
+    GOTO errors
+  )
 
-%__ECHO% "%NUGET%" pack -VerbatimVersion "%ROOT%\NuGet\SQLite.Core.NetFramework.nuspec"
+  %__ECHO% "%NUGET%" pack -VerbatimVersion "%ROOT%\NuGet\SQLite.Core.NetFramework.nuspec"
 
-IF ERRORLEVEL 1 (
-  ECHO The "%ROOT%\NuGet\SQLite.Core.NetFramework.nuspec" package could not be built.
-  GOTO usage
-)
+  IF ERRORLEVEL 1 (
+    ECHO The "%ROOT%\NuGet\SQLite.Core.NetFramework.nuspec" package could not be built.
+    GOTO errors
+  )
 
-%__ECHO% "%NUGET%" pack -VerbatimVersion "%ROOT%\NuGet\SQLite.Core.NetStandard.nuspec"
+  %__ECHO% "%NUGET%" pack -VerbatimVersion "%ROOT%\NuGet\SQLite.Core.NetStandard.nuspec"
 
-IF ERRORLEVEL 1 (
-  ECHO The "%ROOT%\NuGet\SQLite.Core.NetStandard.nuspec" package could not be built.
-  GOTO usage
+  IF ERRORLEVEL 1 (
+    ECHO The "%ROOT%\NuGet\SQLite.Core.NetStandard.nuspec" package could not be built.
+    GOTO errors
+  )
+
+  IF NOT DEFINED NUGET_CORE_ONLY (
+    %__ECHO% "%NUGET%" pack -VerbatimVersion "%ROOT%\NuGet\SQLite.Core.MSIL.nuspec"
+
+    IF ERRORLEVEL 1 (
+      ECHO The "%ROOT%\NuGet\SQLite.Core.MSIL.nuspec" package could not be built.
+      GOTO errors
+    )
+  )
+
+  %__ECHO% "%NUGET%" pack -VerbatimVersion "%ROOT%\NuGet\SQLite.EF6.nuspec"
+
+  IF ERRORLEVEL 1 (
+    ECHO The "%ROOT%\NuGet\SQLite.EF6.nuspec" package could not be built.
+    GOTO errors
+  )
+
+  %__ECHO% "%NUGET%" pack -VerbatimVersion "%ROOT%\NuGet\SQLite.Linq.nuspec"
+
+  IF ERRORLEVEL 1 (
+    ECHO The "%ROOT%\NuGet\SQLite.Linq.nuspec" package could not be built.
+    GOTO errors
+  )
 )
 
 IF NOT DEFINED NUGET_CORE_ONLY (
-  %__ECHO% "%NUGET%" pack -VerbatimVersion "%ROOT%\NuGet\SQLite.Core.MSIL.nuspec"
+  IF NOT DEFINED NUGET_LEGACY_ONLY (
+    %__ECHO% "%NUGET%" pack -VerbatimVersion "%ROOT%\NuGet\SQLite.MSIL.nuspec"
 
-  IF ERRORLEVEL 1 (
-    ECHO The "%ROOT%\NuGet\SQLite.Core.MSIL.nuspec" package could not be built.
-    GOTO usage
-  )
-)
-
-%__ECHO% "%NUGET%" pack -VerbatimVersion "%ROOT%\NuGet\SQLite.EF6.nuspec"
-
-IF ERRORLEVEL 1 (
-  ECHO The "%ROOT%\NuGet\SQLite.EF6.nuspec" package could not be built.
-  GOTO usage
-)
-
-%__ECHO% "%NUGET%" pack -VerbatimVersion "%ROOT%\NuGet\SQLite.Linq.nuspec"
-
-IF ERRORLEVEL 1 (
-  ECHO The "%ROOT%\NuGet\SQLite.Linq.nuspec" package could not be built.
-  GOTO usage
-)
-
-IF NOT DEFINED NUGET_CORE_ONLY (
-  %__ECHO% "%NUGET%" pack -VerbatimVersion "%ROOT%\NuGet\SQLite.MSIL.nuspec"
-
-  IF ERRORLEVEL 1 (
-    ECHO The "%ROOT%\NuGet\SQLite.MSIL.nuspec" package could not be built.
-    GOTO usage
+    IF ERRORLEVEL 1 (
+      ECHO The "%ROOT%\NuGet\SQLite.MSIL.nuspec" package could not be built.
+      GOTO errors
+    )
   )
 
-  %__ECHO% "%NUGET%" pack -VerbatimVersion "%ROOT%\NuGet\SQLite.x86.nuspec"
+  IF NOT DEFINED NO_NUGET_LEGACY (
+    %__ECHO% "%NUGET%" pack -VerbatimVersion "%ROOT%\NuGet\SQLite.x86.nuspec"
 
-  IF ERRORLEVEL 1 (
-    ECHO The "%ROOT%\NuGet\SQLite.x86.nuspec" package could not be built.
-    GOTO usage
-  )
+    IF ERRORLEVEL 1 (
+      ECHO The "%ROOT%\NuGet\SQLite.x86.nuspec" package could not be built.
+      GOTO errors
+    )
 
-  %__ECHO% "%NUGET%" pack -VerbatimVersion "%ROOT%\NuGet\SQLite.x64.nuspec"
+    %__ECHO% "%NUGET%" pack -VerbatimVersion "%ROOT%\NuGet\SQLite.x64.nuspec"
 
-  IF ERRORLEVEL 1 (
-    ECHO The "%ROOT%\NuGet\SQLite.x64.nuspec" package could not be built.
-    GOTO usage
+    IF ERRORLEVEL 1 (
+      ECHO The "%ROOT%\NuGet\SQLite.x64.nuspec" package could not be built.
+      GOTO errors
+    )
   )
 )
 
@@ -228,7 +234,7 @@ IF NOT DEFINED NUGET_CORE_ONLY (
 
 IF ERRORLEVEL 1 (
   ECHO Could not move "*.nupkg" to "%ROOT%\Setup\Output".
-  GOTO usage
+  GOTO errors
 )
 
 GOTO no_errors
