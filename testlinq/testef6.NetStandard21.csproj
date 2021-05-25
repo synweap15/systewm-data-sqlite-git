@@ -59,6 +59,7 @@
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <Deterministic>False</Deterministic>
     <EnableDefaultItems>false</EnableDefaultItems>
+    <UseAppHost>false</UseAppHost>
   </PropertyGroup>
 
   <!--

@@ -2,6 +2,7 @@
 
 <div align="center"><h2><b>Community Support Policies</b></h2></div>
 <div align="center"><h3><b>Effective May 1, 2017</b></h3></div>
+<div align="center"><h3><b>Updated May 22, 2021</b></h3></div>
 
 <h4>Legacy CryptoAPI Codec</h4>
 

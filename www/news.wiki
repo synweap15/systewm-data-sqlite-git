@@ -2,7 +2,7 @@
 
 <div align="center"><h2><b>Community Support Policies</b></h2></div>
 <div align="center"><h3><b>Effective May 1, 2017</b></h3></div>
-<div align="center"><h3><b>Updated May 22, 2020</b></h3></div>
+<div align="center"><h3><b>Updated May 22, 2021</b></h3></div>
 
 <h4>Legacy CryptoAPI Codec</h4>
 
@@ -55,7 +55,7 @@
 <div align="center"><h2><b>Version History</b></h2></div>
 
 <p>
-    <b>1.0.114.0 - May XX, 2021 <font color="red">(release scheduled)</font></b>
+    <b>1.0.114.0 - May 22, 2021</b>
 </p>
 <ul>
     <li>Updated to [https://www.sqlite.org/releaselog/3_35_5.html|SQLite 3.35.5].</li>

@@ -2,6 +2,7 @@
 *.exp
 *.ilk
 *.json
+*.json.*
 *.lib
 *.log
 *.manifest
@@ -16,11 +17,18 @@
 *Microsoft.*
 *Newtonsoft.*
 *System.CodeDom.*
+*System.ComponentModel.Annotations.*
 *System.Configuration.ConfigurationManager.*
 *System.Data.SqlClient.*
+*System.Diagnostics.DiagnosticSource.*
 *System.Drawing.Common.*
+*System.Runtime.CompilerServices.Unsafe.*
+*System.Security.AccessControl.*
 *System.Security.Cryptography.ProtectedData.*
 *System.Security.Permissions.*
+*System.Security.Principal.Windows.*
+*System.Text.Encoding.CodePages.*
 *System.Windows.Extensions.*
 *System.Threading*
 *stdole.*
+*sni.*

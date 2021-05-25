@@ -218,6 +218,17 @@ if {$argc >= 2 && $argc <= 3} then {
     set manifest [file tail $archiveFileName]
 
     #
+    # HACK: Attempt to extract the version and/or date/time
+    #       information from the manifest file name, for use
+    #       by things like [subst] in the manifest itself.
+    #
+    regexp -- {(\d+)\.(\d+)\.(\d+)\.(\d+)} $manifest dummy \
+        major minor build revision
+
+    regexp -- {(\d{4})-(\d{2})-(\d{2})-(\d{2})} $manifest \
+        dummy year month day sequence
+
+    #
     # HACK: Attempt to match and remove sub-strings from the
     #       manifest file name that look like the name of a
     #       build configuration (e.g. "debug" or "release").
