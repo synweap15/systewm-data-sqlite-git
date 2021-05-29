@@ -2280,7 +2280,7 @@
     <tr>
       <td width="10">&nbsp;</td>
       <td width="30%" valign="top" align="right">
-        <a href="/downloads/1.0.114.0/System.Data.SQLite.1.0.114.0.nupkg">System.Data.SQLite.1.0.114.0.nupkg</a>
+        <a href="/downloads/1.0.114.0/System.Data.SQLite.1.0.114.2.nupkg">System.Data.SQLite.1.0.114.2.nupkg</a>
         <br />
         (0.00 MiB)
       </td>
@@ -2308,14 +2308,14 @@
         &quot;System.Data.SQLite.EF6&quot; packages.</i></b></big>
         <br />
         <br />
-        (sha1: 5f6700e4d6f7aa55b75b609d2f6ee4f6936a8313)
+        (sha1: 9a1fcd38b7328d5cff954346070de3827c92493a)
       </td>
     </tr>
 
     <tr>
       <td width="10">&nbsp;</td>
       <td width="30%" valign="top" align="right">
-        <a href="/downloads/1.0.114.0/System.Data.SQLite.Core.1.0.114.0.nupkg">System.Data.SQLite.Core.1.0.114.0.nupkg</a>
+        <a href="/downloads/1.0.114.0/System.Data.SQLite.Core.1.0.114.1.nupkg">System.Data.SQLite.Core.1.0.114.1.nupkg</a>
         <br />
         (0.00 MiB)
       </td>
@@ -2335,7 +2335,7 @@
         <br />
         <big><b>This package does not depend on any other package.</b></big>
         <br />
-        (sha1: 926d2c63df69c71d1dc1e13819a8296e7b08c44c)
+        (sha1: 2c3a4a11ae3d4a52c6f8ef6c14f88a07e1e8beb7)
       </td>
     </tr>
 
@@ -2519,9 +2519,9 @@
     <tr>
       <td width="10">&nbsp;</td>
       <td width="30%" valign="top" align="right">
-        <a href="/downloads/1.0.114.0/Stub.System.Data.SQLite.Core.NetStandard.1.0.114.0.nupkg">Stub.System.Data.SQLite.Core.NetStandard.1.0.114.0.nupkg</a>
+        <a href="/downloads/1.0.114.0/Stub.System.Data.SQLite.Core.NetStandard.1.0.114.1.nupkg">Stub.System.Data.SQLite.Core.NetStandard.1.0.114.1.nupkg</a>
         <br />
-        (2.06 MiB)
+        (3.83 MiB)
       </td>
       <td width="5"></td>
       <td valign="top">
@@ -2538,7 +2538,7 @@
         <br />
         <big><b>This package does not depend on any other package.</b></big>
         <br />
-        (sha1: 7bee856eea1b7b261de2dd2b40f894346b503ebf)
+        (sha1: eef40204d23b7a9b6883a582f3ee84c9af6f7688)
       </td>
     </tr>
 
