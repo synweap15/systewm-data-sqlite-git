@@ -73,12 +73,12 @@
   <br>
   <li>
     <a href="#q15">What is a &quot;<b>bundle</b>&quot; package (i.e. from the
-    download page)?</a>
+    downloads page)?</a>
   </li>
   <br>
   <li>
     <a href="#q16">What is the difference between the &quot;<b>Setup</b>&quot;
-    and &quot;<b>Precompiled Binary</b>&quot; packages (i.e. from the download
+    and &quot;<b>Precompiled Binary</b>&quot; packages (i.e. from the downloads
     page)?</a>
   </li>
   <br>
@@ -401,7 +401,7 @@
 <p>
   This is documented on the [./build.wiki#mono | build procedures] page.
   Alternatively, there is now a pre-built binary package for Mono on the
-  [./downloads.wiki#sqlite-netFx451-binary-Mono-2013 | download] page.
+  [./downloads.wiki#sqlite-netFx451-binary-Mono-2013 | downloads] page.
 </p>
 
 <hr>
@@ -549,11 +549,11 @@
 <hr>
 <a name="q15"></a>
 <p>
-  <b>(15) What is a &quot;bundle&quot; package (i.e. from the download page)?</b>
+  <b>(15) What is a &quot;bundle&quot; package (i.e. from the downloads page)?</b>
 </p>
 
 <p>
-  The &quot;bundle&quot; packages listed on the download page contains the
+  The &quot;bundle&quot; packages listed on the downloads page contains the
   System.Data.SQLite mixed-mode assembly in a file named
   &quot;System.Data.SQLite.dll&quot; (see <a href="#q14">question #14</a>)
   instead of separate &quot;System.Data.SQLite.dll&quot; and
@@ -565,7 +565,7 @@
 <a name="q16"></a>
 <p>
   <b>(16) What is the difference between the &quot;Setup&quot; and
-  &quot;Precompiled Binary&quot; packages (i.e. from the download page)?</b>
+  &quot;Precompiled Binary&quot; packages (i.e. from the downloads page)?</b>
 </p>
 
 <p>

@@ -45,7 +45,7 @@
   </p>
   <p>
     Please refer to the
-    <a href="downloads.wiki">download page</a> for a complete list of
+    <a href="downloads.wiki">downloads page</a> for a complete list of
     downloadable packages and information on their use.
   </p>
   <h2>Documentation for System.Data.SQLite</h2>
