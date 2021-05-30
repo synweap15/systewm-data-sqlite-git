@@ -51,6 +51,21 @@ proc getFileHashes { varName } {
   return $result
 }
 
+proc getSignature { fileName } {
+  set channel [open $fileName RDONLY]
+  makeBinaryChannel $channel
+  set result [read $channel 4]
+  close $channel
+
+  set prefix [string range $result 0 1]
+
+  if {$prefix eq "\x4D\x5A"} then {; # MZ
+    set result $prefix
+  }
+
+  return $result
+}
+
 proc getSha1Sum { fileName } {
   variable fossil
 
@@ -185,11 +200,13 @@ if {$argc >= 2 && $argc <= 3} then {
     usage "list of archive manifests is missing"
   }
 
-  package require Eagle.Test; set extractDirectory [getTemporaryPath]
+  package require Eagle.Test; set extractDirectory [getTemporaryFileName]
 
   if {[string length $extractDirectory] == 0} then {
     usage "no extract directory is available"
   }
+
+  file delete $extractDirectory; file mkdir $extractDirectory
 
   if {![file isdirectory $extractDirectory]} then {
     usage [appendArgs \
@@ -486,20 +503,37 @@ if {$argc >= 2 && $argc <= 3} then {
         }
 
         #
-        # NOTE: Skip checking hashes if that was not requested on the
-        #       command line.
+        # NOTE: Is this archive supposed to contain source code -OR-
+        #       something else?
         #
-        if {!$withHashes} then {
-          continue
-        }
+        if {[string match -nocase -- *Source* $archiveFileName]} then {
+          #
+          # NOTE: Skip checking hashes if that was not requested on the
+          #       command line.
+          #
+          if {!$withHashes} then {
+            continue
+          }
 
-        #
-        # HACK: For now, only verify hashes for those files actually
-        #       present in the repository.
-        #
-        if {![string match -nocase -- *Source* $archiveFileName] && \
-            ![info exists hashes($manifestFileName)]} then {
-          continue
+          #
+          # HACK: For now, only verify hashes for those files actually
+          #       present in the repository.
+          #
+          if {![info exists hashes($manifestFileName)]} then {
+            continue
+          }
+
+          #
+          # NOTE: This is an archive containing source code.
+          #
+          set isSource true
+        } else {
+          #
+          # NOTE: This is an archive containing something other than
+          #       source code, e.g. a setup, binaries, NuGet package,
+          #       etc.
+          #
+          set isSource false
         }
 
         #
@@ -518,7 +552,7 @@ if {$argc >= 2 && $argc <= 3} then {
         }
 
         try {
-          if {[info exists hashes($manifestFileName)]} then {
+          if {!$isSource || [info exists hashes($manifestFileName)]} then {
             if {[catch {
               set extractCommandMap [list \
                   %fileName% [file nativename $manifestFileName] \
@@ -568,33 +602,63 @@ if {$argc >= 2 && $argc <= 3} then {
               set data [eval \
                   [string map $extractCommandMap $extractCommand(2)]]
             } error2] == 0} then {
-              if {[string length $hashes($manifestFileName)] == 64} then {
-                set hash [getSha3Sum $extractFileName]
-              } else {
-                set hash [getSha1Sum $extractFileName]
-              }
+              if {[info exists hashes($manifestFileName)]} then {
+                if {[string length $hashes($manifestFileName)] == 64} then {
+                  set hash [getSha3Sum $extractFileName]
+                } else {
+                  set hash [getSha1Sum $extractFileName]
+                }
 
-              if {[string length $hash] > 0} then {
-                if {$hash ne $hashes($manifestFileName)} then {
+                if {[string length $hash] > 0} then {
+                  if {$hash ne $hashes($manifestFileName)} then {
+                    puts stdout [appendArgs \
+                        $hashPrefix ": Archive \"" $archiveFileName \
+                        "\" file \"" $manifestFileName \
+                        "\" repository hash mismatch, have \"" \
+                        $hash "\", want \"" $hashes($manifestFileName) \
+                        "\"."]
+
+                    if {$failHashes} then {
+                      set exitCode 1
+                    }
+                  }
+                } else {
                   puts stdout [appendArgs \
                       $hashPrefix ": Archive \"" $archiveFileName \
                       "\" file \"" $manifestFileName \
-                      "\" repository hash mismatch, have \"" \
-                      $hash "\", want \"" $hashes($manifestFileName) \
-                      "\"."]
+                      "\" could not be hashed."]
 
                   if {$failHashes} then {
                     set exitCode 1
                   }
                 }
-              } else {
-                puts stdout [appendArgs \
-                    $hashPrefix ": Archive \"" $archiveFileName \
-                    "\" file \"" $manifestFileName \
-                    "\" could not be hashed."]
+              }
 
-                if {$failHashes} then {
-                  set exitCode 1
+              if {[file extension $extractFileName] in [list .dll .exe]} then {
+                switch -exact -- [getSignature $extractFileName] {
+                  \x4D\x5A {
+                    #
+                    # NOTE: DOS/Windows executable.
+                    #
+                  }
+                  \xCF\xFA\xED\xFE {
+                    #
+                    # NOTE: Apple OS X ABI Mach-O binary.
+                    #
+                  }
+                  \x7F\x45\x4C\x46 {
+                    #
+                    # NOTE: Executable and Linking Format (ELF).
+                    #
+                  }
+                  default {
+                    puts stdout [appendArgs \
+                        "ERROR: Archive \"" $archiveFileName \
+                        "\" file \"" $manifestFileName \
+                        "\" does not appear to be an executable."]
+
+                    set exitCode 1
+                  }
                 }
               }
             } else {
@@ -650,6 +714,8 @@ if {$argc >= 2 && $argc <= 3} then {
       set exitCode 1
     }
   }
+
+  file rmdir $extractDirectory; # must be empty
 
   exit $exitCode
 } else {
