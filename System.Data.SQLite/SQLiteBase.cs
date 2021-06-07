@@ -68,6 +68,10 @@ namespace System.Data.SQLite
     /// </summary>
     internal abstract bool OwnHandle { get; }
     /// <summary>
+    /// Non-zero to log all calls to prepare a SQL query.
+    /// </summary>
+    internal abstract bool ForceLogPrepare { get; }
+    /// <summary>
     /// Returns the logical list of functions associated with this connection.
     /// </summary>
     internal abstract IDictionary<SQLiteFunctionAttribute, SQLiteFunction> Functions { get; }
