@@ -479,8 +479,11 @@ if {$argc >= 2 && $argc <= 3} then {
           #       needed.
           #
           if {[file extension $matchFileName] eq ".psmdcp"} then {
-            regsub -- {/[0-9a-f]{32}\.} $matchFileName {/${md5}.} \
-                matchFileName
+            if {[regexp -- {/([0-9a-f]{32})\.} $matchFileName dummy \
+                md5]} then {
+              regsub -- [appendArgs / $md5 \\.] $matchFileName \
+                  {/${md5}.} matchFileName
+            }
           }
 
           lappend containedFileNames $matchFileName
@@ -537,14 +540,28 @@ if {$argc >= 2 && $argc <= 3} then {
         }
 
         #
+        # HACK: If necessary, replace the MD5 token with the actual
+        #       value extracted from the associated ".psmdcp" file
+        #       name.
+        #
+        set altManifestFileName $manifestFileName
+
+        if {[file extension $altManifestFileName] eq ".psmdcp" && \
+            [info exists md5] && [string first \
+            {/${md5}.} $altManifestFileName] != -1} then {
+          set altManifestFileName [string map [list {/${md5}.} \
+              [appendArgs / $md5 .]] $altManifestFileName]
+        }
+
+        #
         # NOTE: Skip anything that does not look like a file.
         #
-        if {[string index $manifestFileName end] in [list / \\]} then {
+        if {[string index $altManifestFileName end] in [list / \\]} then {
           continue
         }
 
         set extractFileName [file join \
-            $extractDirectory [file tail $manifestFileName]]
+            $extractDirectory [file tail $altManifestFileName]]
 
         catch {
           file attributes $extractFileName -readonly false
@@ -554,8 +571,15 @@ if {$argc >= 2 && $argc <= 3} then {
         try {
           if {!$isSource || [info exists hashes($manifestFileName)]} then {
             if {[catch {
+              #
+              # HACK: The UnZip tool cannot handle an unescaped literal
+              #       opening square bracket in a file name.
+              #
+              set altManifestFileName [string map \
+                  [list \[ \[\\\[\]] $altManifestFileName]
+
               set extractCommandMap [list \
-                  %fileName% [file nativename $manifestFileName] \
+                  %fileName% [file nativename $altManifestFileName] \
                   %directory% [file nativename $extractDirectory]]
 
               set data [eval \
@@ -567,7 +591,7 @@ if {$argc >= 2 && $argc <= 3} then {
                 #       braces around the "{app}"-style directory names.
                 #
                 set altManifestFileName [string map [getInnoSetupRootMap] \
-                    $manifestFileName]
+                    $altManifestFileName]
 
                 set extractCommandMap [list \
                     %fileName% [file nativename $altManifestFileName] \
@@ -595,7 +619,7 @@ if {$argc >= 2 && $argc <= 3} then {
                 }
               } else {
                 set extractCommandMap [list \
-                    %fileName% [file nativename $manifestFileName] \
+                    %fileName% [file nativename $altManifestFileName] \
                     %directory% [file nativename $extractDirectory]]
               }
 
