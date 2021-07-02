@@ -2829,14 +2829,24 @@ namespace eval ::Eagle {
       }
     }
 
-    proc hasNoFlags { varName none } {
-      upvar 1 $varName flags
+    proc hasNoValue { varName } {
+      upvar 1 $varName extra
 
-      if {![info exists flags]} then {
+      if {![info exists extra]} then {
         return true
       }
 
-      if {[string length $flags] == 0} then {
+      if {[string length $extra] == 0} then {
+        return true
+      }
+
+      return false
+    }
+
+    proc hasNoFlags { varName none } {
+      upvar 1 $varName flags
+
+      if {[hasNoValue flags]} then {
         return true
       }
 
@@ -2845,6 +2855,22 @@ namespace eval ::Eagle {
       }
 
       return false
+    }
+
+    proc combineExtra { extra1 extra2 } {
+      if {[string length $extra1] > 0} then {
+        if {[string length $extra2] > 0} then {
+          return [appendArgs $extra1 \; $extra2]
+        } else {
+          return $extra1
+        }
+      } else {
+        if {[string length $extra2] > 0} then {
+          return $extra2
+        } else {
+          return ""
+        }
+      }
     }
 
     proc getConnectionFlags { fileName flags {quiet false} } {
@@ -2956,6 +2982,83 @@ namespace eval ::Eagle {
       return $flags
     }
 
+    proc getConnectionExtra { fileName extra {quiet false} } {
+      #
+      # NOTE: Figure out which database file name or connection string these
+      #       connection props will actually apply to.  This is not necessary
+      #       in quiet mode because this information is only used for logging
+      #       and reporting purposes.
+      #
+      if {!$quiet} then {
+        if {[string length $fileName] > 0} then {
+          set database [appendArgs "file name \"" $fileName \"]
+        } elseif {[info exists ::dataSource] && \
+            ![array exists ::dataSource]} then {
+          set database [appendArgs "data source \"" $::dataSource \"]
+        } else {
+          set database <unknown>
+        }
+      }
+
+      #
+      # NOTE: Show (and log) the local connection props and the associated
+      #       data source or file name.
+      #
+      if {!$quiet} then {
+        if {![info exists ::no(emitLocalExtra)] && \
+            (![info exists ::no(emitLocalExtraIfNone)] || \
+             ![hasNoValue extra])} then {
+          tputs $::test_channel [appendArgs \
+              "---- local connection properties for " $database \
+              " are: " [expr {[string length $extra] > 0 ? \
+              [appendArgs \" $extra \"] : "<none>"}] \n]
+        }
+      }
+
+      #
+      # NOTE: Show (and log) the detected global connection props, if any.
+      #
+      if {!$quiet} then {
+        if {![info exists ::no(emitGlobalExtra)] && \
+            (![info exists ::no(emitGlobalExtraIfNone)] || \
+             ![hasNoValue ::connection_extra])} then {
+          tputs $::test_channel [appendArgs \
+              "---- global connection properties are: " \
+              [expr {![hasNoValue ::connection_extra] ? \
+              [appendArgs \" $::connection_extra \"] : "<none>"}] \n]
+        }
+      }
+
+      #
+      # NOTE: If there are any global (per test run) connection props currently
+      #       set, use them now (i.e. by combining them with the ones for this
+      #       connection).
+      #
+      if {[info exists ::connection_extra]} then {
+        #
+        # NOTE: Combine and/or replace the connection props and then show the
+        #       new value.
+        #
+        set extra [combineExtra $::connection_extra $extra]
+
+        #
+        # NOTE: Show (and log) the new effective connection props.
+        #
+        if {!$quiet} then {
+          if {![info exists ::no(emitCombinedExtra)] && \
+              (![info exists ::no(emitCombinedExtraIfNone)] || \
+               ![hasNoValue extra])} then {
+            tputs $::test_channel [appendArgs \
+                "---- combined connection properties for " $database \
+                " are: " [expr {![hasNoValue extra] ? \
+                [appendArgs \" $extra \"] : "<none>"}] \n]
+          }
+        }
+      }
+
+      return $extra
+    }
+
     proc getFlagsProperty { {flags ""} {quiet false} } {
       #
       # NOTE: Determine what the combined (global and local) connection
@@ -3017,6 +3120,7 @@ namespace eval ::Eagle {
       return ""
     }
 
+
     proc getTestProperties { {flags ""} {quiet false} } {
       #
       # NOTE: Start with "Flags" property for the new connection, if any.
@@ -3189,6 +3293,11 @@ namespace eval ::Eagle {
       if {[string length $flags] > 0} then {
         append connection {;Flags=${flags}}
       }
+
+      #
+      # NOTE: Figure out what the final props for this connection need to be.
+      #
+      set extra [getConnectionExtra $fileName $extra $quiet]
 
       #
       # NOTE: If our caller specified an extra payload to the connection
@@ -3691,6 +3800,14 @@ namespace eval ::Eagle {
       } else {
         unset -nocomplain savedConnectionFlags
       }
+
+      upvar 1 savedConnectionExtra savedConnectionExtra
+
+      if {[info exists ::connection_extra]} then {
+        set savedConnectionExtra $::connection_extra
+      } else {
+        unset -nocomplain savedConnectionExtra
+      }
     }
 
     proc restoreSQLiteConnectionEnvironment {} {
@@ -3707,6 +3824,15 @@ namespace eval ::Eagle {
         unset -nocomplain savedConnectionFlags
       } else {
         unset -nocomplain ::connection_flags
+      }
+
+      upvar 1 savedConnectionExtra savedConnectionExtra
+
+      if {[info exists savedConnectionExtra]} then {
+        set ::connection_extra $savedConnectionExtra
+        unset -nocomplain savedConnectionExtra
+      } else {
+        unset -nocomplain ::connection_extra
       }
     }
 
