@@ -3120,27 +3120,56 @@ namespace eval ::Eagle {
       return ""
     }
 
+    proc getExtraProperties { {extra ""} {quiet false} } {
+      #
+      # NOTE: Determine what the combined (global and local) connection
+      #       props should be, possibly quietly.
+      #
+      return [getConnectionExtra "" $extra $quiet]
+    }
+
+    proc getTestProperties { {flags ""} {extra ""} {quiet false} } {
+      #
+      # NOTE: Initially, no (extra?) connection string properties for the
+      #       test.
+      #
+      set result ""
 
-    proc getTestProperties { {flags ""} {quiet false} } {
       #
       # NOTE: Start with "Flags" property for the new connection, if any.
       #
-      set result [getFlagsProperty $flags $quiet]
+      set flags [getFlagsProperty $flags $quiet]
+
+      if {[string length $flags] > 0} then {
+        append result $flags
+      }
 
       #
-      # NOTE: Add the name of the current test file, if available.  This is
-      #       only used for debugging.
+      # NOTE: Next, the name of the current test file, if available.  This
+      #       is only used for debugging.
       #
-      if {[info exists ::test_file]} then {
+      if {[info exists ::test_file] && \
+          [string length $::test_file] > 0} then {
         append result TestFile= $::test_file \;
       }
 
       #
-      # NOTE: Add the name of the current test, if available.  This is only
-      #       used for debugging.
+      # NOTE: Next, the name of the current test, if available.  This is
+      #       only used for debugging.
       #
-      if {[info exists ::eagle_tests(CurrentName)]} then {
+      if {[info exists ::eagle_tests(CurrentName)] && \
+          [string length $::eagle_tests(CurrentName)] > 0} then {
         append result TestName= $::eagle_tests(CurrentName) \;
+      }
+
+      #
+      # NOTE: Finally, with the extra properties for the new connection, if
+      #       any.
+      #
+      set extra [getExtraProperties $extra $quiet]
+
+      if {[string length $extra] > 0} then {
+        append result $extra
       }
 
       return $result
