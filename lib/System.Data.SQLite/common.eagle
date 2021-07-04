@@ -548,9 +548,20 @@ namespace eval ::Eagle {
       } elseif {[isDotNetCore]} then {
         #
         # NOTE: Running on .NET Core, use the extra output directory for
-        #       library files.
+        #       (managed) library files.
         #
-        return netstandard2.0
+        if {[info exists ::eagle_platform(targetFramework)]} then {
+          switch -exact -- $::eagle_platform(targetFramework) {
+            .NETStandard,Version=v2.0 {
+              return netstandard2.0
+            }
+            .NETStandard,Version=v2.1 {
+              return netstandard2.1
+            }
+          }
+        }
+
+        return netstandard2.0; # TODO: Good "fallback" default?
       } else {
         #
         # NOTE: No extra output directory is required.
