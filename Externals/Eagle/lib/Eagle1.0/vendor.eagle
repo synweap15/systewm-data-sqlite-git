@@ -114,6 +114,11 @@ namespace eval ::Eagle {
           set allSecurityProtocols [object invoke \
               Enum GetNames System.Net.SecurityProtocolType]
 
+          if {[info exists ::eagle_platform(runtimeVersion)] && [string \
+              match 2.0.50727.* $::eagle_platform(runtimeVersion)]} then {
+            append allSecurityProtocols " 0xC00"
+          }
+
           set allSecurityProtocols [string map \
               [list SystemDefault ""] $allSecurityProtocols]
 
