@@ -11,7 +11,7 @@
   <metadata>
     <id>System.Data.SQLite.Core</id>
     <title>System.Data.SQLite Core (x86/x64)</title>
-    <version>1.0.114.3</version>
+    <version>1.0.115.0</version>
     <authors>SQLite Development Team</authors>
     <description>The official SQLite database engine for both x86 and x64 along with the ADO.NET provider.</description>
     <language>en-US</language>
@@ -22,25 +22,25 @@
     <copyright>Public Domain</copyright>
     <dependencies>
       <group targetFramework="net20">
-        <dependency id="Stub.System.Data.SQLite.Core.NetFramework" version="1.0.114.0" />
+        <dependency id="Stub.System.Data.SQLite.Core.NetFramework" version="1.0.115.0" />
       </group>
       <group targetFramework="net40">
-        <dependency id="Stub.System.Data.SQLite.Core.NetFramework" version="1.0.114.0" />
+        <dependency id="Stub.System.Data.SQLite.Core.NetFramework" version="1.0.115.0" />
       </group>
       <group targetFramework="net45">
-        <dependency id="Stub.System.Data.SQLite.Core.NetFramework" version="1.0.114.0" />
+        <dependency id="Stub.System.Data.SQLite.Core.NetFramework" version="1.0.115.0" />
       </group>
       <group targetFramework="net451">
-        <dependency id="Stub.System.Data.SQLite.Core.NetFramework" version="1.0.114.0" />
+        <dependency id="Stub.System.Data.SQLite.Core.NetFramework" version="1.0.115.0" />
       </group>
       <group targetFramework="net46">
-        <dependency id="Stub.System.Data.SQLite.Core.NetFramework" version="1.0.114.0" />
+        <dependency id="Stub.System.Data.SQLite.Core.NetFramework" version="1.0.115.0" />
       </group>
       <group targetFramework="netstandard2.0">
-        <dependency id="Stub.System.Data.SQLite.Core.NetStandard" version="1.0.114.3" />
+        <dependency id="Stub.System.Data.SQLite.Core.NetStandard" version="1.0.115.0" />
       </group>
       <group targetFramework="netstandard2.1">
-        <dependency id="Stub.System.Data.SQLite.Core.NetStandard" version="1.0.114.3" />
+        <dependency id="Stub.System.Data.SQLite.Core.NetStandard" version="1.0.115.0" />
       </group>
     </dependencies>
   </metadata>
