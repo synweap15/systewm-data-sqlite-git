@@ -2014,8 +2014,8 @@
 
   <p>
     The <b>version</b> in templates (1), (2), (3), (4), (5), (6), (7), (8),
-    (11), (12), and (13) is the dot-delimited version number of the primary
-    System.Data.SQLite assembly.
+    (11), (12), (13), and (14) is the dot-delimited version number of the
+    primary System.Data.SQLite assembly.
   </p>
 
   <p>
@@ -2023,8 +2023,9 @@
   </p>
 
   <p>
-    The <b>variant</b> in template (12) and (13) will be MSIL, x86, or x64.
-    Alternatively, it may be absent, which represents the default variant.
+    The <b>variant</b> in template (12), (13), and (14) will be MSIL, x86,
+    or x64.  Alternatively, it may be absent, which represents the default
+    variant.
   </p>
 
   <p>
