@@ -568,7 +568,7 @@ namespace System.Data.SQLite
         /// colUsed is set, that means that one or more columns other than the 
         /// first 63 columns are used.  If column usage information is needed by the
         /// xFilter method, then the required bits must be encoded into either
-        /// the idxNum or idxStr output fields.
+        /// the output idxNum field or idxStr content.
         /// </para>
         /// <para>
         /// For the LIKE, GLOB, REGEXP, and MATCH operators, the 
@@ -610,13 +610,13 @@ namespace System.Data.SQLite
         /// method it to figure out the best way to search the virtual table.
         /// </para>
         /// <para>
-        /// The xBestIndex method fills the idxNum and idxStr fields with 
-        /// information that communicates an indexing strategy to the xFilter 
-        /// method. The information in idxNum and idxStr is arbitrary as far 
-        /// as the SQLite core is concerned. The SQLite core just copies the 
-        /// information through to the xFilter method. Any desired meaning can 
-        /// be assigned to idxNum and idxStr as long as xBestIndex and xFilter 
-        /// agree on what that meaning is.
+        /// The xBestIndex method conveys an indexing strategy to the xFilter 
+        /// method through the idxNum and idxStr fields. The idxNum value and 
+        /// idxStr string content are arbitrary as far as the SQLite core is 
+        /// concerned and can have any meaning as long as xBestIndex and xFilter 
+        /// agree on what that meaning is. The SQLite core just copies the 
+        /// information from xBestIndex through to the xFilter method, assuming 
+        /// only that the char sequence referenced via idxStr is NUL terminated.
         /// </para>
         /// <para>
         /// The idxStr value may be a string obtained from an SQLite
@@ -692,12 +692,35 @@ namespace System.Data.SQLite
         /// <para>
         /// If xBestIndex returns SQLITE_CONSTRAINT, that does not indicate an
         /// error.  Rather, SQLITE_CONSTRAINT indicates that the particular combination
-        /// of input parameters specified should not be used in the query plan.
-        /// The SQLITE_CONSTRAINT return is useful for table-valued functions that
+        /// of input parameters specified is insufficient for the virtual table
+        /// to do its job.
+        /// This is logically the same as setting the estimatedCost to infinity.
+        /// If every call to xBestIndex for a particular query plan returns
+        /// SQLITE_CONSTRAINT, that means there is no way for the virtual table
+        /// to be safely used, and the sqlite3_prepare() call will fail with
+        /// a "no query solution" error.
+        /// </para>
+        /// <para>
+        /// The SQLITE_CONSTRAINT return from xBestIndex
+        /// is useful for table-valued functions that
         /// have required parameters.  If the aConstraint[].usable field is false
         /// for one of the required parameter, then the xBestIndex method should
-        /// return SQLITE_CONSTRAINT.
+        /// return SQLITE_CONSTRAINT.  If a required field does not appear in
+        /// the aConstraint[] array at all, that means that the corresponding
+        /// parameter is omitted from the input SQL.  In that case, xBestIndex
+        /// should set an error message in pVTab-&gt;zErrMsg and return
+        /// SQLITE_ERROR.  To summarize:
         /// </para>
+        /// <![CDATA[<ol>]]>
+        /// <![CDATA[<li>]]>
+        /// The aConstraint[].usable value for a required parameter is
+        /// false <big>&rarr;</big> return SQLITE_CONSTRAINT.
+        /// <![CDATA[</li>]]><![CDATA[<li>]]>
+        /// A required parameter does not appears anywhere in
+        /// the aConstraint[] array <big>&rarr;</big>
+        /// Set an error message in pVTab-&gt;zErrMsg and return
+        /// SQLITE_ERROR
+        /// <![CDATA[</li>]]><![CDATA[</ol>]]>
         /// <para>
         /// The following example will better illustrate the use of SQLITE_CONSTRAINT
         /// as a return value from xBestIndex:

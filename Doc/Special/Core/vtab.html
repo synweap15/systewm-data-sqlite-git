@@ -90,7 +90,6 @@ b.innerHTML='hide';
 return false;
 }
 </script>
-</div>
 <div class=fancy>
 <div class=nosearch>
 <div class="fancy_title">
@@ -120,6 +119,7 @@ Table Of Contents
 <div class="fancy-toc4"><a href="#like_glob_regexp_and_match_functions">2.3.1.1. LIKE, GLOB, REGEXP, and MATCH functions</a></div>
 <div class="fancy-toc3"><a href="#outputs">2.3.2. Outputs</a></div>
 <div class="fancy-toc3"><a href="#return_value">2.3.3. Return Value</a></div>
+<div class="fancy-toc3"><a href="#enforcing_required_parameters_on_table_valued_functions">2.3.4. Enforcing Required Parameters On Table-Valued Functions</a></div>
 <div class="fancy-toc2"><a href="#the_xdisconnect_method">2.4. The xDisconnect Method</a></div>
 <div class="fancy-toc2"><a href="#the_xdestroy_method">2.5. The xDestroy Method</a></div>
 <div class="fancy-toc2"><a href="#the_xopen_method">2.6. The xOpen Method</a></div>
@@ -1061,7 +1061,7 @@ to the second column.  And so forth.  If the most significant bit of
 colUsed is set, that means that one or more columns other than the 
 first 63 columns are used.  If column usage information is needed by the
 <a href="vtab.html#xfilter">xFilter</a> method, then the required bits must be encoded into either
-the idxNum or idxStr output fields.
+the output idxNum field or idxStr content.
 
 </p><h4 id="like_glob_regexp_and_match_functions"><span>2.3.1.1. </span>LIKE, GLOB, REGEXP, and MATCH functions</h4>
 
@@ -1103,13 +1103,13 @@ to function-call equivalents of those operators.
 <p>Given all of the information above, the job of the xBestIndex 
 method it to figure out the best way to search the virtual table.
 
-</p><p>The xBestIndex method fills the idxNum and idxStr fields with 
-information that communicates an indexing strategy to the <a href="vtab.html#xfilter">xFilter</a> 
-method. The information in idxNum and idxStr is arbitrary as far 
-as the SQLite core is concerned. The SQLite core just copies the 
-information through to the <a href="vtab.html#xfilter">xFilter</a> method. Any desired meaning can 
-be assigned to idxNum and idxStr as long as xBestIndex and xFilter 
-agree on what that meaning is.
+</p><p>The xBestIndex method conveys an indexing strategy to the <a href="vtab.html#xfilter">xFilter</a> 
+method through the idxNum and idxStr fields. The idxNum value and 
+idxStr string content are arbitrary as far as the SQLite core is 
+concerned and can have any meaning as long as xBestIndex and xFilter 
+agree on what that meaning is. The SQLite core just copies the 
+information from xBestIndex through to the <a href="vtab.html#xfilter">xFilter</a> method, assuming 
+only that the char sequence referenced via idxStr is NUL terminated.
 
 </p><p>The idxStr value may be a string obtained from an SQLite
 memory allocation function such as <a href="c3ref/mprintf.html">sqlite3_mprintf()</a>. 
@@ -1176,13 +1176,38 @@ should be returned instead.
 
 </p><p>If xBestIndex returns <a href="rescode.html#constraint">SQLITE_CONSTRAINT</a>, that does not indicate an
 error.  Rather, SQLITE_CONSTRAINT indicates that the particular combination
-of input parameters specified should not be used in the query plan.
-The SQLITE_CONSTRAINT return is useful for <a href="vtab.html#tabfunc2">table-valued functions</a> that
+of input parameters specified is insufficient for the virtual table
+to do its job.
+This is logically the same as setting the estimatedCost to infinity.
+If every call to xBestIndex for a particular query plan returns
+SQLITE_CONSTRAINT, that means there is no way for the virtual table
+to be safely used, and the <a href="c3ref/prepare.html">sqlite3_prepare()</a> call will fail with
+a "no query solution" error.
+
+</p><h3 id="enforcing_required_parameters_on_table_valued_functions"><span>2.3.4. </span>Enforcing Required Parameters On Table-Valued Functions</h3>
+
+<p>The SQLITE_CONSTRAINT return from xBestIndex
+is useful for <a href="vtab.html#tabfunc2">table-valued functions</a> that
 have required parameters.  If the aConstraint[].usable field is false
 for one of the required parameter, then the xBestIndex method should
-return SQLITE_CONSTRAINT.
+return SQLITE_CONSTRAINT.  If a required field does not appear in
+the aConstraint[] array at all, that means that the corresponding
+parameter is omitted from the input SQL.  In that case, xBestIndex
+should set an error message in pVTab-&gt;zErrMsg and return
+SQLITE_ERROR.  To summarize:
 
-</p><p>The following example will better illustrate the use of SQLITE_CONSTRAINT
+</p><ol>
+<li><p>
+The aConstraint[].usable value for a required parameter is
+false <big>&rarr;</big> return SQLITE_CONSTRAINT.
+</p></li><li><p>
+A required parameter does not appears anywhere in
+the aConstraint[] array <big>&rarr;</big>
+Set an error message in pVTab-&gt;zErrMsg and return
+SQLITE_ERROR
+</p></li></ol>
+
+<p>The following example will better illustrate the use of SQLITE_CONSTRAINT
 as a return value from xBestIndex:
 
 </p><div class="codeblock"><pre>SELECT * FROM realtab, tablevaluedfunc(realtab.x);
