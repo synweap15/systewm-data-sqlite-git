@@ -73,7 +73,7 @@
 
     <tr bgcolor="#fff1c8">
       <td colspan="3" class="importantNotes">
-        This page contains all the downloadable packages (e.g. sources,
+        This page contains all supported downloadable packages (e.g. sources,
         binaries, etc) for the current release version of the official
         &quot;System.Data.SQLite&quot; project.  This page and the associated
         <a href="https://www.nuget.org/profiles/SQLite">NuGet packages</a>
