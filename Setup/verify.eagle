@@ -51,6 +51,14 @@ proc getFileHashes { varName } {
   return $result
 }
 
+proc needSignature { fileName } {
+  if {[file extension $fileName] in [list .dll .exe]} then {
+    return true
+  }
+
+  return false
+}
+
 proc getSignature { fileName } {
   set channel [open $fileName RDONLY]
   makeBinaryChannel $channel
@@ -570,130 +578,132 @@ if {$argc >= 2 && $argc <= 3} then {
 
         try {
           if {!$isSource || [info exists hashes($manifestFileName)]} then {
-            if {[catch {
-              #
-              # HACK: The UnZip tool cannot handle an unescaped literal
-              #       opening square bracket in a file name.
-              #
-              set altManifestFileName [string map \
-                  [list \[ \[\\\[\]] $altManifestFileName]
-
-              set extractCommandMap [list \
-                  %fileName% [file nativename $altManifestFileName] \
-                  %directory% [file nativename $extractDirectory]]
-
-              set data [eval \
-                  [string map $extractCommandMap $extractCommand(1)]]
-            } error1] == 0 || [catch {
-              if {$isSetup} then {
+            if {$isSource || [needSignature $extractFileName]} then {
+              if {[catch {
                 #
-                # HACK: The "innoextract" tool does not use the curly
-                #       braces around the "{app}"-style directory names.
+                # HACK: The UnZip tool cannot handle an unescaped literal
+                #       opening square bracket in a file name.
                 #
-                set altManifestFileName [string map [getInnoSetupRootMap] \
-                    $altManifestFileName]
+                set altManifestFileName [string map \
+                    [list \[ \[\\\[\]] $altManifestFileName]
 
                 set extractCommandMap [list \
                     %fileName% [file nativename $altManifestFileName] \
                     %directory% [file nativename $extractDirectory]]
 
-                #
-                # HACK: The "innoextract" tool uses the full manifest
-                #       file name when writing the extracted file, so
-                #       adjust the extracted file name to match it;
-                #       however, first verify that the path type of
-                #       the manifest file name is relative.
-                #
-                if {[file pathtype $altManifestFileName] eq "relative"} then {
-                  set extractFileName [file normalize [file join \
-                      $extractDirectory $altManifestFileName]]
+                set data [eval \
+                    [string map $extractCommandMap $extractCommand(1)]]
+              } error1] == 0 || [catch {
+                if {$isSetup} then {
+                  #
+                  # HACK: The "innoextract" tool does not use the curly
+                  #       braces around the "{app}"-style directory names.
+                  #
+                  set altManifestFileName [string map [getInnoSetupRootMap] \
+                      $altManifestFileName]
 
-                  catch {
-                    file attributes $extractFileName -readonly false
-                    file delete $extractFileName
+                  set extractCommandMap [list \
+                      %fileName% [file nativename $altManifestFileName] \
+                      %directory% [file nativename $extractDirectory]]
+
+                  #
+                  # HACK: The "innoextract" tool uses the full manifest
+                  #       file name when writing the extracted file, so
+                  #       adjust the extracted file name to match it;
+                  #       however, first verify that the path type of
+                  #       the manifest file name is relative.
+                  #
+                  if {[file pathtype $altManifestFileName] eq "relative"} then {
+                    set extractFileName [file normalize [file join \
+                        $extractDirectory $altManifestFileName]]
+
+                    catch {
+                      file attributes $extractFileName -readonly false
+                      file delete $extractFileName
+                    }
+                  } else {
+                    error [appendArgs \
+                        "path type for manifest file name \"" \
+                        $altManifestFileName "\" is not relative"]
                   }
                 } else {
-                  error [appendArgs \
-                      "path type for manifest file name \"" \
-                      $altManifestFileName "\" is not relative"]
-                }
-              } else {
-                set extractCommandMap [list \
-                    %fileName% [file nativename $altManifestFileName] \
-                    %directory% [file nativename $extractDirectory]]
-              }
-
-              set data [eval \
-                  [string map $extractCommandMap $extractCommand(2)]]
-            } error2] == 0} then {
-              if {[info exists hashes($manifestFileName)]} then {
-                if {[string length $hashes($manifestFileName)] == 64} then {
-                  set hash [getSha3Sum $extractFileName]
-                } else {
-                  set hash [getSha1Sum $extractFileName]
+                  set extractCommandMap [list \
+                      %fileName% [file nativename $altManifestFileName] \
+                      %directory% [file nativename $extractDirectory]]
                 }
 
-                if {[string length $hash] > 0} then {
-                  if {$hash ne $hashes($manifestFileName)} then {
+                set data [eval \
+                    [string map $extractCommandMap $extractCommand(2)]]
+              } error2] == 0} then {
+                if {[info exists hashes($manifestFileName)]} then {
+                  if {[string length $hashes($manifestFileName)] == 64} then {
+                    set hash [getSha3Sum $extractFileName]
+                  } else {
+                    set hash [getSha1Sum $extractFileName]
+                  }
+
+                  if {[string length $hash] > 0} then {
+                    if {$hash ne $hashes($manifestFileName)} then {
+                      puts stdout [appendArgs \
+                          $hashPrefix ": Archive \"" $archiveFileName \
+                          "\" file \"" $manifestFileName \
+                          "\" repository hash mismatch, have \"" \
+                          $hash "\", want \"" $hashes($manifestFileName) \
+                          "\"."]
+
+                      if {$failHashes} then {
+                        set exitCode 1
+                      }
+                    }
+                  } else {
                     puts stdout [appendArgs \
                         $hashPrefix ": Archive \"" $archiveFileName \
                         "\" file \"" $manifestFileName \
-                        "\" repository hash mismatch, have \"" \
-                        $hash "\", want \"" $hashes($manifestFileName) \
-                        "\"."]
+                        "\" could not be hashed."]
 
                     if {$failHashes} then {
                       set exitCode 1
                     }
                   }
-                } else {
-                  puts stdout [appendArgs \
-                      $hashPrefix ": Archive \"" $archiveFileName \
-                      "\" file \"" $manifestFileName \
-                      "\" could not be hashed."]
+                }
 
-                  if {$failHashes} then {
-                    set exitCode 1
+                if {[needSignature $extractFileName]} then {
+                  switch -exact -- [getSignature $extractFileName] {
+                    \x4D\x5A {
+                      #
+                      # NOTE: DOS/Windows executable.
+                      #
+                    }
+                    \xCF\xFA\xED\xFE {
+                      #
+                      # NOTE: Apple OS X ABI Mach-O binary.
+                      #
+                    }
+                    \x7F\x45\x4C\x46 {
+                      #
+                      # NOTE: Executable and Linking Format (ELF).
+                      #
+                    }
+                    default {
+                      puts stdout [appendArgs \
+                          "ERROR: Archive \"" $archiveFileName \
+                          "\" file \"" $manifestFileName \
+                          "\" does not appear to be an executable."]
+
+                      set exitCode 1
+                    }
                   }
                 }
-              }
+              } else {
+                puts stdout [appendArgs \
+                    $hashPrefix ": Failed to extract file \"" \
+                    $manifestFileName "\" from archive \"" \
+                    $archiveFileName "\", error: " [combineErrors \
+                    $error1 $error2]]
 
-              if {[file extension $extractFileName] in [list .dll .exe]} then {
-                switch -exact -- [getSignature $extractFileName] {
-                  \x4D\x5A {
-                    #
-                    # NOTE: DOS/Windows executable.
-                    #
-                  }
-                  \xCF\xFA\xED\xFE {
-                    #
-                    # NOTE: Apple OS X ABI Mach-O binary.
-                    #
-                  }
-                  \x7F\x45\x4C\x46 {
-                    #
-                    # NOTE: Executable and Linking Format (ELF).
-                    #
-                  }
-                  default {
-                    puts stdout [appendArgs \
-                        "ERROR: Archive \"" $archiveFileName \
-                        "\" file \"" $manifestFileName \
-                        "\" does not appear to be an executable."]
-
-                    set exitCode 1
-                  }
+                if {$failHashes} then {
+                  set exitCode 1
                 }
-              }
-            } else {
-              puts stdout [appendArgs \
-                  $hashPrefix ": Failed to extract file \"" \
-                  $manifestFileName "\" from archive \"" \
-                  $archiveFileName "\", error: " [combineErrors \
-                  $error1 $error2]]
-
-              if {$failHashes} then {
-                set exitCode 1
               }
             }
           } else {
