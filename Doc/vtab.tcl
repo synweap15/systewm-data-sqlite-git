@@ -73,6 +73,7 @@ proc processLine { line prefix ltAndGt } {
     regsub -all -- ($escape) $result {<![CDATA[\1]]>} result
   }
 
+  regsub -all -- {&rarr;} $result {\&#8594;} result
   regsub -all -- {&ne;} $result {\&#8800;} result
   regsub -all -- {&#91(?:;)?} $result {[} result
   regsub -all -- {&#93(?:;)?} $result {]} result

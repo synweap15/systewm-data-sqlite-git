@@ -714,10 +714,10 @@ namespace System.Data.SQLite
         /// <![CDATA[<ol>]]>
         /// <![CDATA[<li>]]>
         /// The aConstraint[].usable value for a required parameter is
-        /// false <big>&rarr;</big> return SQLITE_CONSTRAINT.
+        /// false <big>&#8594;</big> return SQLITE_CONSTRAINT.
         /// <![CDATA[</li>]]><![CDATA[<li>]]>
         /// A required parameter does not appears anywhere in
-        /// the aConstraint[] array <big>&rarr;</big>
+        /// the aConstraint[] array <big>&#8594;</big>
         /// Set an error message in pVTab-&gt;zErrMsg and return
         /// SQLITE_ERROR
         /// <![CDATA[</li>]]><![CDATA[</ol>]]>
