@@ -21,6 +21,24 @@
 #
 namespace eval ::Eagle {
   #
+  # NOTE: This procedure locks the specified variable in the call frame of
+  #       the caller while it evaluates the specified script, also in the
+  #       context of the caller.
+  #
+  proc vwaitLocked { varName isArray script } {
+    if {[isEagle]} then {
+      if {$isArray && \
+          ![uplevel 1 [list info exists $varName]]} then {
+        uplevel 1 [list array set $varName [list]]
+      }
+
+      uplevel 1 [list vwait -force -locked $script -- $varName]
+    } else {
+      uplevel 1 $script
+    }
+  }
+
+  #
   # NOTE: This procedure emits a message to the specified channel and adds
   #       it to the test log queue.
   #
@@ -55,24 +73,29 @@ namespace eval ::Eagle {
       #       this procedure is to populate the "test_log_queue" variable for
       #       later use by the test package.
       #
-      if {[info exists ::test_log_queue]} then {
-        #
-        # NOTE: Use the next queued test log entry.
-        #
-        set entry [expr {[array size ::test_log_queue] + 1}]
-      } else {
-        #
-        # NOTE: Use the first queued test log entry.
-        #
-        set entry 1
-      }
+      # BUGFIX: As of beta 47, use of the "test_log_queue" global variable is
+      #         thread-safe.
+      #
+      vwaitLocked ::test_log_queue true {
+        if {[info exists ::test_log_queue]} then {
+          #
+          # NOTE: Use the next queued test log entry.
+          #
+          set entry [expr {[array size ::test_log_queue] + 1}]
+        } else {
+          #
+          # NOTE: Use the first queued test log entry.
+          #
+          set entry 1
+        }
 
-      #
-      # NOTE: Add the new entry to the test log queue.  All entries will be
-      #       sent to the actual test log file the very next time the [tlog]
-      #       command from the test package is executed.
-      #
-      set ::test_log_queue($entry) $string
+        #
+        # NOTE: Add the new entry to the test log queue.  All entries will
+        #       be sent to the actual test log file the very next time the
+        #       [tlog] command from the test package is executed.
+        #
+        set ::test_log_queue($entry) $string
+      }
     }
 
     return ""

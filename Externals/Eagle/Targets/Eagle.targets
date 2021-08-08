@@ -2232,37 +2232,72 @@
       <Output ItemName="EagleCopySystemDataSQLiteItem1" TaskParameter="Include" />
     </CreateItem>
 
-    <CreateItem Include="$(EagleDir)\Externals\System.Data.SQLite\netStandard20\*">
+    <CreateItem Include="$(EagleDir)\Externals\System.Data.SQLite\netFramework40\*">
       <Output ItemName="EagleCopySystemDataSQLiteItem2" TaskParameter="Include" />
     </CreateItem>
 
-    <Copy Condition="'$(BuildTool)' != 'DotNetCore'"
+    <CreateItem Include="$(EagleDir)\Externals\System.Data.SQLite\netStandard20\*">
+      <Output ItemName="EagleCopySystemDataSQLiteItem3" TaskParameter="Include" />
+    </CreateItem>
+
+    <CreateItem Include="$(EagleDir)\Externals\System.Data.SQLite\netStandard21\*">
+      <Output ItemName="EagleCopySystemDataSQLiteItem4" TaskParameter="Include" />
+    </CreateItem>
+
+    <Copy Condition="'$(BuildTool)' != 'DotNetCore' And
+                     ((('$(MSBuildToolsVersion)' == '' Or
+                        '$(MSBuildToolsVersion)' == '2.0' Or
+                        '$(MSBuildToolsVersion)' == '3.5') And
+                       '$(TargetFrameworkVersion)' == '') Or
+                      '$(TargetFrameworkVersion)' == 'v2.0' Or
+                      '$(TargetFrameworkVersion)' == 'v3.5')"
           SourceFiles="@(EagleCopySystemDataSQLiteItem1)"
+          DestinationFolder="$(EagleBinaryOutputPath)" />
+
+    <Copy Condition="'$(BuildTool)' != 'DotNetCore' And
+                     ((('$(MSBuildToolsVersion)' == '4.0' Or
+                        '$(MSBuildToolsVersion)' == '12.0' Or
+                        '$(MSBuildToolsVersion)' == '14.0' Or
+                        '$(MSBuildToolsVersion)' == '15.0' Or
+                        '$(MSBuildToolsVersion)' == 'Current') And
+                       '$(TargetFrameworkVersion)' == '') Or
+                      '$(TargetFrameworkVersion)' == 'v4.0' Or
+                      '$(TargetFrameworkVersion)' == 'v4.5' Or
+                      '$(TargetFrameworkVersion)' == 'v4.5.1' Or
+                      '$(TargetFrameworkVersion)' == 'v4.5.2' Or
+                      '$(TargetFrameworkVersion)' == 'v4.6' Or
+                      '$(TargetFrameworkVersion)' == 'v4.6.1' Or
+                      '$(TargetFrameworkVersion)' == 'v4.6.2' Or
+                      '$(TargetFrameworkVersion)' == 'v4.7' Or
+                      '$(TargetFrameworkVersion)' == 'v4.7.1' Or
+                      '$(TargetFrameworkVersion)' == 'v4.7.2' Or
+                      '$(TargetFrameworkVersion)' == 'v4.8')"
+          SourceFiles="@(EagleCopySystemDataSQLiteItem2)"
           DestinationFolder="$(EagleBinaryOutputPath)" />
 
     <Copy Condition="'$(BuildTool)' == 'DotNetCore' And
                      Exists('$(EagleBinaryOutputPath)netcoreapp2.0')"
-          SourceFiles="@(EagleCopySystemDataSQLiteItem2)"
+          SourceFiles="@(EagleCopySystemDataSQLiteItem3)"
           DestinationFolder="$(EagleBinaryOutputPath)netcoreapp2.0" />
 
     <Copy Condition="'$(BuildTool)' == 'DotNetCore' And
                      Exists('$(EagleBinaryOutputPath)netcoreapp2.1')"
-          SourceFiles="@(EagleCopySystemDataSQLiteItem2)"
+          SourceFiles="@(EagleCopySystemDataSQLiteItem3)"
           DestinationFolder="$(EagleBinaryOutputPath)netcoreapp2.1" />
 
     <Copy Condition="'$(BuildTool)' == 'DotNetCore' And
                      Exists('$(EagleBinaryOutputPath)netcoreapp2.2')"
-          SourceFiles="@(EagleCopySystemDataSQLiteItem2)"
+          SourceFiles="@(EagleCopySystemDataSQLiteItem3)"
           DestinationFolder="$(EagleBinaryOutputPath)netcoreapp2.2" />
 
     <Copy Condition="'$(BuildTool)' == 'DotNetCore' And
                      Exists('$(EagleBinaryOutputPath)netcoreapp3.0')"
-          SourceFiles="@(EagleCopySystemDataSQLiteItem2)"
+          SourceFiles="@(EagleCopySystemDataSQLiteItem4)"
           DestinationFolder="$(EagleBinaryOutputPath)netcoreapp3.0" />
 
     <Copy Condition="'$(BuildTool)' == 'DotNetCore' And
                      Exists('$(EagleBinaryOutputPath)netcoreapp3.1')"
-          SourceFiles="@(EagleCopySystemDataSQLiteItem2)"
+          SourceFiles="@(EagleCopySystemDataSQLiteItem4)"
           DestinationFolder="$(EagleBinaryOutputPath)netcoreapp3.1" />
 
     <Touch AlwaysCreate="true"

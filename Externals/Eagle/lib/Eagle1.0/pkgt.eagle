@@ -161,13 +161,34 @@ namespace eval ::Eagle {
     }
 
     #
-    # NOTE: The URI where script evaluation requests should be submitted
-    #       to the "safe" sandbox.
+    # NOTE: The URI where named example scripts may be obtained.
     #
     variable scriptUri; # DEFAULT: ${baseUri}/${urn}
 
     if {$force || ![info exists scriptUri]} then {
       set scriptUri {${baseUri}/${urn}}
+    }
+
+    #
+    # NOTE: The list of URNs, relative to the base URI, where the remote
+    #       package index may be obtained.  One of these will be selected
+    #       at random.
+    #
+    variable packageIndexUrns; # DEFAULT: package_index_01 ... package_index_NN
+
+    if {$force || ![info exists packageIndexUrns]} then {
+      set packageIndexUrns [list \
+          package_index_01 package_index_02 package_index_03 package_index_04 \
+          package_index_05 package_index_06 package_index_07]
+    }
+
+    #
+    # NOTE: The URI where the remote package index may be obtained.
+    #
+    variable packageIndexUri; # DEFAULT: ${baseUri}/${urn}
+
+    if {$force || ![info exists packageIndexUri]} then {
+      set packageIndexUri {${baseUri}/${urn}}
     }
   }
 
@@ -200,7 +221,7 @@ namespace eval ::Eagle {
     } else {
       package require Eagle.Tools.Common
 
-      namespace import \
+      namespace import -force \
           ::Eagle::Tools::Common::getFileViaHttp \
           ::Eagle::Tools::Common::writeFile
 
@@ -211,6 +232,8 @@ namespace eval ::Eagle {
 
     set extractDirectory [extractZipArchive \
         $fileName $extractRootDirectory true]
+
+    file delete $fileName
 
     return [file join $extractDirectory pkgr_an_d client 1.0 neutral]
   }
@@ -428,7 +451,7 @@ namespace eval ::Eagle {
     } else {
       package require Eagle.Tools.Common
 
-      namespace import \
+      namespace import -force \
           ::Eagle::Tools::Common::getFileViaHttp \
           ::Eagle::Tools::Common::writeFile
 
@@ -439,6 +462,8 @@ namespace eval ::Eagle {
 
     set extractDirectory [extractZipArchive \
         $fileName $extractRootDirectory true]
+
+    file delete $fileName
 
     return [lindex [glob -nocomplain \
         [file join $extractDirectory lib *[info sharedlibextension]]] 0]
@@ -483,7 +508,7 @@ namespace eval ::Eagle {
     } else {
       package require Eagle.Tools.Common
 
-      namespace import \
+      namespace import -force \
           ::Eagle::Tools::Common::getFileViaHttp \
           ::Eagle::Tools::Common::writeFile
 
@@ -494,6 +519,8 @@ namespace eval ::Eagle {
 
     set extractDirectory [extractZipArchive \
         $fileName $extractRootDirectory true]
+
+    file delete $fileName
 
     return [file join $extractDirectory build $dir lib]
   }
@@ -684,7 +711,7 @@ namespace eval ::Eagle {
     } else {
       package require Eagle.Tools.Common
 
-      namespace import \
+      namespace import -force \
           ::Eagle::Tools::Common::getFileViaHttp \
           ::Eagle::Tools::Common::writeFile
 
@@ -766,13 +793,101 @@ namespace eval ::Eagle {
       package require http 2.0
       package require Eagle.Tools.Common
 
-      namespace import \
+      namespace import -force \
           ::Eagle::Tools::Common::getFileViaHttp
 
       return [getFileViaHttp \
           $uri 20 $channel $quiet -binary true \
           -query [eval ::http::formatQuery $query]]
     }
+  }
+
+  #
+  # NOTE: This procedure attempts to query the list of named example scripts.
+  #       The apiKey parameter is the optional API key to use, which MAY enable
+  #       additional permissions within the remote repository.  The optional
+  #       channel argument is the output channel where diagnostic information
+  #       is sent.  The optional quiet argument should be non-zero to prevent
+  #       diagnostic information from being emitted.  This procedure may raise
+  #       script errors.  The return value is the list of all available example
+  #       scripts.
+  #
+  proc listExampleScripts {
+          {apiKey ""} {channel stdout} {quiet false} } {
+    setupPackageToolsetVars false
+
+    variable baseUri
+    variable scriptUri
+    variable scriptUrns
+
+    if {[info exists ::env(ScriptUri)]} then {
+      #
+      # HACK: Allow example script URI to be overridden via the global
+      #       environment.  This is necessary to enable testing on Mono.
+      #
+      set uri $::env(ScriptUri)
+    } else {
+      #
+      # NOTE: Normally, choose a random URN, which will resolve to one
+      #       of the official example script servers.
+      #
+      set urn [subst [lindex \
+          $scriptUrns [expr {int(rand() * [llength $scriptUrns])}]]]
+
+      set uri [subst $scriptUri]
+    }
+
+    set query [list raw 1 method list]
+
+    if {[string length $apiKey] > 0} then {
+      lappend query apiKey $apiKey
+    }
+
+    if {[isEagle]} then {
+      set fullUri $uri
+
+      foreach {name value} $query {
+        if {[string first ? $fullUri] != -1} then {
+          append fullUri &
+        } else {
+          append fullUri ?
+        }
+
+        append fullUri \
+            [uri escape data $name] = [uri escape data $value]
+      }
+
+      set data [uri download -inline $fullUri]
+    } else {
+      package require http 2.0
+      package require Eagle.Tools.Common
+
+      namespace import -force \
+          ::Eagle::Tools::Common::getFileViaHttp \
+          ::Eagle::Tools::Common::writeFile
+
+      set data [getFileViaHttp \
+          $uri 20 $channel $quiet -binary true \
+          -query [eval ::http::formatQuery $query]]
+    }
+
+    if {[string length $data] == 0} then {
+      error "request failed without providing error information"
+    }
+
+    if {![string is list $data] || [llength $data] < 2} then {
+      error [appendArgs \
+          "request failed with error information: " $data]
+    }
+
+    set code [lindex $data 0]
+    set result [lindex $data 1]
+
+    if {$code ne "OK"} then {
+      error $result
+    }
+
+    return $result
   }
 
   #
@@ -813,7 +928,7 @@ namespace eval ::Eagle {
     }
 
     set fileName [getTemporaryFileName]
-    set query [list raw 1 script $script]
+    set query [list raw 1 method get script $script]
 
     if {[string length $apiKey] > 0} then {
       lappend query apiKey $apiKey
@@ -838,7 +953,7 @@ namespace eval ::Eagle {
       package require http 2.0
       package require Eagle.Tools.Common
 
-      namespace import \
+      namespace import -force \
           ::Eagle::Tools::Common::getFileViaHttp \
           ::Eagle::Tools::Common::writeFile
 
@@ -876,6 +991,128 @@ namespace eval ::Eagle {
     }
 
     return $fileName
+  }
+
+  #
+  # NOTE: This procedure attempts to download (and save) the remote package
+  #       index script.  The apiKey parameter is the optional API key to use,
+  #       which MAY enable additional permissions within the remote repository.
+  #       The optional channel argument is the output channel where diagnostic
+  #       information is sent.  The optional quiet argument should be non-zero
+  #       to prevent diagnostic information from being emitted.  The autoPath
+  #       parameter should be non-zero to evaluate the returned package index
+  #       -OR- zero to simply save it to the file system.  This procedure may
+  #       raise script errors.  The return value is the full path to the saved
+  #       package index script if the autoPath parameter is zero; otherwise,
+  #       it is the result of the package index script evaluation.
+  #
+  proc downloadPackageIndexScript {
+          {apiKey ""} {channel stdout} {quiet false} } {
+    setupPackageToolsetVars false
+
+    variable baseUri
+    variable packageIndexUri
+    variable packageIndexUrns
+
+    package require Eagle.Test
+
+    if {[info exists ::env(PackageIndexUri)]} then {
+      #
+      # HACK: Allow package index URI to be overridden via the global
+      #       environment.  This is necessary to enable testing on Mono.
+      #
+      set uri $::env(PackageIndexUri)
+    } else {
+      #
+      # NOTE: Normally, choose a random URN, which will resolve to one
+      #       of the official example script servers.
+      #
+      set urn [subst [lindex $packageIndexUrns \
+          [expr {int(rand() * [llength $packageIndexUrns])}]]]
+
+      set uri [subst $packageIndexUri]
+    }
+
+    set directory [getTemporaryFileName]
+
+    if {[isEagle]} then {
+      file cleanup -type Directory $directory
+    }
+
+    file delete $directory; file mkdir $directory
+
+    set fileName [file join $directory pkgIndex.eagle]
+    set query [list raw 1 method get script pkgIndex.eagle]
+
+    if {[string length $apiKey] > 0} then {
+      lappend query apiKey $apiKey
+    }
+
+    if {[isEagle]} then {
+      set fullUri $uri
+
+      foreach {name value} $query {
+        if {[string first ? $fullUri] != -1} then {
+          append fullUri &
+        } else {
+          append fullUri ?
+        }
+
+        append fullUri \
+            [uri escape data $name] = [uri escape data $value]
+      }
+
+      set data [uri download -inline $fullUri]
+    } else {
+      package require http 2.0
+      package require Eagle.Tools.Common
+
+      namespace import -force \
+          ::Eagle::Tools::Common::getFileViaHttp \
+          ::Eagle::Tools::Common::writeFile
+
+      set data [getFileViaHttp \
+          $uri 20 $channel $quiet -binary true \
+          -query [eval ::http::formatQuery $query]]
+    }
+
+    if {[string length $data] == 0} then {
+      error "request failed without providing error information"
+    }
+
+    if {![string is list $data] || [llength $data] < 2} then {
+      error [appendArgs \
+          "request failed with error information: " $data]
+    }
+
+    set code [lindex $data 0]
+    set result [lindex $data 1]
+
+    if {$code ne "OK"} then {
+      error $result
+    }
+
+    set signature ""
+
+    if {[llength $data] >= 2} then {
+      set signature [lindex $data 2]
+    }
+
+    if {[isEagle]} then {
+      file cleanup $fileName
+    }
+
+    writeFile $fileName $result
+
+    if {[string length $signature] > 0} then {
+      if {[isEagle]} then {
+        file cleanup [appendArgs $fileName .harpy]
+      }
+
+      writeFile [appendArgs $fileName .harpy] $signature
+    }
+
+    return $directory
   }
 
   #

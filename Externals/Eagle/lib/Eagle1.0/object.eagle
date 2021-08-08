@@ -314,12 +314,20 @@ namespace eval ::Eagle {
     }
 
     #
+    # NOTE: Grab the current compilation options for the core library.
+    #
+    if {[info exists ::eagle_platform(compileOptions)]} then {
+      set options $::eagle_platform(compileOptions)
+    } else {
+      set options [list]
+    }
+
+    #
     # NOTE: If the core library was not compiled with thread-safety enabled,
     #       this procedure cannot be used because it could corrupt the state
     #       of the interpreter.
     #
-    if {[lsearch -exact -- \
-        $::eagle_platform(compileOptions) THREADING] == -1} then {
+    if {[lsearch -exact -- $options THREADING] == -1} then {
       error "cannot eval async: library missing THREADING compile-option"
     }
 
@@ -352,14 +360,13 @@ namespace eval ::Eagle {
       #       this procedure cannot be used when there is a callback, due
       #       to the AsynchronousCallback delegate type being unsupported.
       #
-      if {[lsearch -exact -- \
-          $::eagle_platform(compileOptions) EMIT] == -1} then {
+      if {[lsearch -exact -- $options EMIT] == -1} then {
         error "cannot eval async: library missing EMIT compile-option"
       }
 
       set callback [list -identifier [expr {random()}] -callbackflags \
-          {+ResetCancel FireAndForget} -- apply [list [list script context] \
-          {uplevel 1 $script}] $doneScript]
+          {+ResetCancel MustResetCancel FireAndForget} -- apply [list \
+          [list script context] {uplevel 1 $script}] $doneScript]
     } else {
       set callback null
     }

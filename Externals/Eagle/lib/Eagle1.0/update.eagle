@@ -1072,7 +1072,7 @@ namespace eval ::Eagle {
       #
       # NOTE: Download the tag file from the web site.
       #
-      return [uri download -inline $uri]; # synchronous.
+      return [uri download -timeout 2000 -inline $uri]; # synchronous.
     } finally {
       if {$trusted && \
           [lindex [uri softwareupdates] end] eq "trusted"} then {
@@ -1190,6 +1190,15 @@ namespace eval ::Eagle {
           {patchLevel ""} {timeStamp ""} {wantScripts false} {quiet false}
           {prompt false} {automatic false} } {
     #
+    # NOTE: First, set default channel for update script status messages.
+    #       If the test channel has been set (i.e. by the test suite), it
+    #       will be used instead.
+    #
+    set channel [expr {
+      [info exists ::test_channel] ? $::test_channel : "stdout"
+    }]
+
+    #
     # NOTE: First of all, what type of update are we checking?  Possible
     #       values for this include "build", "plugin", "script", et al.
     #       These mirror the values of the UpdateType enumeration.
@@ -1286,9 +1295,53 @@ namespace eval ::Eagle {
       set updateName $name
     } else {
       #
+      # HACK: The [getKnownBuildTypes] procedure is required to validate
+      #       the build type against the engine text attribute.
+      #
+      if {[catch {
+        package require Eagle.Test.Constraints
+      } error] == 0} then {
+        set engineText [info engine Text]
+
+        if {$engineText ni [list "" Default] && \
+            $engineText ni [getKnownBuildTypes]} then {
+          if {!$quiet} then {
+            tqputs $channel [appendArgs \
+                "---- ignored unknown build type: " $engineText \n]
+          }
+
+          set engineText ""; # invalid, do not use.
+        }
+      } else {
+        if {!$quiet} then {
+          tqputs $channel [appendArgs \
+              "---- known build types unavailable: " $error \n]
+        }
+
+        set engineText ""; # cannot check, do not use.
+      }
+
+      #
       # NOTE: Use assembly name of the script engine to match against.
       #
-      set updateName Eagle; # LEGACY
+      set engineName [info engine Name]
+
+      if {[string length $engineName] > 0} then {
+        if {[string length $engineText] > 0 && \
+            $engineText ni [list Default NetFx20]} then {
+          set updateName [appendArgs \
+              $engineName _ $engineText]; # NetFx40, etc.
+        } else {
+          set updateName $engineName; # NetFx20
+        }
+      } else {
+        if {[string length $engineText] > 0} then {
+          set updateName [appendArgs \
+              Eagle_ $engineText]; # LEGACY NetFx40, etc.
+        } else {
+          set updateName Eagle; # LEGACY
+        }
+      }
     }
 
     #
@@ -1386,7 +1439,7 @@ namespace eval ::Eagle {
     #
     array set scriptCounts {
       invalid              0 fail                 0 bad                  0
-      ok                   0 error                0
+      ok                   0 error                0 match                0
     }
 
     #
@@ -1476,6 +1529,11 @@ namespace eval ::Eagle {
               $field(publicKeyToken) $updatePublicKeyToken] && \
           [matchUpdateName $field(name) $updateName] && \
           [matchUpdateCulture $field(culture) $updateCulture]} then {
+        #
+        # NOTE: Keep track that another line was matched.
+        #
+        incr scriptCounts(match)
+
         #
         # NOTE: Grab the patch level field.
         #
@@ -1637,27 +1695,37 @@ namespace eval ::Eagle {
               #       cannot be done.
               #
               if {[llength [info commands object]] > 0} then {
-                set messageCaption [appendArgs \
-                    [info engine Name] " (" [lindex [info level 0] 0] \
-                    " script)"]
+                #
+                # BUGFIX: Only prompt to run the updater tool if this is
+                #         the default AppDomain for the process -AND- it
+                #         is the first Interpreter in that AppDomain.
+                #
+                if {[object invoke Utility IsDefaultAppDomain] && \
+                    [object invoke -flags +NonPublic \
+                    Eagle._Components.Private.GlobalState \
+                    IsFirstInterpreter ""]} then {
+                  set messageCaption [appendArgs \
+                      [info engine Name] " (" [lindex [info level 0] 0] \
+                      " script)"]
 
-                set messageText [appendArgs \
-                    "The " $text \n\n "Run the updater tool now?"]
+                  set messageText [appendArgs \
+                      "The " $text \n\n "Run the updater tool now?"]
 
-                if {$automatic} then {
-                  append messageText \n\n \
-                      "WARNING: The updater tool process will be " \
-                      "run in automatic mode and there will be no " \
-                      "further prompts."
-                }
+                  if {$automatic} then {
+                    append messageText \n\n \
+                        "WARNING: The updater tool process will be " \
+                        "run in automatic mode and there will be no " \
+                        "further prompts."
+                  }
 
-                if {[object invoke -flags +NonPublic \
-                    Eagle._Components.Private.WindowOps YesOrNo \
-                    $messageText $messageCaption false]} then {
-                  #
-                  # NOTE: Ok, run the updater tool now and then exit.
-                  #
-                  runUpdateAndExit $automatic
+                  if {[object invoke -flags +NonPublic \
+                      Eagle._Components.Private.WindowOps YesOrNo \
+                      $messageText $messageCaption false]} then {
+                    #
+                    # NOTE: Ok, run the updater tool now and then exit.
+                    #
+                    runUpdateAndExit $automatic
+                  }
                 }
               }
             }
@@ -1679,17 +1747,6 @@ namespace eval ::Eagle {
           #
           if {$checkScript} then {
             #
-            # NOTE: First, set the default channel for update script status
-            #       messages.  If the test channel has been set (i.e. by the
-            #       test suite), it will be used instead.
-            #
-            if {![info exists channel]} then {
-              set channel [expr {
-                [info exists ::test_channel] ? $::test_channel : "stdout"
-              }]
-            }
-
-            #
             # NOTE: Next, verify the script has a valid base URI.  For update
             #       scripts, this must be the location where the update script
             #       data can be downloaded.
@@ -1698,7 +1755,7 @@ namespace eval ::Eagle {
               if {!$quiet} then {
                 tqputs $channel [appendArgs \
                     "---- invalid baseUri value for update script " \
-                    "line: " $line \"\n]
+                    "line: " $line \n]
               }
 
               incr scriptCounts(invalid); continue
@@ -1713,7 +1770,7 @@ namespace eval ::Eagle {
               if {!$quiet} then {
                 tqputs $channel [appendArgs \
                     "---- invalid md5 value for update script " \
-                    "line: " $line \"\n]
+                    "line: " $line \n]
               }
 
               incr scriptCounts(invalid); continue
@@ -1728,7 +1785,7 @@ namespace eval ::Eagle {
               if {!$quiet} then {
                 tqputs $channel [appendArgs \
                     "---- invalid sha1 value for update script " \
-                    "line: " $line \"\n]
+                    "line: " $line \n]
               }
 
               incr scriptCounts(invalid); continue
@@ -1743,7 +1800,7 @@ namespace eval ::Eagle {
               if {!$quiet} then {
                 tqputs $channel [appendArgs \
                     "---- invalid sha512 value for update script " \
-                    "line: " $line \"\n]
+                    "line: " $line \n]
               }
 
               incr scriptCounts(invalid); continue
@@ -1798,7 +1855,7 @@ namespace eval ::Eagle {
               if {!$quiet} then {
                 tqputs $channel [appendArgs \
                     "---- wrong md5 value \"" $md5 \
-                    "\" for update script line: " $line \"\n]
+                    "\" for update script line: " $line \n]
               }
 
               incr scriptCounts(bad); continue
@@ -1810,7 +1867,7 @@ namespace eval ::Eagle {
               if {!$quiet} then {
                 tqputs $channel [appendArgs \
                     "---- wrong sha1 value \"" $sha1 \
-                    "\" for update script line: " $line \"\n]
+                    "\" for update script line: " $line \n]
               }
 
               incr scriptCounts(bad); continue
@@ -1822,7 +1879,7 @@ namespace eval ::Eagle {
               if {!$quiet} then {
                 tqputs $channel [appendArgs \
                     "---- wrong sha512 value \"" $sha512 \
-                    "\" for update script line: " $line \"\n]
+                    "\" for update script line: " $line \n]
               }
 
               incr scriptCounts(bad); continue
@@ -1928,9 +1985,20 @@ namespace eval ::Eagle {
         return [list "no update scripts were processed"]
       }
     } else {
+      if {$scriptCounts(match) > 0} then {
+        set error [appendArgs \
+            "matched " $scriptCounts(match) " running " $updateType \
+            "; however, none was fully processed"]
+      } else {
+        set error [appendArgs \
+            "missing public key token \"" $updatePublicKeyToken "\", " \
+            $updateType " name \"" $updateName "\", and culture \"" \
+            $updateCulture \"]
+      }
+
       return [list [appendArgs \
           "could not determine if running " $updateType " is the latest " \
-          $updateType]]
+          $updateType ": " $error]]
     }
   }
 

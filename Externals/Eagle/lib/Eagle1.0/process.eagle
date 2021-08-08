@@ -43,14 +43,14 @@ namespace eval ::Eagle {
         # NOTE: Get the managed array of processes with matching names.
         #
         set array [object invoke -alias System.Diagnostics.Process \
-            GetProcessesByName $name]
+            GetProcessesByName $name]; # throw
       } else {
         #
         # NOTE: Get the managed array of all processes on the local
         #       machine.
         #
         set array [object invoke -alias System.Diagnostics.Process \
-            GetProcesses]
+            GetProcesses]; # throw
       }
     } else {
       #
@@ -73,7 +73,13 @@ namespace eval ::Eagle {
       # NOTE: Add the Id of the process to the result list.  This
       #       may fail on some versions of Mono.
       #
-      if {[catch {$process Id} id] == 0} then {
+      # BUGFIX: Only do this if the process has not exited?
+      #
+      if {[catch {
+        $process Refresh; $process HasExited
+      } exited] == 0 && !$exited && [catch {
+        $process Id
+      } id] == 0} then {
         lappend result $id
       }
 
@@ -103,16 +109,19 @@ namespace eval ::Eagle {
   # NOTE: This procedure waits for the specified number of milliseconds for
   #       processes with the specified Ids to exit (or be terminated).
   #
-  proc waitForProcesses { ids timeout {collect true} } {
+  proc waitForProcesses { ids timeout {collect true} {kill true} } {
+    #
+    # NOTE: Start with an empty list of process Ids.
+    #
+    set result [list]
+
     #
     # NOTE: If requested, run the garbage collector now.  This may be
     #       necessary to successfully wait for processes that are being
     #       kept alive via runtime callable wrappers for out-of-process
     #       COM servers (e.g. Excel).
     #
-    if {$collect} then {
-      debug collect
-    }
+    if {$collect} then {debug collect}
 
     #
     # NOTE: Wait for each process in the list to exit.
@@ -122,19 +131,29 @@ namespace eval ::Eagle {
       # NOTE: Get the process object by its Id.  If it does not exist,
       #       this will raise an error.
       #
-      set result [catch {
-        set process [object invoke -alias System.Diagnostics.Process \
-            GetProcessById $id]
-      }]
-
-      #
-      # NOTE: Were we able to grab the process object?
-      #
-      if {$result == 0 && [info exists process]} then {
+      if {[catch {
+        object invoke -alias System.Diagnostics.Process \
+            GetProcessById $id
+      } process] == 0} then {
         #
         # NOTE: Wait a while for the process to exit.
         #
-        $process WaitForExit $timeout
+        if {[catch {
+          $process WaitForExit $timeout
+        } exited] == 0 && $exited} then {
+          #
+          # NOTE: Ok, process is now exited.
+          #
+          lappend result $id
+        } elseif {$kill} then {
+          #
+          # NOTE: Attempt to kill the process.
+          #
+          catch {
+            $process Refresh; $process Kill
+            lappend result $id
+          }
+        }
       }
 
       #
@@ -143,6 +162,8 @@ namespace eval ::Eagle {
       #
       unset -nocomplain process; # dispose
     }
+
+    return $result
   }
 
   #

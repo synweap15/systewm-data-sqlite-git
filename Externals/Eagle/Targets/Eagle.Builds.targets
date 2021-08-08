@@ -1333,15 +1333,28 @@
 
   <!--
       NOTE: For all non-default builds, set the build suffix for this test run
-            (primarily for the benefit of the test log file).  Also, set the
-            threshold for the percentage of tests that must pass for this test
-            run to be considered successful.  This should almost always be 100%
-            unless there is a very special reason.
+            (primarily for the benefit of the test log file).
   -->
   <PropertyGroup Condition="'$(EagleTestType)' != '' And
                             '$(EagleTestType)' != 'Default' And
                             '$(EagleTestType)' != 'NetFx20'">
-    <EagleTestArguments Condition="'$(EagleTestArguments)' == ''">-preInitialize &quot;set eagle_platform(suffix) $(EagleConfigurationSuffix); set test_threshold 100&quot;</EagleTestArguments>
+    <EagleTestArguments Condition="'$(EagleTestArguments)' == ''">-preInitialize &quot;set eagle_platform(suffix) $(EagleConfigurationSuffix)&quot;</EagleTestArguments>
+  </PropertyGroup>
+
+  <!--
+  ******************************************************************************
+  -->
+
+  <!--
+      HACK: For all non-default builds, we want to show all leaked information,
+            except assemblies and processes, which are not counted against the
+            running test suite.
+  -->
+  <PropertyGroup Condition="'$(EagleTestType)' != ''">
+    <!--
+    <EagleTestFlags>$(EagleTestFlags) -listedLeaks &quot;afters variables commands procedures namespaces files temporaryFiles channels aliases interpreters environment loaded previousPid scopes assemblies processes objects objectCallbacks objectTypes objectInterfaces objectNamespaces connections transactions modules delegates tcl tclInterps tclThreads tclCommands scriptThreads&quot;</EagleTestFlags>
+    -->
+    <EagleTestFlags>$(EagleTestFlags) -listedLeaks &quot;afters variables commands procedures namespaces files temporaryFiles channels aliases interpreters environment loaded previousPid scopes objects objectCallbacks objectTypes objectInterfaces objectNamespaces connections transactions modules delegates tcl tclInterps tclThreads tclCommands scriptThreads&quot;</EagleTestFlags>
   </PropertyGroup>
 
   <!--
@@ -1367,12 +1380,12 @@
 
   <!--
       HACK: For all non-default builds, we want to skip running the extremely
-            time consuming and processor intensive tests (i.e. "lpermute-1.3")
+            time consuming / processor intensive tests (i.e. "lpermute-1.3.*")
             because the basic correctness has already been verified.
   -->
   <PropertyGroup Condition="'$(EagleTestType)' != '' And
                             '$(EagleTestAll)' != 'true'">
-    <EagleTestFlags>$(EagleTestFlags) -skip &quot;lpermute-1.3&quot;</EagleTestFlags>
+    <EagleTestFlags>$(EagleTestFlags) -skip &quot;lpermute-1.3.*&quot;</EagleTestFlags>
   </PropertyGroup>
 
   <!--

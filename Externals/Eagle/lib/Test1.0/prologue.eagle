@@ -157,6 +157,21 @@ if {![info exists no([file tail [info script]])]} then {
   #############################################################################
 
   #
+  # NOTE: Set the location of the native Tcl library directory (i.e. should
+  #       contain the "Eagle.Tools.Common" package, etc), if necessary.
+  #
+  if {![info exists native_lib_path]} then {
+    #
+    # NOTE: Normally, there should be a "Native/Common/Tools" sub-directory
+    #       within the base directory, e.g. if we are within an actual copy
+    #       of a source checkout.
+    #
+    set native_lib_path [file join $base_path Native Common Tools]
+  }
+
+  #############################################################################
+
+  #
   # NOTE: Set the location of the Eagle main strong name keys directory,
   #       if necessary.
   #
@@ -501,7 +516,8 @@ if {![info exists no([file tail [info script]])]} then {
   set test_flags(-logFile) ""; # default to using standard log file naming.
   set test_flags(-threshold) ""; # default to requiring all tests to pass.
   set test_flags(-randomOrder) ""; # default to deterministic order.
-  set test_flags(-uncountedLeaks) ""; # use defaults for uncounted resources.
+  set test_flags(-uncountedLeaks) [list]; # defaults for uncounted resources.
+  set test_flags(-listedLeaks) [list]; # defaults for listed resources.
   set test_flags(-breakOnLeak) ""; # default to continue on leak.
   set test_flags(-stopOnFailure) ""; # default to continue on failure.
   set test_flags(-stopOnLeak) ""; # default to continue on leak.
@@ -584,6 +600,16 @@ if {![info exists no([file tail [info script]])]} then {
       #       here; however, that is not available until native Tcl 8.5.
       #
       set test_uncounted_leaks $test_flags(-uncountedLeaks)
+    }
+
+    if {[info exists test_flags(-listedLeaks)] && \
+        [string length $test_flags(-listedLeaks)] > 0} then {
+      #
+      # NOTE: Set the test listed leaks "list" to the one provided by
+      #       the command line.  We should probably use [string is list]
+      #       here; however, that is not available until native Tcl 8.5.
+      #
+      set test_listed_leaks $test_flags(-listedLeaks)
     }
 
     if {[info exists test_flags(-breakOnLeak)] && \
@@ -1106,6 +1132,11 @@ if {![info exists no([file tail [info script]])]} then {
           [string length $test_uncounted_leaks] > 0 ? \
               $test_uncounted_leaks : "<none>"}] \n]
 
+  tputs $test_channel [appendArgs "---- listed leaks: " \
+      [expr {[info exists test_listed_leaks] && \
+          [string length $test_listed_leaks] > 0 ? \
+              $test_listed_leaks : "<none>"}] \n]
+
   tputs $test_channel [appendArgs "---- break on leak: " \
       [expr {[info exists test_break_on_leak] && \
           [string is boolean -strict $test_break_on_leak] ? \
@@ -1319,6 +1350,14 @@ if {![info exists no([file tail [info script]])]} then {
         "---- start of Eagle specific test constraints...\n"
 
     #
+    # NOTE: Do [interp cancel] and [interp resetcancel] support
+    #       the -global option?
+    #
+    if {![info exists no(globalTip285)]} then {
+      checkForGlobalTip285 $test_channel
+    }
+
+    #
     # NOTE: *WARNING* Has quiet testing support been disabled?
     #       Please do not move this "quietness" test constraint
     #       check as subsequent test constraints may rely on it
@@ -1470,7 +1509,7 @@ if {![info exists no([file tail [info script]])]} then {
     }
 
     #
-    # NOTE: Has Guru support been disabled?
+    # NOTE: Has Guru testing support been disabled?
     #
     if {![info exists no(guru)]} then {
       if {![info exists no(checkForGuru)]} then {
@@ -1480,6 +1519,13 @@ if {![info exists no([file tail [info script]])]} then {
       if {![info exists no(disableGuru)]} then {
         checkForGuru $test_channel false
       }
+    }
+
+    #
+    # NOTE: Has IEEE 754 (2008?) testing support been disabled?
+    #
+    if {![info exists no(ieee754r2008)]} then {
+      checkForIeee754r2008 $test_channel
     }
 
     #
@@ -3001,14 +3047,19 @@ if {![info exists no([file tail [info script]])]} then {
     #
     if {![info exists no(msBuild)]} then {
       #
-      # NOTE: For test "object-4.13".
+      # NOTE: Has assembly loading support been disabled?
       #
-      checkForAssembly $test_channel Microsoft.Build.Framework
+      if {![info exists no(checkForAssembly)]} then {
+        #
+        # NOTE: For test "object-4.13".
+        #
+        checkForAssembly $test_channel Microsoft.Build.Framework
 
-      #
-      # NOTE: For test "object-6.1".
-      #
-      checkForAssembly $test_channel Microsoft.Build.Engine
+        #
+        # NOTE: For test "object-6.1".
+        #
+        checkForAssembly $test_channel Microsoft.Build.Engine
+      }
     }
 
     #
@@ -3016,9 +3067,14 @@ if {![info exists no([file tail [info script]])]} then {
     #
     if {![info exists no(excel)]} then {
       #
-      # NOTE: For tests "excel-*.*".
+      # NOTE: Has assembly loading support been disabled?
       #
-      checkForAssembly $test_channel Microsoft.Office.Interop.Excel
+      if {![info exists no(checkForAssembly)]} then {
+        #
+        # NOTE: For tests "excel-*.*".
+        #
+        checkForAssembly $test_channel Microsoft.Office.Interop.Excel
+      }
 
       #
       # NOTE: Has Excel usability testing been disabled?
@@ -3043,9 +3099,14 @@ if {![info exists no([file tail [info script]])]} then {
       }
 
       #
-      # NOTE: For test "object-4.5".
+      # NOTE: Has assembly loading support been disabled?
       #
-      checkForAssembly $test_channel System.Speech
+      if {![info exists no(checkForAssembly)]} then {
+        #
+        # NOTE: For test "object-4.5".
+        #
+        checkForAssembly $test_channel System.Speech
+      }
     }
 
     #
@@ -3121,13 +3182,23 @@ if {![info exists no([file tail [info script]])]} then {
     }
 
     #
-    # NOTE: Has .NET Framework 4.x testing support been disabled?
+    # NOTE: Has .NET Framework 4.0+ testing support been disabled?
     #
-    if {![info exists no(netFx4x)]} then {
+    if {![info exists no(netFx40)]} then {
       #
       # NOTE: For test "object-12.1.*".
       #
-      checkForNetFx4x $test_channel
+      checkForNetFx40 $test_channel
+    }
+
+    #
+    # NOTE: Has .NET Framework 4.5+ testing support been disabled?
+    #
+    if {![info exists no(netFx45)]} then {
+      #
+      # NOTE: For test "object-12.1.*".
+      #
+      checkForNetFx45 $test_channel
     }
 
     #
@@ -4209,11 +4280,24 @@ if {![info exists no([file tail [info script]])]} then {
   }
 
   #
-  # NOTE: Check for network connectivity to our test host (i.e.
-  #       the Eagle distribution site).
+  # NOTE: Check for network connectivity to our test host.
   #
   if {![info exists no(core)] && ![info exists no(network)]} then {
     checkForNetwork $test_channel $test_host $test_timeout
+  }
+
+  #
+  # NOTE: Check for Internet connectivity via The Eagle Project official
+  #       web site.
+  #
+  if {![info exists no(core)] && ![info exists no(internet)]} then {
+    #
+    # HACK: For now, this is always hard-coded because it must be a site
+    #       on the public Internet (i.e. in order for the test constraint
+    #       to actually make sense).  Also, this URI should require HTTPS
+    #       in order to prevent test connections from being intercepted.
+    #
+    checkForInternet $test_channel https://eagle.to/ $test_timeout
   }
 
   #############################################################################
@@ -4370,6 +4454,8 @@ if {![info exists no([file tail [info script]])]} then {
     checkForOperatingSystemUpdate $test_channel "May 2019 Update"
     checkForOperatingSystemUpdate $test_channel "November 2019 Update"
     checkForOperatingSystemUpdate $test_channel "May 2020 Update"
+    checkForOperatingSystemUpdate $test_channel "October 2020 Update"
+    checkForOperatingSystemUpdate $test_channel "May 2021 Update"
   }
 
   #############################################################################
@@ -4384,6 +4470,34 @@ if {![info exists no([file tail [info script]])]} then {
   #############################################################################
   ######################## END Eagle & Tcl Constraints ########################
   #############################################################################
+
+  if {[isEagle]} then {
+    ###########################################################################
+    ###################### BEGIN Late-Eagle Constraints #######################
+    ###########################################################################
+
+    #
+    # NOTE: Has System.Data.SQLite testing support been disabled?
+    #
+    if {![info exists no(System.Data.SQLite)]} then {
+      #
+      # NOTE: For test "sql-1.19".
+      #
+      checkForSystemDataSQLite $test_channel
+
+      #
+      # NOTE: Has assembly loading support been disabled?
+      #
+      if {![haveConstraint System.Data.SQLite] && \
+          ![info exists no(checkForAssembly)]} then {
+        checkForAssembly $test_channel System.Data.SQLite
+      }
+    }
+
+    ###########################################################################
+    ####################### END Late-Eagle Constraints ########################
+    ###########################################################################
+  }
 
   #
   # NOTE: For Eagle, dump the platform information, including the compile

@@ -16,6 +16,7 @@
 # set noWorkload [list];  # Workloads to be omitted from the run, by index.
 # set exitOnFail true;    # Halt testing and exit process on test failure?
 # set noTrace true;       # Disable SQLite trace logging to a file?
+# set noProgress false;   # Disable emitting of progress indicators?
 
 # set beginTransaction "BEGIN";    # SQL just before modifying the database.
 # set endTransaction "COMMIT";     # SQL just after modifying the database.

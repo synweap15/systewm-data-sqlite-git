@@ -375,9 +375,9 @@ namespace eval ::Eagle {
           getEnvironmentVariable combineFlags getCompileInfo getPlatformInfo \
           getPluginName getPluginPath getPackageInstallPath appendArgs \
           lappendArgs getDictionaryValue getColumnValue getRowColumnValue \
-          tqputs tqlog makeBinaryChannel makeAsciiChannel makeUnicodeChannel \
-          makeLogChannel readFile readSharedFile writeFile appendFile \
-          appendLogFile appendSharedFile appendSharedLogFile \
+          vwaitLocked tqputs tqlog makeBinaryChannel makeAsciiChannel \
+          makeUnicodeChannel makeLogChannel readFile readSharedFile writeFile \
+          appendFile appendLogFile appendSharedFile appendSharedLogFile \
           readAsciiFile writeAsciiFile readUnicodeFile \
           writeUnicodeFile getDirResultPath addToPath removeFromPath \
           getShellExecutableName getRuntimeCommandLine execShell \

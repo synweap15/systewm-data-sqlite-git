@@ -289,8 +289,28 @@ if {![info exists no([file tail [info script]])]} then {
     tputs $test_channel \n; # NOTE: Blank line.
     reportTestConstraintCounts $test_channel $eagle_tests(SkippedNames)
 
+    #
+    # NOTE: Check if this build (i.e. of Eagle) has support for tracking
+    #       statistics of tests that contain the "knownBug" constraint.
+    #
+    set trackBugs false
+
+    if {[info exists eagle_tests(KnownBugs)]} then {
+      set trackBugs true
+
+      if {[llength $eagle_tests(KnownBugs)] > 0} then {
+        tresult Continue [appendArgs \
+            "KNOWN BUGS: " $eagle_tests(KnownBugs) \n]
+      }
+    }
+
     if {$eagle_tests(Passed) > 0} then {
       tresult Ok [appendArgs "PASSED: " $eagle_tests(Passed) \n]
+    }
+
+    if {$trackBugs && $eagle_tests(PassedBug) > 0} then {
+      tresult Ok [appendArgs \
+          "PASSED (BUG): " $eagle_tests(PassedBug) \n]
     }
 
     if {$eagle_tests(Failed) > 0} then {
@@ -301,6 +321,11 @@ if {![info exists no([file tail [info script]])]} then {
       }
     }
 
+    if {$trackBugs && $eagle_tests(FailedBug) > 0} then {
+      tresult Error [appendArgs \
+          "FAILED (BUG): " $eagle_tests(FailedBug) \n]
+    }
+
     if {$eagle_tests(Skipped) > 0} then {
       tresult Break [appendArgs "SKIPPED: " $eagle_tests(Skipped) \n]
 
@@ -309,8 +334,18 @@ if {![info exists no([file tail [info script]])]} then {
       }
     }
 
+    if {$trackBugs && $eagle_tests(SkippedBug) > 0} then {
+      tresult Break [appendArgs \
+          "SKIPPED (BUG): " $eagle_tests(SkippedBug) \n]
+    }
+
     if {$eagle_tests(Disabled) > 0} then {
       tresult WhatIf [appendArgs "DISABLED: " $eagle_tests(Disabled) \n]
+    }
+
+    if {$trackBugs && $eagle_tests(DisabledBug) > 0} then {
+      tresult WhatIf [appendArgs \
+          "DISABLED (BUG): " $eagle_tests(DisabledBug) \n]
     }
 
     if {$eagle_tests(Total) > 0} then {
@@ -340,6 +375,8 @@ if {![info exists no([file tail [info script]])]} then {
       #
       set percent 0
     }
+
+    unset trackBugs
 
     #
     # NOTE: Has the test pass threshold been set?  If so, is it set to

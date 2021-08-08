@@ -129,86 +129,95 @@ namespace eval ::Eagle {
     }
 
     #
-    # NOTE: Create a reusable script block that handles emitting the
-    #       repeated output indicator (and resets the repeat count).
+    # BUGFIX: In Eagle, it is possible that the "test_puts_state" global
+    #         variable may be accessed from multiple threads, e.g. those
+    #         that call into the [tputs] procedure; therefore, we use a
+    #         variable lock to prevent it from getting into an internally
+    #         inconsistent state.
     #
-    set maybeRepeatStringScript {
-      if {[info exists ::test_puts_state(previousString)] && \
-          [info exists ::test_puts_state(repeatCount)] && \
-          $::test_puts_state(repeatCount) > 0} then {
-        incr ::test_puts_state(repeatCount)
+    vwaitLocked ::test_puts_state true {
+      #
+      # NOTE: Create a reusable script block that handles emitting the
+      #       repeated output indicator (and resets the repeat count).
+      #
+      set maybeRepeatStringScript {
+        if {[info exists ::test_puts_state(previousString)] && \
+            [info exists ::test_puts_state(repeatCount)] && \
+            $::test_puts_state(repeatCount) > 0} then {
+          incr ::test_puts_state(repeatCount)
 
-        set repeatString [appendArgs \
-            $::test_puts_state(previousString) \
-            "\t<was output a total of " \
-            $::test_puts_state(repeatCount) \
-            " consecutive times>\n"]
+          set repeatString [appendArgs \
+              $::test_puts_state(previousString) \
+              "\t<was output a total of " \
+              $::test_puts_state(repeatCount) \
+              " consecutive times>\n"]
 
-        toneputs $channel $repeatString
-        set ::test_puts_state(repeatCount) 0
+          toneputs $channel $repeatString
+          set ::test_puts_state(repeatCount) 0
+        }
       }
+
+      #
+      # HACK: For now, for partial line output, reset internal tracking
+      #       state and allow it verbatim.
+      #
+      if {[string index $string end] ne "\n"} then {
+        #
+        # NOTE: *SPECIAL* Emit repeat count line now and reset it back
+        #       to zero.
+        #
+        eval $maybeRepeatStringScript
+
+        #
+        # NOTE: Since the current string is partial line output, reset
+        #       our internal tracking state and allow output verbatim.
+        #
+        unset -nocomplain ::test_puts_state; return false
+      }
+
+      #
+      # NOTE: Have we not seen any valid previous string?
+      #
+      if {![info exists ::test_puts_state(previousString)]} then {
+        #
+        # NOTE: There was no previous string, so the current string is
+        #       now the previous string.  It must be emitted directly.
+        #
+        set ::test_puts_state(previousString) $string; return false
+      }
+
+      #
+      # NOTE: Is the current string different from the previous string?
+      #
+      if {![string equal $string $::test_puts_state(previousString)]} then {
+        #
+        # NOTE: *SPECIAL* Emit repeat count line now and reset it back
+        #       to zero.
+        #
+        eval $maybeRepeatStringScript
+
+        #
+        # NOTE: Next, since previous string does not match the current
+        #       one (i.e. it has never been emitted directly), so allow
+        #       it to be emitted directly.
+        #
+        set ::test_puts_state(previousString) $string; return false
+      }
+
+      #
+      # NOTE: Current string matches the previous one, so increment or
+      #       reset the repeat count and prevent the current (repeated)
+      #       string from being emitted (i.e. as it was already emitted
+      #       once).
+      #
+      if {[info exists ::test_puts_state(repeatCount)]} then {
+        incr ::test_puts_state(repeatCount); # another duplicate
+      } else {
+        set ::test_puts_state(repeatCount) 1; # first duplicate
+      }
+
+      return true
     }
-
-    #
-    # HACK: For now, for partial line output, reset internal tracking
-    #       state and allow it verbatim.
-    #
-    if {[string index $string end] ne "\n"} then {
-      #
-      # NOTE: *SPECIAL* Emit repeat count line now and reset it back
-      #       to zero.
-      #
-      eval $maybeRepeatStringScript
-
-      #
-      # NOTE: Since the current string is partial line output, reset
-      #       our internal tracking state and allow output verbatim.
-      #
-      unset -nocomplain ::test_puts_state; return false
-    }
-
-    #
-    # NOTE: Have we not seen any valid previous string?
-    #
-    if {![info exists ::test_puts_state(previousString)]} then {
-      #
-      # NOTE: There was no previous string, so the current string is
-      #       now the previous string.  It must be emitted directly.
-      #
-      set ::test_puts_state(previousString) $string; return false
-    }
-
-    #
-    # NOTE: Is the current string different from the previous string?
-    #
-    if {![string equal $string $::test_puts_state(previousString)]} then {
-      #
-      # NOTE: *SPECIAL* Emit repeat count line now and reset it back
-      #       to zero.
-      #
-      eval $maybeRepeatStringScript
-
-      #
-      # NOTE: Next, since previous string does not match the current
-      #       one (i.e. it has never been emitted directly), so allow
-      #       it to be emitted directly.
-      #
-      set ::test_puts_state(previousString) $string; return false
-    }
-
-    #
-    # NOTE: Current string matches the previous one, so increment or
-    #       reset the repeat count and prevent the current (repeated)
-    #       string from being emitted (i.e. as it was already emitted
-    #       once).
-    #
-    if {[info exists ::test_puts_state(repeatCount)]} then {
-      incr ::test_puts_state(repeatCount); # another duplicate
-    } else {
-      set ::test_puts_state(repeatCount) 1; # first duplicate
-    }
-
-    return true
   }
 
   proc toneputs { channel string } {
@@ -363,56 +372,62 @@ namespace eval ::Eagle {
       # NOTE: Check for any queued test log data that needs to be sent to the
       #       log file prior to sending the current string.
       #
-      if {[info exists ::test_log_queue]} then {
-        #
-        # NOTE: Process each queued test log entry, in order, sending them to
-        #       the test log file (as long as they are not empty strings).
-        #       Each entry is removed from the queue after it is sent to the
-        #       test log file.
-        #
-        foreach entry [lsort -integer [array names ::test_log_queue]] {
-          set newString $::test_log_queue($entry)
+      # BUGFIX: As of beta 47, use of the "test_log_queue" global variable is
+      #         thread-safe.
+      #
+      vwaitLocked ::test_log_queue true {
+        if {[info exists ::test_log_queue]} then {
+          #
+          # NOTE: Process each queued log entry, in order, sending them to the
+          #       test log file (as long as they are not empty strings).  Each
+          #       entry is removed from the queue after it is sent to the test
+          #       log file.
+          #
+          foreach entry [lsort -integer [array names ::test_log_queue]] {
+            set newString $::test_log_queue($entry)
 
-          if {[string length $newString] > 0} then {
-            if {![doesTestLogFileExist $fileName]} then {
-              set sentry [getTestLogStartSentry]
+            if {[string length $newString] > 0} then {
+              if {![doesTestLogFileExist $fileName]} then {
+                set sentry [getTestLogStartSentry]
 
-              if {[string length $sentry] > 0} then {
-                #
-                # BUGFIX: At this point, there should not be any record of a
-                #         previously used test log sentry.  If there is, do
-                #         not append a test log sentry again because the test
-                #         log file may have been deleted and we need to make
-                #         sure the test log is not considered as "complete".
-                #
-                if {[didTestLogHaveStartSentry $sentry sentryError]} then {
-                  if {[info exists sentryError]} then {
-                    appendSharedLogFile $fileName $sentryError
-                  }
-                } else {
-                  setTestLogStartSentry $sentry sentryResult
+                if {[string length $sentry] > 0} then {
+                  #
+                  # BUGFIX: At this point, there should not be any record of
+                  #         a previously used test log sentry.  If there is,
+                  #         do not append a test log sentry again because the
+                  #         test log file may have been deleted and we need
+                  #         to make sure the test log is not considered as
+                  #         "complete".
+                  #
+                  if {[didTestLogHaveStartSentry $sentry sentryError]} then {
+                    if {[info exists sentryError]} then {
+                      appendSharedLogFile $fileName $sentryError
+                    }
+                  } else {
+                    setTestLogStartSentry $sentry sentryResult
 
-                  appendSharedLogFile $fileName $sentry
+                    appendSharedLogFile $fileName $sentry
 
-                  if {[info exists sentryResult]} then {
-                    appendSharedLogFile $fileName $sentryResult
+                    if {[info exists sentryResult]} then {
+                      appendSharedLogFile $fileName $sentryResult
+                    }
                   }
                 }
               }
+
+              appendSharedLogFile $fileName $newString
             }
 
-            appendSharedLogFile $fileName $newString
+            unset ::test_log_queue($entry)
           }
 
-          unset ::test_log_queue($entry)
-        }
-
-        #
-        # NOTE: If all entries in the test log queue were just processed,
-        #       unset the entire array now.
-        #
-        if {[array size test_log_queue] == 0} then {
-          unset ::test_log_queue
+          #
+          # NOTE: If all entries in the test log queue were just processed,
+          #       unset the entire array now.
+          #
+          if {[array size test_log_queue] == 0} then {
+            unset ::test_log_queue
+          }
         }
       }
 
@@ -1076,9 +1091,9 @@ namespace eval ::Eagle {
     #
     set options [list \
         -breakOnLeak -configuration -constraints -exitOnComplete \
-        -file -logFile -logId -logPath -machine -match -namePrefix \
-        -no -notFile -platform -postTest -preTest -postWait -preWait \
-        -randomOrder -skip -startFile -stopFile -stopOnFailure \
+        -file -listedLeaks -logFile -logId -logPath -machine -match \
+        -namePrefix -no -notFile -platform -postTest -preTest -postWait \
+        -preWait -randomOrder -skip -startFile -stopFile -stopOnFailure \
         -stopOnLeak -suffix -suite -tclsh -threshold -uncountedLeaks \
         -verbose]
 
@@ -1554,6 +1569,7 @@ namespace eval ::Eagle {
 
       while {$start <= $now && $now < $stop} {
         binary scan [binary format d* [expr {rand()}]] h* random
+        set random [string toupper $random]
 
         set fileNameOnly [appendArgs \
             tmp [string index $random 0] [string index $random 1] \
@@ -2064,6 +2080,15 @@ namespace eval ::Eagle {
     return [list]
   }
 
+  proc getTestListedLeaks {} {
+    if {[info exists ::test_listed_leaks] && \
+        [string length $::test_listed_leaks] > 0} then {
+      return $::test_listed_leaks
+    }
+
+    return [list]
+  }
+
   proc getRuntimeAssemblyName {} {
     if {[isEagle]} then {
       if {[isDotNetCore]} then {
@@ -2564,7 +2589,8 @@ namespace eval ::Eagle {
           1.0.5542.25903 1.0.5633.18513 1.0.5749.32588 1.0.5934.21851 \
           1.0.6018.45959 1.0.6119.57133 1.0.6120.16902 1.0.6234.51946 \
           1.0.6483.12345 1.0.6543.58654 1.0.6781.49000 1.0.6781.49042 \
-          1.0.6848.11041 1.0.7213.50727 1.0.7579.30319]
+          1.0.6848.11041 1.0.7213.50727 1.0.7579.30319 1.0.7790.43198 \
+          1.0.7897.33333]
     } else {
       return [list]
     }
@@ -2600,21 +2626,82 @@ namespace eval ::Eagle {
       set array(uncounted,$index) [getTestUncountedLeaks]
     }
 
+    if {![info exists array(listed,$index)]} then {
+      set array(listed,$index) [getTestListedLeaks]
+    }
+
     ###########################################################################
 
-    set array(time,$index) [clock seconds]
-    set array(afters,$index) [llength [after info]]
-    set array(variables,$index) [llength [info globals]]
-    set array(commands,$index) [llength [info commands]]
-    set array(procedures,$index) [llength [info procs]]
-    set array(namespaces,$index) [llength [namespace children ::]]
+    set array(time,$index) [clock seconds]; # keep track of when...
+
+    ###########################################################################
+
+    set list [after info]
+    set array(afters,$index) [llength $list]
+
+    if {[info exists array(listed,$index)] && \
+        [lsearch -exact $array(listed,$index) afters] != -1} then {
+      set array(afters,$index,list) $list
+    }
+
+    ###########################################################################
+
+    set list [info globals]
+    set array(variables,$index) [llength $list]
+
+    if {[info exists array(listed,$index)] && \
+        [lsearch -exact $array(listed,$index) variables] != -1} then {
+      set array(variables,$index,list) $list
+    }
+
+    ###########################################################################
+
+    set list [info commands]
+    set array(commands,$index) [llength $list]
+
+    if {[info exists array(listed,$index)] && \
+        [lsearch -exact $array(listed,$index) commands] != -1} then {
+      set array(commands,$index,list) $list
+    }
+
+    ###########################################################################
+
+    set list [info procs]
+    set array(procedures,$index) [llength $list]
+
+    if {[info exists array(listed,$index)] && \
+        [lsearch -exact $array(listed,$index) procedures] != -1} then {
+      set array(procedures,$index,list) $list
+    }
+
+    ###########################################################################
+
+    if {[isStableEagleRelease 47 true]} then {; # NOTE: Post Beta 47.
+      set list [namespace descendants ::]
+    } else {
+      set list [namespace children ::]
+    }
+
+    set array(namespaces,$index) [llength $list]
+
+    if {[info exists array(listed,$index)] && \
+        [lsearch -exact $array(listed,$index) namespaces] != -1} then {
+      set array(namespaces,$index,list) $list
+    }
 
     ###########################################################################
 
     if {[info exists ::test_path]} then {
-      set array(files,$index) [llength [getFiles $::test_path *]]
+      set list [getFiles $::test_path *]
     } else {
-      set array(files,$index) 0; # NOTE: Information not available.
+      set list [list]; # NOTE: Information not available.
+    }
+
+    set array(files,$index) [llength $list]
+
+    if {[info exists array(listed,$index)] && \
+        [lsearch -exact $array(listed,$index) files] != -1} then {
+      set array(files,$index,list) $list
     }
 
     ###########################################################################
@@ -2628,26 +2715,48 @@ namespace eval ::Eagle {
       set excludeTemporaryFiles ""
     }
 
-    set array(temporaryFiles,$index) [llength [getFiles \
-        [getTemporaryPath] * $excludeTemporaryFiles]]
+    set list [getFiles [getTemporaryPath] * $excludeTemporaryFiles]
+    set array(temporaryFiles,$index) [llength $list]
+
+    if {[info exists array(listed,$index)] && \
+        [lsearch -exact $array(listed,$index) temporaryFiles] != -1} then {
+      set array(temporaryFiles,$index,list) $list
+    }
 
     ###########################################################################
 
-    set array(channels,$index) [llength [file channels]]
-    set array(aliases,$index) [llength [interp aliases]]
+    set list [file channels]
+    set array(channels,$index) [llength $list]
+
+    if {[info exists array(listed,$index)] && \
+        [lsearch -exact $array(listed,$index) channels] != -1} then {
+      set array(channels,$index,list) $list
+    }
+
+    ###########################################################################
+
+    set list [interp aliases]
+    set array(aliases,$index) [llength $list]
+
+    if {[info exists array(listed,$index)] && \
+        [lsearch -exact $array(listed,$index) aliases] != -1} then {
+      set array(aliases,$index,list) $list
+    }
+
+    ###########################################################################
 
     if {[isStableEagleRelease 45 true]} then {; # NOTE: Post Beta 45.
       #
       # NOTE: This version of Eagle should support the [interp children]
       #       sub-command.
       #
-      set array(interpreters,$index) [llength [interp children]]; # Beta 46+
+      set list [interp children]; # Beta 46+
     } elseif {[catch {interp children} children] == 0} then {
       #
       # NOTE: The version of native Tcl in use appears to support the new
       #       [interp children] sub-command.
       #
-      set array(interpreters,$index) [llength $children]; # Tcl 8.7+ (?)
+      set list $children; # Tcl 8.7+ (?)
     } else {
       #
       # NOTE: Unfortunately, this exact terminology is needed to retain
@@ -2655,11 +2764,35 @@ namespace eval ::Eagle {
       #
       #       https://urn.to/r/tcl_interp_slaves
       #
-      set array(interpreters,$index) [llength [interp slaves]]; # COMPAT: Tcl.
+      set list [interp slaves]; # COMPAT: Tcl.
     }
 
-    set array(environment,$index) [llength [array names env]]
-    set array(loaded,$index) [llength [info loaded]]
+    set array(interpreters,$index) [llength $list]
+
+    if {[info exists array(listed,$index)] && \
+        [lsearch -exact $array(listed,$index) interpreters] != -1} then {
+      set array(interpreters,$index,list) $list
+    }
+
+    ###########################################################################
+
+    set list [array names env]
+    set array(environment,$index) [llength $list]
+
+    if {[info exists array(listed,$index)] && \
+        [lsearch -exact $array(listed,$index) environment] != -1} then {
+      set array(environment,$index,list) $list
+    }
+
+    ###########################################################################
+
+    set list [info loaded]
+    set array(loaded,$index) [llength $list]
+
+    if {[info exists array(listed,$index)] && \
+        [lsearch -exact $array(listed,$index) loaded] != -1} then {
+      set array(loaded,$index,list) $list
+    }
 
     ###########################################################################
 
@@ -2675,79 +2808,277 @@ namespace eval ::Eagle {
     ###########################################################################
 
     if {[isEagle]} then {
+      #########################################################################
       #
       # NOTE: Support for some of all of these entity types may not be
       #       present in the interpreter, initialize all these counts
       #       to zero and then try to query each one individually below
       #       wrapped in a catch.
       #
-      set array(previousPid,$index) 0
-      set array(scopes,$index) 0
-      set array(assemblies,$index) 0
-      set array(processes,$index) 0
-      set array(objects,$index) 0
-      set array(objectCallbacks,$index) 0
-      set array(objectTypes,$index) 0
-      set array(objectInterfaces,$index) 0
-      set array(objectNamespaces,$index) 0
+      #########################################################################
 
-      catch {set array(previousPid,$index) [expr {[info previouspid] != 0}]}
-      catch {set array(scopes,$index) [llength [scope list]]}
-      catch {set array(assemblies,$index) [llength [object assemblies]]}
-      catch {set array(processes,$index) [llength [getProcesses ""]]}
-      catch {set array(objects,$index) [llength [info objects]]}
-      catch {set array(objectCallbacks,$index) [llength [info callbacks]]}
-      catch {set array(objectTypes,$index) [llength [object types]]}
-      catch {set array(objectInterfaces,$index) [llength [object interfaces]]}
-      catch {set array(objectNamespaces,$index) [llength [object namespaces]]}
+      if {[catch {info previouspid} list]} then {
+        set list 0; # NOTE: Integer, zero for "not in use", negative ok.
+      }
+
+      #
+      # NOTE: Convert the integer to a boolean.  True means the previous
+      #       [pid] value has been used and not reset (i.e. leaked).
+      #
+      set array(previousPid,$index) [expr {$list != 0}]
+
+      if {[info exists array(listed,$index)] && \
+          [lsearch -exact $array(listed,$index) previousPid] != -1} then {
+        set array(previousPid,$index,list) $list
+      }
 
       #########################################################################
 
+      if {[catch {scope list} list]} then {
+        set list [list]
+      }
+
+      set array(scopes,$index) [llength $list]
+
+      if {[info exists array(listed,$index)] && \
+          [lsearch -exact $array(listed,$index) scopes] != -1} then {
+        set array(scopes,$index,list) $list
+      }
+
+      #########################################################################
+
+      if {[catch {object assemblies} list]} then {
+        set list [list]
+      }
+
+      set array(assemblies,$index) [llength $list]
+
+      if {[info exists array(listed,$index)] && \
+          [lsearch -exact $array(listed,$index) assemblies] != -1} then {
+        set array(assemblies,$index,list) $list
+      }
+
+      #########################################################################
+
+      if {[catch {getProcesses ""} list]} then {
+        set list [list]
+      }
+
+      set array(processes,$index) [llength $list]
+
+      if {[info exists array(listed,$index)] && \
+          [lsearch -exact $array(listed,$index) processes] != -1} then {
+        set array(processes,$index,list) $list
+      }
+
+      #########################################################################
+
+      if {[catch {info objects} list]} then {
+        set list [list]
+      }
+
+      set array(objects,$index) [llength $list]
+
+      if {[info exists array(listed,$index)] && \
+          [lsearch -exact $array(listed,$index) objects] != -1} then {
+        set array(objects,$index,list) $list
+      }
+
+      #########################################################################
+
+      if {[catch {info callbacks} list]} then {
+        set list [list]
+      }
+
+      set array(objectCallbacks,$index) [llength $list]
+
+      if {[info exists array(listed,$index)] && \
+          [lsearch -exact $array(listed,$index) objectCallbacks] != -1} then {
+        set array(objectCallbacks,$index,list) $list
+      }
+
+      #########################################################################
+
+      if {[catch {object types} list]} then {
+        set list [list]
+      }
+
+      set array(objectTypes,$index) [llength $list]
+
+      if {[info exists array(listed,$index)] && \
+          [lsearch -exact $array(listed,$index) objectTypes] != -1} then {
+        set array(objectTypes,$index,list) $list
+      }
+
+      #########################################################################
+
+      if {[catch {object interfaces} list]} then {
+        set list [list]
+      }
+
+      set array(objectInterfaces,$index) [llength $list]
+
+      if {[info exists array(listed,$index)] && \
+          [lsearch -exact $array(listed,$index) objectInterfaces] != -1} then {
+        set array(objectInterfaces,$index,list) $list
+      }
+
+      #########################################################################
+
+      if {[catch {object namespaces} list]} then {
+        set list [list]
+      }
+
+      set array(objectNamespaces,$index) [llength $list]
+
+      if {[info exists array(listed,$index)] && \
+          [lsearch -exact $array(listed,$index) objectNamespaces] != -1} then {
+        set array(objectNamespaces,$index,list) $list
+      }
+
+      #########################################################################
       #
       # NOTE: Support for some of all of these entity types may not be
       #       present in the interpreter, initialize all these counts
       #       to zero and then try to query each one individually below
       #       wrapped in a catch.
       #
-      set array(connections,$index) 0
-      set array(transactions,$index) 0
-      set array(modules,$index) 0
-      set array(delegates,$index) 0
-      set array(tcl,$index) 0
-      set array(tclInterps,$index) 0
-      set array(tclThreads,$index) 0
-      set array(tclCommands,$index) 0
-      set array(scriptThreads,$index) 0
+      #########################################################################
 
-      catch {set array(connections,$index) [llength [info connections]]}
-      catch {set array(transactions,$index) [llength [info transactions]]}
-      catch {set array(modules,$index) [llength [info modules]]}
-      catch {set array(delegates,$index) [llength [info delegates]]}
-
-      if {[llength [info commands tcl]] > 0} then {
-        catch {set array(tcl,$index) [tcl ready]}
-        catch {set array(tclInterps,$index) [llength [tcl interps]]}
-        catch {set array(tclThreads,$index) [llength [tcl threads]]}
-        catch {set array(tclCommands,$index) [llength [tcl command list]]}
+      if {[catch {info connections} list]} then {
+        set list [list]
       }
 
-      #
-      # NOTE: Grab the number of active threads that are active because
-      #       of ScriptThread object instances.  This only works if Eagle
-      #       is Beta 31 or higher.
-      #
-      catch {
-        set array(scriptThreads,$index) \
-            [object invoke -flags +NonPublic ScriptThread activeCount]
+      set array(connections,$index) [llength $list]
+
+      if {[info exists array(listed,$index)] && \
+          [lsearch -exact $array(listed,$index) connections] != -1} then {
+        set array(connections,$index,list) $list
       }
 
       #########################################################################
 
+      if {[catch {info transactions} list]} then {
+        set list [list]
+      }
+
+      set array(transactions,$index) [llength $list]
+
+      if {[info exists array(listed,$index)] && \
+          [lsearch -exact $array(listed,$index) transactions] != -1} then {
+        set array(transactions,$index,list) $list
+      }
+
+      #########################################################################
+
+      if {[catch {info modules} list]} then {
+        set list [list]
+      }
+
+      set array(modules,$index) [llength $list]
+
+      if {[info exists array(listed,$index)] && \
+          [lsearch -exact $array(listed,$index) modules] != -1} then {
+        set array(modules,$index,list) $list
+      }
+
+      #########################################################################
+
+      if {[catch {info delegates} list]} then {
+        set list [list]
+      }
+
+      set array(delegates,$index) [llength $list]
+
+      if {[info exists array(listed,$index)] && \
+          [lsearch -exact $array(listed,$index) delegates] != -1} then {
+        set array(delegates,$index,list) $list
+      }
+
+      #########################################################################
+
+      set haveTclCmd [expr {[llength [info commands tcl]] > 0}]
+
+      #########################################################################
+
+      if {!$haveTclCmd || [catch {tcl ready} list]} then {
+        set list False; # NOTE: Boolean, false is "not in use".
+      }
+
+      set array(tcl,$index) $list; # verbatim
+
+      if {[info exists array(listed,$index)] && \
+          [lsearch -exact $array(listed,$index) tcl] != -1} then {
+        set array(tcl,$index,list) $list
+      }
+
+      #######################################################################
+
+      if {!$haveTclCmd || [catch {tcl interps} list]} then {
+        set list [list]
+      }
+
+      set array(tclInterps,$index) [llength $list]
+
+      if {[info exists array(listed,$index)] && \
+          [lsearch -exact $array(listed,$index) tclInterps] != -1} then {
+        set array(tclInterps,$index,list) $list
+      }
+
+      #######################################################################
+
+      if {!$haveTclCmd || [catch {tcl threads} list]} then {
+        set list [list]
+      }
+
+      set array(tclThreads,$index) [llength $list]
+
+      if {[info exists array(listed,$index)] && \
+          [lsearch -exact $array(listed,$index) tclThreads] != -1} then {
+        set array(tclThreads,$index,list) $list
+      }
+
+      #######################################################################
+
+      if {!$haveTclCmd || [catch {tcl command list} list]} then {
+        set list [list]
+      }
+
+      set array(tclCommands,$index) [llength $list]
+
+      if {[info exists array(listed,$index)] && \
+          [lsearch -exact $array(listed,$index) tclCommands] != -1} then {
+        set array(tclCommands,$index,list) $list
+      }
+
+      #########################################################################
+
+      if {[catch {
+        #
+        # NOTE: Grab the number of active threads that are active because
+        #       of ScriptThread object instances.  This will only work if
+        #       Eagle is Beta 31 or higher.
+        #
+        object invoke -flags +NonPublic ScriptThread activeCount
+      } list]} then {
+        set list 0; # NOTE: Integer, zero for "not in use", negative ok.
+      }
+
+      set array(scriptThreads,$index) $list; # verbatim
+
+      if {[info exists array(listed,$index)] && \
+          [lsearch -exact $array(listed,$index) scriptThreads] != -1} then {
+        set array(scriptThreads,$index,list) $list
+      }
+
+      #########################################################################
       #
       # NOTE: These managed resource types cannot be positively checked
       #       for leaks (i.e. because the "leak" may be from an external
       #       process).
       #
+      #########################################################################
+
       if {![info exists ::no(uncountedAssemblies)]} then {
         lappend array(uncounted,$index) assemblies
       }
@@ -4169,9 +4500,22 @@ namespace eval ::Eagle {
         #       in the interpreter via a variable trace.
         #
         set eagle_tests(Total) 0
+
         set eagle_tests(Skipped) 0
+        set eagle_tests(Disabled) 0
         set eagle_tests(Passed) 0
         set eagle_tests(Failed) 0
+
+        #
+        # HACK: These are only present in beta 47 or later; therefore, wrap
+        #       them in a [catch] block.
+        #
+        catch {
+          set eagle_tests(SkippedBug) 0
+          set eagle_tests(DisabledBug) 0
+          set eagle_tests(PassedBug) 0
+          set eagle_tests(FailedBug) 0
+        }
 
         #
         # NOTE: Setup the lists of patterns to match test names against.  In
@@ -4377,6 +4721,64 @@ namespace eval ::Eagle {
       return ""
     }
 
+    proc isNetFx40 {} {
+      if {![info exists ::eagle_platform(frameworkVersion)]} then {
+        return false
+      }
+
+      set haveVersion $::eagle_platform(frameworkVersion)
+      set wantVersion 4.0.30319.42000; # .NET Framework 4.0 RTM
+
+      if {[package vcompare $haveVersion $wantVersion] >= 0} then {
+        return true
+      } else {
+        return false
+      }
+    }
+
+    proc createMultipartFormData {
+            request {fileName ""} {boundaryVarName ""} } {
+      #
+      # FIXME: This needs to create textual data that conforms to the
+      #        content type "multipart/form-data", per RFC 2388.
+      #
+      if {[string length $boundaryVarName] > 0} then {
+        upvar 1 $boundaryVarName boundary
+      }
+
+      set boundary [string map \
+          [list + "" / "" = ""] [base64 encode [expr {randstr(50)}]]]
+
+      set result ""
+
+      foreach {name value} $request {
+        append result -- $boundary \r\n
+        append result "Content-Disposition: form-data; name=\""
+        append result $name \"\r\n\r\n
+        append result $value \r\n
+      }
+
+      if {[string length $fileName] > 0} then {
+        append result -- $boundary \r\n
+
+        append result \
+            "Content-Disposition: form-data; name=\"file\"; filename=\""
+
+        append result [file tail $fileName] \"\r\n
+        append result "Content-Type: application/octet-stream\r\n"
+        # append result "Content-Transfer-Encoding: binary\r\n"
+        append result \r\n
+        append result [readFile $fileName] \r\n
+      }
+
+      if {[string length $result] > 0} then {
+        append result -- $boundary --\r\n
+      }
+
+      return [object create \
+          -alias -objectflags +NoReturnReference String $result]
+    }
+
     proc tresult { code result } {
       host result $code $result; tlog $result
     }
@@ -4468,35 +4870,63 @@ namespace eval ::Eagle {
     }
 
     proc createThread { script {parameterized false} {maxStackSize ""} } {
-      if {[isDotNetCore]} then {
-        #
-        # HACK: This seems to make .NET Core happier for reasons
-        #       that are not entirely clear.
-        #
-        set typeName "System.Threading.Thread, mscorlib"
-      } else {
-        set typeName System.Threading.Thread
-      }
+      if {![info exists ::no(createEngineThread)] && \
+          [llength [info commands hasRuntimeOption]] > 0 && \
+          [hasRuntimeOption createEngineThread]} then {
+        if {[string length $maxStackSize] == 0} then {
+          set maxStackSize 0; # NOTE: Use engine default.
+        }
 
-      if {$parameterized} then {
-        if {[string length $maxStackSize] > 0} then {
-          return [object create -alias -objectflags +NoReturnReference \
-              -parametertypes [list System.Threading.ParameterizedThreadStart \
-              System.Int32] $typeName $script $maxStackSize]
+        if {$parameterized} then {
+          return [object invoke -alias \
+              -objectflags +NoReturnReference -parametertypes \
+              [list Eagle._Components.Public.Interpreter \
+              System.Threading.ParameterizedThreadStart System.Int32 \
+              System.Boolean System.Boolean System.Boolean] Engine \
+              CreateThread "" $script $maxStackSize true false true]
         } else {
-          return [object create -alias -objectflags +NoReturnReference \
-              -parametertypes [list System.Threading.ParameterizedThreadStart] \
-              $typeName $script]
+          return [object invoke -alias \
+              -objectflags +NoReturnReference -parametertypes \
+              [list Eagle._Components.Public.Interpreter \
+              System.Threading.ThreadStart System.Int32 \
+              System.Boolean System.Boolean System.Boolean] Engine \
+              CreateThread "" $script $maxStackSize true false true]
         }
       } else {
-        if {[string length $maxStackSize] > 0} then {
-          return [object create -alias -objectflags +NoReturnReference \
-              -parametertypes [list System.Threading.ThreadStart \
-              System.Int32] $typeName $script $maxStackSize]
+        if {[isDotNetCore]} then {
+          #
+          # HACK: This seems to make .NET Core happier for reasons
+          #       that are not entirely clear.
+          #
+          set typeName "System.Threading.Thread, mscorlib"
         } else {
-          return [object create -alias -objectflags +NoReturnReference \
-              -parametertypes [list System.Threading.ThreadStart] \
-              $typeName $script]
+          set typeName System.Threading.Thread
+        }
+
+        if {$parameterized} then {
+          if {[string length $maxStackSize] > 0} then {
+            return [object create -alias \
+                -objectflags +NoReturnReference -parametertypes \
+                [list System.Threading.ParameterizedThreadStart \
+                System.Int32] $typeName $script $maxStackSize]
+          } else {
+            return [object create -alias \
+                -objectflags +NoReturnReference -parametertypes \
+                [list System.Threading.ParameterizedThreadStart] \
+                $typeName $script]
+          }
+        } else {
+          if {[string length $maxStackSize] > 0} then {
+            return [object create -alias \
+                -objectflags +NoReturnReference -parametertypes \
+                [list System.Threading.ThreadStart System.Int32] \
+                $typeName $script $maxStackSize]
+          } else {
+            return [object create -alias \
+                -objectflags +NoReturnReference -parametertypes \
+                [list System.Threading.ThreadStart] $typeName \
+                $script]
+          }
         }
       }
     }
@@ -4542,7 +4972,7 @@ namespace eval ::Eagle {
         return [$thread -parametertypes [list Int32] Join \
             [getThreadTimeout $::test_join_timeout Join]]
       } else {
-        return [$thread Join]
+        $thread Join; return true
       }
     }
 
@@ -4705,11 +5135,20 @@ namespace eval ::Eagle {
       tputs $channel [appendArgs \
           "---- EnumOps cleanup results: " $result \n]
 
-      catch {uplevel 1 [list object invoke -flags +NonPublic \
-          Eagle._Components.Private.HelpOps ClearCache]} result
+      if {[info exists ::eagle_platform(compileOptions)]} then {
+        set options $::eagle_platform(compileOptions)
+      } else {
+        set options [list]
+      }
 
-      tputs $channel [appendArgs \
-          "---- HelpOps cleanup results: " $result \n]
+      if {[lsearch -exact -- $options SHELL] != -1 && \
+          [lsearch -exact -- $options INTERACTIVE_COMMANDS] != -1} then {
+        catch {uplevel 1 [list object invoke -flags +NonPublic \
+            Eagle._Components.Private.HelpOps ClearCache]} result
+
+        tputs $channel [appendArgs \
+            "---- HelpOps cleanup results: " $result \n]
+      }
 
       catch {uplevel 1 [list object invoke -flags +NonPublic \
           Eagle._Components.Private.StringOps ClearPreambleEncodings]} result
@@ -4804,8 +5243,8 @@ namespace eval ::Eagle {
         #       the use of script cancellation to enforce the timeout).
         #
         uplevel 1 [list \
-            debug secureeval -nocancel true -stoponerror true -timeout \
-            $milliseconds {} $script]
+            debug secureeval -nocancel true -globalcancel true \
+            -stoponerror true -timeout $milliseconds {} $script]
       } result]
     }
 
@@ -5296,11 +5735,11 @@ namespace eval ::Eagle {
         getTestSuite getTestSuiteFileName getTestSuiteFullName \
         getTestMachine getTestPlatform getTestConfiguration \
         getTestNamePrefix getTestSuffix getTestUncountedLeaks \
-        getRuntimeAssemblyName getTestAssemblyName canTestExec testExec \
-        testClrExec execTestShell isRandomOrder isBreakOnDemand \
-        isBreakOnLeak isStopOnFailure isStopOnLeak isExitOnComplete \
-        returnInfoScript runTestPrologue runTestEpilogue hookPuts \
-        unhookPuts runTest testShim tsource getKnownEagleVersions \
+        getTestListedLeaks getRuntimeAssemblyName getTestAssemblyName \
+        canTestExec testExec testClrExec execTestShell isRandomOrder \
+        isBreakOnDemand isBreakOnLeak isStopOnFailure isStopOnLeak \
+        isExitOnComplete returnInfoScript runTestPrologue runTestEpilogue \
+        hookPuts unhookPuts runTest testShim tsource getKnownEagleVersions \
         isStableEagleRelease recordTestStatistics reportTestStatistics \
         formatList formatListAsDict pathToRegexp assemblyNameToRegexp \
         maybeGetOption inverseLsearchGlob removePathFromFileNames \

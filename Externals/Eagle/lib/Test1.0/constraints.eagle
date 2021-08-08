@@ -53,23 +53,23 @@ namespace eval ::Eagle {
         EXPRESSION_FLAGS FAST_ERRORCODE FAST_ERRORINFO FOR_TEST_USE_ONLY \
         FORCE_TRACE HAVE_SIZEOF HISTORY IA64 INTERACTIVE_COMMANDS \
         INTERNALS_VISIBLE_TO ISOLATED_INTERPRETERS ISOLATED_PLUGINS LIBRARY \
-        LICENSING LICENSE_MANAGER LIMITED_EDITION LIST_CACHE MAYBE_TRACE MONO \
-        MONO_BUILD MONO_HACKS MONO_LEGACY NATIVE NATIVE_PACKAGE \
-        NATIVE_THREAD_ID NATIVE_UTILITY NATIVE_UTILITY_BSTR NETWORK NET_20 \
-        NET_20_FAST_ENUM NET_20_ONLY NET_20_SP1 NET_20_SP2 NET_30 NET_35 \
-        NET_40 NET_45 NET_451 NET_452 NET_46 NET_461 NET_462 NET_47 NET_471 \
-        NET_472 NET_48 NET_CORE_20 NET_CORE_30 NET_STANDARD_20 \
+        LICENSING LICENSING_NOP LICENSE_MANAGER LIMITED_EDITION LIST_CACHE \
+        MAYBE_TRACE MONO MONO_BUILD MONO_HACKS MONO_LEGACY NATIVE \
+        NATIVE_PACKAGE NATIVE_THREAD_ID NATIVE_UTILITY NATIVE_UTILITY_BSTR \
+        NETWORK NET_20 NET_20_FAST_ENUM NET_20_ONLY NET_20_SP1 NET_20_SP2 \
+        NET_30 NET_35 NET_40 NET_45 NET_451 NET_452 NET_46 NET_461 NET_462 \
+        NET_47 NET_471 NET_472 NET_48 NET_CORE_20 NET_CORE_30 NET_STANDARD_20 \
         NET_STANDARD_21 NON_WORKING_CODE NOTIFY NOTIFY_ACTIVE \
         NOTIFY_ARGUMENTS NOTIFY_EXCEPTION NOTIFY_EXECUTE NOTIFY_EXPRESSION \
         NOTIFY_GLOBAL NOTIFY_OBJECT NOTIFY_TCL OBSOLETE OBFUSCATION OFFICIAL \
         PARSE_CACHE PATCHLEVEL PLUGIN_COMMANDS POLICY_TRACE PREVIOUS_RESULT \
         PROFILER RANDOMIZE_ID REMOTING RESULT_LIMITS SAMPLE SCRIPT_ARGUMENTS \
         SECURITY SERIALIZATION SHARED_ID_POOL SHELL SOURCE_ID \
-        SOURCE_TIMESTAMP STATIC TCL TCL_KITS TCL_THREADED TCL_THREADS \
-        TCL_UNICODE TCL_WRAPPER TEST TEST_PLUGIN THREADING THROW_ON_DISPOSED \
-        TRACE TYPE_CACHE UNIX UNSAFE USE_APPDOMAIN_FOR_ID USE_NAMESPACES \
-        VERBOSE WEB WINDOWS WINFORMS WIX_30 WIX_35 WIX_36 WIX_37 WIX_38 \
-        WIX_39 WIX_310 WIX_311 X64 X86 XML]
+        SOURCE_TIMESTAMP STATIC STRICT_FEATURES TCL TCL_KITS TCL_THREADED \
+        TCL_THREADS TCL_UNICODE TCL_WRAPPER TEST TEST_PLUGIN THREADING \
+        THROW_ON_DISPOSED TRACE TYPE_CACHE UNIX UNSAFE USE_APPDOMAIN_FOR_ID \
+        USE_NAMESPACES VERBOSE WEB WINDOWS WINFORMS WIX_30 WIX_35 WIX_36 \
+        WIX_37 WIX_38 WIX_39 WIX_310 WIX_311 X64 X86 XML]
   }
 
   proc getKnownWindowsVersions { {force false} } {
@@ -666,6 +666,8 @@ namespace eval ::Eagle {
 
         if {[regexp -line -- {^(\d+)\s+(\d+)\s+(.+)$} $cpu dummy \
             current maximum name]} then {
+          set name [string trim $name]
+
           return [list status [appendArgs \
               $name ", current " $current "MHz, maximum " $maximum MHz]]
         }
@@ -680,6 +682,8 @@ namespace eval ::Eagle {
 
         if {[regexp -line -- {^model name\s+: (.*)$} $cpu dummy name] && \
             [regexp -line -- {^cpu MHz\s+: (.*)$} $cpu dummy current]} then {
+          set name [string trim $name]
+
           return [list status [appendArgs \
               $name ", current " $current MHz]]
         }
@@ -1205,7 +1209,7 @@ namespace eval ::Eagle {
           object invoke -flags +NonPublic \
               Eagle._Components.Private.PlatformOps \
               ShouldPopulateOperatingSystemExtra "" \
-              false true false true
+              false true false false true
         } should] == 0 && $should} then {
           if {[catch {
             if {$populate} then {
@@ -3145,6 +3149,60 @@ namespace eval ::Eagle {
     }
   }
 
+  proc checkForInternet { channel uri timeout } {
+    tputs $channel [appendArgs \
+        "---- checking for Internet connectivity to URI \"" $uri "\"... "]
+
+    set pattern {[^\w]The Eagle Project[^\w]}
+
+    set host [string map [list http:// "" https:// ""] $uri]
+    regsub -all -- {:.*$|/.*$} $host "" host
+
+    if {[isEagle]} then {
+      if {[catch {
+        uri download -inline -timeout $timeout $uri
+      } response] == 0} then {
+        if {[regexp -- $pattern $response]} then {
+          #
+          # NOTE: Yes, it appears that it is available.
+          #
+          addConstraint [appendArgs internet_ $host]
+
+          tputs $channel yes\n
+
+          #
+          # NOTE: We are done here, return now.
+          #
+          return
+        }
+      }
+   } elseif {[info exists ::native_lib_path]} then {
+      if {[catch {
+        lappend ::auto_path $::native_lib_path
+        package require Eagle.Tools.Common
+
+        ::Eagle::Tools::Common::getFileViaHttp $uri 20 \
+            $channel true -binary true -timeout $timeout
+      } response] == 0} then {
+        if {[regexp -- $pattern $response]} then {
+          #
+          # NOTE: Yes, it appears that it is available.
+          #
+          addConstraint [appendArgs internet_ $host]
+
+          tputs $channel yes\n
+
+          #
+          # NOTE: We are done here, return now.
+          #
+          return
+        }
+      }
+    }
+
+    tputs $channel no\n
+  }
+
   proc checkForCompileOption { channel option } {
     tputs $channel [appendArgs "---- checking for compile option \"" \
         $option "\"... "]
@@ -3219,6 +3277,123 @@ namespace eval ::Eagle {
     ############################ BEGIN Eagle ONLY #############################
     ###########################################################################
 
+    proc saveRuntimeOptions { varName } {
+      upvar 1 $varName runtimeOptions
+
+      if {[info exists ::eagle_platform(runtimeOptions)]} then {
+        set runtimeOptions $::eagle_platform(runtimeOptions)
+      } else {
+        set runtimeOptions [list]
+      }
+
+      return [llength $runtimeOptions]
+    }
+
+    proc clearRuntimeOptions { {ignoreError false} {names ""} } {
+      set count 0
+
+      saveRuntimeOptions runtimeOptions
+
+      foreach name $runtimeOptions {
+        if {[llength $names] == 0 || \
+            [lsearch -exact -- $names $name] == -1} then {
+          if {[removeRuntimeOption $name]} then {
+            incr count
+          } elseif {!$ignoreError} then {
+            error [appendArgs \
+                "failed to remove runtime option \"" $name \"]
+          }
+        }
+      }
+
+      return $count
+    }
+
+    proc restoreRuntimeOptions { varName {full true} {ignoreError false} } {
+      upvar 1 $varName runtimeOptions
+
+      set count [clearRuntimeOptions \
+          $ignoreError [expr {$full ? [list] : $runtimeOptions}]]
+
+      foreach name $runtimeOptions {
+        if {$full || ![hasRuntimeOption $name]} then {
+          if {[addRuntimeOption $name]} then {
+            incr count
+          } elseif {!$ignoreError} then {
+            error [appendArgs \
+                "failed to add runtime option \"" $name \"]
+          }
+        }
+      }
+
+      return $count
+    }
+
+    proc checkForGlobalTip285 { channel } {
+      tputs $channel [appendArgs \
+          "---- checking for global TIP #285... "]
+
+      if {[catch {interp resetcancel {} -global}] == 0} then {
+        addConstraint globalTip285
+
+        tputs $channel yes\n
+
+        #
+        # NOTE: We are done here, return now.
+        #
+        return
+      }
+
+      tputs $channel no\n
+    }
+
+    proc checkForIeee754r2008 { channel } {
+      tputs $channel [appendArgs \
+          "---- checking for IEEE 754-2008... "]
+
+      if {[catch {expr {pi()}} pi] == 0} then {
+        #
+        # HACK: This seems to be a reliable way to determine if breaking
+        #       Double.ToString semantics are present, e.g. .NET Core 3.0.
+        #
+        if {$pi eq "3.141592653589793"} then {
+          addConstraint ieee754r2008
+
+          tputs $channel yes\n
+        } else {
+          tputs $channel no\n
+        }
+      } else {
+        tputs $channel error\n
+      }
+    }
+
+    proc checkForSystemDataSQLite { channel } {
+      tputs $channel [appendArgs \
+          "---- checking for System.Data.SQLite assembly... "]
+
+      if {[haveConstraint file_System.Data.SQLite.dll]} then {
+        if {[catch {
+          saveRuntimeOptions savedRuntimeOptions
+
+          try {
+            addRuntimeOption ResolveAssemblySearch
+            object resolve "System.Data.SQLite, *"
+          } finally {
+            restoreRuntimeOptions savedRuntimeOptions
+          }
+        } assemblyName] == 0} then {
+          addConstraint System.Data.SQLite
+
+          tputs $channel [appendArgs "yes (" $assemblyName ")\n"]
+        } else {
+          tputs $channel error\n
+        }
+      } else {
+        tputs $channel missing\n
+      }
+    }
+
     proc checkForGuru { channel enable } {
       tputs $channel [appendArgs \
           "---- checking for Guru using \"" $enable "\"... "]
@@ -5548,6 +5723,36 @@ namespace eval ::Eagle {
       return 379893
     }
 
+    proc isFrameworkSetup453Installed {} {
+      #
+      # NOTE: Platform must be Windows for this constraint to even be
+      #       checked (i.e. we require the registry).
+      #
+      if {[isWindows]} then {
+        #
+        # NOTE: Registry hive where the .NET Framework 4.0 setup and
+        #       servicing information is stored.  No need to look in
+        #       the WoW64 registry because the .NET Framework should
+        #       be installed natively as well.
+        #
+        if {[catch {
+          object invoke -alias Microsoft.Win32.Registry LocalMachine
+        } rootKey] == 0 && [isNonNullObjectHandle $rootKey]} then {
+          set key [appendArgs \
+              {Software\Microsoft\.NETFramework\v4.0.30319\SKUs} \\ \
+              .NETFramework,Version=v4.5.3]
+
+          if {[catch {
+            $rootKey OpenSubKey $key
+          } skuKey] == 0 && [isNonNullObjectHandle $skuKey]} then {
+            return true
+          }
+        }
+      }
+
+      return false
+    }
+
     proc getFrameworkSetup46Value {} {
       #
       # NOTE: Check if we are running on Windows.
@@ -5832,8 +6037,70 @@ namespace eval ::Eagle {
       return 528049
     }
 
-    proc checkForNetFx4x { channel } {
-      tputs $channel "---- checking for .NET Framework 4.x... "
+    proc checkForNetFx40 { channel } {
+      tputs $channel "---- checking for .NET Framework 4.0... "
+
+      #
+      # NOTE: Platform must be Windows for this constraint to even be
+      #       checked (i.e. we require the registry).
+      #
+      if {[isWindows]} then {
+        #
+        # NOTE: Registry hive where the .NET Framework 4.0 setup and
+        #       servicing information is stored.  No need to look in
+        #       the WoW64 registry because the .NET Framework should
+        #       be installed natively as well.
+        #
+        if {[catch {
+          object invoke -alias Microsoft.Win32.Registry LocalMachine
+        } rootKey] == 0 && [isNonNullObjectHandle $rootKey]} then {
+          set key [appendArgs \
+              {Software\Microsoft\.NETFramework\v4.0.30319\SKUs}]
+
+          set subKeys [list \
+              .NETFramework,Version=v4.0                  \
+              .NETFramework,Version=v4.0,Profile=Client   \
+              .NETFramework,Version=v4.0.1                \
+              .NETFramework,Version=v4.0.1,Profile=Client \
+              .NETFramework,Version=v4.0.2                \
+              .NETFramework,Version=v4.0.2,Profile=Client \
+              .NETFramework,Version=v4.0.3                \
+              .NETFramework,Version=v4.0.3,Profile=Client]
+
+          foreach subKey [lreverse $subKeys] {
+            if {[catch {
+              $rootKey OpenSubKey [appendArgs $key \\ $subKey]
+            } skuKey] == 0 && [isNonNullObjectHandle $skuKey]} then {
+              if {[regexp -- {=v(4\.0(?:\.\d+)*)(?:,Profile=(.*)$)?} \
+                  $subKey dummy dotVersion profile]} then {
+                set version [getDotlessVersion $dotVersion]
+
+                if {$dotVersion ne "4.0"} then {; # checkForRuntimeVersion
+                  addConstraint [appendArgs dotNet $version]
+                  addConstraint [appendArgs dotNet $version OrHigher]
+                }
+
+                if {[string length $profile] > 0} then {
+                  addConstraint [appendArgs dotNet $version $profile]
+
+                  tputs $channel [appendArgs \
+                      "yes (" $dotVersion ", " $profile " Profile)\n"]
+                } else {
+                  tputs $channel [appendArgs "yes (" $dotVersion ")\n"]
+                }
+
+                return
+              }
+            }
+          }
+        }
+      }
+
+      tputs $channel no\n
+    }
+
+    proc checkForNetFx45 { channel } {
+      tputs $channel "---- checking for .NET Framework 4.5 or higher... "
 
       #
       # NOTE: Platform must be Windows for this constraint to even be
@@ -5886,6 +6153,7 @@ namespace eval ::Eagle {
           if {$release >= [getFrameworkSetup48Value]} then {
             addConstraint dotNet451OrHigher
             addConstraint dotNet452OrHigher
+            addConstraint dotNet453OrHigher
             addConstraint dotNet46OrHigher
             addConstraint dotNet461OrHigher
             addConstraint dotNet462OrHigher
@@ -5899,6 +6167,7 @@ namespace eval ::Eagle {
           } elseif {$release >= [getFrameworkSetup472Value]} then {
             addConstraint dotNet451OrHigher
             addConstraint dotNet452OrHigher
+            addConstraint dotNet453OrHigher
             addConstraint dotNet46OrHigher
             addConstraint dotNet461OrHigher
             addConstraint dotNet462OrHigher
@@ -5911,6 +6180,7 @@ namespace eval ::Eagle {
           } elseif {$release >= [getFrameworkSetup471Value]} then {
             addConstraint dotNet451OrHigher
             addConstraint dotNet452OrHigher
+            addConstraint dotNet453OrHigher
             addConstraint dotNet46OrHigher
             addConstraint dotNet461OrHigher
             addConstraint dotNet462OrHigher
@@ -5922,6 +6192,7 @@ namespace eval ::Eagle {
           } elseif {$release >= [getFrameworkSetup47Value]} then {
             addConstraint dotNet451OrHigher
             addConstraint dotNet452OrHigher
+            addConstraint dotNet453OrHigher
             addConstraint dotNet46OrHigher
             addConstraint dotNet461OrHigher
             addConstraint dotNet462OrHigher
@@ -5932,6 +6203,7 @@ namespace eval ::Eagle {
           } elseif {$release >= [getFrameworkSetup462Value]} then {
             addConstraint dotNet451OrHigher
             addConstraint dotNet452OrHigher
+            addConstraint dotNet453OrHigher
             addConstraint dotNet46OrHigher
             addConstraint dotNet461OrHigher
             addConstraint dotNet462
@@ -5941,6 +6213,7 @@ namespace eval ::Eagle {
           } elseif {$release >= [getFrameworkSetup461Value]} then {
             addConstraint dotNet451OrHigher
             addConstraint dotNet452OrHigher
+            addConstraint dotNet453OrHigher
             addConstraint dotNet46OrHigher
             addConstraint dotNet461
             addConstraint dotNet461OrHigher
@@ -5949,16 +6222,25 @@ namespace eval ::Eagle {
           } elseif {$release >= [getFrameworkSetup46Value]} then {
             addConstraint dotNet451OrHigher
             addConstraint dotNet452OrHigher
+            addConstraint dotNet453OrHigher
             addConstraint dotNet46
             addConstraint dotNet46OrHigher
 
             set version 4.6
           } elseif {$release >= [getFrameworkSetup452Value]} then {
             addConstraint dotNet451OrHigher
-            addConstraint dotNet452
             addConstraint dotNet452OrHigher
 
-            set version 4.5.2
+            if {[isFrameworkSetup453Installed]} then {
+              addConstraint dotNet453
+              addConstraint dotNet453OrHigher
+
+              set version 4.5.3
+            } else {
+              addConstraint dotNet452
+
+              set version 4.5.2
+            }
           } elseif {$release >= [getFrameworkSetup451Value]} then {
             addConstraint dotNet451
             addConstraint dotNet451OrHigher
@@ -6237,8 +6519,8 @@ namespace eval ::Eagle {
         checkForProcessorIntensive checkForTimeIntensive checkForFullTest \
         checkForMemoryIntensive checkForStackIntensive checkForStackSize \
         checkForInteractive checkForInteractiveCommand \
-        checkForUserInteraction checkForNetwork checkForCompileOption \
-        checkForKnownCompileOptions] false false
+        checkForUserInteraction checkForNetwork checkForInternet \
+        checkForCompileOption checkForKnownCompileOptions] false false
 
     ###########################################################################
     ############################## END Tcl ONLY ###############################

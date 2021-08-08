@@ -113,6 +113,13 @@ namespace eval ::Eagle {
         if {[file exists $directory] && [file isdirectory $directory] && \
             [file writable $directory]} then {
           #
+          # HACK: Use a common root directory for all "dynamically" installed
+          #       packages.
+          #
+          set directory [file join $directory install]
+          file mkdir $directory
+
+          #
           # NOTE: Ok, all checks passed, return the location.  Callers of this
           #       procedure should generally not put files directly within it;
           #       instead, they should create a sub-directory within it, named
@@ -123,6 +130,10 @@ namespace eval ::Eagle {
           if {[string length $packageName] > 0} then {
             set directory [file join $directory $packageName]
             file mkdir $directory
+          }
+
+          if {[llength [info commands pkgInstallLog]] > 0} then {
+            pkgInstallLog {install persistent} $packageName $directory
           }
 
           return $directory
@@ -152,6 +163,18 @@ namespace eval ::Eagle {
           [pid] - [string trim [clock seconds] -]]]
 
       file mkdir $directory
+    }
+
+    set directory [file join $directory install]
+    file mkdir $directory
+
+    if {[string length $packageName] > 0} then {
+      set directory [file join $directory $packageName]
+      file mkdir $directory
+    }
+
+    if {[llength [info commands pkgInstallLog]] > 0} then {
+      pkgInstallLog {install temporary} $packageName $directory
     }
 
     return $directory
