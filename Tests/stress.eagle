@@ -1088,7 +1088,7 @@ runTest {test stress-1.1 {multithreaded stress testing} -setup {
           if {[catchCSharp {
             object invoke _Dynamic${id}.Test${id} BackupAndGetData
             showTest L
-          } error]} then {
+          } error "" false]} then {
             if {[isExpectedError $error]} then {
               showTest l
             } else {
@@ -1136,7 +1136,7 @@ runTest {test stress-1.1 {multithreaded stress testing} -setup {
             if {[catchCSharp {
               object invoke _Dynamic${id}.Test${id} BackupAndGetData
               showTest L
-            } error]} then {
+            } error "" false]} then {
               if {[isExpectedError $error]} then {
                 showTest l
               } else {
@@ -1171,7 +1171,7 @@ runTest {test stress-1.1 {multithreaded stress testing} -setup {
           if {[catchCSharp {
             object invoke _Dynamic${id}.Test${id} BackupAndGetData
             showTest M
-          } error]} then {
+          } error "" false]} then {
             if {[isExpectedError $error]} then {
               showTest m
             } else {
@@ -1219,7 +1219,7 @@ runTest {test stress-1.1 {multithreaded stress testing} -setup {
             if {[catchCSharp {
               object invoke _Dynamic${id}.Test${id} BackupAndGetData
               showTest M
-            } error]} then {
+            } error "" false]} then {
               if {[isExpectedError $error]} then {
                 showTest m
               } else {
@@ -1667,7 +1667,7 @@ runTest {test stress-1.1 {multithreaded stress testing} -setup {
       "==== WARNING: this stress test may take several minutes...\n"]
 
   for {set index(0) 1} {$index(0) <= $count(0)} {incr index(0)} {
-    if {$index(0) > 1} then {
+    if {!$noProgress && $index(0) > 1} then {
       #
       # NOTE: Advance output to the next line due to the workload
       #       iteration progress indicators from the previous run.
@@ -1756,11 +1756,13 @@ runTest {test stress-1.1 {multithreaded stress testing} -setup {
 
   #############################################################################
 
-  #
-  # NOTE: Advance output to the next line due to the workload
-  #       iteration progress indicators from the final run.
-  #
-  tputs $test_channel \n
+  if {!$noProgress} then {
+    #
+    # NOTE: Advance output to the next line due to the workload
+    #       iteration progress indicators from the final run.
+    #
+    tputs $test_channel \n
+  }
 
   #############################################################################
 
