@@ -202,7 +202,12 @@ if {$argc >= 2 && $argc <= 3} then {
     }
   }
 
-  source [file join $path data [appendArgs $rootName .lst]]
+  if {![info exists manifestListFileName]} then {
+    set manifestListFileName [file join \
+        $path data [appendArgs $rootName .lst]]
+  }
+
+  source $manifestListFileName
 
   if {![array exists manifests]} then {
     usage "list of archive manifests is missing"
