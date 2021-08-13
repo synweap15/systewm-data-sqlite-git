@@ -21,31 +21,31 @@
     <copyright>Public Domain</copyright>
     <dependencies>
       <group targetFramework="net20">
-        <dependency id="System.Data.SQLite.Linq" version="1.0.115.0" />
+        <dependency id="System.Data.SQLite.Linq" version="[1.0.115.0]" />
       </group>
       <group targetFramework="net40">
-        <dependency id="System.Data.SQLite.Linq" version="1.0.115.0" />
+        <dependency id="System.Data.SQLite.Linq" version="[1.0.115.0]" />
       </group>
       <group targetFramework="net45">
-        <dependency id="System.Data.SQLite.Linq" version="1.0.115.0" />
+        <dependency id="System.Data.SQLite.Linq" version="[1.0.115.0]" />
       </group>
       <group targetFramework="net451">
-        <dependency id="System.Data.SQLite.Linq" version="1.0.115.0" />
+        <dependency id="System.Data.SQLite.Linq" version="[1.0.115.0]" />
       </group>
       <group targetFramework="net46">
-        <dependency id="System.Data.SQLite.Linq" version="1.0.115.0" />
+        <dependency id="System.Data.SQLite.Linq" version="[1.0.115.0]" />
       </group>
       <group targetFramework="net40">
-        <dependency id="System.Data.SQLite.EF6" version="1.0.115.0" />
+        <dependency id="System.Data.SQLite.EF6" version="[1.0.115.0]" />
       </group>
       <group targetFramework="net45">
-        <dependency id="System.Data.SQLite.EF6" version="1.0.115.0" />
+        <dependency id="System.Data.SQLite.EF6" version="[1.0.115.0]" />
       </group>
       <group targetFramework="net451">
-        <dependency id="System.Data.SQLite.EF6" version="1.0.115.0" />
+        <dependency id="System.Data.SQLite.EF6" version="[1.0.115.0]" />
       </group>
       <group targetFramework="net46">
-        <dependency id="System.Data.SQLite.EF6" version="1.0.115.0" />
+        <dependency id="System.Data.SQLite.EF6" version="[1.0.115.0]" />
       </group>
     </dependencies>
   </metadata>

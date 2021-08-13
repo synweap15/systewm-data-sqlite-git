@@ -22,25 +22,25 @@
     <copyright>Public Domain</copyright>
     <dependencies>
       <group targetFramework="net20">
-        <dependency id="Stub.System.Data.SQLite.Core.NetFramework" version="1.0.115.0" />
+        <dependency id="Stub.System.Data.SQLite.Core.NetFramework" version="[1.0.115.0]" />
       </group>
       <group targetFramework="net40">
-        <dependency id="Stub.System.Data.SQLite.Core.NetFramework" version="1.0.115.0" />
+        <dependency id="Stub.System.Data.SQLite.Core.NetFramework" version="[1.0.115.0]" />
       </group>
       <group targetFramework="net45">
-        <dependency id="Stub.System.Data.SQLite.Core.NetFramework" version="1.0.115.0" />
+        <dependency id="Stub.System.Data.SQLite.Core.NetFramework" version="[1.0.115.0]" />
       </group>
       <group targetFramework="net451">
-        <dependency id="Stub.System.Data.SQLite.Core.NetFramework" version="1.0.115.0" />
+        <dependency id="Stub.System.Data.SQLite.Core.NetFramework" version="[1.0.115.0]" />
       </group>
       <group targetFramework="net46">
-        <dependency id="Stub.System.Data.SQLite.Core.NetFramework" version="1.0.115.0" />
+        <dependency id="Stub.System.Data.SQLite.Core.NetFramework" version="[1.0.115.0]" />
       </group>
       <group targetFramework="netstandard2.0">
-        <dependency id="Stub.System.Data.SQLite.Core.NetStandard" version="1.0.115.0" />
+        <dependency id="Stub.System.Data.SQLite.Core.NetStandard" version="[1.0.115.0]" />
       </group>
       <group targetFramework="netstandard2.1">
-        <dependency id="Stub.System.Data.SQLite.Core.NetStandard" version="1.0.115.0" />
+        <dependency id="Stub.System.Data.SQLite.Core.NetStandard" version="[1.0.115.0]" />
       </group>
     </dependencies>
   </metadata>
