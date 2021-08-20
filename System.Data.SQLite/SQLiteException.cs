@@ -777,6 +777,10 @@ namespace System.Data.SQLite
       /// </summary>
       CantOpen_SymLink = (CantOpen | (6 << 8)),
       /// <summary>
+      /// A database file already exists and cannot be created.
+      /// </summary>
+      CantOpen_Exists = (CantOpen | (7 << 8)),
+      /// <summary>
       /// A virtual table is malformed.
       /// </summary>
       Corrupt_Vtab = (Corrupt | (1 << 8)),

@@ -51,6 +51,7 @@ Busy_Timeout 773
 CantOpen 14
 CantOpen_ConvPath 1038
 CantOpen_DirtyWal 1294
+CantOpen_Exists 1806
 CantOpen_FullPath 782
 CantOpen_IsDir 526
 CantOpen_NoTempDir 270
