@@ -861,6 +861,10 @@ namespace System.Data.SQLite
       /// </summary>
       Constraint_Pinned = (Constraint |(11 << 8)),
       /// <summary>
+      /// Value does not conform to specified data type.
+      /// </summary>
+      Constraint_DataType = (Constraint | (12 << 8)),
+      /// <summary>
       /// Frames were recovered from the WAL log file.
       /// </summary>
       Notice_Recover_Wal = (Notice | (1 << 8)),

@@ -58,6 +58,7 @@ CantOpen_SymLink 1550
 Constraint 19
 Constraint_Check 275
 Constraint_CommitHook 531
+Constraint_DataType 3091
 Constraint_ForeignKey 787
 Constraint_Function 1043
 Constraint_NotNull 1299
