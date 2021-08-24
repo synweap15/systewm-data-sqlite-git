@@ -55,7 +55,7 @@
 <div align="center"><h2><b>Version History</b></h2></div>
 
 <p>
-    <b>1.0.115.0 - August XX, 2021 <font color="red">(release scheduled)</font></b>
+    <b>1.0.115.0 - August 25, 2021</b>
 </p>
 <ul>
     <li>Updated to [https://www.sqlite.org/releaselog/3_36_0.html|SQLite 3.36.0].</li>
