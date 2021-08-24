@@ -1302,18 +1302,26 @@
               well.  The "supported", yet sub-optimal, alternative appears to
               be using the TargetFrameworkSDKToolsDirectory variable.
     -->
-    <GetFrameworkSDKPath Condition="'$(WindowsSDK80Path)' == ''">
+    <GetFrameworkSDKPath Condition="'$(SDK35ToolsPath)' == '' And
+                                    '$(WindowsSDK80Path)' == ''">
       <Output TaskParameter="Path"
               PropertyName="DirForManifestTool" />
     </GetFrameworkSDKPath>
 
-    <Exec Condition="'$(WindowsSDK80Path)' == '' And
+    <Exec Condition="'$(SDK35ToolsPath)' != '' And
+                     HasTrailingSlash('$(SDK35ToolsPath)') And
+                     Exists('$(SDK35ToolsPath)mt.exe')"
+          Command="&quot;$(SDK35ToolsPath)mt.exe&quot; -manifest &quot;$(MSBuildProjectDirectory)\Resources\manifest.xml&quot; -outputresource:&quot;$(TargetPath)&quot;;1" />
+
+    <Exec Condition="'$(SDK35ToolsPath)' == '' And
+                     '$(WindowsSDK80Path)' == '' And
                      '$(DirForManifestTool)' != '' And
                      HasTrailingSlash('$(DirForManifestTool)') And
                      Exists('$(DirForManifestTool)bin\mt.exe')"
           Command="&quot;$(DirForManifestTool)bin\mt.exe&quot; -manifest &quot;$(MSBuildProjectDirectory)\Resources\manifest.xml&quot; -outputresource:&quot;$(TargetPath)&quot;;1" />
 
-    <Exec Condition="'$(WindowsSDK80Path)' != '' And
+    <Exec Condition="'$(SDK35ToolsPath)' == '' And
+                     '$(WindowsSDK80Path)' != '' And
                      '$(DirForManifestTool)' == '' And
                      '$(Architecture)' != '' And
                      Exists('$(WindowsSDK80Path)bin\$(Architecture)\mt.exe')"

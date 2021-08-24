@@ -56,6 +56,15 @@
             2.0 on Windows XP or higher.  Most default values from the settings
             file (i.e. "Eagle.Settings.targets") are used; however, some of the
             defaults are overridden.
+
+      NOTE: When building this configuration directly from MSBuild (i.e. not via
+            the "flight.bat" tool), the EaglePatchLevel property must be set to
+            false, by adding this to the build command line:
+
+                /property:EaglePatchLevel=false
+
+            Otherwise, compilation errors will occur due to the AssemblyVersion
+            attribute value being null.
   -->
   <PropertyGroup Condition="'$(EagleBuildType)' == 'Default' Or
                             '$(EagleBuildType)' == 'NetFx20'">
@@ -85,6 +94,7 @@
     <EagleNotifyExecute Condition="'$(EagleNotifyExecute)' == ''">false</EagleNotifyExecute>
     <EagleNotifyExpression Condition="'$(EagleNotifyExpression)' == ''">false</EagleNotifyExpression>
     <EagleOnlyNetFx20 Condition="'$(EagleOnlyNetFx20)' == ''">true</EagleOnlyNetFx20>
+    <EaglePatchLevel Condition="'$(EaglePatchLevel)' == ''">true</EaglePatchLevel>
     <EaglePowerShellVersion Condition="'$(EaglePowerShellVersion)' == ''">1.0</EaglePowerShellVersion>
     <EagleScriptArguments Condition="'$(EagleScriptArguments)' == ''">true</EagleScriptArguments>
     <EagleSourceId Condition="'$(EagleSourceId)' == ''">true</EagleSourceId>
@@ -108,6 +118,15 @@
             processing.  Most default values from the settings file (i.e.
             "Eagle.Settings.targets") are used; however, some of the defaults
             are overridden here.
+
+      NOTE: When building this configuration directly from MSBuild (i.e. not via
+            the "flight.bat" tool), the EaglePatchLevel property must be set to
+            false, by adding this to the build command line:
+
+                /property:EaglePatchLevel=false
+
+            Otherwise, compilation errors will occur due to the AssemblyVersion
+            attribute value being null.
   -->
   <PropertyGroup Condition="'$(EagleBuildType)' == 'NetFx35'">
     <TargetFrameworkVersion Condition="'$(TargetFrameworkVersion)' == '' And '$(EagleCanSetTargetFrameworkVersion)' != '' And '$(EagleCanSetTargetFrameworkVersion)' != 'false'">v3.5</TargetFrameworkVersion>
@@ -1262,6 +1281,15 @@
             of new features and optimizations.  Please refer to the file
             "Eagle.Settings.targets" (or the source code) for further details
             of what each setting does.
+
+      NOTE: When building this configuration directly from MSBuild (i.e. not via
+            the "flight.bat" tool), the EaglePatchLevel property must be set to
+            false, by adding this to the build command line:
+
+                /property:EaglePatchLevel=false
+
+            Otherwise, compilation errors will occur due to the AssemblyVersion
+            attribute value being null.
   -->
   <PropertyGroup Condition="'$(EagleBuildType)' == 'Development'">
     <EagleAppDomains Condition="'$(EagleAppDomains)' == ''">true</EagleAppDomains>
@@ -1290,6 +1318,7 @@
     <EagleIsolatedPlugins Condition="'$(EagleIsolatedPlugins)' == ''">true</EagleIsolatedPlugins>
     <EagleMaybeTrace Condition="'$(EagleMaybeTrace)' == ''">true</EagleMaybeTrace>
     <EagleObsolete Condition="'$(EagleObsolete)' == ''">true</EagleObsolete>
+    <EaglePatchLevel Condition="'$(EaglePatchLevel)' == ''">true</EaglePatchLevel>
     <EaglePolicyTrace Condition="'$(EaglePolicyTrace)' == ''">true</EaglePolicyTrace>
     <EagleScriptArguments Condition="'$(EagleScriptArguments)' == ''">true</EagleScriptArguments>
     <EagleSourceId Condition="'$(EagleSourceId)' == ''">true</EagleSourceId>
@@ -1324,7 +1353,7 @@
             the first test failure.
   -->
   <PropertyGroup Condition="'$(EagleTestType)' != ''">
-    <EagleCommonTestArguments Condition="'$(EagleCommonTestArguments)' == ''">-namespaces true -preInitialize &quot;set no(speech) true; set no(network) true; set no(excel) true; set no(preciseTiming) true; set no(temporaryTestLog) true; set test_stop_on_failure true; set test_stop_on_leak true; object invoke Interpreter.GetActive Quiet true; object invoke -flags +NonPublic Interpreter.GetActive SetNoBackgroundError true&quot;</EagleCommonTestArguments>
+    <EagleCommonTestArguments Condition="'$(EagleCommonTestArguments)' == ''">-namespaces true -preInitialize &quot;set no(speech) true; set no(excel) true; set no(preciseTiming) true; set no(temporaryTestLog) true; set test_stop_on_failure true; set test_stop_on_leak true; object invoke Interpreter.GetActive Quiet true; object invoke -flags +NonPublic Interpreter.GetActive SetNoBackgroundError true&quot;</EagleCommonTestArguments>
   </PropertyGroup>
 
   <!--

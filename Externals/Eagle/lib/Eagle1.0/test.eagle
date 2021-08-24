@@ -2590,7 +2590,7 @@ namespace eval ::Eagle {
           1.0.6018.45959 1.0.6119.57133 1.0.6120.16902 1.0.6234.51946 \
           1.0.6483.12345 1.0.6543.58654 1.0.6781.49000 1.0.6781.49042 \
           1.0.6848.11041 1.0.7213.50727 1.0.7579.30319 1.0.7790.43198 \
-          1.0.7897.33333]
+          1.0.7897.33333 1.0.7900.33333]
     } else {
       return [list]
     }
@@ -3827,6 +3827,50 @@ namespace eval ::Eagle {
             #
             if {![info exists ::no(runEndFile)]} then {
               tputs $channel [appendArgs "==== \"" $fileName "\" END\n"]
+            }
+
+            #
+            # NOTE: When running in Eagle and not explicitly forbidden
+            #       from doing so, check the current memory load -AND-
+            #       possibly attempt to forcibly clean things up now.
+            #
+            if {![info exists ::no(runCleanupMemory)] && [isEagle]} then {
+              if {[catch {debug memory} memory] == 0} then {
+                set memoryLoad [getDictionaryValue $memory memoryLoad]; # %
+
+                if {[string is integer -strict $memoryLoad] && \
+                    $memoryLoad >= 0 && $memoryLoad <= 100} then {
+                  if {[info exists ::env(runCleanupMemoryThreshold)]} then {
+                    set memoryThreshold $::env(runCleanupMemoryThreshold)
+                  } else {
+                    set memoryThreshold 75; # TODO: Good default?
+                  }
+
+                  if {$memoryLoad > $memoryThreshold} then {
+                    tputs $channel [appendArgs \
+                        "==== MEMORY: load " $memoryLoad \
+                        " is above automatic cleanup threshold " \
+                        $memoryThreshold \n]
+
+                    if {[catch {
+                      uplevel #0 [list purgeAndCleanup $channel $fileName]
+                    } memoryError]} then {
+                      tputs $channel [appendArgs \
+                          "==== WARNING: \[purgeAndCleanup\] for \"" \
+                          $fileName "\" failed: " $memoryError \n]
+                    }
+                  } else {
+                    tputs $channel [appendArgs \
+                        "==== MEMORY: load " $memoryLoad \
+                        " is below automatic cleanup threshold " \
+                        $memoryThreshold \n]
+                  }
+                } elseif {[string length $memoryLoad] > 0} then {
+                  tputs $channel [appendArgs \
+                      "==== WARNING: bad memory load value \"" \
+                      $memoryLoad \"\n]
+                }
+              }
             }
 
             #

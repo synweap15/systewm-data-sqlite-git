@@ -27,9 +27,37 @@ namespace eval ::Eagle {
   #
   proc vwaitLocked { varName isArray script } {
     if {[isEagle]} then {
-      if {$isArray && \
+      #
+      # HACK: The [info exists] sub-command may return false even if the
+      #       variable exists, *IF* that variable is currently locked by
+      #       another thread.
+      #
+      if {[string length $isArray] > 0 && \
           ![uplevel 1 [list info exists $varName]]} then {
-        uplevel 1 [list array set $varName [list]]
+        #
+        # BUGFIX: If another thread has the variable locked, this could
+        #         fail.  That would be bad because the caller wishes to
+        #         block until the variable is available.
+        #
+        if {$isArray} then {
+          catch {
+            #
+            # HACK: This will either create the array variable without
+            #       elements -OR- fail because the variable has been
+            #       locked by another thread; either way, that's fine.
+            #
+            uplevel 1 [list array set $varName [list]]
+          }
+        } else {
+          catch {
+            #
+            # HACK: This will either create the scalar variable with an
+            #       empty value -OR- fail because the variable has been
+            #       locked by another thread; either way, that's fine.
+            #
+            uplevel 1 [list set $varName ""]
+          }
+        }
       }
 
       uplevel 1 [list vwait -force -locked $script -- $varName]

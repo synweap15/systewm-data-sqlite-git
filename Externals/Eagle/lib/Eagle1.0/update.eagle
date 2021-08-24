@@ -587,7 +587,7 @@ namespace eval ::Eagle {
   # NOTE: This procedure runs the updater tool and then immediately exits the
   #       process.
   #
-  proc runUpdateAndExit { {automatic false} } {
+  proc runUpdateAndExit { {automatic false} {whatIf false} } {
     global tcl_platform
 
     #
@@ -600,6 +600,15 @@ namespace eval ::Eagle {
     if {![file exists $fileName]} then {
       error [appendArgs \
           "updater executable \"" $fileName "\" is not available"]
+    }
+
+    #
+    # NOTE: If this procedure has been forbidden from actually running,
+    #       return an error now.
+    #
+    if {[info exists ::no(runUpdateAndExit)]} then {
+      error [appendArgs \
+          "updater executable \"" $fileName "\" is manually forbidden"]
     }
 
     #
@@ -655,7 +664,11 @@ namespace eval ::Eagle {
       lappend command -tagPathAndQuery $pathAndQuery
     }
 
-    eval $command &; exit -force
+    if {$whatIf} then {
+      return $command
+    } else {
+      eval $command &; exit -force
+    }
   }
 
   #
@@ -1704,27 +1717,43 @@ namespace eval ::Eagle {
                     [object invoke -flags +NonPublic \
                     Eagle._Components.Private.GlobalState \
                     IsFirstInterpreter ""]} then {
-                  set messageCaption [appendArgs \
-                      [info engine Name] " (" [lindex [info level 0] 0] \
-                      " script)"]
+                  #
+                  # BUGFIX: Do not bother with this if the updater tool
+                  #         is unavailable -OR- is manually forbidden.
+                  #         This is checked by using what-if parameter
+                  #         for the [runUpdateAndExit] procedure.
+                  #
+                  if {[catch {
+                    runUpdateAndExit $automatic true
+                  } result] == 0} then {
+                    if {!$quiet} then {
+                      tqputs $channel [appendArgs \
+                          "---- updater executable command line: " \
+                          $result \n]
+                    }
 
-                  set messageText [appendArgs \
-                      "The " $text \n\n "Run the updater tool now?"]
+                    set messageCaption [appendArgs \
+                        [info engine Name] " (" [lindex [info level 0] 0] \
+                        " script)"]
 
-                  if {$automatic} then {
-                    append messageText \n\n \
-                        "WARNING: The updater tool process will be " \
-                        "run in automatic mode and there will be no " \
-                        "further prompts."
-                  }
+                    set messageText [appendArgs \
+                        "The " $text \n\n "Run the updater tool now?"]
 
-                  if {[object invoke -flags +NonPublic \
-                      Eagle._Components.Private.WindowOps YesOrNo \
-                      $messageText $messageCaption false]} then {
-                    #
-                    # NOTE: Ok, run the updater tool now and then exit.
-                    #
-                    runUpdateAndExit $automatic
+                    if {$automatic} then {
+                      append messageText \n\n \
+                          "WARNING: The updater tool process will be " \
+                          "run in automatic mode and there will be no " \
+                          "further prompts."
+                    }
+
+                    if {[object invoke -flags +NonPublic \
+                        Eagle._Components.Private.WindowOps YesOrNo \
+                        $messageText $messageCaption false]} then {
+                      #
+                      # NOTE: Ok, run the updater tool now and then exit.
+                      #
+                      runUpdateAndExit $automatic
+                    }
                   }
                 }
               }

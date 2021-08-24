@@ -403,7 +403,7 @@ runTest {test stress-1.1 {multithreaded stress testing} -setup {
   set exitOnFail false;    # Halt testing and exit process on test failure?
   set coTaskMem true;      # Use AllocCoTaskMem/FreeCoTaskMem for memory?
   set noTrace false;       # Disable SQLite trace logging to a file?
-  set noProgress true;     # Disable emitting of progress indicators?
+  set noProgress false;    # Disable emitting of progress indicators?
   set beginTransaction ""; # SQL just before modifying the database.
   set endTransaction "";   # SQL just after modifying the database.
   set errorTransaction ""; # SQL just after a database modification error.
