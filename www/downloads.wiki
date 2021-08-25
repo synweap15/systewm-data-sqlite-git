@@ -1709,7 +1709,7 @@
         &quot;System.Data.SQLite.EF6&quot; packages.</i></b></big>
         <br />
         <br />
-        (sha1: 0000000000000000000000000000000000000000)
+        (sha1: e079b883d3139c40abf33549a4ba61e28e3bdf29)
       </td>
     </tr>
 
@@ -1736,7 +1736,7 @@
         <br />
         <big><b>This package does not depend on any other package.</b></big>
         <br />
-        (sha1: 0000000000000000000000000000000000000000)
+        (sha1: 4db92ed4f3fc16263b4f08236763c937be64f9a4)
       </td>
     </tr>
 
@@ -1745,7 +1745,7 @@
       <td width="30%" valign="top" align="right">
         <a href="/downloads/1.0.115.0/System.Data.SQLite.Core.MSIL.1.0.115.0.nupkg">System.Data.SQLite.Core.MSIL.1.0.115.0.nupkg</a>
         <br />
-        (0.00 MiB)
+        (1.79 MiB)
       </td>
       <td width="5"></td>
       <td valign="top">
@@ -1763,7 +1763,7 @@
         native library search path.</i></b></big>
         <br />
         <br />
-        (sha1: 0000000000000000000000000000000000000000)
+        (sha1: e9c89e87e9d1e1ad1ef0e4658e83a0edc867e412)
       </td>
     </tr>
 
@@ -1772,7 +1772,7 @@
       <td width="30%" valign="top" align="right">
         <a href="/downloads/1.0.115.0/System.Data.SQLite.EF6.1.0.115.0.nupkg">System.Data.SQLite.EF6.1.0.115.0.nupkg</a>
         <br />
-        (0.00 MiB)
+        (0.25 MiB)
       </td>
       <td width="5"></td>
       <td valign="top">
@@ -1784,7 +1784,7 @@
         <big><b>This package depends on the &quot;EntityFramework&quot;
         package, version 6.0 or higher.</b></big>
         <br />
-        (sha1: 0000000000000000000000000000000000000000)
+        (sha1: 873a62b9047269387a3cb20b0b1dd8f73bf30934)
       </td>
     </tr>
 
@@ -1793,7 +1793,7 @@
       <td width="30%" valign="top" align="right">
         <a href="/downloads/1.0.115.0/System.Data.SQLite.Linq.1.0.115.0.nupkg">System.Data.SQLite.Linq.1.0.115.0.nupkg</a>
         <br />
-        (0.00 MiB)
+        (0.25 MiB)
       </td>
       <td width="5"></td>
       <td valign="top">
@@ -1803,7 +1803,7 @@
         <br />
         <big><b>This package does not depend on any other package.</b></big>
         <br />
-        (sha1: 0000000000000000000000000000000000000000)
+        (sha1: be7c6e1405135bb0cb8a72ecee487675bd81b2b5)
       </td>
     </tr>
 
@@ -1839,7 +1839,7 @@
         &quot;System.Data.SQLite.EF6&quot; packages.</i></b></big>
         <br />
         <br />
-        (sha1: 0000000000000000000000000000000000000000)
+        (sha1: 6398c2f6559d4b85d28e0fa1ade9707511965f59)
       </td>
     </tr>
 
@@ -1848,7 +1848,7 @@
       <td width="30%" valign="top" align="right">
         <a href="/downloads/1.0.115.0/System.Data.SQLite.x86.1.0.115.0.nupkg">System.Data.SQLite.x86.1.0.115.0.nupkg</a>
         <br />
-        (0.00 MiB)
+        (4.58 MiB)
       </td>
       <td width="5"></td>
       <td valign="top">
@@ -1863,7 +1863,7 @@
         &quot;System.Data.SQLite&quot; or &quot;System.Data.SQLite.Core&quot;
         package instead.</b></big>
         <br />
-        (sha1: 0000000000000000000000000000000000000000)
+        (sha1: 68a95415b0758b2ad37d89cfd70c0b24848ef11e)
       </td>
     </tr>
 
@@ -1872,7 +1872,7 @@
       <td width="30%" valign="top" align="right">
         <a href="/downloads/1.0.115.0/System.Data.SQLite.x64.1.0.115.0.nupkg">System.Data.SQLite.x64.1.0.115.0.nupkg</a>
         <br />
-        (0.00 MiB)
+        (5.17 MiB)
       </td>
       <td width="5"></td>
       <td valign="top">
@@ -1887,7 +1887,7 @@
         &quot;System.Data.SQLite&quot; or &quot;System.Data.SQLite.Core&quot;
         package instead.</b></big>
         <br />
-        (sha1: 0000000000000000000000000000000000000000)
+        (sha1: 649b3be132df5b4b8132a187e5d79e48a0b8ddec)
       </td>
     </tr>
 
@@ -1896,7 +1896,7 @@
       <td width="30%" valign="top" align="right">
         <a href="/downloads/1.0.115.0/Stub.System.Data.SQLite.Core.NetFramework.1.0.115.0.nupkg">Stub.System.Data.SQLite.Core.NetFramework.1.0.115.0.nupkg</a>
         <br />
-        (0.00 MiB)
+        (9.13 MiB)
       </td>
       <td width="5"></td>
       <td valign="top">
@@ -1913,7 +1913,7 @@
         <br />
         <big><b>This package does not depend on any other package.</b></big>
         <br />
-        (sha1: 0000000000000000000000000000000000000000)
+        (sha1: fbbcb14c346a4245ee7e8c763b05e3adc120e31e)
       </td>
     </tr>
 
@@ -1922,7 +1922,7 @@
       <td width="30%" valign="top" align="right">
         <a href="/downloads/1.0.115.0/Stub.System.Data.SQLite.Core.NetStandard.1.0.115.0.nupkg">Stub.System.Data.SQLite.Core.NetStandard.1.0.115.0.nupkg</a>
         <br />
-        (0.00 MiB)
+        (3.88 MiB)
       </td>
       <td width="5"></td>
       <td valign="top">
@@ -1939,7 +1939,7 @@
         <br />
         <big><b>This package does not depend on any other package.</b></big>
         <br />
-        (sha1: 0000000000000000000000000000000000000000)
+        (sha1: 13c9f819bb57f00e2cac96615c0eccf4fb4af8b1)
       </td>
     </tr>
   </table>
