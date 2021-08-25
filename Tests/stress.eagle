@@ -251,7 +251,9 @@ runTest {test stress-1.1 {multithreaded stress testing} -setup {
           \n [info level $level] ": " \n\t $error \n \
           "\n---- END TEST FAILURE OUTPUT\n"]
 
-      tputs $::test_channel $indicator
+      if {!$::noProgress} then {
+        tputs $::test_channel $indicator
+      }
 
       if {![info exists ::failures($indicator)]} then {
         set ::failures($indicator) 0
