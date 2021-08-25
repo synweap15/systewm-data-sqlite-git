@@ -34,7 +34,7 @@
 	/>
 	<UserMacro
 		Name="SQLITE_WINCE_200X_DEFINES"
-		Value="SQLITE_OMIT_WAL=1"
+		Value="SQLITE_OMIT_WAL=1;FILENAME_MAX=260"
 		PerformEnvironmentSet="true"
 	/>
 	<UserMacro
